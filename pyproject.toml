@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyffmpegcore"
+version = "0.1.2"
+description = "A lightweight Python wrapper around FFmpeg/FFprobe for common video/audio tasks"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.8"
+authors = [
+    {name = "Othmane BLIAL", email = "blial.othmane@gmail.com"},
+]
+maintainers = [
+    {name = "Othmane BLIAL", email = "blial.othmane@gmail.com"},
+]
+keywords = ["ffmpeg", "ffprobe", "video", "audio", "multimedia", "conversion"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Video",
+    "Topic :: Multimedia :: Sound/Audio",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/pyffmpegcore/pyffmpegcore"
+Documentation = "https://pyffmpegcore.readthedocs.io/"
+Repository = "https://github.com/pyffmpegcore/pyffmpegcore"
+Issues = "https://github.com/pyffmpegcore/pyffmpegcore/issues"
+
+[tool.setuptools]
+packages = ["pyffmpegcore"]
+
+[tool.setuptools.package-dir]
+"" = "."
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+[tool.coverage.run]
+source = ["pyffmpegcore"]
+omit = ["*/tests/*", "*/test_*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+]
