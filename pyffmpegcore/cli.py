@@ -331,6 +331,46 @@ def build_parser() -> argparse.ArgumentParser:
     )
     extract_audio_parser.set_defaults(handler=handle_extract_audio)
 
+    thumbnail_parser = subparsers.add_parser(
+        "thumbnail",
+        parents=[common_parent],
+        help="Extract a thumbnail image from a video file.",
+        description="Extract a thumbnail image from a video file.",
+    )
+    thumbnail_parser.add_argument(
+        "--input",
+        required=True,
+        help="Path to the input video file.",
+    )
+    thumbnail_parser.add_argument(
+        "--output",
+        required=True,
+        help="Path to the thumbnail image output.",
+    )
+    thumbnail_parser.add_argument(
+        "--timestamp",
+        default="00:00:01",
+        help="Timestamp in HH:MM:SS or HH:MM:SS.ms format. Defaults to %(default)s.",
+    )
+    thumbnail_parser.add_argument(
+        "--width",
+        type=int,
+        default=320,
+        help="Thumbnail width in pixels. Defaults to %(default)s.",
+    )
+    thumbnail_parser.add_argument(
+        "--height",
+        type=int,
+        help="Optional thumbnail height in pixels.",
+    )
+    thumbnail_parser.add_argument(
+        "--quality",
+        type=int,
+        default=2,
+        help="JPEG quality from 1 to 31. Lower is better quality. Defaults to %(default)s.",
+    )
+    thumbnail_parser.set_defaults(handler=handle_thumbnail)
+
     return parser
 
 
@@ -749,6 +789,33 @@ def handle_extract_audio(args: argparse.Namespace) -> int:
             **kwargs,
         )
     except RuntimeError as exc:
+        message = str(exc)
+        exit_code = EXIT_ENVIRONMENT_ERROR if "was not found" in message else EXIT_RUNTIME_ERROR
+        raise CLIError(message, exit_code=exit_code) from exc
+
+    raise_for_completed_process_error(result)
+    summarize_output_file(ctx, output_path)
+    return EXIT_OK
+
+
+def handle_thumbnail(args: argparse.Namespace) -> int:
+    """
+    Run the thumbnail command.
+    """
+    ctx = build_context(args)
+    input_path = require_existing_input(args.input)
+    output_path = prepare_output_path(args.output, force=ctx.force)
+
+    try:
+        result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).extract_thumbnail(
+            str(input_path),
+            str(output_path),
+            timestamp=args.timestamp,
+            width=args.width,
+            height=args.height,
+            quality=args.quality,
+        )
+    except (RuntimeError, ValueError) as exc:
         message = str(exc)
         exit_code = EXIT_ENVIRONMENT_ERROR if "was not found" in message else EXIT_RUNTIME_ERROR
         raise CLIError(message, exit_code=exit_code) from exc
