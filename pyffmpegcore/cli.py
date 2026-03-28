@@ -24,6 +24,7 @@ EXIT_OK = 0
 EXIT_ENVIRONMENT_ERROR = 3
 EXIT_USAGE_ERROR = 2
 EXIT_RUNTIME_ERROR = 5
+EXIT_PARTIAL_SUCCESS = 6
 
 _AUDIO_CODEC_BY_EXTENSION = {
     ".aac": "aac",
@@ -671,6 +672,86 @@ def build_parser() -> argparse.ArgumentParser:
         help="Target loudness range in LU for loudnorm mode.",
     )
     normalize_audio_parser.set_defaults(handler=handle_normalize_audio)
+
+    images_parser = subparsers.add_parser(
+        "images",
+        parents=[common_parent],
+        help="Batch-convert or optimize image directories.",
+        description="Batch-convert or optimize image directories.",
+    )
+    images_subparsers = images_parser.add_subparsers(dest="images_command", metavar="IMAGES_COMMAND")
+
+    images_convert_parser = images_subparsers.add_parser(
+        "convert",
+        parents=[common_parent],
+        help="Convert a directory of images into another format.",
+        description="Convert a directory of images into another format.",
+    )
+    images_convert_parser.add_argument("--input-dir", required=True, help="Directory containing input images.")
+    images_convert_parser.add_argument("--output-dir", required=True, help="Directory for converted outputs.")
+    images_convert_parser.add_argument(
+        "--format",
+        default="jpg",
+        help="Output format such as jpg, png, or webp. Defaults to %(default)s.",
+    )
+    images_convert_parser.add_argument(
+        "--quality",
+        type=int,
+        default=85,
+        help="Output quality from 1 to 100. Defaults to %(default)s.",
+    )
+    images_convert_parser.add_argument(
+        "--resize",
+        nargs=2,
+        type=int,
+        metavar=("WIDTH", "HEIGHT"),
+        help="Optional resize dimensions applied to every output image.",
+    )
+    images_convert_parser.set_defaults(handler=handle_images_convert)
+
+    images_optimize_parser = images_subparsers.add_parser(
+        "optimize",
+        parents=[common_parent],
+        help="Resize and convert images into web-friendly JPEG outputs.",
+        description="Resize and convert images into web-friendly JPEG outputs.",
+    )
+    images_optimize_parser.add_argument("--input-dir", required=True, help="Directory containing input images.")
+    images_optimize_parser.add_argument("--output-dir", required=True, help="Directory for optimized outputs.")
+    images_optimize_parser.add_argument(
+        "--max-width",
+        type=int,
+        default=1920,
+        help="Maximum image width. Defaults to %(default)s.",
+    )
+    images_optimize_parser.add_argument(
+        "--max-height",
+        type=int,
+        default=1080,
+        help="Maximum image height. Defaults to %(default)s.",
+    )
+    images_optimize_parser.add_argument(
+        "--quality",
+        type=int,
+        default=85,
+        help="JPEG quality from 1 to 100. Defaults to %(default)s.",
+    )
+    images_optimize_parser.set_defaults(handler=handle_images_optimize)
+
+    images_webp_parser = images_subparsers.add_parser(
+        "webp",
+        parents=[common_parent],
+        help="Convert a directory of images into WebP outputs.",
+        description="Convert a directory of images into WebP outputs.",
+    )
+    images_webp_parser.add_argument("--input-dir", required=True, help="Directory containing input images.")
+    images_webp_parser.add_argument("--output-dir", required=True, help="Directory for WebP outputs.")
+    images_webp_parser.add_argument(
+        "--quality",
+        type=int,
+        default=80,
+        help="WebP quality from 1 to 100. Defaults to %(default)s.",
+    )
+    images_webp_parser.set_defaults(handler=handle_images_webp)
 
     return parser
 
@@ -1721,6 +1802,144 @@ def handle_normalize_audio(args: argparse.Namespace) -> int:
     raise_for_completed_process_error(result)
     summarize_output_file(ctx, output_path)
     return EXIT_OK
+
+
+def collect_image_files(input_dir: Path) -> list[Path]:
+    """
+    Collect supported image files from a directory.
+    """
+    patterns = ["*.png", "*.jpg", "*.jpeg", "*.tiff", "*.bmp", "*.gif"]
+    files: list[Path] = []
+    for pattern in patterns:
+        files.extend(sorted(input_dir.glob(pattern)))
+    return files
+
+
+def convert_single_image(
+    ctx: CLIContext,
+    input_path: Path,
+    output_path: Path,
+    quality: int,
+    resize: tuple[int, int] | None = None,
+) -> bool:
+    """
+    Convert a single image using FFmpeg.
+    """
+    ffmpeg_args = ["-i", str(input_path)]
+
+    if resize is not None:
+        ffmpeg_args.extend(["-vf", f"scale={resize[0]}:{resize[1]}"])
+
+    output_ext = output_path.suffix.lower()
+    if output_ext in {".jpg", ".jpeg"}:
+        ffmpeg_args.extend(["-q:v", str(min(31, max(1, 31 - int(quality * 31 / 100))))])
+    elif output_ext == ".webp":
+        ffmpeg_args.extend(["-quality", str(quality)])
+    elif output_ext == ".png":
+        ffmpeg_args.extend(["-compression_level", str(min(9, max(0, 9 - int(quality * 9 / 100))))])
+
+    ffmpeg_args.extend(["-frames:v", "1"])
+    if output_ext in {".bmp", ".jpg", ".jpeg", ".png", ".tif", ".tiff"}:
+        ffmpeg_args.extend(["-update", "1"])
+    ffmpeg_args.extend(["-y", str(output_path)])
+
+    result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).run(ffmpeg_args)
+    return result.returncode == 0
+
+
+def report_batch_results(ctx: CLIContext, label: str, results: dict[str, int]) -> None:
+    """
+    Print a concise batch summary.
+    """
+    echo(
+        ctx,
+        f"{label}: {results['successful']} succeeded, {results['failed']} failed, {results['total']} total",
+    )
+
+
+def finalize_batch_results(results: dict[str, int]) -> int:
+    """
+    Translate batch results into a stable CLI exit code.
+    """
+    return EXIT_PARTIAL_SUCCESS if results["failed"] else EXIT_OK
+
+
+def handle_images_convert(args: argparse.Namespace) -> int:
+    """
+    Convert a directory of images into another format.
+    """
+    ctx = build_context(args)
+    input_dir = require_existing_input(args.input_dir, option_name="--input-dir")
+    output_dir = prepare_output_dir(args.output_dir, force=ctx.force)
+    resize = tuple(args.resize) if args.resize is not None else None
+
+    image_files = collect_image_files(input_dir)
+    results = {"total": len(image_files), "successful": 0, "failed": 0}
+    for image_file in image_files:
+        output_path = output_dir / f"{image_file.stem}.{args.format.lstrip('.')}"
+        if convert_single_image(ctx, image_file, output_path, quality=args.quality, resize=resize):
+            results["successful"] += 1
+        else:
+            results["failed"] += 1
+
+    report_batch_results(ctx, "Image conversion", results)
+    return finalize_batch_results(results)
+
+
+def handle_images_optimize(args: argparse.Namespace) -> int:
+    """
+    Optimize a directory of images for web-friendly output.
+    """
+    ctx = build_context(args)
+    input_dir = require_existing_input(args.input_dir, option_name="--input-dir")
+    output_dir = prepare_output_dir(args.output_dir, force=ctx.force)
+    image_files = collect_image_files(input_dir)
+    results = {"total": len(image_files), "successful": 0, "failed": 0}
+    prober = FFprobeRunner(ffprobe_path=ctx.ffprobe_path)
+
+    for image_file in image_files:
+        resize = None
+        try:
+            metadata = prober.probe(str(image_file))
+            if metadata.get("video"):
+                width = metadata["video"].get("width", 0)
+                height = metadata["video"].get("height", 0)
+                if width > args.max_width or height > args.max_height:
+                    ratio = min(args.max_width / width, args.max_height / height)
+                    resize = (int(width * ratio), int(height * ratio))
+        except RuntimeError:
+            results["failed"] += 1
+            continue
+
+        output_path = output_dir / f"{image_file.stem}.jpg"
+        if convert_single_image(ctx, image_file, output_path, quality=args.quality, resize=resize):
+            results["successful"] += 1
+        else:
+            results["failed"] += 1
+
+    report_batch_results(ctx, "Image optimization", results)
+    return finalize_batch_results(results)
+
+
+def handle_images_webp(args: argparse.Namespace) -> int:
+    """
+    Convert a directory of images into WebP outputs.
+    """
+    ctx = build_context(args)
+    input_dir = require_existing_input(args.input_dir, option_name="--input-dir")
+    output_dir = prepare_output_dir(args.output_dir, force=ctx.force)
+    image_files = collect_image_files(input_dir)
+    results = {"total": len(image_files), "successful": 0, "failed": 0}
+
+    for image_file in image_files:
+        output_path = output_dir / f"{image_file.stem}.webp"
+        if convert_single_image(ctx, image_file, output_path, quality=args.quality):
+            results["successful"] += 1
+        else:
+            results["failed"] += 1
+
+    report_batch_results(ctx, "Image WebP conversion", results)
+    return finalize_batch_results(results)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
