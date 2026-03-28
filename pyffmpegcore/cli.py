@@ -16,6 +16,7 @@ from typing import Any, Sequence
 
 from . import __version__
 from .probe import FFprobeRunner
+from .runner import FFmpegRunner
 
 
 EXIT_OK = 0
@@ -138,6 +139,54 @@ def build_parser() -> argparse.ArgumentParser:
         help="Print simplified metadata as JSON.",
     )
     probe_parser.set_defaults(handler=handle_probe)
+
+    convert_parser = subparsers.add_parser(
+        "convert",
+        parents=[common_parent],
+        help="Convert a media file into a new format.",
+        description="Convert a media file into a new format.",
+    )
+    convert_parser.add_argument(
+        "--input",
+        required=True,
+        help="Path to the input media file.",
+    )
+    convert_parser.add_argument(
+        "--output",
+        required=True,
+        help="Path to the converted output file.",
+    )
+    convert_parser.add_argument(
+        "--audio-only",
+        action="store_true",
+        help="Drop video and keep only the audio stream.",
+    )
+    convert_parser.add_argument(
+        "--video-codec",
+        help="Video codec to use, for example libx264.",
+    )
+    convert_parser.add_argument(
+        "--audio-codec",
+        help="Audio codec to use, for example aac.",
+    )
+    convert_parser.add_argument(
+        "--video-bitrate",
+        help="Video bitrate, for example 2500k.",
+    )
+    convert_parser.add_argument(
+        "--audio-bitrate",
+        help="Audio bitrate, for example 192k.",
+    )
+    convert_parser.add_argument(
+        "--pix-fmt",
+        help="Pixel format for video output, for example yuv420p.",
+    )
+    convert_parser.add_argument(
+        "--threads",
+        type=int,
+        help="Number of FFmpeg worker threads to use.",
+    )
+    convert_parser.set_defaults(handler=handle_convert)
 
     return parser
 
@@ -395,6 +444,77 @@ def handle_probe(args: argparse.Namespace) -> int:
     else:
         render_probe_report(ctx, metadata)
 
+    return EXIT_OK
+
+
+def raise_for_completed_process_error(result: subprocess.CompletedProcess) -> None:
+    """
+    Raise a user-facing CLI error when an FFmpeg command fails.
+    """
+    if result.returncode == 0:
+        return
+
+    raise CLIError(result.stderr or "FFmpeg command failed.", exit_code=EXIT_RUNTIME_ERROR)
+
+
+def summarize_output_file(ctx: CLIContext, output_path: Path) -> None:
+    """
+    Print a lightweight summary for a generated media file.
+    """
+    try:
+        metadata = FFprobeRunner(ffprobe_path=ctx.ffprobe_path).probe(str(output_path))
+    except RuntimeError:
+        echo(ctx, f"Created: {output_path}")
+        return
+
+    echo(ctx, f"Created: {output_path}")
+    if metadata.get("format_name"):
+        echo(ctx, f"Format: {metadata['format_name']}")
+    if metadata.get("duration") is not None:
+        echo(ctx, f"Duration: {metadata['duration']:.2f} seconds")
+    if metadata.get("video"):
+        video = metadata["video"]
+        echo(ctx, f"Video: {video.get('codec', 'unknown')} {video.get('width', '?')}x{video.get('height', '?')}")
+    if metadata.get("audio"):
+        audio = metadata["audio"]
+        echo(ctx, f"Audio: {audio.get('codec', 'unknown')}")
+
+
+def handle_convert(args: argparse.Namespace) -> int:
+    """
+    Run the convert command.
+    """
+    ctx = build_context(args)
+    input_path = require_existing_input(args.input)
+    output_path = prepare_output_path(args.output, force=ctx.force)
+
+    kwargs = {
+        key: value
+        for key, value in {
+            "video_codec": args.video_codec,
+            "audio_codec": args.audio_codec,
+            "video_bitrate": args.video_bitrate,
+            "audio_bitrate": args.audio_bitrate,
+            "pix_fmt": args.pix_fmt,
+            "threads": args.threads,
+        }.items()
+        if value is not None
+    }
+
+    try:
+        result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).convert(
+            str(input_path),
+            str(output_path),
+            audio_only=args.audio_only,
+            **kwargs,
+        )
+    except RuntimeError as exc:
+        message = str(exc)
+        exit_code = EXIT_ENVIRONMENT_ERROR if "was not found" in message else EXIT_RUNTIME_ERROR
+        raise CLIError(message, exit_code=exit_code) from exc
+
+    raise_for_completed_process_error(result)
+    summarize_output_file(ctx, output_path)
     return EXIT_OK
 
 
