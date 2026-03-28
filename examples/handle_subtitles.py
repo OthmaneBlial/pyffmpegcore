@@ -11,8 +11,12 @@ which is useful for:
 - Multi-language subtitle support
 """
 
-from pyffmpegcore import FFmpegRunner, FFprobeRunner
 import os
+import shutil
+import tempfile
+
+from pyffmpegcore import FFmpegRunner, FFprobeRunner
+from pyffmpegcore.runner import escape_path_for_filter
 
 def extract_subtitles(video_file: str, output_file: str, stream_index: int = 0) -> bool:
     """
@@ -31,6 +35,7 @@ def extract_subtitles(video_file: str, output_file: str, stream_index: int = 0) 
     args = [
         "-i", video_file,
         "-map", f"0:s:{stream_index}",  # Extract specific subtitle stream
+        "-c:s", "srt",
         "-y", output_file
     ]
 
@@ -59,12 +64,23 @@ def burn_subtitles(video_file: str, subtitle_file: str, output_file: str,
         True if successful, False otherwise
     """
     runner = FFmpegRunner()
+    temporary_subtitle_file = None
+    subtitle_source = subtitle_file
 
-    # Escape path for Windows
-    escaped_path = subtitle_file.replace('\\', '\\\\').replace(':', '\\:')
+    if "'" in subtitle_file:
+        with tempfile.NamedTemporaryFile(
+            suffix=os.path.splitext(subtitle_file)[1],
+            delete=False,
+        ) as temp_file:
+            temporary_subtitle_file = temp_file.name
+        shutil.copyfile(subtitle_file, temporary_subtitle_file)
+        subtitle_source = temporary_subtitle_file
 
-    # Build subtitle filter with proper quoting for Windows
-    subtitle_filter = f"subtitles=\"{escaped_path}\":force_style='FontSize={font_size},PrimaryColour={font_color}'"
+    escaped_path = escape_path_for_filter(subtitle_source)
+    subtitle_filter = (
+        f"subtitles='{escaped_path}':"
+        f"force_style='FontSize={font_size},PrimaryColour={font_color}'"
+    )
 
     args = [
         "-i", video_file,
@@ -73,14 +89,18 @@ def burn_subtitles(video_file: str, subtitle_file: str, output_file: str,
         "-y", output_file
     ]
 
-    result = runner.run(args)
+    try:
+        result = runner.run(args)
+    finally:
+        if temporary_subtitle_file and os.path.exists(temporary_subtitle_file):
+            os.unlink(temporary_subtitle_file)
 
     if result.returncode == 0:
         print(f"Subtitles burned into video: {output_file}")
         return True
-    else:
-        print(f"Failed to burn subtitles: {result.stderr}")
-        return False
+
+    print(f"Failed to burn subtitles: {result.stderr}")
+    return False
 
 def add_subtitle_track(video_file: str, subtitle_file: str, output_file: str,
                       language: str = "eng") -> bool:
@@ -101,6 +121,9 @@ def add_subtitle_track(video_file: str, subtitle_file: str, output_file: str,
     args = [
         "-i", video_file,
         "-i", subtitle_file,
+        "-map", "0:v:0",
+        "-map", "0:a?",
+        "-map", "1:0",
         "-c:v", "copy",  # Copy video
         "-c:a", "copy",  # Copy audio
         "-c:s", "mov_text",  # Subtitle codec for MP4
@@ -164,13 +187,15 @@ def create_multi_language_subtitles(video_file: str, subtitle_files: dict,
     for subtitle_file in subtitle_files.values():
         args.extend(["-i", subtitle_file])
 
-    # Copy video and audio
-    args.extend(["-c:v", "copy", "-c:a", "copy"])
+    args.extend(["-map", "0:v:0", "-map", "0:a?"])
+    for stream_index in range(len(subtitle_files)):
+        args.extend(["-map", f"{stream_index + 1}:0"])
+
+    args.extend(["-c:v", "copy", "-c:a", "copy", "-c:s", "mov_text"])
 
     # Add each subtitle track
     for i, (lang_code, subtitle_file) in enumerate(subtitle_files.items()):
         args.extend([
-            "-c:s", "mov_text",
             f"-metadata:s:s:{i}", f"language={lang_code}",
             f"-metadata:s:s:{i}", f"title={lang_code.upper()}"
         ])

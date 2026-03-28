@@ -17,6 +17,7 @@ def escape_path_for_filter(path: str) -> str:
     Escape a file path for use in FFmpeg filter strings.
     """
     escaped = path.replace("\\", "/")
+    escaped = escaped.replace(":", "\\:")
     return escaped.replace("'", "\\'")
 
 
