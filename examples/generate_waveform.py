@@ -10,8 +10,11 @@ which is useful for:
 - Podcast/video editing workflows
 """
 
-from pyffmpegcore import FFmpegRunner, FFprobeRunner
 import os
+import tempfile
+
+from pyffmpegcore import FFmpegRunner, FFprobeRunner
+from pyffmpegcore.runner import escape_path_for_filter
 
 def generate_waveform_image(audio_path: str, output_path: str, width: int = 800,
                            height: int = 200, colors: str = "white"):
@@ -155,31 +158,53 @@ def generate_waveform_with_metadata(audio_path: str, output_dir: str):
     success = generate_waveform_image(audio_path, waveform_path, width=1000, height=300)
 
     if success:
-        # Create metadata overlay text
         metadata_text = (
-            f"File: {filename}\\n"
-            f"Duration: {duration:.1f}s\\n"
-            f"Sample Rate: {sample_rate} Hz\\n"
+            f"File: {filename}\n"
+            f"Duration: {duration:.1f}s\n"
+            f"Sample Rate: {sample_rate} Hz\n"
             f"Channels: {channels}"
         )
 
-        # Add metadata overlay to the waveform
         ffmpeg = FFmpegRunner()
-        final_path = os.path.join(output_dir, f"{os.path.splitext(filename)[0]}_waveform_with_metadata.png")
+        final_path = os.path.join(
+            output_dir,
+            f"{os.path.splitext(filename)[0]}_waveform_with_metadata.png",
+        )
 
-        vf_filter = f"drawtext=text='{metadata_text}':x=10:y=10:fontsize=24:fontcolor=white:box=1:boxcolor=black@0.5"
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            suffix=".txt",
+            delete=False,
+        ) as text_file:
+            text_file.write(metadata_text)
+            metadata_path = text_file.name
 
-        args = [
-            "-i", waveform_path,
-            "-vf", vf_filter,
-            "-y", final_path
-        ]
+        try:
+            vf_filter = (
+                f"drawtext=textfile='{escape_path_for_filter(metadata_path)}':"
+                "x=10:y=10:fontsize=24:fontcolor=white:box=1:boxcolor=black@0.5"
+            )
 
-        result = ffmpeg.run(args)
+            args = [
+                "-i", waveform_path,
+                "-vf", vf_filter,
+                "-y", final_path
+            ]
+
+            result = ffmpeg.run(args)
+        finally:
+            if os.path.exists(metadata_path):
+                os.unlink(metadata_path)
+
         if result.returncode == 0:
             print(f"Waveform with metadata generated: {final_path}")
-        else:
-            print(f"Failed to add metadata overlay: {result.stderr}")
+            return True
+
+        print(f"Failed to add metadata overlay: {result.stderr}")
+        return False
+
+    return False
 
 def batch_generate_waveforms(audio_dir: str, output_dir: str, pattern: str = "*.mp3"):
     """
