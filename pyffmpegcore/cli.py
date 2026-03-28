@@ -12,11 +12,12 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import tempfile
 from typing import Any, Sequence
 
 from . import __version__
 from .probe import FFprobeRunner
-from .runner import FFmpegRunner
+from .runner import FFmpegRunner, escape_path_for_concat
 
 
 EXIT_OK = 0
@@ -455,6 +456,41 @@ def build_parser() -> argparse.ArgumentParser:
         help="Do not preserve pitch when changing playback speed.",
     )
     speed_audio_parser.set_defaults(handler=handle_speed_audio)
+
+    concat_parser = subparsers.add_parser(
+        "concat",
+        parents=[common_parent],
+        help="Join multiple video clips into one output.",
+        description="Join multiple video clips into one output.",
+    )
+    concat_parser.add_argument(
+        "--inputs",
+        nargs="+",
+        required=True,
+        help="Input clip paths in the order they should appear in the output.",
+    )
+    concat_parser.add_argument(
+        "--output",
+        required=True,
+        help="Path to the concatenated output video.",
+    )
+    concat_parser.add_argument(
+        "--mode",
+        choices=["copy", "reencode"],
+        default="copy",
+        help="Use fast stream-copy concat or a safer re-encode path. Defaults to %(default)s.",
+    )
+    concat_parser.add_argument(
+        "--video-codec",
+        default="libx264",
+        help="Video codec for re-encode mode. Defaults to %(default)s.",
+    )
+    concat_parser.add_argument(
+        "--audio-codec",
+        default="aac",
+        help="Audio codec for re-encode mode. Defaults to %(default)s.",
+    )
+    concat_parser.set_defaults(handler=handle_concat)
 
     return parser
 
@@ -1082,6 +1118,114 @@ def handle_speed_audio(args: argparse.Namespace) -> int:
         args.factor,
         preserve_pitch=not args.no_pitch_preserve,
     )
+    summarize_output_file(ctx, output_path)
+    return EXIT_OK
+
+
+def run_concat_copy(ctx: CLIContext, input_paths: list[Path], output_path: Path) -> None:
+    """
+    Concatenate matching clips using FFmpeg's concat demuxer.
+    """
+    with tempfile.NamedTemporaryFile(
+        mode="w",
+        suffix=".txt",
+        delete=False,
+        encoding="utf-8",
+    ) as handle:
+        concat_file = Path(handle.name)
+        for input_path in input_paths:
+            handle.write(f"file {escape_path_for_concat(str(input_path))}\n")
+
+    try:
+        result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).run(
+            [
+                "-f",
+                "concat",
+                "-safe",
+                "0",
+                "-i",
+                str(concat_file),
+                "-c",
+                "copy",
+                "-y",
+                str(output_path),
+            ]
+        )
+    finally:
+        if concat_file.exists():
+            concat_file.unlink()
+
+    raise_for_completed_process_error(result)
+
+
+def run_concat_reencode(
+    ctx: CLIContext,
+    input_paths: list[Path],
+    output_path: Path,
+    video_codec: str,
+    audio_codec: str,
+) -> None:
+    """
+    Concatenate clips by re-encoding them into a shared output format.
+    """
+    args: list[str] = []
+    for input_path in input_paths:
+        args.extend(["-i", str(input_path)])
+
+    video_inputs = "".join(f"[{index}:v]" for index in range(len(input_paths)))
+    audio_inputs = "".join(f"[{index}:a]" for index in range(len(input_paths)))
+    filter_complex = (
+        f"{video_inputs}concat=n={len(input_paths)}:v=1:a=0[vout];"
+        f"{audio_inputs}concat=n={len(input_paths)}:v=0:a=1[aout]"
+    )
+
+    args.extend(
+        [
+            "-filter_complex",
+            filter_complex,
+            "-map",
+            "[vout]",
+            "-map",
+            "[aout]",
+            "-c:v",
+            video_codec,
+            "-c:a",
+            audio_codec,
+            "-y",
+            str(output_path),
+        ]
+    )
+    result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).run(args)
+    raise_for_completed_process_error(result)
+
+
+def handle_concat(args: argparse.Namespace) -> int:
+    """
+    Run the concat command.
+    """
+    ctx = build_context(args)
+    if len(args.inputs) < 2:
+        raise CLIError("--inputs requires at least two clips.")
+
+    input_paths = [require_existing_input(path, option_name="--inputs") for path in args.inputs]
+    output_path = prepare_output_path(args.output, force=ctx.force)
+
+    try:
+        if args.mode == "copy":
+            run_concat_copy(ctx, input_paths, output_path)
+        else:
+            run_concat_reencode(
+                ctx,
+                input_paths,
+                output_path,
+                video_codec=args.video_codec,
+                audio_codec=args.audio_codec,
+            )
+    except RuntimeError as exc:
+        message = str(exc)
+        exit_code = EXIT_ENVIRONMENT_ERROR if "was not found" in message else EXIT_RUNTIME_ERROR
+        raise CLIError(message, exit_code=exit_code) from exc
+
     summarize_output_file(ctx, output_path)
     return EXIT_OK
 
