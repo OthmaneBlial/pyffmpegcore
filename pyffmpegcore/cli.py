@@ -68,14 +68,17 @@ class CLIProgressPrinter:
 
     def __init__(self, total_duration: float | None = None):
         self.total_duration = total_duration
+        self.seen_progress = False
 
     def __call__(self, progress: dict[str, Any]) -> None:
         if progress.get("status") == "end":
-            print("\rProgress: 100% complete", file=sys.stderr)
+            if self.seen_progress:
+                print("\rProgress: 100% complete", file=sys.stderr)
             return
 
         time_seconds = progress.get("time_seconds")
         if time_seconds is not None and self.total_duration:
+            self.seen_progress = True
             percentage = min(100.0, (time_seconds / self.total_duration) * 100.0)
             print(
                 f"\rProgress: {percentage:5.1f}% ({time_seconds:0.2f}s)",
@@ -87,6 +90,7 @@ class CLIProgressPrinter:
 
         frame = progress.get("frame")
         if frame is not None:
+            self.seen_progress = True
             print(
                 f"\rFrame: {frame}",
                 end="",
@@ -847,6 +851,25 @@ def echo_error(message: str) -> None:
     print(message, file=sys.stderr)
 
 
+def format_bytes(byte_count: int | None) -> str:
+    """
+    Format byte counts into a compact human-readable string.
+    """
+    if byte_count is None:
+        return "unknown"
+
+    units = ["B", "KB", "MB", "GB", "TB"]
+    value = float(byte_count)
+    for unit in units:
+        if value < 1024 or unit == units[-1]:
+            if unit == "B":
+                return f"{int(value)} {unit}"
+            return f"{value:.1f} {unit}"
+        value /= 1024
+
+    return f"{byte_count} B"
+
+
 def inspect_binary(binary_path: str) -> dict[str, Any]:
     """
     Inspect a binary path for existence and version information.
@@ -1029,14 +1052,16 @@ def summarize_output_file(ctx: CLIContext, output_path: Path) -> None:
     try:
         metadata = FFprobeRunner(ffprobe_path=ctx.ffprobe_path).probe(str(output_path))
     except RuntimeError:
-        echo(ctx, f"Created: {output_path}")
+        echo(ctx, f"Output: {output_path}")
         return
 
-    echo(ctx, f"Created: {output_path}")
+    echo(ctx, f"Output: {output_path}")
     if metadata.get("format_name"):
-        echo(ctx, f"Format: {metadata['format_name']}")
+        echo(ctx, f"Container: {metadata['format_name']}")
     if metadata.get("duration") is not None:
         echo(ctx, f"Duration: {metadata['duration']:.2f} seconds")
+    if metadata.get("size") is not None:
+        echo(ctx, f"Size: {format_bytes(metadata['size'])}")
     if metadata.get("video"):
         video = metadata["video"]
         echo(ctx, f"Video: {video.get('codec', 'unknown')} {video.get('width', '?')}x{video.get('height', '?')}")
@@ -1853,7 +1878,10 @@ def report_batch_results(ctx: CLIContext, label: str, results: dict[str, int]) -
     """
     echo(
         ctx,
-        f"{label}: {results['successful']} succeeded, {results['failed']} failed, {results['total']} total",
+        (
+            f"{label}: {results['successful']} succeeded, "
+            f"{results['failed']} failed, {results['total']} total"
+        ),
     )
 
 
