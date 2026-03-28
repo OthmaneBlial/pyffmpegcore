@@ -154,31 +154,43 @@ class ProgressTracker:
 
         key, value = line.split('=', 1)
 
+        def with_status(payload: Dict[str, Any]) -> Dict[str, Any]:
+            payload.setdefault("status", "progress")
+            return payload
+
         # Convert values based on key
         if key == "frame":
-            return {"frame": int(value)}
+            if value != "N/A":
+                return with_status({"frame": int(value)})
         elif key == "fps":
-            return {"fps": float(value)}
+            if value != "N/A":
+                return with_status({"fps": float(value)})
         elif key == "bitrate":
             # Remove 'kbits/s' suffix
-            return {"bitrate_kbps": float(value.replace('kbits/s', ''))}
+            if value != "N/A":
+                return with_status({"bitrate_kbps": float(value.replace('kbits/s', ''))})
         elif key == "total_size":
             if value != "N/A":
-                return {"size_kb": int(value) / 1024}  # Convert bytes to KB
+                return with_status({"size_kb": int(value) / 1024})  # Convert bytes to KB
         elif key in ("out_time", "out_time_ms", "out_time_us"):
+            if value == "N/A":
+                return None
             if key == "out_time_us":
                 secs = float(value) / 1_000_000
             elif key == "out_time_ms":
-                secs = float(value) / 1_000
+                # FFmpeg's pipe output labels this field as milliseconds, but in
+                # practice the value is emitted in microseconds.
+                secs = float(value) / 1_000_000
             else:
                 secs = self._time_to_seconds(value)
-            return {"time_seconds": secs}
+            return with_status({"time_seconds": secs})
         elif key == "speed":
             if value != "N/A":
-                return {"speed": float(value.replace('x', ''))}
+                return with_status({"speed": float(value.replace('x', ''))})
         elif key == "progress":
             if value == "end":
                 return {"status": "end"}
+            return {"status": "progress"}
 
         return None
 

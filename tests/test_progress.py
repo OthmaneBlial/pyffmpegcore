@@ -122,12 +122,12 @@ class TestProgressCallback:
 
         # Test out_time
         progress = tracker._parse_progress_pipe_line("out_time=00:01:30.500")
-        assert progress == {"time_seconds": 90.5}
+        assert progress == {"time_seconds": 90.5, "status": "progress"}
 
         # Test out_time_ms
-        progress = tracker._parse_progress_pipe_line("out_time_ms=90500")
-        assert progress == {"time_seconds": 90.5}
+        progress = tracker._parse_progress_pipe_line("out_time_ms=90500000")
+        assert progress == {"time_seconds": 90.5, "status": "progress"}
 
         # Test out_time_us
         progress = tracker._parse_progress_pipe_line("out_time_us=90500000")
-        assert progress == {"time_seconds": 90.5}
+        assert progress == {"time_seconds": 90.5, "status": "progress"}
