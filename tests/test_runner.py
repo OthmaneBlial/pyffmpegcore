@@ -2,9 +2,12 @@
 Tests for FFmpegRunner.
 """
 
+import subprocess
+
 import pytest
 from unittest.mock import patch, MagicMock
 from pyffmpegcore.runner import FFmpegRunner
+from pyffmpegcore.probe import FFprobeRunner
 
 
 class TestFFmpegRunner:
@@ -141,6 +144,55 @@ class TestFFmpegRunner:
         args = mock_run.call_args[0][0]
         assert "-pix_fmt" in args
         assert "rgb24" in args
+
+    @patch('subprocess.run')
+    def test_extract_audio_uses_extension_based_default_codec(self, mock_run):
+        """Test extract_audio chooses a sensible default codec."""
+        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+
+        runner = FFmpegRunner()
+        runner.extract_audio("input.mp4", "output.mp3")
+
+        args = mock_run.call_args[0][0]
+        assert "-c:a" in args
+        assert "libmp3lame" in args
+
+    def test_extract_audio_missing_input_returns_failure(self, tmp_path):
+        """Test extract_audio fails cleanly for a missing input file."""
+        runner = FFmpegRunner()
+        result = runner.extract_audio(str(tmp_path / "missing.mp4"), str(tmp_path / "output.m4a"))
+
+        assert result.returncode != 0
+        assert result.stderr
+
+    def test_extract_audio_real_file_contains_audio_only_stream(self, tmp_path):
+        """Test extract_audio on a real sample clip."""
+        input_file = tmp_path / "input.mp4"
+        output_file = tmp_path / "output.m4a"
+
+        create_cmd = [
+            "ffmpeg",
+            "-f", "lavfi",
+            "-i", "testsrc=size=160x120:rate=24",
+            "-f", "lavfi",
+            "-i", "sine=frequency=660:sample_rate=44100",
+            "-t", "1.5",
+            "-c:v", "libx264",
+            "-c:a", "aac",
+            "-pix_fmt", "yuv420p",
+            "-y", str(input_file),
+        ]
+        subprocess.run(create_cmd, check=True, capture_output=True, text=True)
+
+        runner = FFmpegRunner()
+        result = runner.extract_audio(str(input_file), str(output_file))
+
+        assert result.returncode == 0
+        assert output_file.exists()
+
+        metadata = FFprobeRunner().probe(str(output_file))
+        assert "audio" in metadata
+        assert "video" not in metadata
 
     @patch('subprocess.run')
     def test_compress_single_pass_bitrate_mode(self, mock_run):

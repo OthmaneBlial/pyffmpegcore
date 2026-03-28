@@ -371,13 +371,14 @@ class FFmpegRunner:
             except OSError:
                 pass  # Ignore cleanup errors
 
-    def extract_audio(self, input_file: str, output_file: str, **kwargs) -> subprocess.CompletedProcess:
+    def extract_audio(self, input_file: str, output_file: str, progress_callback=None, **kwargs) -> subprocess.CompletedProcess:
         """
         Extract audio from a video file.
 
         Args:
             input_file: Path to input video file
             output_file: Path to output audio file
+            progress_callback: Optional callback for progress updates
             **kwargs: Additional options (e.g., audio_codec='aac', audio_bitrate='128k')
 
         Returns:
@@ -385,8 +386,18 @@ class FFmpegRunner:
         """
         args = ["-i", input_file, "-vn"]  # -vn = no video
 
-        audio_codec = kwargs.get("audio_codec", "aac")  # Default to AAC for better compatibility
+        audio_codec = kwargs.get("audio_codec", self._default_audio_codec(output_file))
         args.extend(["-c:a", audio_codec])
+        if "audio_bitrate" in kwargs and audio_codec != "copy":
+            args.extend(["-b:a", kwargs["audio_bitrate"]])
+        if "sample_rate" in kwargs:
+            args.extend(["-ar", str(kwargs["sample_rate"])])
+        if "channels" in kwargs:
+            args.extend(["-ac", str(kwargs["channels"])])
+        if "threads" in kwargs:
+            args.extend(["-threads", str(kwargs["threads"])])
+        args.extend(["-y", output_file])
+        return self.run(args, progress_callback)
     def extract_thumbnail(self, input_file: str, output_file: str, timestamp: str = "00:00:01",
                          width: int = 320, height: int = None, quality: int = 2) -> subprocess.CompletedProcess:
         """
@@ -501,6 +512,20 @@ class FFmpegRunner:
             factors.append(current)
 
         return ",".join(f"atempo={f}" for f in factors)
+
+    def _default_audio_codec(self, output_file: str) -> str:
+        """Pick a reasonable default audio codec based on the output extension."""
+        extension = os.path.splitext(output_file)[1].lower()
+        codec_by_extension = {
+            ".aac": "aac",
+            ".flac": "flac",
+            ".m4a": "aac",
+            ".mp3": "libmp3lame",
+            ".ogg": "libvorbis",
+            ".opus": "libopus",
+            ".wav": "pcm_s16le",
+        }
+        return codec_by_extension.get(extension, "aac")
 
     def generate_waveform(self, input_file: str, output_file: str, width: int = 800,
                          height: int = 200, colors: str = "white") -> subprocess.CompletedProcess:
