@@ -48,6 +48,40 @@ class CLIContext:
     ffprobe_path: str = "ffprobe"
 
 
+class CLIProgressPrinter:
+    """
+    Lightweight terminal progress printer for FFmpeg jobs.
+    """
+
+    def __init__(self, total_duration: float | None = None):
+        self.total_duration = total_duration
+
+    def __call__(self, progress: dict[str, Any]) -> None:
+        if progress.get("status") == "end":
+            print("\rProgress: 100% complete", file=sys.stderr)
+            return
+
+        time_seconds = progress.get("time_seconds")
+        if time_seconds is not None and self.total_duration:
+            percentage = min(100.0, (time_seconds / self.total_duration) * 100.0)
+            print(
+                f"\rProgress: {percentage:5.1f}% ({time_seconds:0.2f}s)",
+                end="",
+                file=sys.stderr,
+                flush=True,
+            )
+            return
+
+        frame = progress.get("frame")
+        if frame is not None:
+            print(
+                f"\rFrame: {frame}",
+                end="",
+                file=sys.stderr,
+                flush=True,
+            )
+
+
 def add_global_arguments(parser: argparse.ArgumentParser) -> None:
     """
     Add global CLI arguments shared by the root parser and future subcommands.
@@ -187,6 +221,74 @@ def build_parser() -> argparse.ArgumentParser:
         help="Number of FFmpeg worker threads to use.",
     )
     convert_parser.set_defaults(handler=handle_convert)
+
+    compress_parser = subparsers.add_parser(
+        "compress",
+        parents=[common_parent],
+        help="Compress a video file with CRF or target-size settings.",
+        description="Compress a video file with CRF or target-size settings.",
+    )
+    compress_parser.add_argument(
+        "--input",
+        required=True,
+        help="Path to the input video file.",
+    )
+    compress_parser.add_argument(
+        "--output",
+        required=True,
+        help="Path to the compressed output file.",
+    )
+    compress_parser.add_argument(
+        "--crf",
+        type=int,
+        default=23,
+        help="CRF quality level for single-pass compression. Defaults to %(default)s.",
+    )
+    compress_parser.add_argument(
+        "--target-size-kb",
+        type=int,
+        help="Target output size in kilobytes for two-pass compression.",
+    )
+    pass_group = compress_parser.add_mutually_exclusive_group()
+    pass_group.add_argument(
+        "--two-pass",
+        dest="two_pass",
+        action="store_true",
+        help="Force two-pass compression when target size is set.",
+    )
+    pass_group.add_argument(
+        "--single-pass",
+        dest="two_pass",
+        action="store_false",
+        help="Use single-pass compression even when a target size is set.",
+    )
+    compress_parser.set_defaults(two_pass=True)
+    compress_parser.add_argument(
+        "--video-codec",
+        help="Video codec to use, for example libx264.",
+    )
+    compress_parser.add_argument(
+        "--audio-codec",
+        help="Audio codec to use, for example aac.",
+    )
+    compress_parser.add_argument(
+        "--video-bitrate",
+        help="Video bitrate override, for example 1500k.",
+    )
+    compress_parser.add_argument(
+        "--audio-bitrate",
+        help="Audio bitrate override, for example 128k.",
+    )
+    compress_parser.add_argument(
+        "--preset",
+        help="Encoding preset, for example medium or fast.",
+    )
+    compress_parser.add_argument(
+        "--threads",
+        type=int,
+        help="Number of FFmpeg worker threads to use.",
+    )
+    compress_parser.set_defaults(handler=handle_compress)
 
     return parser
 
@@ -509,6 +611,64 @@ def handle_convert(args: argparse.Namespace) -> int:
             **kwargs,
         )
     except RuntimeError as exc:
+        message = str(exc)
+        exit_code = EXIT_ENVIRONMENT_ERROR if "was not found" in message else EXIT_RUNTIME_ERROR
+        raise CLIError(message, exit_code=exit_code) from exc
+
+    raise_for_completed_process_error(result)
+    summarize_output_file(ctx, output_path)
+    return EXIT_OK
+
+
+def build_progress_printer(ctx: CLIContext, input_path: Path) -> CLIProgressPrinter | None:
+    """
+    Create a progress printer when command output is not quiet.
+    """
+    if ctx.quiet:
+        return None
+
+    try:
+        duration = FFprobeRunner(ffprobe_path=ctx.ffprobe_path).get_duration(str(input_path))
+    except RuntimeError:
+        duration = None
+
+    return CLIProgressPrinter(total_duration=duration or None)
+
+
+def handle_compress(args: argparse.Namespace) -> int:
+    """
+    Run the compress command.
+    """
+    ctx = build_context(args)
+    input_path = require_existing_input(args.input)
+    output_path = prepare_output_path(args.output, force=ctx.force)
+
+    kwargs = {
+        key: value
+        for key, value in {
+            "video_codec": args.video_codec,
+            "audio_codec": args.audio_codec,
+            "video_bitrate": args.video_bitrate,
+            "audio_bitrate": args.audio_bitrate,
+            "preset": args.preset,
+            "threads": args.threads,
+        }.items()
+        if value is not None
+    }
+
+    progress_callback = build_progress_printer(ctx, input_path)
+
+    try:
+        result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).compress(
+            str(input_path),
+            str(output_path),
+            target_size_kb=args.target_size_kb,
+            crf=args.crf,
+            two_pass=args.two_pass,
+            progress_callback=progress_callback,
+            **kwargs,
+        )
+    except (RuntimeError, ValueError) as exc:
         message = str(exc)
         exit_code = EXIT_ENVIRONMENT_ERROR if "was not found" in message else EXIT_RUNTIME_ERROR
         raise CLIError(message, exit_code=exit_code) from exc
