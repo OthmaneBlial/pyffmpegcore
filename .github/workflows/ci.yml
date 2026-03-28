@@ -50,6 +50,58 @@ jobs:
       - name: Build package artifacts
         run: .venv/bin/python -m build
 
+  cli-install-smoke:
+    name: CLI install smoke (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    needs: fast-checks
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install FFmpeg on Ubuntu
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Install FFmpeg on macOS
+        if: runner.os == 'macOS'
+        run: brew install ffmpeg
+
+      - name: Install FFmpeg on Windows
+        if: runner.os == 'Windows'
+        run: choco install ffmpeg -y
+
+      - name: Install project and dev dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Cache downloaded fixtures
+        uses: actions/cache@v4
+        with:
+          path: tests/media/downloads
+          key: cli-install-${{ runner.os }}-${{ hashFiles('tests/media/manifest.json') }}
+
+      - name: Download pinned media fixtures
+        run: python tests/media/download_fixtures.py
+
+      - name: Run clean-install CLI validator
+        run: python scripts/validate_cli_install.py --json
+
   real-media-smoke:
     runs-on: ubuntu-latest
     needs: fast-checks
@@ -88,6 +140,9 @@ jobs:
       - name: Run real-media smoke coverage
         run: |
           .venv/bin/python -m pytest \
+            tests/test_cli_packaging.py \
+            tests/test_cli_installed_real.py::test_installed_cli_doctor_and_probe_real_media \
+            tests/test_cli_installed_real.py::test_installed_cli_core_video_commands_real_media \
             tests/examples/test_examples_smoke_real.py \
             tests/test_probe_real.py \
             tests/test_progress_real.py \
@@ -96,7 +151,9 @@ jobs:
   real-media-full:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
     runs-on: ubuntu-latest
-    needs: fast-checks
+    needs:
+      - fast-checks
+      - cli-install-smoke
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
