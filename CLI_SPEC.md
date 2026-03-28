@@ -55,6 +55,74 @@ The first CLI release should expose these top-level commands:
 - `normalize-audio`
 - `images`
 
+## Command Tree
+
+The CLI should keep simple one-shot jobs flat, and use subcommands only where they reduce ambiguity.
+
+### Flat Commands
+
+- `pyffmpegcore doctor`
+- `pyffmpegcore probe`
+- `pyffmpegcore convert`
+- `pyffmpegcore compress`
+- `pyffmpegcore extract-audio`
+- `pyffmpegcore thumbnail`
+- `pyffmpegcore waveform`
+- `pyffmpegcore concat`
+- `pyffmpegcore normalize-audio`
+
+### Grouped Commands
+
+- `pyffmpegcore speed video`
+- `pyffmpegcore speed audio`
+- `pyffmpegcore subtitles add`
+- `pyffmpegcore subtitles extract`
+- `pyffmpegcore subtitles burn`
+- `pyffmpegcore mix-audio mix`
+- `pyffmpegcore mix-audio concat`
+- `pyffmpegcore mix-audio mashup`
+- `pyffmpegcore mix-audio background`
+- `pyffmpegcore images convert`
+- `pyffmpegcore images optimize`
+- `pyffmpegcore images webp`
+
+## Naming Rules
+
+- Use verbs that match user intent, such as `extract-audio` instead of internal method names.
+- Use grouped commands when the same noun has clearly different operations, such as `subtitles add` versus `subtitles burn`.
+- Avoid exposing raw FFmpeg vocabulary unless users are likely to search for it directly.
+
+## Planned Input Model
+
+The CLI should prefer named arguments for important file paths:
+
+- `--input`
+- `--output`
+- `--input-dir`
+- `--output-dir`
+
+For commands that naturally take multiple source files, the CLI should use either:
+
+- repeated positional inputs for clip lists, or
+- an explicit multi-value flag such as `--inputs`
+
+Version `1` should bias toward explicit file arguments over implicit file discovery.
+
+## Example Command Shapes
+
+These examples describe the intended UX shape:
+
+```bash
+pyffmpegcore probe --input holiday.mp4
+pyffmpegcore convert --input clip.webm --output clip.mp4
+pyffmpegcore compress --input upload.mp4 --output upload-small.mp4 --crf 28
+pyffmpegcore extract-audio --input interview.mp4 --output interview.mp3
+pyffmpegcore speed video --input demo.mp4 --output demo-fast.mp4 --factor 1.5
+pyffmpegcore subtitles burn --video lesson.mp4 --subtitle english.srt --output lesson-burned.mp4
+pyffmpegcore mix-audio background --main-input voice.wav --background-input music.mp3 --output episode.mp3
+pyffmpegcore images webp --input-dir photos --output-dir photos-webp
+```
+
 ## Version 1 Non-Goals
 
 The first CLI release should not try to do all of the following:
