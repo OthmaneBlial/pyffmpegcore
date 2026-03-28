@@ -5,10 +5,8 @@ Tests for installed CLI packaging behavior.
 from __future__ import annotations
 
 import importlib.metadata
-import subprocess
-import sys
-from pathlib import Path
 
+from tests.cli_helpers import installed_cli_path, run_installed_cli
 
 def test_console_script_entry_point_is_registered():
     """
@@ -23,15 +21,10 @@ def test_installed_console_script_runs_version():
     """
     The installed console script should be invokable directly.
     """
-    script = Path(sys.executable).with_name("pyffmpegcore")
+    script = installed_cli_path()
     assert script.exists()
 
-    result = subprocess.run(
-        [str(script), "--version"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    result = run_installed_cli("--version")
 
     assert result.returncode == 0
     assert result.stdout.strip().startswith("pyffmpegcore ")

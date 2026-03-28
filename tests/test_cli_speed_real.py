@@ -55,7 +55,7 @@ def test_speed_audio_real_media(tmp_path):
     """
     media = ensure_downloaded_media()
     input_file = media["audio_mp3"]
-    output_file = tmp_path / "faster.m4a"
+    output_file = tmp_path / "faster.mp3"
 
     result = subprocess.run(
         [
@@ -78,6 +78,7 @@ def test_speed_audio_real_media(tmp_path):
 
     assert result.returncode == 0
     assert output_file.exists()
+    assert FFprobeRunner().probe(str(output_file))["audio"]["codec"] == "mp3"
     input_duration = FFprobeRunner().probe(str(input_file))["duration"]
     output_duration = FFprobeRunner().probe(str(output_file))["duration"]
     assert output_duration < input_duration

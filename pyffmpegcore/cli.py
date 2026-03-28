@@ -1611,13 +1611,9 @@ def run_audio_speed(
         str(input_path),
         "-filter:a",
         audio_filter,
-        "-c:a",
-        "aac",
-        "-b:a",
-        "192k",
-        "-y",
-        str(output_path),
     ]
+    append_audio_output_options(args, output_path, bitrate="192k")
+    args.extend(["-y", str(output_path)])
     result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).run(args)
     raise_for_completed_process_error(result)
 
