@@ -15,6 +15,7 @@ import sys
 from typing import Any, Sequence
 
 from . import __version__
+from .probe import FFprobeRunner
 
 
 EXIT_OK = 0
@@ -119,6 +120,24 @@ def build_parser() -> argparse.ArgumentParser:
         help="Print the diagnostics as JSON.",
     )
     doctor_parser.set_defaults(handler=handle_doctor)
+
+    probe_parser = subparsers.add_parser(
+        "probe",
+        parents=[common_parent],
+        help="Inspect a media file and print simplified metadata.",
+        description="Inspect a media file and print simplified metadata.",
+    )
+    probe_parser.add_argument(
+        "--input",
+        required=True,
+        help="Path to the media file to inspect.",
+    )
+    probe_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print simplified metadata as JSON.",
+    )
+    probe_parser.set_defaults(handler=handle_probe)
 
     return parser
 
@@ -319,6 +338,64 @@ def handle_doctor(args: argparse.Namespace) -> int:
         render_doctor_report(ctx, report)
 
     return exit_code
+
+
+def render_probe_report(ctx: CLIContext, metadata: dict[str, Any]) -> None:
+    """
+    Print a human-readable media summary.
+    """
+    echo(ctx, f"File: {metadata.get('filename', 'unknown')}")
+    echo(ctx, f"Format: {metadata.get('format_long_name') or metadata.get('format_name') or 'unknown'}")
+    duration = metadata.get("duration")
+    if duration is not None:
+        echo(ctx, f"Duration: {duration:.2f} seconds")
+    if metadata.get("size") is not None:
+        echo(ctx, f"Size: {metadata['size']} bytes")
+    if metadata.get("bit_rate") is not None:
+        echo(ctx, f"Bitrate: {metadata['bit_rate']} bps")
+
+    video = metadata.get("video")
+    if video:
+        echo(ctx, "Video stream:")
+        echo(ctx, f"  Codec: {video.get('codec', 'unknown')}")
+        echo(ctx, f"  Resolution: {video.get('width', '?')}x{video.get('height', '?')}")
+        if video.get("duration") is not None:
+            echo(ctx, f"  Duration: {video['duration']}")
+
+    audio = metadata.get("audio")
+    if audio:
+        echo(ctx, "Audio stream:")
+        echo(ctx, f"  Codec: {audio.get('codec', 'unknown')}")
+        if audio.get("sample_rate") is not None:
+            echo(ctx, f"  Sample rate: {audio['sample_rate']} Hz")
+        if audio.get("channels") is not None:
+            echo(ctx, f"  Channels: {audio['channels']}")
+
+    chapters = metadata.get("chapters", [])
+    if chapters:
+        echo(ctx, f"Chapters: {len(chapters)}")
+
+
+def handle_probe(args: argparse.Namespace) -> int:
+    """
+    Run the probe command.
+    """
+    ctx = build_context(args)
+    input_path = require_existing_input(args.input)
+
+    try:
+        metadata = FFprobeRunner(ffprobe_path=ctx.ffprobe_path).probe(str(input_path))
+    except RuntimeError as exc:
+        message = str(exc)
+        exit_code = EXIT_ENVIRONMENT_ERROR if "was not found" in message else EXIT_RUNTIME_ERROR
+        raise CLIError(message, exit_code=exit_code) from exc
+
+    if args.json:
+        print(json.dumps(metadata, indent=2))
+    else:
+        render_probe_report(ctx, metadata)
+
+    return EXIT_OK
 
 
 def main(argv: Sequence[str] | None = None) -> int:
