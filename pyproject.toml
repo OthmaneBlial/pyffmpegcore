@@ -40,10 +40,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/pyffmpegcore/pyffmpegcore"
-Documentation = "https://pyffmpegcore.readthedocs.io/"
-Repository = "https://github.com/pyffmpegcore/pyffmpegcore"
-Issues = "https://github.com/pyffmpegcore/pyffmpegcore/issues"
+Homepage = "https://github.com/OthmaneBlial/pyffmpegcore"
+Repository = "https://github.com/OthmaneBlial/pyffmpegcore"
+Issues = "https://github.com/OthmaneBlial/pyffmpegcore/issues"
 
 [project.scripts]
 pyffmpegcore = "pyffmpegcore.cli:main"
