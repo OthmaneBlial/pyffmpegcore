@@ -471,8 +471,10 @@ class FFmpegRunner:
         args = [
             "-i",
             input_file,
-            "-vf",
-            f"showwavespic=s={width}x{height}:colors={colors}",
+            "-filter_complex",
+            f"[0:a]showwavespic=s={width}x{height}:colors={colors}[waveform]",
+            "-map",
+            "[waveform]",
             "-frames:v",
             "1",
             "-y",
