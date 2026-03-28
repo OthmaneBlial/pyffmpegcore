@@ -14,10 +14,6 @@ PACKAGE_FILES = sorted((REPO_ROOT / "pyffmpegcore").glob("*.py"))
 TEST_FILES = sorted((REPO_ROOT / "tests").glob("test_*.py"))
 EXAMPLE_FILES = sorted((REPO_ROOT / "examples").glob("*.py"))
 
-# Phase 4 removes this quarantine once the example is repaired.
-QUARANTINED_EXAMPLES = {"adjust_video_speed.py"}
-
-
 def _load_module_from_path(path: Path) -> None:
     module_name = path.stem.replace("-", "_")
     spec = importlib.util.spec_from_file_location(module_name, path)
@@ -31,11 +27,9 @@ def test_python_sources_compile() -> None:
         py_compile.compile(str(path), doraise=True)
 
     for path in EXAMPLE_FILES:
-        if path.name not in QUARANTINED_EXAMPLES:
-            py_compile.compile(str(path), doraise=True)
+        py_compile.compile(str(path), doraise=True)
 
 
 def test_example_modules_import_cleanly() -> None:
     for path in EXAMPLE_FILES:
-        if path.name not in QUARANTINED_EXAMPLES:
-            _load_module_from_path(path)
+        _load_module_from_path(path)
