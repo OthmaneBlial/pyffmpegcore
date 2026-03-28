@@ -23,6 +23,7 @@ from .runner import FFmpegRunner, escape_path_for_concat, escape_path_for_filter
 EXIT_OK = 0
 EXIT_ENVIRONMENT_ERROR = 3
 EXIT_USAGE_ERROR = 2
+EXIT_VALIDATION_ERROR = 4
 EXIT_RUNTIME_ERROR = 5
 EXIT_PARTIAL_SUCCESS = 6
 
@@ -43,7 +44,7 @@ class CLIError(RuntimeError):
     User-facing CLI error with a stable exit code.
     """
 
-    def __init__(self, message: str, exit_code: int = EXIT_RUNTIME_ERROR):
+    def __init__(self, message: str, exit_code: int = EXIT_VALIDATION_ERROR):
         super().__init__(message)
         self.exit_code = exit_code
 
@@ -849,6 +850,15 @@ def echo_error(message: str) -> None:
     Print a user-facing error message to stderr.
     """
     print(message, file=sys.stderr)
+
+
+def runtime_error_to_cli_error(exc: RuntimeError) -> CLIError:
+    """
+    Map runtime errors from FFmpeg/FFprobe helpers into stable CLI categories.
+    """
+    message = str(exc)
+    exit_code = EXIT_ENVIRONMENT_ERROR if "was not found" in message else EXIT_RUNTIME_ERROR
+    return CLIError(message, exit_code=exit_code)
 
 
 def format_bytes(byte_count: int | None) -> str:
@@ -1996,6 +2006,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     except CLIError as exc:
         echo_error(str(exc))
         return exc.exit_code
+    except RuntimeError as exc:
+        cli_error = runtime_error_to_cli_error(exc)
+        echo_error(str(cli_error))
+        return cli_error.exit_code
+    except ValueError as exc:
+        echo_error(str(exc))
+        return EXIT_VALIDATION_ERROR
 
 
 if __name__ == "__main__":

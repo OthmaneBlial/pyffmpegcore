@@ -130,6 +130,17 @@ Higher-level frameworks can be reconsidered later only if they solve a real user
 - Help text should show at least one short example for user-facing commands.
 - The CLI should return numeric exit codes instead of relying only on exception text.
 
+## Exit Codes
+
+The CLI should keep these exit codes stable:
+
+- `0`: success
+- `2`: CLI usage error, such as invalid flags or bad parser syntax
+- `3`: environment error, such as missing `ffmpeg` or `ffprobe`
+- `4`: validation error, such as missing input paths or refused overwrite
+- `5`: processing failure after a valid command started
+- `6`: partial success for batch-style commands where some items succeeded and some failed
+
 ## Example Command Shapes
 
 These examples describe the intended UX shape:
