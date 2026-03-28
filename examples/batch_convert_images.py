@@ -62,6 +62,10 @@ def convert_image(input_path: str, output_path: str, quality: int = 80,
         if key.startswith('ffmpeg_'):  # Allow direct FFmpeg options
             args.extend([f"-{key[7:]}", str(value)])
 
+    # Treat image-to-image conversions as single-frame outputs.
+    args.extend(["-frames:v", "1"])
+    if output_ext in [".bmp", ".jpg", ".jpeg", ".png", ".tif", ".tiff"]:
+        args.extend(["-update", "1"])
     args.extend(["-y", output_path])
 
     result = ffmpeg.run(args)
@@ -152,6 +156,7 @@ def optimize_images_for_web(input_dir: str, output_dir: str, max_width: int = 19
         Dictionary with conversion statistics
     """
     print("Optimizing images for web...")
+    os.makedirs(output_dir, exist_ok=True)
 
     # Get image metadata to determine if resizing is needed
     ffprobe = FFprobeRunner()

@@ -58,8 +58,8 @@
       "filename": "sample_image_png.png",
       "kind": "image",
       "container": "png",
-      "width": 400,
-      "height": 300,
+      "width": 200,
+      "height": 150,
       "url": "https://samplelib.com/lib/preview/png/sample-boat-400x300.png",
       "sha256": "92277a08969d0a4524a382db5a2b9e3a3d7187c8236134061f60de907f7b285b"
     },
