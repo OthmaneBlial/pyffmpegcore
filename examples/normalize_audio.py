@@ -11,8 +11,34 @@ which is useful for:
 - Audio post-production
 """
 
-from pyffmpegcore import FFmpegRunner, FFprobeRunner
 import os
+
+from pyffmpegcore import FFmpegRunner, FFprobeRunner
+
+
+_AUDIO_CODEC_BY_EXTENSION = {
+    ".aac": "aac",
+    ".flac": "flac",
+    ".m4a": "aac",
+    ".mp3": "libmp3lame",
+    ".ogg": "libvorbis",
+    ".opus": "libopus",
+    ".wav": "pcm_s16le",
+}
+_BITRATELESS_AUDIO_CODECS = {"flac", "pcm_s16le"}
+
+
+def _append_audio_output_options(
+    args: list[str],
+    output_file: str,
+    bitrate: str,
+) -> None:
+    extension = os.path.splitext(output_file)[1].lower()
+    codec = _AUDIO_CODEC_BY_EXTENSION.get(extension, "aac")
+    args.extend(["-c:a", codec])
+    if bitrate and codec not in _BITRATELESS_AUDIO_CODECS:
+        args.extend(["-b:a", bitrate])
+
 
 def normalize_audio_loudnorm(audio_file: str, output_file: str,
                            target_i: float = -16.0, target_tp: float = -1.5,
@@ -38,10 +64,9 @@ def normalize_audio_loudnorm(audio_file: str, output_file: str,
     args = [
         "-i", audio_file,
         "-af", loudnorm_filter,
-        "-c:a", "aac",
-        "-b:a", "192k",
-        "-y", output_file
     ]
+    _append_audio_output_options(args, output_file, bitrate="192k")
+    args.extend(["-y", output_file])
 
     result = runner.run(args)
 
@@ -75,10 +100,9 @@ def normalize_audio_peak_level(audio_file: str, output_file: str, target_db: flo
     args = [
         "-i", audio_file,
         "-af", volume_filter,
-        "-c:a", "aac",
-        "-b:a", "192k",
-        "-y", output_file
     ]
+    _append_audio_output_options(args, output_file, bitrate="192k")
+    args.extend(["-y", output_file])
 
     result = runner.run(args)
 
@@ -113,10 +137,9 @@ def apply_compression(audio_file: str, output_file: str, threshold: float = -20.
     args = [
         "-i", audio_file,
         "-af", compand_filter,
-        "-c:a", "aac",
-        "-b:a", "192k",
-        "-y", output_file
     ]
+    _append_audio_output_options(args, output_file, bitrate="192k")
+    args.extend(["-y", output_file])
 
     result = runner.run(args)
 
@@ -147,10 +170,9 @@ def apply_limiter(audio_file: str, output_file: str, limit_db: float = -1.0) -> 
     args = [
         "-i", audio_file,
         "-af", limiter_filter,
-        "-c:a", "aac",
-        "-b:a", "192k",
-        "-y", output_file
     ]
+    _append_audio_output_options(args, output_file, bitrate="192k")
+    args.extend(["-y", output_file])
 
     result = runner.run(args)
 
@@ -187,10 +209,9 @@ def create_mastered_audio(audio_file: str, output_file: str) -> bool:
     args = [
         "-i", audio_file,
         "-af", mastering_chain,
-        "-c:a", "aac",
-        "-b:a", "256k",  # Higher bitrate for mastered audio
-        "-y", output_file
     ]
+    _append_audio_output_options(args, output_file, bitrate="256k")
+    args.extend(["-y", output_file])
 
     result = runner.run(args)
 
@@ -211,11 +232,6 @@ def analyze_audio_levels(audio_file: str) -> dict:
     Returns:
         Dictionary with audio analysis results
     """
-    runner = FFmpegRunner()
-
-    # Use astats filter to get detailed audio statistics
-    # This is a simplified version - full analysis would require parsing filter output
-
     try:
         # Get basic metadata
         ffprobe = FFprobeRunner()

@@ -11,8 +11,64 @@ which is useful for:
 - Background music mixing
 """
 
-from pyffmpegcore import FFmpegRunner, FFprobeRunner
 import os
+
+from pyffmpegcore import FFmpegRunner, FFprobeRunner
+
+
+_AUDIO_CODEC_BY_EXTENSION = {
+    ".aac": "aac",
+    ".flac": "flac",
+    ".m4a": "aac",
+    ".mp3": "libmp3lame",
+    ".ogg": "libvorbis",
+    ".opus": "libopus",
+    ".wav": "pcm_s16le",
+}
+_BITRATELESS_AUDIO_CODECS = {"flac", "pcm_s16le"}
+
+
+def _select_audio_codec(output_file: str) -> str:
+    extension = os.path.splitext(output_file)[1].lower()
+    return _AUDIO_CODEC_BY_EXTENSION.get(extension, "aac")
+
+
+def _append_audio_output_options(
+    args: list[str],
+    output_file: str,
+    bitrate: str,
+) -> None:
+    codec = _select_audio_codec(output_file)
+    args.extend(["-c:a", codec])
+    if bitrate and codec not in _BITRATELESS_AUDIO_CODECS:
+        args.extend(["-b:a", bitrate])
+
+
+def _collect_valid_audio_inputs(
+    audio_files: list,
+    volumes: list | None = None,
+) -> tuple[list[str], list[float] | None]:
+    ffprobe = FFprobeRunner()
+    valid_files = []
+    valid_volumes = [] if volumes is not None else None
+
+    for index, audio_file in enumerate(audio_files):
+        try:
+            metadata = ffprobe.probe(audio_file)
+        except Exception as exc:
+            print(f"Warning: Could not probe {audio_file}: {exc}, skipping")
+            continue
+
+        if not metadata.get("audio"):
+            print(f"Warning: {audio_file} has no audio stream, skipping")
+            continue
+
+        valid_files.append(audio_file)
+        if valid_volumes is not None:
+            valid_volumes.append(volumes[index])
+
+    return valid_files, valid_volumes
+
 
 def mix_audio_files(audio_files: list, output_file: str, volumes: list = None) -> bool:
     """
@@ -29,72 +85,53 @@ def mix_audio_files(audio_files: list, output_file: str, volumes: list = None) -
     if len(audio_files) < 2:
         print("Need at least 2 audio files to mix")
         return False
+    if volumes is not None and len(volumes) != len(audio_files):
+        print("Volumes list must match the number of input files")
+        return False
+    if volumes is not None and any(volume <= 0 for volume in volumes):
+        print("Volumes must be positive values")
+        return False
 
-    # Probe files to check for audio streams
-    ffprobe = FFprobeRunner()
-    valid_files = []
-    valid_volumes = []
-
-    for i, audio_file in enumerate(audio_files):
-        try:
-            metadata = ffprobe.probe(audio_file)
-            if metadata.get("audio"):
-                valid_files.append(audio_file)
-                if volumes:
-                    valid_volumes.append(volumes[i])
-            else:
-                print(f"Warning: {audio_file} has no audio stream, skipping")
-        except Exception as e:
-            print(f"Warning: Could not probe {audio_file}: {e}, skipping")
+    valid_files, valid_volumes = _collect_valid_audio_inputs(audio_files, volumes)
 
     if len(valid_files) < 2:
         print("Need at least 2 valid audio files to mix")
         return False
 
-    if volumes and len(valid_volumes) != len(valid_files):
-        print("Volumes list mismatch after filtering")
-        return False
-
     runner = FFmpegRunner()
-
-    # Build input arguments
     args = []
     for audio_file in valid_files:
         args.extend(["-i", audio_file])
 
-    # Build filter complex for mixing
     filter_parts = []
-
-    # Apply volume adjustments if specified
-    for i, audio_file in enumerate(valid_files):
-        vol = valid_volumes[i] if valid_volumes else 1.0
+    for i, _audio_file in enumerate(valid_files):
+        vol = valid_volumes[i] if valid_volumes is not None else 1.0
         if vol != 1.0:
-            filter_parts.append(f"[{i}:a]volume={vol}[a{i}];")
+            filter_parts.append(f"[{i}:a]volume={vol}[a{i}]")
         else:
-            filter_parts.append(f"[{i}:a][a{i}];")
+            filter_parts.append(f"[{i}:a]anull[a{i}]")
 
-    # Mix all audio streams
-    mix_inputs = "".join([f"[a{i}]" for i in range(len(valid_files))])
-    filter_parts.append(f"{mix_inputs}amix=inputs={len(valid_files)}:duration=longest[aout]")
-
-    filter_complex = "".join(filter_parts)
+    mix_inputs = "".join(f"[a{i}]" for i in range(len(valid_files)))
+    filter_parts.append(
+        f"{mix_inputs}amix=inputs={len(valid_files)}:duration=longest:normalize=0[aout]"
+    )
+    filter_complex = ";".join(filter_parts)
 
     args.extend([
         "-filter_complex", filter_complex,
         "-map", "[aout]",
-        "-c:a", "aac",  # Output codec
-        "-b:a", "192k",  # Bitrate
-        "-y", output_file
     ])
+    _append_audio_output_options(args, output_file, bitrate="192k")
+    args.extend(["-y", output_file])
 
     result = runner.run(args)
 
     if result.returncode == 0:
         print(f"Audio files mixed successfully: {output_file}")
         return True
-    else:
-        print(f"Failed to mix audio files: {result.stderr}")
-        return False
+
+    print(f"Failed to mix audio files: {result.stderr}")
+    return False
 
 def merge_audio_sequentially(audio_files: list, output_file: str) -> bool:
     """
@@ -111,41 +148,34 @@ def merge_audio_sequentially(audio_files: list, output_file: str) -> bool:
         print("Need at least 2 audio files to merge")
         return False
 
-    runner = FFmpegRunner()
+    valid_files, _ = _collect_valid_audio_inputs(audio_files)
+    if len(valid_files) < 2:
+        print("Need at least 2 valid audio files to merge")
+        return False
 
-    # Build input arguments
+    runner = FFmpegRunner()
     args = []
-    for audio_file in audio_files:
+    for audio_file in valid_files:
         args.extend(["-i", audio_file])
 
-    # Build filter complex for sequential concatenation
-    filter_parts = []
-
-    for i, audio_file in enumerate(audio_files):
-        filter_parts.append(f"[{i}:a]")
-
-    # Concatenate all audio streams sequentially
-    concat_inputs = "".join([f"[a{i}]" for i in range(len(audio_files))])
-    filter_parts.append(f"{concat_inputs}concat=n={len(audio_files)}:v=0:a=1[aout]")
-
-    filter_complex = "".join(filter_parts)
+    concat_inputs = "".join(f"[{i}:a]" for i in range(len(valid_files)))
+    filter_complex = f"{concat_inputs}concat=n={len(valid_files)}:v=0:a=1[aout]"
 
     args.extend([
         "-filter_complex", filter_complex,
         "-map", "[aout]",
-        "-c:a", "aac",
-        "-b:a", "192k",
-        "-y", output_file
     ])
+    _append_audio_output_options(args, output_file, bitrate="192k")
+    args.extend(["-y", output_file])
 
     result = runner.run(args)
 
     if result.returncode == 0:
         print(f"Audio files merged sequentially: {output_file}")
         return True
-    else:
-        print(f"Failed to merge audio files: {result.stderr}")
-        return False
+
+    print(f"Failed to merge audio files: {result.stderr}")
+    return False
 
 def create_audio_mashup(audio_files: list, output_file: str,
                        crossfade_duration: float = 2.0) -> bool:
@@ -163,45 +193,46 @@ def create_audio_mashup(audio_files: list, output_file: str,
     if len(audio_files) < 2:
         print("Need at least 2 audio files for mashup")
         return False
+    if crossfade_duration <= 0:
+        print("Crossfade duration must be positive")
+        return False
+
+    valid_files, _ = _collect_valid_audio_inputs(audio_files)
+    if len(valid_files) < 2:
+        print("Need at least 2 valid audio files for mashup")
+        return False
 
     runner = FFmpegRunner()
-
-    # Build input arguments
     args = []
-    for audio_file in audio_files:
+    for audio_file in valid_files:
         args.extend(["-i", audio_file])
 
-    # Build filter complex with crossfades
     filter_parts = []
-
-    # Process each transition with crossfade
-    for i in range(len(audio_files) - 1):
+    current_label = "[0:a]"
+    for i in range(1, len(valid_files)):
+        next_label = f"[a{i}]"
         filter_parts.append(
-            f"[{i}:a][{i+1}:a]acrossfade=d={crossfade_duration}:c1=tri:c2=tri[a{i}];"
+            f"{current_label}[{i}:a]acrossfade="
+            f"d={crossfade_duration}:c1=tri:c2=tri{next_label}"
         )
-
-    # Concatenate all segments
-    concat_inputs = "".join([f"[a{i}]" for i in range(len(audio_files) - 1)])
-    filter_parts.append(f"{concat_inputs}concat=n={len(audio_files)-1}:v=0:a=1[aout]")
-
-    filter_complex = "".join(filter_parts)
+        current_label = next_label
+    filter_complex = ";".join(filter_parts)
 
     args.extend([
         "-filter_complex", filter_complex,
-        "-map", "[aout]",
-        "-c:a", "aac",
-        "-b:a", "256k",  # Higher bitrate for mashups
-        "-y", output_file
+        "-map", current_label,
     ])
+    _append_audio_output_options(args, output_file, bitrate="256k")
+    args.extend(["-y", output_file])
 
     result = runner.run(args)
 
     if result.returncode == 0:
         print(f"Audio mashup created: {output_file}")
         return True
-    else:
-        print(f"Failed to create audio mashup: {result.stderr}")
-        return False
+
+    print(f"Failed to create audio mashup: {result.stderr}")
+    return False
 
 def add_background_music(main_audio: str, background_audio: str, output_file: str,
                         bg_volume: float = 0.3) -> bool:
@@ -217,29 +248,34 @@ def add_background_music(main_audio: str, background_audio: str, output_file: st
     Returns:
         True if successful, False otherwise
     """
+    valid_files, _ = _collect_valid_audio_inputs([main_audio, background_audio])
+    if len(valid_files) != 2:
+        print("Both inputs must contain audio streams")
+        return False
+
     runner = FFmpegRunner()
+    args = ["-i", valid_files[0], "-i", valid_files[1]]
 
-    args = ["-i", main_audio, "-i", background_audio]
-
-    # Mix with background at lower volume
-    filter_complex = f"[1:a]volume={bg_volume}[bg];[0:a][bg]amix=inputs=2:duration=first[aout]"
+    filter_complex = (
+        f"[1:a]volume={bg_volume}[bg];"
+        "[0:a][bg]amix=inputs=2:duration=first:dropout_transition=0[aout]"
+    )
 
     args.extend([
         "-filter_complex", filter_complex,
         "-map", "[aout]",
-        "-c:a", "aac",
-        "-b:a", "192k",
-        "-y", output_file
     ])
+    _append_audio_output_options(args, output_file, bitrate="192k")
+    args.extend(["-y", output_file])
 
     result = runner.run(args)
 
     if result.returncode == 0:
         print(f"Background music added: {output_file}")
         return True
-    else:
-        print(f"Failed to add background music: {result.stderr}")
-        return False
+
+    print(f"Failed to add background music: {result.stderr}")
+    return False
 
 def create_stereo_from_mono(left_audio: str, right_audio: str, output_file: str) -> bool:
     """
@@ -263,19 +299,18 @@ def create_stereo_from_mono(left_audio: str, right_audio: str, output_file: str)
     args.extend([
         "-filter_complex", filter_complex,
         "-map", "[aout]",
-        "-c:a", "aac",
-        "-b:a", "192k",
-        "-y", output_file
     ])
+    _append_audio_output_options(args, output_file, bitrate="192k")
+    args.extend(["-y", output_file])
 
     result = runner.run(args)
 
     if result.returncode == 0:
         print(f"Stereo audio created: {output_file}")
         return True
-    else:
-        print(f"Failed to create stereo audio: {result.stderr}")
-        return False
+
+    print(f"Failed to create stereo audio: {result.stderr}")
+    return False
 
 def get_audio_info(audio_files: list) -> list:
     """
