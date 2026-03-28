@@ -26,6 +26,10 @@ As of March 28, 2026, the repository is validated locally with:
 
 Linux is the reference environment used for the current validation runs. The repo also contains path-handling coverage for spaces and apostrophes in important FFmpeg workflows.
 
+Current caveat:
+
+- Linux is the only environment exercised end to end in local validation so far. Windows-style filter-path escaping is unit-tested, and path-heavy workflows such as concat and burned subtitles are covered with spaces and apostrophes.
+
 ## Installation
 
 ```bash
