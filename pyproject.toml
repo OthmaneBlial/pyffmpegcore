@@ -45,6 +45,9 @@ Documentation = "https://pyffmpegcore.readthedocs.io/"
 Repository = "https://github.com/pyffmpegcore/pyffmpegcore"
 Issues = "https://github.com/pyffmpegcore/pyffmpegcore/issues"
 
+[project.scripts]
+pyffmpegcore = "pyffmpegcore.cli:main"
+
 [tool.setuptools]
 packages = ["pyffmpegcore"]
 
