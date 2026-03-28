@@ -23,13 +23,13 @@ class FFprobeRunner:
 
     def probe(self, input_file: str) -> Dict[str, Any]:
         """
-        Extract metadata from a media file.
+        Extract simplified metadata from a media file.
 
         Args:
             input_file: Path to the media file
 
         Returns:
-            Dictionary containing metadata
+            Simplified metadata dictionary derived from FFprobe JSON
         """
         cmd = [
             self.ffprobe_path,

@@ -82,28 +82,38 @@ Main class for running FFmpeg commands.
 - `resize(input_file, output_file, width, height, progress_callback=None, **kwargs)`: Resize video
 - `compress(input_file, output_file, target_size_kb=None, crf=23, two_pass=True, progress_callback=None, **kwargs)`: Compress video
 - `extract_audio(input_file, output_file, progress_callback=None, **kwargs)`: Extract audio track
+- `extract_thumbnail(input_file, output_file, timestamp="00:00:01", width=320, height=None, quality=2)`: Extract a single frame
+- `adjust_speed(input_file, output_file, speed_factor=1.0, audio_pitch=True)`: Change playback speed
+- `generate_waveform(input_file, output_file, width=800, height=200, colors="white")`: Generate a waveform image
 - `run(args, progress_callback=None)`: Run custom FFmpeg command
+- `run_with_progress(args, show_percentage=True)`: Run custom FFmpeg command with console progress output
+- `get_version()`: Return the FFmpeg version banner
 
 #### Common kwargs
 
 - `video_codec`: Video codec (e.g., "libx264", "libx265")
-- `audio_codec`: Audio codec (e.g., "aac", "mp3")
+- `audio_codec`: Audio codec (e.g., "aac", "libmp3lame", "copy")
 - `video_bitrate`: Video bitrate (e.g., "1000k")
 - `audio_bitrate`: Audio bitrate (e.g., "128k")
 - `preset`: Encoding speed vs compression (e.g., "ultrafast", "medium", "slow")
+- `pix_fmt`: Pixel format for encoded video outputs
+- `threads`: FFmpeg thread count override
+- `movflags`: MP4/M4V muxer flags. Defaults to `+faststart`; set `movflags=None` to disable
+- `sample_rate`: Output audio sample rate for `extract_audio`
+- `channels`: Output audio channel count for `extract_audio`
 
 #### Automatic features
 
 - **Pixel format**: Automatically sets `yuv420p` for video compatibility (override with `pix_fmt` parameter)
 - **Fast start**: Adds `movflags=+faststart` for MP4 files to enable web streaming (set `movflags=None` to disable)
 - **Progress tracking**: Uses robust `-progress pipe:1` for reliable progress updates when callback provided
+- **Two-pass encoding**: Automatically used when `target_size_kb` is specified
+
 ## Windows Notes
 
 - **Path quoting in concat files**: When using `concatenate_videos_basic`, ensure file paths in the concat file are properly escaped. Use forward slashes or double backslashes.
 - **Subtitles path escaping**: For `burn_subtitles`, paths with backslashes need escaping (e.g., `C:\\path\\to\\subs.srt`).
 - **Filter complex quoting**: Complex filter strings may require careful quoting. Use double quotes for paths and single quotes for filter parameters.
-
-- **Two-pass encoding**: Automatically used when `target_size_kb` is specified
 
 ### FFprobeRunner
 
@@ -111,17 +121,23 @@ Class for extracting metadata using FFprobe.
 
 #### Methods
 
-- `probe(input_file)`: Get full metadata dictionary
+- `probe(input_file)`: Get a simplified metadata dictionary
 - `get_duration(input_file)`: Get duration in seconds
 - `get_resolution(input_file)`: Get video resolution as (width, height)
 - `get_bitrate(input_file)`: Get bitrate in bps
+- `get_version()`: Return the FFprobe version banner
 
 #### Metadata Structure
+
+`probe()` returns a simplified structure built from FFprobe JSON. The `streams`
+list is not the raw FFprobe payload; it contains the most commonly used fields
+only.
 
 ```python
 {
     "filename": "video.mp4",
     "format_name": "mp4",
+    "format_long_name": "QuickTime / MOV",
     "duration": 120.5,
     "size": 15728640,
     "bit_rate": 1048576,
@@ -129,6 +145,7 @@ Class for extracting metadata using FFprobe.
         "codec": "h264",
         "width": 1920,
         "height": 1080,
+        "duration": 120.5,
         "bit_rate": 1000000
     },
     "audio": {
@@ -137,7 +154,7 @@ Class for extracting metadata using FFprobe.
         "channels": 2,
         "bit_rate": 128000
     },
-    "streams": [...],  # Full stream details
+    "streams": [...],  # Simplified per-stream dictionaries
     "chapters": [...]  # Chapter information
 }
 ```
