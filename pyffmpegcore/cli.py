@@ -406,6 +406,56 @@ def build_parser() -> argparse.ArgumentParser:
     )
     waveform_parser.set_defaults(handler=handle_waveform)
 
+    speed_parser = subparsers.add_parser(
+        "speed",
+        parents=[common_parent],
+        help="Change playback speed for video or audio media.",
+        description="Change playback speed for video or audio media.",
+    )
+    speed_subparsers = speed_parser.add_subparsers(dest="speed_command", metavar="SPEED_COMMAND")
+
+    speed_video_parser = speed_subparsers.add_parser(
+        "video",
+        parents=[common_parent],
+        help="Change playback speed for a video file.",
+        description="Change playback speed for a video file.",
+    )
+    speed_video_parser.add_argument("--input", required=True, help="Path to the input video file.")
+    speed_video_parser.add_argument("--output", required=True, help="Path to the output video file.")
+    speed_video_parser.add_argument(
+        "--factor",
+        required=True,
+        type=float,
+        help="Playback speed factor, for example 1.5 or 0.5.",
+    )
+    speed_video_parser.add_argument(
+        "--no-pitch-preserve",
+        action="store_true",
+        help="Do not preserve audio pitch when changing playback speed.",
+    )
+    speed_video_parser.set_defaults(handler=handle_speed_video)
+
+    speed_audio_parser = speed_subparsers.add_parser(
+        "audio",
+        parents=[common_parent],
+        help="Change playback speed for an audio file.",
+        description="Change playback speed for an audio file.",
+    )
+    speed_audio_parser.add_argument("--input", required=True, help="Path to the input audio file.")
+    speed_audio_parser.add_argument("--output", required=True, help="Path to the output audio file.")
+    speed_audio_parser.add_argument(
+        "--factor",
+        required=True,
+        type=float,
+        help="Playback speed factor, for example 1.25 or 0.8.",
+    )
+    speed_audio_parser.add_argument(
+        "--no-pitch-preserve",
+        action="store_true",
+        help="Do not preserve pitch when changing playback speed.",
+    )
+    speed_audio_parser.set_defaults(handler=handle_speed_audio)
+
     return parser
 
 
@@ -882,6 +932,156 @@ def handle_waveform(args: argparse.Namespace) -> int:
         raise CLIError(message, exit_code=exit_code) from exc
 
     raise_for_completed_process_error(result)
+    summarize_output_file(ctx, output_path)
+    return EXIT_OK
+
+
+def build_atempo_chain(speed_factor: float) -> str:
+    """
+    Build an atempo filter chain for arbitrary positive speed values.
+    """
+    if speed_factor <= 0:
+        raise CLIError("Speed factor must be positive.")
+
+    if 0.5 <= speed_factor <= 2.0:
+        return f"atempo={speed_factor}"
+
+    factors = []
+    current = speed_factor
+    while current > 2.0:
+        factors.append(2.0)
+        current /= 2.0
+    while current < 0.5:
+        factors.append(0.5)
+        current /= 0.5
+    if current != 1.0:
+        factors.append(current)
+    return ",".join(f"atempo={factor}" for factor in factors)
+
+
+def run_video_speed(
+    ctx: CLIContext,
+    input_path: Path,
+    output_path: Path,
+    factor: float,
+    preserve_pitch: bool,
+) -> None:
+    """
+    Change playback speed for a video file, preserving audio when present.
+    """
+    if factor <= 0:
+        raise CLIError("Speed factor must be positive.")
+
+    try:
+        metadata = FFprobeRunner(ffprobe_path=ctx.ffprobe_path).probe(str(input_path))
+    except RuntimeError as exc:
+        message = str(exc)
+        exit_code = EXIT_ENVIRONMENT_ERROR if "was not found" in message else EXIT_RUNTIME_ERROR
+        raise CLIError(message, exit_code=exit_code) from exc
+
+    has_audio = bool(metadata.get("audio"))
+    args = ["-i", str(input_path)]
+
+    if has_audio:
+        if preserve_pitch:
+            audio_filter = build_atempo_chain(factor)
+        else:
+            sample_rate = metadata.get("audio", {}).get("sample_rate", 44100)
+            audio_filter = f"asetrate={sample_rate}*{factor},aresample={sample_rate}"
+
+        filter_complex = (
+            f"[0:v]setpts=(PTS-STARTPTS)/{factor}[v];"
+            f"[0:a]{audio_filter}[a]"
+        )
+        args.extend(["-filter_complex", filter_complex, "-map", "[v]", "-map", "[a]"])
+    else:
+        args.extend(["-vf", f"setpts=(PTS-STARTPTS)/{factor}"])
+
+    args.extend(["-c:v", "libx264"])
+    if has_audio:
+        args.extend(["-c:a", "aac"])
+    args.extend(["-y", str(output_path)])
+
+    result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).run(args)
+    raise_for_completed_process_error(result)
+
+
+def run_audio_speed(
+    ctx: CLIContext,
+    input_path: Path,
+    output_path: Path,
+    factor: float,
+    preserve_pitch: bool,
+) -> None:
+    """
+    Change playback speed for an audio file.
+    """
+    if factor <= 0:
+        raise CLIError("Speed factor must be positive.")
+
+    try:
+        metadata = FFprobeRunner(ffprobe_path=ctx.ffprobe_path).probe(str(input_path))
+    except RuntimeError as exc:
+        message = str(exc)
+        exit_code = EXIT_ENVIRONMENT_ERROR if "was not found" in message else EXIT_RUNTIME_ERROR
+        raise CLIError(message, exit_code=exit_code) from exc
+
+    sample_rate = metadata.get("audio", {}).get("sample_rate", 44100)
+    if preserve_pitch:
+        audio_filter = build_atempo_chain(factor)
+    else:
+        audio_filter = f"asetrate={sample_rate}*{factor},aresample={sample_rate}"
+
+    args = [
+        "-i",
+        str(input_path),
+        "-filter:a",
+        audio_filter,
+        "-c:a",
+        "aac",
+        "-b:a",
+        "192k",
+        "-y",
+        str(output_path),
+    ]
+    result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).run(args)
+    raise_for_completed_process_error(result)
+
+
+def handle_speed_video(args: argparse.Namespace) -> int:
+    """
+    Run the speed video subcommand.
+    """
+    ctx = build_context(args)
+    input_path = require_existing_input(args.input)
+    output_path = prepare_output_path(args.output, force=ctx.force)
+
+    run_video_speed(
+        ctx,
+        input_path,
+        output_path,
+        args.factor,
+        preserve_pitch=not args.no_pitch_preserve,
+    )
+    summarize_output_file(ctx, output_path)
+    return EXIT_OK
+
+
+def handle_speed_audio(args: argparse.Namespace) -> int:
+    """
+    Run the speed audio subcommand.
+    """
+    ctx = build_context(args)
+    input_path = require_existing_input(args.input)
+    output_path = prepare_output_path(args.output, force=ctx.force)
+
+    run_audio_speed(
+        ctx,
+        input_path,
+        output_path,
+        args.factor,
+        preserve_pitch=not args.no_pitch_preserve,
+    )
     summarize_output_file(ctx, output_path)
     return EXIT_OK
 
