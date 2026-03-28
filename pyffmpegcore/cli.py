@@ -371,6 +371,41 @@ def build_parser() -> argparse.ArgumentParser:
     )
     thumbnail_parser.set_defaults(handler=handle_thumbnail)
 
+    waveform_parser = subparsers.add_parser(
+        "waveform",
+        parents=[common_parent],
+        help="Generate a waveform image from audio or video-with-audio.",
+        description="Generate a waveform image from audio or video-with-audio.",
+    )
+    waveform_parser.add_argument(
+        "--input",
+        required=True,
+        help="Path to the input audio or video file.",
+    )
+    waveform_parser.add_argument(
+        "--output",
+        required=True,
+        help="Path to the waveform image output.",
+    )
+    waveform_parser.add_argument(
+        "--width",
+        type=int,
+        default=800,
+        help="Waveform width in pixels. Defaults to %(default)s.",
+    )
+    waveform_parser.add_argument(
+        "--height",
+        type=int,
+        default=200,
+        help="Waveform height in pixels. Defaults to %(default)s.",
+    )
+    waveform_parser.add_argument(
+        "--colors",
+        default="white",
+        help="Waveform color definition. Defaults to %(default)s.",
+    )
+    waveform_parser.set_defaults(handler=handle_waveform)
+
     return parser
 
 
@@ -814,6 +849,32 @@ def handle_thumbnail(args: argparse.Namespace) -> int:
             width=args.width,
             height=args.height,
             quality=args.quality,
+        )
+    except (RuntimeError, ValueError) as exc:
+        message = str(exc)
+        exit_code = EXIT_ENVIRONMENT_ERROR if "was not found" in message else EXIT_RUNTIME_ERROR
+        raise CLIError(message, exit_code=exit_code) from exc
+
+    raise_for_completed_process_error(result)
+    summarize_output_file(ctx, output_path)
+    return EXIT_OK
+
+
+def handle_waveform(args: argparse.Namespace) -> int:
+    """
+    Run the waveform command.
+    """
+    ctx = build_context(args)
+    input_path = require_existing_input(args.input)
+    output_path = prepare_output_path(args.output, force=ctx.force)
+
+    try:
+        result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).generate_waveform(
+            str(input_path),
+            str(output_path),
+            width=args.width,
+            height=args.height,
+            colors=args.colors,
         )
     except (RuntimeError, ValueError) as exc:
         message = str(exc)
