@@ -4,39 +4,11 @@ Real-media tests for FFmpegRunner.convert().
 
 from __future__ import annotations
 
-import struct
-from pathlib import Path
-
 import pytest
 
 from pyffmpegcore import FFmpegRunner, FFprobeRunner
 from tests.media_utils import ensure_downloaded_media
-
-
-def _top_level_mp4_atoms(path: Path) -> list[str]:
-    atoms = []
-    with path.open("rb") as handle:
-        while True:
-            header = handle.read(8)
-            if len(header) < 8:
-                break
-
-            size, atom_type = struct.unpack(">I4s", header)
-            atom_name = atom_type.decode("ascii", errors="replace")
-            atoms.append(atom_name)
-
-            if size == 0:
-                break
-            if size == 1:
-                largesize = handle.read(8)
-                if len(largesize) < 8:
-                    break
-                size = struct.unpack(">Q", largesize)[0]
-                handle.seek(size - 16, 1)
-            else:
-                handle.seek(size - 8, 1)
-
-    return atoms
+from tests.mp4_utils import top_level_mp4_atoms
 
 
 @pytest.mark.real_media
@@ -61,7 +33,7 @@ def test_convert_mov_to_mp4_real_fixture(tmp_path):
     assert metadata["video"]["width"] == 640
     assert metadata["video"]["height"] == 360
 
-    atoms = _top_level_mp4_atoms(output_file)
+    atoms = top_level_mp4_atoms(output_file)
     assert "moov" in atoms and "mdat" in atoms
     assert atoms.index("moov") < atoms.index("mdat")
 
