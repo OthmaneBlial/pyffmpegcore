@@ -25,6 +25,17 @@ EXIT_ENVIRONMENT_ERROR = 3
 EXIT_USAGE_ERROR = 2
 EXIT_RUNTIME_ERROR = 5
 
+_AUDIO_CODEC_BY_EXTENSION = {
+    ".aac": "aac",
+    ".flac": "flac",
+    ".m4a": "aac",
+    ".mp3": "libmp3lame",
+    ".ogg": "libvorbis",
+    ".opus": "libopus",
+    ".wav": "pcm_s16le",
+}
+_BITRATELESS_AUDIO_CODECS = {"flac", "pcm_s16le"}
+
 
 class CLIError(RuntimeError):
     """
@@ -556,6 +567,110 @@ def build_parser() -> argparse.ArgumentParser:
         help="ASS/FFmpeg subtitle color value. Defaults to %(default)s.",
     )
     subtitles_burn_parser.set_defaults(handler=handle_subtitles_burn)
+
+    mix_audio_parser = subparsers.add_parser(
+        "mix-audio",
+        parents=[common_parent],
+        help="Mix, concatenate, mash up, or layer multiple audio sources.",
+        description="Mix, concatenate, mash up, or layer multiple audio sources.",
+    )
+    mix_audio_subparsers = mix_audio_parser.add_subparsers(
+        dest="mix_audio_command",
+        metavar="MIX_AUDIO_COMMAND",
+    )
+
+    mix_audio_mix_parser = mix_audio_subparsers.add_parser(
+        "mix",
+        parents=[common_parent],
+        help="Mix multiple audio sources together.",
+        description="Mix multiple audio sources together.",
+    )
+    mix_audio_mix_parser.add_argument("--inputs", nargs="+", required=True, help="Audio input paths.")
+    mix_audio_mix_parser.add_argument("--output", required=True, help="Mixed audio output path.")
+    mix_audio_mix_parser.add_argument(
+        "--volumes",
+        nargs="*",
+        type=float,
+        help="Optional per-input volume multipliers.",
+    )
+    mix_audio_mix_parser.set_defaults(handler=handle_mix_audio_mix)
+
+    mix_audio_concat_parser = mix_audio_subparsers.add_parser(
+        "concat",
+        parents=[common_parent],
+        help="Concatenate audio files one after another.",
+        description="Concatenate audio files one after another.",
+    )
+    mix_audio_concat_parser.add_argument("--inputs", nargs="+", required=True, help="Audio input paths.")
+    mix_audio_concat_parser.add_argument("--output", required=True, help="Merged audio output path.")
+    mix_audio_concat_parser.set_defaults(handler=handle_mix_audio_concat)
+
+    mix_audio_mashup_parser = mix_audio_subparsers.add_parser(
+        "mashup",
+        parents=[common_parent],
+        help="Crossfade multiple audio files into a mashup.",
+        description="Crossfade multiple audio files into a mashup.",
+    )
+    mix_audio_mashup_parser.add_argument("--inputs", nargs="+", required=True, help="Audio input paths.")
+    mix_audio_mashup_parser.add_argument("--output", required=True, help="Mashup audio output path.")
+    mix_audio_mashup_parser.add_argument(
+        "--crossfade-duration",
+        type=float,
+        default=2.0,
+        help="Crossfade duration in seconds. Defaults to %(default)s.",
+    )
+    mix_audio_mashup_parser.set_defaults(handler=handle_mix_audio_mashup)
+
+    mix_audio_background_parser = mix_audio_subparsers.add_parser(
+        "background",
+        parents=[common_parent],
+        help="Layer background music under a main audio track.",
+        description="Layer background music under a main audio track.",
+    )
+    mix_audio_background_parser.add_argument("--main-input", required=True, help="Main audio source.")
+    mix_audio_background_parser.add_argument("--background-input", required=True, help="Background audio source.")
+    mix_audio_background_parser.add_argument("--output", required=True, help="Mixed audio output path.")
+    mix_audio_background_parser.add_argument(
+        "--bg-volume",
+        type=float,
+        default=0.3,
+        help="Background volume multiplier. Defaults to %(default)s.",
+    )
+    mix_audio_background_parser.set_defaults(handler=handle_mix_audio_background)
+
+    normalize_audio_parser = subparsers.add_parser(
+        "normalize-audio",
+        parents=[common_parent],
+        help="Normalize or master an audio file.",
+        description="Normalize or master an audio file.",
+    )
+    normalize_audio_parser.add_argument("--input", required=True, help="Input audio or video file.")
+    normalize_audio_parser.add_argument("--output", required=True, help="Output audio file.")
+    normalize_audio_parser.add_argument(
+        "--method",
+        choices=["loudnorm", "master"],
+        default="loudnorm",
+        help="Normalization method. Defaults to %(default)s.",
+    )
+    normalize_audio_parser.add_argument(
+        "--target-i",
+        type=float,
+        default=-16.0,
+        help="Target integrated loudness in LUFS for loudnorm mode.",
+    )
+    normalize_audio_parser.add_argument(
+        "--target-tp",
+        type=float,
+        default=-1.5,
+        help="Target true peak in dBTP for loudnorm mode.",
+    )
+    normalize_audio_parser.add_argument(
+        "--target-lra",
+        type=float,
+        default=11.0,
+        help="Target loudness range in LU for loudnorm mode.",
+    )
+    normalize_audio_parser.set_defaults(handler=handle_normalize_audio)
 
     return parser
 
@@ -1401,6 +1516,208 @@ def handle_subtitles_burn(args: argparse.Namespace) -> int:
         if temporary_subtitle_file and temporary_subtitle_file.exists():
             temporary_subtitle_file.unlink()
 
+    raise_for_completed_process_error(result)
+    summarize_output_file(ctx, output_path)
+    return EXIT_OK
+
+
+def select_audio_codec(output_path: Path) -> str:
+    """
+    Pick a sensible audio codec based on the output extension.
+    """
+    return _AUDIO_CODEC_BY_EXTENSION.get(output_path.suffix.lower(), "aac")
+
+
+def append_audio_output_options(args: list[str], output_path: Path, bitrate: str) -> None:
+    """
+    Add audio codec and bitrate options based on the chosen output extension.
+    """
+    codec = select_audio_codec(output_path)
+    args.extend(["-c:a", codec])
+    if bitrate and codec not in _BITRATELESS_AUDIO_CODECS:
+        args.extend(["-b:a", bitrate])
+
+
+def collect_audio_inputs(ctx: CLIContext, input_values: list[str]) -> list[Path]:
+    """
+    Validate that the provided input files exist and contain audio.
+    """
+    if len(input_values) < 2:
+        raise CLIError("At least two audio inputs are required.")
+
+    valid_inputs: list[Path] = []
+    for value in input_values:
+        path = require_existing_input(value, option_name="--inputs")
+        metadata = FFprobeRunner(ffprobe_path=ctx.ffprobe_path).probe(str(path))
+        if not metadata.get("audio"):
+            raise CLIError(f"Input does not contain audio: {path}")
+        valid_inputs.append(path)
+
+    return valid_inputs
+
+
+def handle_mix_audio_mix(args: argparse.Namespace) -> int:
+    """
+    Mix multiple audio sources together.
+    """
+    ctx = build_context(args)
+    input_paths = collect_audio_inputs(ctx, args.inputs)
+    output_path = prepare_output_path(args.output, force=ctx.force)
+
+    if args.volumes is not None and len(args.volumes) not in (0, len(input_paths)):
+        raise CLIError("--volumes must match the number of --inputs.")
+
+    volumes = args.volumes or [1.0] * len(input_paths)
+    filter_parts = []
+    ffmpeg_args: list[str] = []
+    for input_path in input_paths:
+        ffmpeg_args.extend(["-i", str(input_path)])
+
+    for index, volume in enumerate(volumes):
+        if volume <= 0:
+            raise CLIError("Volume values must be positive.")
+        if volume != 1.0:
+            filter_parts.append(f"[{index}:a]volume={volume}[a{index}]")
+        else:
+            filter_parts.append(f"[{index}:a]anull[a{index}]")
+
+    mix_inputs = "".join(f"[a{index}]" for index in range(len(input_paths)))
+    filter_parts.append(
+        f"{mix_inputs}amix=inputs={len(input_paths)}:duration=longest:normalize=0[aout]"
+    )
+    ffmpeg_args.extend(["-filter_complex", ";".join(filter_parts), "-map", "[aout]"])
+    append_audio_output_options(ffmpeg_args, output_path, bitrate="192k")
+    ffmpeg_args.extend(["-y", str(output_path)])
+
+    result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).run(ffmpeg_args)
+    raise_for_completed_process_error(result)
+    summarize_output_file(ctx, output_path)
+    return EXIT_OK
+
+
+def handle_mix_audio_concat(args: argparse.Namespace) -> int:
+    """
+    Concatenate audio sources sequentially.
+    """
+    ctx = build_context(args)
+    input_paths = collect_audio_inputs(ctx, args.inputs)
+    output_path = prepare_output_path(args.output, force=ctx.force)
+
+    ffmpeg_args: list[str] = []
+    for input_path in input_paths:
+        ffmpeg_args.extend(["-i", str(input_path)])
+    concat_inputs = "".join(f"[{index}:a]" for index in range(len(input_paths)))
+    ffmpeg_args.extend(
+        [
+            "-filter_complex",
+            f"{concat_inputs}concat=n={len(input_paths)}:v=0:a=1[aout]",
+            "-map",
+            "[aout]",
+        ]
+    )
+    append_audio_output_options(ffmpeg_args, output_path, bitrate="192k")
+    ffmpeg_args.extend(["-y", str(output_path)])
+
+    result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).run(ffmpeg_args)
+    raise_for_completed_process_error(result)
+    summarize_output_file(ctx, output_path)
+    return EXIT_OK
+
+
+def handle_mix_audio_mashup(args: argparse.Namespace) -> int:
+    """
+    Create a crossfaded mashup from multiple audio sources.
+    """
+    ctx = build_context(args)
+    input_paths = collect_audio_inputs(ctx, args.inputs)
+    output_path = prepare_output_path(args.output, force=ctx.force)
+
+    if args.crossfade_duration <= 0:
+        raise CLIError("--crossfade-duration must be positive.")
+
+    ffmpeg_args: list[str] = []
+    for input_path in input_paths:
+        ffmpeg_args.extend(["-i", str(input_path)])
+
+    filter_parts = []
+    current_label = "[0:a]"
+    for index in range(1, len(input_paths)):
+        next_label = f"[a{index}]"
+        filter_parts.append(
+            f"{current_label}[{index}:a]acrossfade="
+            f"d={args.crossfade_duration}:c1=tri:c2=tri{next_label}"
+        )
+        current_label = next_label
+    ffmpeg_args.extend(["-filter_complex", ";".join(filter_parts), "-map", current_label])
+    append_audio_output_options(ffmpeg_args, output_path, bitrate="256k")
+    ffmpeg_args.extend(["-y", str(output_path)])
+
+    result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).run(ffmpeg_args)
+    raise_for_completed_process_error(result)
+    summarize_output_file(ctx, output_path)
+    return EXIT_OK
+
+
+def handle_mix_audio_background(args: argparse.Namespace) -> int:
+    """
+    Layer background audio under a main audio source.
+    """
+    ctx = build_context(args)
+    main_input = require_existing_input(args.main_input, option_name="--main-input")
+    background_input = require_existing_input(args.background_input, option_name="--background-input")
+    output_path = prepare_output_path(args.output, force=ctx.force)
+
+    for label, path in (("main", main_input), ("background", background_input)):
+        metadata = FFprobeRunner(ffprobe_path=ctx.ffprobe_path).probe(str(path))
+        if not metadata.get("audio"):
+            raise CLIError(f"{label.capitalize()} input does not contain audio: {path}")
+
+    if args.bg_volume <= 0:
+        raise CLIError("--bg-volume must be positive.")
+
+    ffmpeg_args = [
+        "-i",
+        str(main_input),
+        "-i",
+        str(background_input),
+        "-filter_complex",
+        f"[1:a]volume={args.bg_volume}[bg];[0:a][bg]amix=inputs=2:duration=first:dropout_transition=0[aout]",
+        "-map",
+        "[aout]",
+    ]
+    append_audio_output_options(ffmpeg_args, output_path, bitrate="192k")
+    ffmpeg_args.extend(["-y", str(output_path)])
+
+    result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).run(ffmpeg_args)
+    raise_for_completed_process_error(result)
+    summarize_output_file(ctx, output_path)
+    return EXIT_OK
+
+
+def handle_normalize_audio(args: argparse.Namespace) -> int:
+    """
+    Normalize or master an audio track.
+    """
+    ctx = build_context(args)
+    input_path = require_existing_input(args.input)
+    output_path = prepare_output_path(args.output, force=ctx.force)
+
+    if args.method == "loudnorm":
+        filter_chain = f"loudnorm=I={args.target_i}:TP={args.target_tp}:LRA={args.target_lra}"
+        bitrate = "192k"
+    else:
+        filter_chain = (
+            "loudnorm=I=-16:TP=-1.5:LRA=11,"
+            "compand=attacks=0.0001:decays=0.2:points=-70/-70|-60/-20|-20/-20|20/20,"
+            "alimiter=limit=-1dB:level=disabled"
+        )
+        bitrate = "256k"
+
+    ffmpeg_args = ["-i", str(input_path), "-af", filter_chain]
+    append_audio_output_options(ffmpeg_args, output_path, bitrate=bitrate)
+    ffmpeg_args.extend(["-y", str(output_path)])
+
+    result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).run(ffmpeg_args)
     raise_for_completed_process_error(result)
     summarize_output_file(ctx, output_path)
     return EXIT_OK
