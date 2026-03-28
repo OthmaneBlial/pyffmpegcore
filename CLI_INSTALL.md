@@ -20,6 +20,22 @@ pyffmpegcore --version
 pyffmpegcore doctor
 ```
 
+## Install With One Command On Linux Or macOS
+
+If you want a single bootstrap command from a repo checkout:
+
+```bash
+./install.sh
+```
+
+Useful variants:
+
+```bash
+./install.sh --method pipx
+./install.sh --method pip
+PYFFMPEGCORE_PACKAGE_SPEC=. ./install.sh --method pip
+```
+
 ## Install With `pip`
 
 If you prefer a user-level Python install:
@@ -60,3 +76,15 @@ You should see:
 - whether `ffprobe` was found
 
 If either binary is missing, install it first and rerun `pyffmpegcore doctor`.
+
+## Windows Installer
+
+Windows has its own first-class installer path. Do not use the shell script there.
+
+From PowerShell:
+
+```powershell
+.\install.ps1
+.\install.ps1 -Method Pipx
+.\install.ps1 -Method Pip
+```
