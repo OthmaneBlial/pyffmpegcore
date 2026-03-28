@@ -209,25 +209,27 @@ See the `examples/` directory for complete working examples:
 
 ## Development
 
-### Setup
+The maintained local workflow is documented in [DEVELOPMENT.md](DEVELOPMENT.md).
+
+### Quick Setup
 
 ```bash
 git clone https://github.com/pyffmpegcore/pyffmpegcore.git
 cd pyffmpegcore
-pip install -e .
+python -m venv .venv
+. .venv/bin/activate
+pip install -e .[dev]
 ```
 
 ### Testing
 
 ```bash
-pip install pytest
-pytest
+python -m pytest
 ```
 
 ### Building
 
 ```bash
-pip install build
 python -m build
 ```
 
