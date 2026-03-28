@@ -67,6 +67,10 @@ class ProgressTracker:
         # Wait for progress thread to finish
         progress_thread.join(timeout=1.0)
 
+        if process.returncode == 0 and self.progress.get("status") != "end":
+            self.progress["status"] = "end"
+            self.callback(self.progress.copy())
+
         return subprocess.CompletedProcess(
             cmd, process.returncode, "", stderr
         )
@@ -93,6 +97,10 @@ class ProgressTracker:
 
         # Wait for stderr thread to finish
         stderr_thread.join(timeout=1.0)
+
+        if process.returncode == 0 and self.progress.get("status") != "end":
+            self.progress["status"] = "end"
+            self.callback(self.progress.copy())
 
         return subprocess.CompletedProcess(
             cmd, process.returncode, stdout, ""
