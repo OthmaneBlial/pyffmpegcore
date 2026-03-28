@@ -6,14 +6,19 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import dataclass
+import json
+import platform
 from pathlib import Path
+import shutil
+import subprocess
 import sys
-from typing import Sequence
+from typing import Any, Sequence
 
 from . import __version__
 
 
 EXIT_OK = 0
+EXIT_ENVIRONMENT_ERROR = 3
 EXIT_USAGE_ERROR = 2
 EXIT_RUNTIME_ERROR = 5
 
@@ -73,23 +78,48 @@ def add_global_arguments(parser: argparse.ArgumentParser) -> None:
     )
 
 
+def build_global_parent() -> argparse.ArgumentParser:
+    """
+    Build the shared parent parser used by the root parser and subcommands.
+    """
+    parent = argparse.ArgumentParser(add_help=False)
+    add_global_arguments(parent)
+    return parent
+
+
 def build_parser() -> argparse.ArgumentParser:
     """
     Build the top-level CLI parser.
     """
+    common_parent = build_global_parent()
     parser = argparse.ArgumentParser(
         prog="pyffmpegcore",
+        parents=[common_parent],
         description=(
             "PyFFmpegCore CLI. A task-focused terminal interface for the "
             "verified media workflows in this repository."
         ),
     )
-    add_global_arguments(parser)
     parser.add_argument(
         "--version",
         action="version",
         version=f"%(prog)s {__version__}",
     )
+    subparsers = parser.add_subparsers(dest="command", metavar="COMMAND")
+
+    doctor_parser = subparsers.add_parser(
+        "doctor",
+        parents=[common_parent],
+        help="Show FFmpeg, FFprobe, and environment diagnostics.",
+        description="Show FFmpeg, FFprobe, and environment diagnostics.",
+    )
+    doctor_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the diagnostics as JSON.",
+    )
+    doctor_parser.set_defaults(handler=handle_doctor)
+
     return parser
 
 
@@ -169,6 +199,128 @@ def prepare_output_dir(
     return path
 
 
+def echo(ctx: CLIContext, message: str) -> None:
+    """
+    Print a human-readable message unless quiet mode is enabled.
+    """
+    if not ctx.quiet:
+        print(message)
+
+
+def echo_error(message: str) -> None:
+    """
+    Print a user-facing error message to stderr.
+    """
+    print(message, file=sys.stderr)
+
+
+def inspect_binary(binary_path: str) -> dict[str, Any]:
+    """
+    Inspect a binary path for existence and version information.
+    """
+    is_explicit_path = any(sep in binary_path for sep in ("/", "\\"))
+    resolved = str(Path(binary_path).resolve()) if is_explicit_path and Path(binary_path).exists() else shutil.which(binary_path)
+    report: dict[str, Any] = {
+        "requested": binary_path,
+        "resolved": resolved,
+        "available": False,
+        "version": None,
+        "error": None,
+    }
+
+    if resolved is None:
+        report["error"] = f"Executable not found: {binary_path}"
+        return report
+
+    try:
+        result = subprocess.run(
+            [binary_path, "-version"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except OSError as exc:
+        report["error"] = str(exc)
+        return report
+
+    if result.returncode == 0:
+        report["available"] = True
+        report["version"] = result.stdout.splitlines()[0] if result.stdout else ""
+        return report
+
+    report["error"] = result.stderr.strip() or "Version probe failed"
+    return report
+
+
+def collect_doctor_report(ctx: CLIContext) -> dict[str, Any]:
+    """
+    Collect environment diagnostics for the CLI.
+    """
+    ffmpeg = inspect_binary(ctx.ffmpeg_path)
+    ffprobe = inspect_binary(ctx.ffprobe_path)
+    return {
+        "cli_version": __version__,
+        "platform": {
+            "system": platform.system(),
+            "release": platform.release(),
+            "machine": platform.machine(),
+        },
+        "python": {
+            "executable": sys.executable,
+            "version": sys.version.split()[0],
+        },
+        "ffmpeg": ffmpeg,
+        "ffprobe": ffprobe,
+    }
+
+
+def render_doctor_report(ctx: CLIContext, report: dict[str, Any]) -> None:
+    """
+    Print a human-readable diagnostics report.
+    """
+    platform_info = report["platform"]
+    python_info = report["python"]
+
+    echo(ctx, f"PyFFmpegCore CLI {report['cli_version']}")
+    echo(ctx, f"Platform: {platform_info['system']} {platform_info['release']} ({platform_info['machine']})")
+    echo(ctx, f"Python: {python_info['version']} ({python_info['executable']})")
+
+    for label in ("ffmpeg", "ffprobe"):
+        binary_report = report[label]
+        if binary_report["available"]:
+            echo(
+                ctx,
+                f"{label}: OK ({binary_report['resolved']})",
+            )
+            if binary_report["version"]:
+                echo(ctx, f"  {binary_report['version']}")
+        else:
+            echo(
+                ctx,
+                f"{label}: MISSING ({binary_report['requested']})",
+            )
+            if binary_report["error"]:
+                echo(ctx, f"  {binary_report['error']}")
+
+
+def handle_doctor(args: argparse.Namespace) -> int:
+    """
+    Run the diagnostic command.
+    """
+    ctx = build_context(args)
+    report = collect_doctor_report(ctx)
+    exit_code = EXIT_OK
+    if not report["ffmpeg"]["available"] or not report["ffprobe"]["available"]:
+        exit_code = EXIT_ENVIRONMENT_ERROR
+
+    if args.json:
+        print(json.dumps(report, indent=2))
+    else:
+        render_doctor_report(ctx, report)
+
+    return exit_code
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     """
     Run the CLI.
@@ -185,9 +337,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         parser.print_help()
         return EXIT_OK
 
-    build_context(args)
-    parser.print_help()
-    return EXIT_OK
+    handler = getattr(args, "handler", None)
+    if handler is None:
+        parser.print_help()
+        return EXIT_OK
+
+    try:
+        return int(handler(args))
+    except CLIError as exc:
+        echo_error(str(exc))
+        return exc.exit_code
 
 
 if __name__ == "__main__":
