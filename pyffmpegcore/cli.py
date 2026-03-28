@@ -290,6 +290,47 @@ def build_parser() -> argparse.ArgumentParser:
     )
     compress_parser.set_defaults(handler=handle_compress)
 
+    extract_audio_parser = subparsers.add_parser(
+        "extract-audio",
+        parents=[common_parent],
+        help="Extract the audio stream from a media file.",
+        description="Extract the audio stream from a media file.",
+    )
+    extract_audio_parser.add_argument(
+        "--input",
+        required=True,
+        help="Path to the input media file.",
+    )
+    extract_audio_parser.add_argument(
+        "--output",
+        required=True,
+        help="Path to the audio output file.",
+    )
+    extract_audio_parser.add_argument(
+        "--audio-codec",
+        help="Audio codec override, for example libmp3lame or pcm_s16le.",
+    )
+    extract_audio_parser.add_argument(
+        "--audio-bitrate",
+        help="Audio bitrate override, for example 192k.",
+    )
+    extract_audio_parser.add_argument(
+        "--sample-rate",
+        type=int,
+        help="Sample rate override in Hz.",
+    )
+    extract_audio_parser.add_argument(
+        "--channels",
+        type=int,
+        help="Channel count override.",
+    )
+    extract_audio_parser.add_argument(
+        "--threads",
+        type=int,
+        help="Number of FFmpeg worker threads to use.",
+    )
+    extract_audio_parser.set_defaults(handler=handle_extract_audio)
+
     return parser
 
 
@@ -669,6 +710,45 @@ def handle_compress(args: argparse.Namespace) -> int:
             **kwargs,
         )
     except (RuntimeError, ValueError) as exc:
+        message = str(exc)
+        exit_code = EXIT_ENVIRONMENT_ERROR if "was not found" in message else EXIT_RUNTIME_ERROR
+        raise CLIError(message, exit_code=exit_code) from exc
+
+    raise_for_completed_process_error(result)
+    summarize_output_file(ctx, output_path)
+    return EXIT_OK
+
+
+def handle_extract_audio(args: argparse.Namespace) -> int:
+    """
+    Run the extract-audio command.
+    """
+    ctx = build_context(args)
+    input_path = require_existing_input(args.input)
+    output_path = prepare_output_path(args.output, force=ctx.force)
+
+    kwargs = {
+        key: value
+        for key, value in {
+            "audio_codec": args.audio_codec,
+            "audio_bitrate": args.audio_bitrate,
+            "sample_rate": args.sample_rate,
+            "channels": args.channels,
+            "threads": args.threads,
+        }.items()
+        if value is not None
+    }
+
+    progress_callback = build_progress_printer(ctx, input_path)
+
+    try:
+        result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).extract_audio(
+            str(input_path),
+            str(output_path),
+            progress_callback=progress_callback,
+            **kwargs,
+        )
+    except RuntimeError as exc:
         message = str(exc)
         exit_code = EXIT_ENVIRONMENT_ERROR if "was not found" in message else EXIT_RUNTIME_ERROR
         raise CLIError(message, exit_code=exit_code) from exc
