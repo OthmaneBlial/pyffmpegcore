@@ -33,6 +33,34 @@ class TestFFmpegRunner:
         assert result.returncode == 0
 
     @patch('subprocess.run')
+    def test_run_annotates_failures(self, mock_run):
+        """Test run adds command context to FFmpeg failures."""
+        mock_run.return_value = subprocess.CompletedProcess(
+            args=["ffmpeg", "-version"],
+            returncode=1,
+            stdout="",
+            stderr="boom",
+        )
+
+        runner = FFmpegRunner()
+        result = runner.run(["-version"])
+
+        assert result.returncode == 1
+        assert "FFmpeg command failed with exit code 1." in result.stderr
+        assert "Command: ffmpeg -version" in result.stderr
+        assert "boom" in result.stderr
+
+    @patch('subprocess.run', side_effect=FileNotFoundError("missing"))
+    def test_run_raises_clear_error_for_missing_binary(self, mock_run):
+        """Test run raises a readable error when FFmpeg is missing."""
+        runner = FFmpegRunner("/missing/ffmpeg")
+
+        with pytest.raises(RuntimeError) as exc_info:
+            runner.run(["-version"])
+
+        assert "FFmpeg executable '/missing/ffmpeg' was not found" in str(exc_info.value)
+
+    @patch('subprocess.run')
     def test_convert(self, mock_run):
         """Test convert method."""
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
@@ -61,6 +89,15 @@ class TestFFmpegRunner:
         assert "-vf" in args
         assert "scale=640:480" in args
 
+    def test_resize_rejects_non_positive_dimensions(self):
+        """Test resize validates dimensions before running FFmpeg."""
+        runner = FFmpegRunner()
+
+        with pytest.raises(ValueError) as exc_info:
+            runner.resize("input.mp4", "output.mp4", 0, 480)
+
+        assert "width and height must be positive integers" in str(exc_info.value)
+
     @patch('subprocess.run')
     def test_compress(self, mock_run):
         """Test compress method."""
@@ -75,6 +112,15 @@ class TestFFmpegRunner:
         assert "libx264" in args
         assert "-crf" in args
         assert "28" in args
+
+    def test_compress_rejects_invalid_target_size(self):
+        """Test compress rejects non-positive target sizes."""
+        runner = FFmpegRunner()
+
+        with pytest.raises(ValueError) as exc_info:
+            runner.compress("input.mp4", "output.mp4", target_size_kb=0)
+
+        assert "target_size_kb must be a positive integer" in str(exc_info.value)
 
     @patch('subprocess.run')
     def test_get_version(self, mock_run):

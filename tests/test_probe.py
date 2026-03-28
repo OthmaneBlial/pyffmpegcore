@@ -124,3 +124,13 @@ class TestFFprobeRunner:
         version = runner.get_version()
 
         assert "ffprobe version 4.4" in version
+
+    @patch('subprocess.run', side_effect=FileNotFoundError("missing"))
+    def test_probe_missing_binary_error(self, mock_run):
+        """Test probe raises a readable error when FFprobe is missing."""
+        runner = FFprobeRunner("/missing/ffprobe")
+
+        with pytest.raises(RuntimeError) as exc_info:
+            runner.probe("test.mp4")
+
+        assert "FFprobe executable '/missing/ffprobe' was not found" in str(exc_info.value)

@@ -46,10 +46,18 @@ class FFmpegRunner:
         """
         cmd = [self.ffmpeg_path] + args
 
-        if progress_callback is not None:
-            return ProgressTracker(progress_callback).run(cmd)
+        try:
+            if progress_callback is not None:
+                result = ProgressTracker(progress_callback).run(cmd)
+            else:
+                result = subprocess.run(cmd, capture_output=True, text=True)
+        except FileNotFoundError as exc:
+            raise RuntimeError(
+                f"FFmpeg executable '{self.ffmpeg_path}' was not found. "
+                "Install FFmpeg or pass a valid ffmpeg_path."
+            ) from exc
 
-        return subprocess.run(cmd, capture_output=True, text=True)
+        return self._annotate_failure(cmd, result)
 
     def run_with_progress(
         self,
@@ -136,6 +144,9 @@ class FFmpegRunner:
         """
         Resize a video to the specified dimensions.
         """
+        if width <= 0 or height <= 0:
+            raise ValueError("width and height must be positive integers")
+
         args = ["-i", input_file, "-vf", f"scale={width}:{height}"]
 
         video_codec = kwargs.get("video_codec")
@@ -167,6 +178,11 @@ class FFmpegRunner:
         """
         Compress a video file.
         """
+        if target_size_kb is not None and target_size_kb <= 0:
+            raise ValueError("target_size_kb must be a positive integer")
+        if not 0 <= crf <= 51:
+            raise ValueError("crf must be between 0 and 51")
+
         if target_size_kb and two_pass:
             return self._compress_two_pass(
                 input_file,
@@ -382,6 +398,13 @@ class FFmpegRunner:
         """
         Extract a thumbnail from a video at a specific timestamp.
         """
+        if width <= 0:
+            raise ValueError("width must be a positive integer")
+        if height is not None and height <= 0:
+            raise ValueError("height must be a positive integer when provided")
+        if not 1 <= quality <= 31:
+            raise ValueError("quality must be between 1 and 31")
+
         scale_filter = f"scale={width}:-1" if height is None else f"scale={width}:{height}"
         args = [
             "-i",
@@ -409,6 +432,9 @@ class FFmpegRunner:
         """
         Adjust playback speed for a media file with video and audio streams.
         """
+        if speed_factor <= 0:
+            raise ValueError("speed_factor must be positive")
+
         vf_filters = []
         af_filters = []
 
@@ -439,6 +465,9 @@ class FFmpegRunner:
         """
         Generate a waveform image from an audio stream.
         """
+        if width <= 0 or height <= 0:
+            raise ValueError("width and height must be positive integers")
+
         args = [
             "-i",
             input_file,
@@ -498,6 +527,28 @@ class FFmpegRunner:
         movflags = kwargs.get("movflags", "+faststart")
         if output_file.endswith((".mp4", ".m4v")) and movflags:
             args.extend(["-movflags", movflags])
+
+    def _annotate_failure(
+        self,
+        cmd: List[str],
+        result: subprocess.CompletedProcess,
+    ) -> subprocess.CompletedProcess:
+        if result.returncode == 0:
+            return result
+
+        stderr = (result.stderr or "").strip()
+        prefix = f"FFmpeg command failed with exit code {result.returncode}."
+        command = " ".join(cmd)
+        annotated_stderr = f"{prefix}\nCommand: {command}"
+        if stderr:
+            annotated_stderr = f"{annotated_stderr}\n{stderr}"
+
+        return subprocess.CompletedProcess(
+            result.args if hasattr(result, "args") else cmd,
+            result.returncode,
+            getattr(result, "stdout", ""),
+            annotated_stderr,
+        )
 
     def get_version(self) -> str:
         """
