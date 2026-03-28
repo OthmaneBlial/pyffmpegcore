@@ -10,9 +10,11 @@ which is useful for:
 - Batch processing workflows
 """
 
-from pyffmpegcore import FFmpegRunner
 import os
 import tempfile
+
+from pyffmpegcore import FFmpegRunner
+from pyffmpegcore.runner import escape_path_for_concat
 
 def create_concat_file(video_files: list, concat_file: str):
     """
@@ -22,11 +24,9 @@ def create_concat_file(video_files: list, concat_file: str):
         video_files: List of video file paths
         concat_file: Path to the concat file to create
     """
-    with open(concat_file, 'w') as f:
+    with open(concat_file, "w", encoding="utf-8") as f:
         for video_file in video_files:
-            # Escape single quotes in filename
-            escaped_path = video_file.replace("'", "\\'")
-            f.write(f"file '{escaped_path}'\n")
+            f.write(f"file {escape_path_for_concat(video_file)}\n")
 
 def concatenate_videos_basic(video_files: list, output_file: str) -> bool:
     """
@@ -44,11 +44,15 @@ def concatenate_videos_basic(video_files: list, output_file: str) -> bool:
         return False
 
     # Create temporary concat file
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
+    with tempfile.NamedTemporaryFile(
+        mode="w",
+        suffix=".txt",
+        delete=False,
+        encoding="utf-8",
+    ) as f:
         concat_file = f.name
-        for video_file in video_files:
-            escaped_path = video_file.replace("'", "\\'")
-            f.write(f"file '{escaped_path}'\n")
+
+    create_concat_file(video_files, concat_file)
 
     try:
         runner = FFmpegRunner()
@@ -75,7 +79,7 @@ def concatenate_videos_basic(video_files: list, output_file: str) -> bool:
         # Clean up temporary file
         try:
             os.unlink(concat_file)
-        except:
+        except OSError:
             pass
 
 def concatenate_videos_reencode(video_files: list, output_file: str,

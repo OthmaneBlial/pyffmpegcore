@@ -24,7 +24,8 @@ def escape_path_for_concat(path: str) -> str:
     """
     Escape a file path for use in FFmpeg concat files.
     """
-    escaped = path.replace("'", "\\'")
+    escaped = path.replace("\\", "/")
+    escaped = escaped.replace("'", "'\\''")
     return f"'{escaped}'"
 
 
