@@ -34,6 +34,16 @@ python -m pytest
 python -m build
 ```
 
+## Internet Media Fixtures
+
+The real integration phases use internet-backed sample files pinned by checksum.
+
+```bash
+python tests/media/download_fixtures.py
+```
+
+Downloaded fixture files are written to `tests/media/downloads/` and are ignored by git.
+
 ## FFmpeg Checks
 
 Confirm the media tools are available before running feature or integration tests:

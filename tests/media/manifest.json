@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "description": "Internet-backed media fixtures used for real integration validation.",
+  "fixtures": [
+    {
+      "id": "video_mp4_h264_1080p",
+      "filename": "sample_mp4_h264.mp4",
+      "kind": "video",
+      "container": "mp4",
+      "video_codec": "h264",
+      "width": 1920,
+      "height": 1080,
+      "url": "https://samplelib.com/lib/preview/mp4/sample-5s.mp4",
+      "sha256": "05bd857af7f70bf51b6aac1144046973bf3325c9101a554bc27dc9607dbbd8f5"
+    },
+    {
+      "id": "video_webm_vp9_1080p",
+      "filename": "sample_webm_vp9.webm",
+      "kind": "video",
+      "container": "webm",
+      "video_codec": "vp9",
+      "width": 1920,
+      "height": 1080,
+      "url": "https://samplelib.com/lib/preview/webm/sample-5s.webm",
+      "sha256": "475c15a79379c070faa977e5ed61eb25d4ff198f0249a105f3190da6b69fdfa6"
+    },
+    {
+      "id": "video_mov_h264_640x360",
+      "filename": "sample_video_mov.mov",
+      "kind": "video",
+      "container": "mov",
+      "video_codec": "h264",
+      "width": 640,
+      "height": 360,
+      "url": "https://filesamples.com/samples/video/mov/sample_640x360.mov",
+      "sha256": "244f57e74a8e54c6bab6f400399ab8bca397bd9026a5128fd547ff4c43ac38f9"
+    },
+    {
+      "id": "audio_mp3",
+      "filename": "sample_audio_mp3.mp3",
+      "kind": "audio",
+      "container": "mp3",
+      "audio_codec": "mp3",
+      "url": "https://samplelib.com/lib/preview/mp3/sample-3s.mp3",
+      "sha256": "0244590f2b4bcb62352b574e78bea940e8d89cfa69823b5208ef4c43e0abcb44"
+    },
+    {
+      "id": "audio_wav_pcm",
+      "filename": "sample_audio_wav.wav",
+      "kind": "audio",
+      "container": "wav",
+      "audio_codec": "pcm_s16le",
+      "url": "https://samplelib.com/lib/preview/wav/sample-3s.wav",
+      "sha256": "b3726eac5c9612ea20e245314812575bf9df5fb6b8024b80c7cfe9033452bb2b"
+    },
+    {
+      "id": "image_png",
+      "filename": "sample_image_png.png",
+      "kind": "image",
+      "container": "png",
+      "width": 400,
+      "height": 300,
+      "url": "https://samplelib.com/lib/preview/png/sample-boat-400x300.png",
+      "sha256": "92277a08969d0a4524a382db5a2b9e3a3d7187c8236134061f60de907f7b285b"
+    },
+    {
+      "id": "image_jpg",
+      "filename": "sample_image_jpg.jpg",
+      "kind": "image",
+      "container": "jpg",
+      "width": 640,
+      "height": 426,
+      "url": "https://filesamples.com/samples/image/jpg/sample_640%C3%97426.jpg",
+      "sha256": "2de469409abf8781d38e63fcb26149404c18067906054b75731e2acc57275214"
+    },
+    {
+      "id": "subtitles_srt",
+      "filename": "sample_subtitles.srt",
+      "kind": "subtitle",
+      "container": "srt",
+      "url": "https://gist.githubusercontent.com/matibzurovski/d690d5c14acbaa399e7f0829f9d6888e/raw/63578ca30e7430be1fa4942d4d8dd599f78151c7/example.srt",
+      "sha256": "de61d846f18feccf947c676a4f38c402049ee6ef224b26390447ba677393d46b"
+    }
+  ]
+}
