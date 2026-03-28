@@ -1,18 +1,19 @@
 # PyFFmpegCore
 
-A small Python wrapper around `ffmpeg` and `ffprobe` for everyday media jobs.
+A terminal-first media toolkit built on top of `ffmpeg` and `ffprobe`.
 
 Use it when you want to:
 
-- convert a video to another format
-- compress a large video
-- extract audio from a video
-- grab thumbnails from a video
-- speed up or slow down media
+- inspect a video or audio file
+- convert video formats
+- compress large videos
+- extract audio from video
+- grab thumbnails
+- generate waveform images
 - join clips together
-- add or burn subtitles
+- add, extract, or burn subtitles
 - mix or normalize audio
-- convert images in batches
+- batch-convert images
 
 [![PyPI version](https://badge.fury.io/py/pyffmpegcore.svg)](https://pypi.org/project/pyffmpegcore/)
 [![Python versions](https://img.shields.io/pypi/pyversions/pyffmpegcore.svg)](https://pypi.org/project/pyffmpegcore/)
@@ -20,56 +21,105 @@ Use it when you want to:
 
 ## What This Project Is
 
-PyFFmpegCore is a Python library, not a drag-and-drop desktop app.
+PyFFmpegCore is now designed to be used first as a CLI:
 
-It gives you simple Python functions on top of `ffmpeg`, which is the real tool that does the media work in the background. If you can point to a video, audio file, subtitle file, or image, PyFFmpegCore helps you run common workflows with less FFmpeg command-line complexity.
+```bash
+pyffmpegcore ...
+```
 
-## What Is Proven To Work
+It also still exposes a Python API for developers, but the easiest way to use the project is now the terminal command.
 
-As of March 28, 2026, this repository was validated locally with:
+## What Is Verified
+
+As of March 28, 2026, the repo was validated locally with:
 
 - Python `3.12`
 - `ffmpeg` and `ffprobe` available on `PATH`
-- `105` passing tests
-- real downloaded media files, not only mocks
-- end-to-end checks for video, audio, subtitles, waveforms, and image conversion
+- `105` library and CLI tests
+- real downloaded video, audio, subtitle, and image fixtures
+- end-to-end CLI checks for the shipped commands
 - path handling for spaces and apostrophes in important workflows
 
-The deepest local validation was run on Linux. A final acceptance pass also downloaded a fresh set of sample files into a clean temporary folder and re-ran the main workflows there.
+The strongest validation was done on Linux. The repo also now includes installer, packaging, and clean-install checks for the CLI path.
 
-## Before You Start
+## Install
 
 You need:
 
-- Python `3.10+`
+- Python `3.8+`
 - `ffmpeg`
 - `ffprobe`
 
-Then install the package:
+Install the CLI with `pipx`:
 
 ```bash
-pip install pyffmpegcore
+pipx install pyffmpegcore
 ```
 
-If you want to run the examples from this repository:
+Or with regular `pip`:
 
 ```bash
-python -m venv .venv
-. .venv/bin/activate
-pip install --upgrade pip
-pip install -e .[dev]
+python -m pip install --user pyffmpegcore
 ```
 
-Check that FFmpeg is really installed:
+From a repo checkout you can also use the one-command installers:
 
 ```bash
-ffmpeg -version
-ffprobe -version
+./install.sh
+```
+
+Windows uses the PowerShell installer instead:
+
+```powershell
+.\install.ps1
+```
+
+Then confirm the install:
+
+```bash
+pyffmpegcore --version
+pyffmpegcore doctor
+```
+
+More install details are in [CLI_INSTALL.md](CLI_INSTALL.md).
+
+## Five-Minute Start
+
+If you already have your own files, replace the sample names below with your own.
+
+### 1. Check your setup
+
+```bash
+pyffmpegcore doctor
+```
+
+### 2. Inspect a file before changing it
+
+```bash
+pyffmpegcore probe --input my-video.mp4
+```
+
+### 3. Convert a WebM or MOV into MP4
+
+```bash
+pyffmpegcore convert --input input.webm --output output.mp4 --video-codec libx264 --audio-codec aac
+```
+
+### 4. Make a large video smaller
+
+```bash
+pyffmpegcore compress --input large-video.mp4 --output smaller-video.mp4 --crf 28
+```
+
+### 5. Pull the audio out of a video
+
+```bash
+pyffmpegcore extract-audio --input interview.mp4 --output interview.mp3
 ```
 
 ## Practice With The Same Real Files Used In Tests
 
-If you want a safe starting point, download the same sample files this repo uses in real validation:
+If you want safe practice files instead of your own media, download the same fixtures used in real validation:
 
 ```bash
 python tests/media/download_fixtures.py
@@ -77,227 +127,146 @@ python tests/media/download_fixtures.py
 
 That creates files under `tests/media/downloads/`.
 
-These are the main practice files:
+Main practice files:
 
-| File | What it is | Real-world equivalent |
-| --- | --- | --- |
-| `tests/media/downloads/sample_mp4_h264.mp4` | 5-second MP4 video with audio | a phone clip, screen recording, or short exported video |
-| `tests/media/downloads/sample_webm_vp9.webm` | 5-second WebM video | a browser-recorded or downloaded web video |
-| `tests/media/downloads/sample_video_mov.mov` | MOV video | a camera or editor export |
-| `tests/media/downloads/sample_audio_mp3.mp3` | MP3 audio | a voice-over, song, or podcast snippet |
-| `tests/media/downloads/sample_audio_wav.wav` | WAV audio | an uncompressed recording |
-| `tests/media/downloads/sample_image_png.png` | PNG image | a graphic, screenshot, or design asset |
-| `tests/media/downloads/sample_image_jpg.jpg` | JPG image | a photo |
-| `tests/media/downloads/sample_subtitles.srt` | SRT subtitles | captions you want to attach to a video |
+| File | What it represents |
+| --- | --- |
+| `tests/media/downloads/sample_mp4_h264.mp4` | a normal MP4 clip with video and audio |
+| `tests/media/downloads/sample_webm_vp9.webm` | a WebM video you want to convert |
+| `tests/media/downloads/sample_video_mov.mov` | a camera or editor export |
+| `tests/media/downloads/sample_audio_mp3.mp3` | a song, podcast, or voice-over clip |
+| `tests/media/downloads/sample_audio_wav.wav` | an uncompressed audio recording |
+| `tests/media/downloads/sample_image_png.png` | a graphic or screenshot |
+| `tests/media/downloads/sample_image_jpg.jpg` | a photo |
+| `tests/media/downloads/sample_subtitles.srt` | a subtitle file you want to attach or burn |
 
-If you already have your own files, you can skip this step and replace the sample paths below with your own paths.
+## Copy-Paste Commands
 
-## Quick Start
+### Inspect a file
 
-### 1. Convert a video to MP4
-
-Real tested input:
-
-- `tests/media/downloads/sample_webm_vp9.webm`
-
-Use your own file instead if you want, for example `holiday-video.webm` or `camera-export.mov`.
-
-```python
-from pyffmpegcore import FFmpegRunner
-
-ffmpeg = FFmpegRunner()
-
-result = ffmpeg.convert(
-    "tests/media/downloads/sample_webm_vp9.webm",
-    "converted.mp4",
-    video_codec="libx264",
-    audio_codec="aac",
-)
-
-print("Success" if result.returncode == 0 else result.stderr)
+```bash
+pyffmpegcore probe --input tests/media/downloads/sample_mp4_h264.mp4
+pyffmpegcore probe --input tests/media/downloads/sample_mp4_h264.mp4 --json
 ```
 
-### 2. Read the metadata of a media file
+### Convert WebM to MP4
 
-This is useful before editing because it tells you the duration, size, resolution, and codecs.
-
-```python
-from pyffmpegcore import FFprobeRunner
-
-ffprobe = FFprobeRunner()
-info = ffprobe.probe("tests/media/downloads/sample_mp4_h264.mp4")
-
-print(f"Duration: {info['duration']:.2f} seconds")
-print(f"Resolution: {info['video']['width']}x{info['video']['height']}")
-print(f"Video codec: {info['video']['codec']}")
-print(f"Audio codec: {info['audio']['codec']}")
+```bash
+pyffmpegcore convert \
+  --input tests/media/downloads/sample_webm_vp9.webm \
+  --output converted.mp4 \
+  --video-codec libx264 \
+  --audio-codec aac
 ```
 
-### 3. Compress a video and keep progress updates
+### Compress a video
 
-This is the typical “my video file is too big” workflow.
-
-```python
-from pyffmpegcore import FFmpegRunner, FFprobeRunner, ProgressCallback
-
-ffmpeg = FFmpegRunner()
-ffprobe = FFprobeRunner()
-duration = ffprobe.get_duration("tests/media/downloads/sample_mp4_h264.mp4")
-
-result = ffmpeg.compress(
-    "tests/media/downloads/sample_mp4_h264.mp4",
-    "compressed.mp4",
-    crf=28,
-    progress_callback=ProgressCallback(total_duration=duration),
-)
-
-print("Success" if result.returncode == 0 else result.stderr)
+```bash
+pyffmpegcore compress \
+  --input tests/media/downloads/sample_mp4_h264.mp4 \
+  --output compressed.mp4 \
+  --crf 28
 ```
 
-### 4. Extract audio from a video
+### Extract audio
 
-This is useful when you want the speech, music, or soundtrack as a separate file.
-
-```python
-from pyffmpegcore import FFmpegRunner
-
-ffmpeg = FFmpegRunner()
-
-result = ffmpeg.extract_audio(
-    "tests/media/downloads/sample_mp4_h264.mp4",
-    "audio-only.mp3",
-)
-
-print("Success" if result.returncode == 0 else result.stderr)
+```bash
+pyffmpegcore extract-audio \
+  --input tests/media/downloads/sample_mp4_h264.mp4 \
+  --output audio-only.mp3
 ```
 
-### 5. Create a thumbnail image from a video
+### Create a thumbnail
 
-This is useful for previews, thumbnails, and poster frames.
-
-```python
-from pyffmpegcore import FFmpegRunner
-
-ffmpeg = FFmpegRunner()
-
-result = ffmpeg.extract_thumbnail(
-    "tests/media/downloads/sample_mp4_h264.mp4",
-    "thumbnail.jpg",
-    timestamp="00:00:01",
-    width=640,
-)
-
-print("Success" if result.returncode == 0 else result.stderr)
+```bash
+pyffmpegcore thumbnail \
+  --input tests/media/downloads/sample_mp4_h264.mp4 \
+  --output thumbnail.jpg \
+  --timestamp 00:00:01 \
+  --width 640
 ```
 
-### 6. Make a waveform image from audio
+### Generate a waveform image
 
-This is useful for podcasts, music previews, and audio dashboards.
+```bash
+pyffmpegcore waveform \
+  --input tests/media/downloads/sample_audio_mp3.mp3 \
+  --output waveform.png \
+  --width 1200 \
+  --height 300
+```
 
-```python
-from pyffmpegcore import FFmpegRunner
+### Burn subtitles into a video
 
-ffmpeg = FFmpegRunner()
+```bash
+pyffmpegcore subtitles burn \
+  --video tests/media/downloads/sample_mp4_h264.mp4 \
+  --subtitle tests/media/downloads/sample_subtitles.srt \
+  --output burned-subtitles.mp4
+```
 
-result = ffmpeg.generate_waveform(
-    "tests/media/downloads/sample_audio_mp3.mp3",
-    "waveform.png",
-    width=1000,
-    height=300,
-    colors="white",
-)
+### Join matching clips together
 
-print("Success" if result.returncode == 0 else result.stderr)
+```bash
+pyffmpegcore concat \
+  --inputs tests/media/downloads/sample_mp4_h264.mp4 tests/media/downloads/sample_mp4_h264.mp4 \
+  --output joined.mp4 \
+  --mode copy
 ```
 
 ## Use Your Own Files
 
-You do not need to rename your files to the sample names.
+Replace the sample paths with your own real filenames:
 
-Replace the sample paths with your own, for example:
-
-- `tests/media/downloads/sample_mp4_h264.mp4` -> `my-trip-video.mp4`
+- `tests/media/downloads/sample_webm_vp9.webm` -> `holiday-video.webm`
+- `tests/media/downloads/sample_mp4_h264.mp4` -> `screen-recording.mp4`
 - `tests/media/downloads/sample_audio_mp3.mp3` -> `podcast-intro.mp3`
-- `tests/media/downloads/sample_subtitles.srt` -> `english-captions.srt`
+- `tests/media/downloads/sample_subtitles.srt` -> `captions/english.srt`
 
-Good rules to follow:
+Good habits:
 
-- choose the output extension you want, such as `.mp4`, `.mp3`, `.wav`, `.jpg`, or `.webp`
-- if you join clips with stream copy, use clips that already match well in format and codecs
-- if your clips are mixed formats, use the re-encode concat example in [EXAMPLES.md](EXAMPLES.md)
-- if you burn subtitles, use an `.srt` file to start with
-- after each run, open the output file in your normal media player to confirm it looks and sounds right
+- put quotes around paths that contain spaces
+- choose the output extension you actually want, like `.mp4`, `.mp3`, `.wav`, `.jpg`, or `.webp`
+- use `pyffmpegcore probe --input your-file` first if you are not sure what kind of file you have
+- open the output file in your normal media player after each command
 
-## Main Python APIs
+## Help And Shell Completion
 
-### `FFmpegRunner`
-
-Common methods:
-
-- `convert(input_file, output_file, progress_callback=None, audio_only=False, **kwargs)`
-- `resize(input_file, output_file, width, height, progress_callback=None, **kwargs)`
-- `compress(input_file, output_file, target_size_kb=None, crf=23, two_pass=True, progress_callback=None, **kwargs)`
-- `extract_audio(input_file, output_file, progress_callback=None, **kwargs)`
-- `extract_thumbnail(input_file, output_file, timestamp="00:00:01", width=320, height=None, quality=2)`
-- `adjust_speed(input_file, output_file, speed_factor=1.0, audio_pitch=True)`
-- `generate_waveform(input_file, output_file, width=800, height=200, colors="white")`
-
-Useful kwargs:
-
-- `video_codec`
-- `audio_codec`
-- `video_bitrate`
-- `audio_bitrate`
-- `preset`
-- `pix_fmt`
-- `threads`
-- `movflags`
-- `sample_rate`
-- `channels`
-
-### `FFprobeRunner`
-
-Useful methods:
-
-- `probe(input_file)`
-- `get_duration(input_file)`
-- `get_resolution(input_file)`
-- `get_bitrate(input_file)`
-
-`probe()` returns a simplified Python dictionary with the fields most people need first.
-
-### `ProgressCallback`
-
-Use `ProgressCallback` when you want progress updates during long FFmpeg jobs.
-
-## Where To Find Real Working Examples
-
-Start with [EXAMPLES.md](EXAMPLES.md) if you want task-based recipes such as:
-
-- join several clips into one video
-- add subtitles as a selectable track
-- burn subtitles into the picture
-- mix voice and background music
-- normalize audio loudness
-- batch convert PNG and JPG images
-
-The larger recipes in `EXAMPLES.md` import helper functions from the repository's `examples/` folder, so they are meant for people working from a cloned checkout of this repo.
-
-## Development
-
-The local development workflow is documented in [DEVELOPMENT.md](DEVELOPMENT.md).
-
-Main validation commands:
+Built-in help:
 
 ```bash
-python -m compileall pyffmpegcore tests examples
-python -m pytest
-python -m build
+pyffmpegcore --help
+pyffmpegcore convert --help
+pyffmpegcore subtitles --help
 ```
 
-## Practical Notes
+Shell completion:
 
-- The first real-media test run may download sample files from the internet.
-- Downloaded fixtures are ignored by git and stored under `tests/media/downloads/`.
-- Some larger example scripts still include demonstration `main()` functions with placeholder filenames. For real use, the function-style examples in [EXAMPLES.md](EXAMPLES.md) are the safest starting point.
-- This repo now favors tested, honest workflows over feature claims.
+```bash
+pyffmpegcore completion bash
+pyffmpegcore completion zsh
+pyffmpegcore completion powershell
+```
+
+The quick command guide is in [CLI_HELP.md](CLI_HELP.md). More task-based examples are in [EXAMPLES.md](EXAMPLES.md).
+
+## Python API
+
+If you want to call the project from Python code instead of the CLI:
+
+```bash
+python -m pip install pyffmpegcore
+```
+
+Example:
+
+```python
+from pyffmpegcore import FFmpegRunner
+
+ffmpeg = FFmpegRunner()
+result = ffmpeg.extract_audio("video.mp4", "audio.mp3")
+
+print(result.returncode)
+```
+
+The Python API remains useful, but the supported public path is now the `pyffmpegcore` terminal command first.
