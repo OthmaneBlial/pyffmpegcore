@@ -108,6 +108,28 @@ For commands that naturally take multiple source files, the CLI should use eithe
 
 Version `1` should bias toward explicit file arguments over implicit file discovery.
 
+## Parser And Framework Decision
+
+Version `1` should use the Python standard library `argparse` module.
+
+Reasons for this choice:
+
+- no extra runtime dependency is required
+- packaging stays simple
+- help output is good enough for a first serious CLI release
+- it is easy to test with both direct function calls and subprocess calls
+- it avoids introducing framework-specific behavior before the command set stabilizes
+
+Higher-level frameworks can be reconsidered later only if they solve a real user problem that `argparse` is making harder.
+
+## Parser Conventions
+
+- Global options should include `--verbose`, `--quiet`, `--ffmpeg-path`, and `--ffprobe-path`.
+- Required file paths should use explicit names rather than positional guessing where readability matters.
+- Commands that write files should require an explicit output target unless a later phase defines a safe default.
+- Help text should show at least one short example for user-facing commands.
+- The CLI should return numeric exit codes instead of relying only on exception text.
+
 ## Example Command Shapes
 
 These examples describe the intended UX shape:
