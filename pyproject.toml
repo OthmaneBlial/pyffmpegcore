@@ -58,6 +58,9 @@ python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "-v --tb=short"
+markers = [
+    "real_media: tests that use downloaded internet fixtures",
+]
 
 [tool.coverage.run]
 source = ["pyffmpegcore"]
