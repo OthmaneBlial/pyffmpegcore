@@ -22,6 +22,8 @@ pip install --upgrade pip
 pip install -e .[dev]
 ```
 
+The `dev` extra is the supported way to install local test and build tooling for this repository.
+
 ## Baseline Validation Commands
 
 Run these commands before and after meaningful changes:
