@@ -17,7 +17,7 @@ from typing import Any, Sequence
 
 from . import __version__
 from .probe import FFprobeRunner
-from .runner import FFmpegRunner, escape_path_for_concat
+from .runner import FFmpegRunner, escape_path_for_concat, escape_path_for_filter
 
 
 EXIT_OK = 0
@@ -491,6 +491,71 @@ def build_parser() -> argparse.ArgumentParser:
         help="Audio codec for re-encode mode. Defaults to %(default)s.",
     )
     concat_parser.set_defaults(handler=handle_concat)
+
+    subtitles_parser = subparsers.add_parser(
+        "subtitles",
+        parents=[common_parent],
+        help="Add, extract, or burn subtitle tracks.",
+        description="Add, extract, or burn subtitle tracks.",
+    )
+    subtitles_subparsers = subtitles_parser.add_subparsers(
+        dest="subtitles_command",
+        metavar="SUBTITLES_COMMAND",
+    )
+
+    subtitles_add_parser = subtitles_subparsers.add_parser(
+        "add",
+        parents=[common_parent],
+        help="Add an external subtitle file as a selectable track.",
+        description="Add an external subtitle file as a selectable track.",
+    )
+    subtitles_add_parser.add_argument("--video", required=True, help="Path to the input video file.")
+    subtitles_add_parser.add_argument("--subtitle", required=True, help="Path to the subtitle file.")
+    subtitles_add_parser.add_argument("--output", required=True, help="Path to the output video file.")
+    subtitles_add_parser.add_argument(
+        "--language",
+        default="eng",
+        help="Subtitle language code. Defaults to %(default)s.",
+    )
+    subtitles_add_parser.set_defaults(handler=handle_subtitles_add)
+
+    subtitles_extract_parser = subtitles_subparsers.add_parser(
+        "extract",
+        parents=[common_parent],
+        help="Extract a subtitle stream from a video file.",
+        description="Extract a subtitle stream from a video file.",
+    )
+    subtitles_extract_parser.add_argument("--video", required=True, help="Path to the input video file.")
+    subtitles_extract_parser.add_argument("--output", required=True, help="Path to the extracted subtitle file.")
+    subtitles_extract_parser.add_argument(
+        "--stream-index",
+        type=int,
+        default=0,
+        help="Zero-based subtitle stream index. Defaults to %(default)s.",
+    )
+    subtitles_extract_parser.set_defaults(handler=handle_subtitles_extract)
+
+    subtitles_burn_parser = subtitles_subparsers.add_parser(
+        "burn",
+        parents=[common_parent],
+        help="Burn subtitle text permanently into the video image.",
+        description="Burn subtitle text permanently into the video image.",
+    )
+    subtitles_burn_parser.add_argument("--video", required=True, help="Path to the input video file.")
+    subtitles_burn_parser.add_argument("--subtitle", required=True, help="Path to the subtitle file.")
+    subtitles_burn_parser.add_argument("--output", required=True, help="Path to the output video file.")
+    subtitles_burn_parser.add_argument(
+        "--font-size",
+        type=int,
+        default=24,
+        help="Subtitle font size. Defaults to %(default)s.",
+    )
+    subtitles_burn_parser.add_argument(
+        "--font-color",
+        default="&HFFFFFF",
+        help="ASS/FFmpeg subtitle color value. Defaults to %(default)s.",
+    )
+    subtitles_burn_parser.set_defaults(handler=handle_subtitles_burn)
 
     return parser
 
@@ -1226,6 +1291,117 @@ def handle_concat(args: argparse.Namespace) -> int:
         exit_code = EXIT_ENVIRONMENT_ERROR if "was not found" in message else EXIT_RUNTIME_ERROR
         raise CLIError(message, exit_code=exit_code) from exc
 
+    summarize_output_file(ctx, output_path)
+    return EXIT_OK
+
+
+def handle_subtitles_add(args: argparse.Namespace) -> int:
+    """
+    Add an external subtitle track to a video file.
+    """
+    ctx = build_context(args)
+    video_path = require_existing_input(args.video, option_name="--video")
+    subtitle_path = require_existing_input(args.subtitle, option_name="--subtitle")
+    output_path = prepare_output_path(args.output, force=ctx.force)
+
+    result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).run(
+        [
+            "-i",
+            str(video_path),
+            "-i",
+            str(subtitle_path),
+            "-map",
+            "0:v:0",
+            "-map",
+            "0:a?",
+            "-map",
+            "1:0",
+            "-c:v",
+            "copy",
+            "-c:a",
+            "copy",
+            "-c:s",
+            "mov_text",
+            "-metadata:s:s:0",
+            f"language={args.language}",
+            "-y",
+            str(output_path),
+        ]
+    )
+    raise_for_completed_process_error(result)
+    summarize_output_file(ctx, output_path)
+    return EXIT_OK
+
+
+def handle_subtitles_extract(args: argparse.Namespace) -> int:
+    """
+    Extract subtitles from a video file.
+    """
+    ctx = build_context(args)
+    video_path = require_existing_input(args.video, option_name="--video")
+    output_path = prepare_output_path(args.output, force=ctx.force)
+
+    result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).run(
+        [
+            "-i",
+            str(video_path),
+            "-map",
+            f"0:s:{args.stream_index}",
+            "-c:s",
+            "srt",
+            "-y",
+            str(output_path),
+        ]
+    )
+    raise_for_completed_process_error(result)
+    echo(ctx, f"Created: {output_path}")
+    return EXIT_OK
+
+
+def handle_subtitles_burn(args: argparse.Namespace) -> int:
+    """
+    Burn subtitles into the video image.
+    """
+    ctx = build_context(args)
+    video_path = require_existing_input(args.video, option_name="--video")
+    subtitle_path = require_existing_input(args.subtitle, option_name="--subtitle")
+    output_path = prepare_output_path(args.output, force=ctx.force)
+
+    temporary_subtitle_file: Path | None = None
+    subtitle_source = subtitle_path
+
+    if "'" in str(subtitle_path):
+        with tempfile.NamedTemporaryFile(
+            suffix=subtitle_path.suffix,
+            delete=False,
+        ) as temp_file:
+            temporary_subtitle_file = Path(temp_file.name)
+        shutil.copyfile(subtitle_path, temporary_subtitle_file)
+        subtitle_source = temporary_subtitle_file
+
+    subtitle_filter = (
+        f"subtitles='{escape_path_for_filter(str(subtitle_source))}':"
+        f"force_style='FontSize={args.font_size},PrimaryColour={args.font_color}'"
+    )
+
+    try:
+        result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).run(
+            [
+                "-i",
+                str(video_path),
+                "-vf",
+                subtitle_filter,
+                "-c:a",
+                "copy",
+                "-y",
+                str(output_path),
+            ]
+        )
+    finally:
+        if temporary_subtitle_file and temporary_subtitle_file.exists():
+            temporary_subtitle_file.unlink()
+
+    raise_for_completed_process_error(result)
     summarize_output_file(ctx, output_path)
     return EXIT_OK
 
