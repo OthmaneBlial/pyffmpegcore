@@ -8,7 +8,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from scripts.validate_cli_install import doctor_result_is_acceptable, run_command
+from scripts.validate_cli_install import add_report_entry, doctor_result_is_acceptable, run_command
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 VALIDATOR = REPO_ROOT / "scripts" / "validate_cli_install.py"
@@ -62,3 +62,9 @@ def test_clean_install_commands_are_observable_and_bounded(capsys):
     captured = capsys.readouterr()
     assert "starting intentional-timeout" in captured.err
     assert "failed intentional-timeout (rc=124)" in captured.err
+
+    report = []
+    add_report_entry(report, "intentional-timeout", result)
+    captured = capsys.readouterr()
+    assert "diagnostic for intentional-timeout" in captured.err
+    assert "Command timed out after 0.01 seconds." in captured.err

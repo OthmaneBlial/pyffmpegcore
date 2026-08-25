@@ -119,6 +119,13 @@ def add_report_entry(
             "stderr": result.stderr.strip(),
         }
     )
+    if result.returncode != 0:
+        detail = result.stderr.strip() or result.stdout.strip() or "no captured diagnostic"
+        print(
+            f"clean-install check: diagnostic for {name}:\n{detail[-8000:]}",
+            file=sys.stderr,
+            flush=True,
+        )
 
 
 def sha256_for_file(path: Path) -> str:
@@ -380,9 +387,18 @@ def main(argv: list[str] | None = None) -> int:
                 ]
                 if subtitle_name is not None:
                     profile_command.extend(["--subtitle", str(args.media_root / subtitle_name)])
+                profile_command.extend(["--timeout", "60", "--result-json"])
                 profile_run = run_command(profile_command, label=f"profile-{profile_name}")
                 add_report_entry(commands, f"profile-{profile_name}", profile_run)
-                if profile_run.returncode != 0 or not profile_output.exists():
+                try:
+                    profile_payload = json.loads(profile_run.stdout)
+                except json.JSONDecodeError:
+                    return 1
+                if (
+                    profile_run.returncode != 0
+                    or not profile_output.exists()
+                    or profile_payload.get("summary", {}).get("succeeded") != 1
+                ):
                     return 1
 
             batch_manifest = outputs_dir / "installed-batch.json"
