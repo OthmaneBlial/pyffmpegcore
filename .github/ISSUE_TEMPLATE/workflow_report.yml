@@ -1,0 +1,41 @@
+name: Completed workflow report
+description: Tell us what you finished and where the first-value path was difficult
+title: "[Workflow]: "
+labels: [feedback, needs-triage]
+body:
+  - type: textarea
+    id: completed
+    attributes:
+      label: Workflow completed
+      description: What real input-to-output job did you finish with PyFFmpegCore?
+    validations:
+      required: true
+  - type: input
+    id: time
+    attributes:
+      label: Time to first verified output
+      description: Include FFmpeg setup time if it was part of the attempt.
+      placeholder: e.g. 4 minutes
+    validations:
+      required: true
+  - type: textarea
+    id: proof
+    attributes:
+      label: Sanitized proof
+      description: Share formats, streams, sizes, loudness, or a redacted receipt. Do not attach private media.
+    validations:
+      required: true
+  - type: textarea
+    id: friction
+    attributes:
+      label: Friction encountered
+      description: What was confusing, slow, missing, or unexpectedly easy?
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: I removed credentials, personal paths, and private media or metadata.
+          required: true

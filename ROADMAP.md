@@ -330,25 +330,25 @@ P0 Truth and reproducibility
 
 - [ ] Convert repeated real user questions into tested recipes and troubleshooting pages.
 - [x] Publish before/after media evidence and receipts for each flagship recipe.
-- [ ] Invite recipe proposals through a structured issue form; promote only validated recipes into the supported catalog.
-- [ ] Enable Discussions for recipe requests/show-and-tell only when the maintainer can triage it consistently.
+- [x] Invite recipe proposals through a structured issue form; promote only validated recipes into the supported catalog.
+- [x] Enable Discussions for recipe requests/show-and-tell only when the maintainer can triage it consistently.
 - [ ] Link releases to the exact recipes, compatibility evidence, and user problems they improve.
 
 ### P5.2 Make first contributions genuinely bounded
 
-- [ ] Create at least five scoped newcomer issues with file pointers, acceptance criteria, and verification commands before inviting contributions.
-- [ ] Provide a contribution ladder: docs/recipes → fixtures/tests → platform support → workflow/core changes.
-- [ ] Add labels for `good first issue`, `help wanted`, `recipe`, `documentation`, `platform`, `bug`, and `security` with clear meanings.
-- [ ] Credit external issue authors, testers, recipe contributors, and code contributors in release notes.
-- [ ] Publish realistic triage and review expectations; do not create an abandoned community surface.
+- [x] Create at least five scoped newcomer issues with file pointers, acceptance criteria, and verification commands before inviting contributions.
+- [x] Provide a contribution ladder: docs/recipes → fixtures/tests → platform support → workflow/core changes.
+- [x] Add labels for `good first issue`, `help wanted`, `recipe`, `documentation`, `platform`, `bug`, and `security` with clear meanings.
+- [x] Credit external issue authors, testers, recipe contributors, and code contributors in release notes.
+- [x] Publish realistic triage and review expectations; do not create an abandoned community surface.
 
 ### P5.3 Distribute proof, not hype
 
 - [ ] Share releases in relevant Python, FFmpeg, creator-tooling, and CI communities with a reproducible use case and clear project affiliation.
 - [ ] Publish short technical notes on capability preflight, exact-size compression, deterministic plans, and privacy-safe receipts.
-- [ ] Maintain an honest comparison page and update it when competitor behavior changes.
-- [ ] Ask users for the workflow they completed and friction encountered, not merely for a star.
-- [ ] Never use star exchanges, mass unsolicited posting, fake benchmarks, or unverified “fastest/easiest/secure” claims.
+- [x] Maintain an honest comparison page and update it when competitor behavior changes.
+- [x] Ask users for the workflow they completed and friction encountered, not merely for a star.
+- [x] Never use star exchanges, mass unsolicited posting, fake benchmarks, or unverified “fastest/easiest/secure” claims.
 
 **P5 acceptance gate**
 

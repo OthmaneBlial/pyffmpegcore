@@ -8,6 +8,8 @@ This checklist is a gate, not a record of an older local run. The complete proce
 - [ ] README installation commands and badges are live and honest.
 - [ ] Compatibility policy names only combinations with visible required checks.
 - [ ] Security, support, contribution, and migration guidance is current.
+- [ ] Notes link the exact recipes, compatibility run, before/after evidence, and user problems improved.
+- [ ] External issue reporters, recipe authors, testers, and code contributors are credited by their requested name or anonymously.
 
 ## Automated Evidence
 

@@ -1,0 +1,14 @@
+changelog:
+  categories:
+    - title: User workflows
+      labels: [recipe, enhancement]
+    - title: Correctness and platform fixes
+      labels: [bug, platform]
+    - title: Documentation
+      labels: [documentation]
+    - title: Security hardening
+      labels: [security]
+    - title: Other changes
+      labels: ["*"]
+  exclude:
+    labels: [duplicate, invalid]
