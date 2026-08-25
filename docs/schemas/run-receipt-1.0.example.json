@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0",
+  "privacy": {
+    "paths": "basename-only",
+    "url_credentials": "redacted",
+    "url_queries": "redacted",
+    "secret_assignments": "redacted",
+    "content_hashing": "disabled"
+  },
+  "plan": {
+    "schema_version": "1.0",
+    "workflow": "thumbnail",
+    "command": ["ffmpeg", "-i", "<path>/talk.mp4", "<path>/poster.jpg"],
+    "inputs": ["<path>/talk.mp4"],
+    "outputs": ["<path>/poster.jpg"]
+  },
+  "tools": {
+    "pyffmpegcore": "0.2.0",
+    "python": "3.12.0",
+    "platform": "example",
+    "ffmpeg": "ffmpeg version example",
+    "ffprobe": "ffprobe version example"
+  },
+  "summary": {"total": 1, "succeeded": 1, "failed": 0},
+  "items": [
+    {
+      "input_probe": {"path": "<path>/talk.mp4", "format_name": "mov,mp4", "streams": []},
+      "output_probe": {"path": "<path>/poster.jpg", "format_name": "image2", "streams": []},
+      "preflight": {"schema_version": "1.0", "workflow": "thumbnail", "ok": true, "checks": []},
+      "result": {
+        "workflow": "thumbnail",
+        "status": "succeeded",
+        "exit_category": "ok",
+        "returncode": 0,
+        "elapsed_seconds": 0.25,
+        "progress": {"schema_version": "1.0", "sequence": 1, "status": "end"},
+        "warnings": []
+      }
+    }
+  ],
+  "content_hashes": []
+}

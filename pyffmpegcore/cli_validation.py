@@ -29,6 +29,13 @@ def validate_global_contract(args: argparse.Namespace, writing_commands: Collect
         raise CLIError("--timeout requires a media-writing command.", exit_code=2)
     if getattr(args, "temp_files", "clean") != "clean" and command not in writing_commands:
         raise CLIError("--temp-files requires a media-writing command.", exit_code=2)
+    receipt = getattr(args, "receipt", None)
+    if receipt is not None and command not in writing_commands:
+        raise CLIError("--receipt requires a media-writing command.", exit_code=2)
+    if receipt is not None and preview:
+        raise CLIError("--receipt requires execution and cannot be combined with --dry-run or --explain.", exit_code=2)
+    if getattr(args, "hash_content", False) and receipt is None:
+        raise CLIError("--hash-content requires --receipt FILE.", exit_code=2)
     return preview
 
 

@@ -24,4 +24,8 @@ The document uses `schema_version: "1.0"` and reports status, retention behavior
 
 Writing commands accept `--result-json`. Its version `1.0` envelope contains `plan`, `preflight`, ordered `items`, and a `summary`. Each item records its input/output identity, item-specific preflight, and stable `JobResult`. Batch image jobs therefore retain the same schema for total success, total failure, and partial success.
 
-Receipts and pipelines will use separate schema files and migration rules. Human terminal output is allowed to evolve; versioned JSON fields follow the documented compatibility and deprecation policy.
+Run receipts use their own [`1.0` JSON Schema](schemas/run-receipt-1.0.schema.json),
+[redacted example](schemas/run-receipt-1.0.example.json), and explicit
+[privacy/migration contract](receipts.md). Human terminal output is allowed to
+evolve; versioned JSON fields follow the documented compatibility and
+deprecation policy.

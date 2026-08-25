@@ -31,6 +31,7 @@ nav:
   - Workflow profiles: profiles.md
   - Capability preflight: preflight.md
   - Dry runs and plans: plans.md
+  - Run receipts: receipts.md
   - Recipes:
       - Overview: recipes/index.md
       - Web-compatible video: recipes/web-video.md

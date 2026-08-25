@@ -25,6 +25,7 @@ from .cli_planning import build_cli_plan
 from .cli_validation import (
     CLIError,
     prepare_output_dir,
+    prepare_output_path,
     require_existing_input,
     runtime_error_to_cli_error,
     validate_global_contract,
@@ -35,6 +36,7 @@ from .preflight import PreflightEngine
 from .presentation import render_plan_json, render_plan_text
 from .probe import FFprobeRunner
 from .profiles import Profile, ProfileRegistry
+from .receipt import ReceiptBuilder, RunReceipt, build_bug_report, migrate_receipt
 from .runner import FFmpegRunner
 
 EXIT_OK = 0
@@ -582,6 +584,62 @@ def handle_doctor(args: argparse.Namespace) -> int:
     return exit_code
 
 
+def handle_receipt_validate(args: argparse.Namespace) -> int:
+    """Validate a receipt schema without requiring access to the original media."""
+    receipt = RunReceipt.read(args.path)
+    payload = {
+        "schema_version": "1.0",
+        "valid": True,
+        "receipt_schema_version": receipt.document["schema_version"],
+        "items": len(receipt.document["items"]),
+    }
+    if args.json:
+        print(json.dumps(payload, indent=2))
+    else:
+        echo(
+            build_context(args),
+            f"Valid receipt: schema {payload['receipt_schema_version']}, {payload['items']} item(s)",
+        )
+    return EXIT_OK
+
+
+def handle_receipt_bug_report(args: argparse.Namespace) -> int:
+    """Create a redacted doctor + receipt bundle without opening private media."""
+    ctx = build_context(args)
+    receipt = RunReceipt.read(args.path)
+    payload = build_bug_report(receipt, collect_doctor_report(ctx))
+    rendered = json.dumps(payload, indent=2, ensure_ascii=False) + "\n"
+    if args.output is None:
+        print(rendered, end="")
+        return EXIT_OK
+    destination = prepare_output_path(str(args.output), force=ctx.force)
+    try:
+        destination.write_text(rendered, encoding="utf-8")
+    except OSError as exc:
+        raise CLIError(f"Unable to write bug report: {exc}", exit_code=EXIT_RUNTIME_ERROR) from exc
+    echo(ctx, f"Bug report: {destination}")
+    return EXIT_OK
+
+
+def handle_receipt_migrate(args: argparse.Namespace) -> int:
+    """Canonicalize the current schema and provide an explicit future migration surface."""
+    try:
+        document = json.loads(args.path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise CLIError(f"Unable to read receipt: {exc}") from exc
+    receipt = migrate_receipt(document, args.target_version)
+    if args.output is None:
+        print(receipt.to_json(), end="")
+        return EXIT_OK
+    destination = prepare_output_path(str(args.output), force=build_context(args).force)
+    try:
+        receipt.write(destination)
+    except OSError as exc:
+        raise CLIError(f"Unable to write migrated receipt: {exc}", exit_code=EXIT_RUNTIME_ERROR) from exc
+    echo(build_context(args), f"Migrated receipt: {destination}")
+    return EXIT_OK
+
+
 def _run_smoke_test(ctx: CLIContext, workspace: Path, retained: bool) -> dict[str, Any]:
     """
     Generate and verify a tiny local workflow without repository fixtures.
@@ -873,6 +931,13 @@ def handle_planned_execution(args: argparse.Namespace, ctx: CLIContext) -> int:
     """Plan, preflight, execute, and render every media-writing CLI command."""
     prepared = prepare_cli_job(args)
     result_json = bool(getattr(args, "result_json", False))
+    receipt_destination = getattr(args, "receipt", None)
+    if receipt_destination is not None:
+        receipt_destination = Path(receipt_destination).resolve()
+        if str(receipt_destination) in prepared.plan.outputs:
+            raise CLIError("--receipt must not overwrite a media output.")
+        if receipt_destination.exists() and not ctx.force:
+            raise CLIError(f"Receipt already exists: {receipt_destination}. Re-run with --force to overwrite.")
     progress_printer: CLIProgressPrinter | None = None
     if not ctx.quiet and not result_json and prepared.plan.inputs:
         progress_printer = build_progress_printer(ctx, Path(prepared.plan.inputs[0]))
@@ -885,11 +950,29 @@ def handle_planned_execution(args: argparse.Namespace, ctx: CLIContext) -> int:
         prepared,
         progress_callback=report_progress if progress_printer is not None else None,
     )
+    receipt = None
+    if receipt_destination is not None:
+        try:
+            receipt = ReceiptBuilder(ffmpeg_path=ctx.ffmpeg_path, ffprobe_path=ctx.ffprobe_path).build(
+                bundle,
+                hash_content=bool(getattr(args, "hash_content", False)),
+            )
+            receipt.write(receipt_destination)
+        except OSError as exc:
+            raise CLIError(f"Unable to write receipt: {exc}", exit_code=EXIT_RUNTIME_ERROR) from exc
     if result_json:
-        print(json.dumps(bundle.to_dict(), indent=2))
+        payload = bundle.to_dict()
+        if receipt is not None:
+            payload["receipt"] = {
+                "schema_version": receipt.document["schema_version"],
+                "path": str(receipt_destination),
+            }
+        print(json.dumps(payload, indent=2))
     else:
         _render_execution_failures(bundle)
         _render_execution_successes(ctx, bundle)
+        if receipt is not None:
+            echo(ctx, f"Receipt: {receipt_destination}")
     return _execution_exit_code(bundle)
 
 
@@ -923,6 +1006,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         "handle_profile_list": handle_profile_list,
         "handle_profile_show": handle_profile_show,
         "handle_profile_validate": handle_profile_validate,
+        "handle_receipt_bug_report": handle_receipt_bug_report,
+        "handle_receipt_migrate": handle_receipt_migrate,
+        "handle_receipt_validate": handle_receipt_validate,
         "handle_smoke_test": handle_smoke_test,
     }
     handler = handlers.get(handler_name) if isinstance(handler_name, str) else None

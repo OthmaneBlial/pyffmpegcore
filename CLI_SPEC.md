@@ -124,7 +124,7 @@ Higher-level frameworks can be reconsidered later only if they solve a real user
 
 ## Parser Conventions
 
-- Global options should include `--verbose`, `--quiet`, `--ffmpeg-path`, `--ffprobe-path`, `--timeout`, and `--temp-files`.
+- Global options should include `--verbose`, `--quiet`, `--ffmpeg-path`, `--ffprobe-path`, `--timeout`, `--temp-files`, `--receipt`, and opt-in `--hash-content`.
 - Every writing command should accept non-mutating `--dry-run`/`--explain` previews and an executing `--result-json` machine-result mode.
 - Required file paths should use explicit names rather than positional guessing where readability matters.
 - Commands that write files should require an explicit output target unless a later phase defines a safe default.

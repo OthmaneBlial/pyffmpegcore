@@ -7,6 +7,8 @@ metadata extraction, and progress tracking around local FFmpeg binaries.
 Copyright (c) 2025 Othmane BLIAL
 """
 
+__version__ = "0.2.0"
+
 from .capabilities import CapabilityInventory
 from .domain import (
     CapturePolicy,
@@ -38,10 +40,10 @@ from .preflight import PreflightCheck, PreflightEngine, PreflightReport
 from .probe import FFprobeRunner
 from .profiles import Profile, ProfileRegistry
 from .progress import ProgressCallback, ProgressTracker
+from .receipt import ReceiptBuilder, RunReceipt, build_bug_report, migrate_receipt, validate_receipt
 from .runner import FFmpegRunner
 from .workflow import PreparedWorkflow, WorkflowBatch, WorkflowEngine, WorkflowExecution
 
-__version__ = "0.2.0"
 __all__ = [
     "CapabilityUnavailableError",
     "CapabilityInventory",
@@ -71,7 +73,9 @@ __all__ = [
     "ProgressEvent",
     "ProgressTracker",
     "PyFFmpegCoreError",
+    "ReceiptBuilder",
     "ResizeOptions",
+    "RunReceipt",
     "StreamInfo",
     "TemporaryFilePolicy",
     "ValidationError",
@@ -79,5 +83,8 @@ __all__ = [
     "WorkflowBatch",
     "WorkflowEngine",
     "WorkflowExecution",
+    "build_bug_report",
+    "migrate_receipt",
     "parse_size",
+    "validate_receipt",
 ]

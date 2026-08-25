@@ -53,6 +53,8 @@ SDIST_REQUIRED_PATHS = frozenset(
     {
         "LICENSE",
         "README.md",
+        "docs/schemas/run-receipt-1.0.example.json",
+        "docs/schemas/run-receipt-1.0.schema.json",
         "pyproject.toml",
         "pyffmpegcore/__init__.py",
         "pyffmpegcore/cli.py",

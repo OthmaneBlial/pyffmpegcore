@@ -90,6 +90,19 @@ def add_global_arguments(
         help="Clean temporary files, retain them on error, or always retain them.",
     )
     parser.add_argument(
+        "--receipt",
+        type=Path,
+        default=argparse.SUPPRESS if suppress_defaults else None,
+        metavar="FILE",
+        help="Write a privacy-redacted versioned receipt for an executed media job.",
+    )
+    parser.add_argument(
+        "--hash-content",
+        action="store_true",
+        default=bool_default,
+        help="Opt in to SHA-256 input/output hashes in --receipt.",
+    )
+    parser.add_argument(
         "--ffmpeg-path",
         default=ffmpeg_default,
         help="Path to the ffmpeg executable. Defaults to ffmpeg.",
@@ -212,6 +225,44 @@ def build_parser() -> argparse.ArgumentParser:
     profile_validate_parser.add_argument("path", type=Path, help="Path to a .json or .toml profile.")
     profile_validate_parser.add_argument("--json", action="store_true", help="Print the validated profile as JSON.")
     profile_validate_parser.set_defaults(handler_name="handle_profile_validate")
+
+    receipt_parser = subparsers.add_parser(
+        "receipt",
+        parents=[common_parent],
+        help="Validate a run receipt or build a private bug-report bundle.",
+        description="Validate a run receipt or build a private bug-report bundle.",
+    )
+    receipt_subparsers = receipt_parser.add_subparsers(dest="receipt_command", metavar="COMMAND")
+
+    receipt_validate_parser = receipt_subparsers.add_parser(
+        "validate",
+        parents=[common_parent],
+        help="Validate a versioned receipt without accessing its media.",
+    )
+    receipt_validate_parser.add_argument("path", type=Path, help="Path to a receipt JSON file.")
+    receipt_validate_parser.add_argument("--json", action="store_true", help="Print validation facts as JSON.")
+    receipt_validate_parser.set_defaults(handler_name="handle_receipt_validate")
+
+    receipt_bug_parser = receipt_subparsers.add_parser(
+        "bug-report",
+        parents=[common_parent],
+        help="Combine a redacted receipt with current doctor facts.",
+    )
+    receipt_bug_parser.add_argument("path", type=Path, help="Path to a validated receipt JSON file.")
+    receipt_bug_parser.add_argument("--output", type=Path, help="Write the JSON bundle instead of stdout.")
+    receipt_bug_parser.set_defaults(handler_name="handle_receipt_bug_report")
+
+    receipt_migrate_parser = receipt_subparsers.add_parser(
+        "migrate",
+        parents=[common_parent],
+        help="Validate, redact again, and canonicalize a receipt schema.",
+    )
+    receipt_migrate_parser.add_argument("path", type=Path, help="Path to the source receipt JSON file.")
+    receipt_migrate_parser.add_argument("--output", type=Path, help="Write the canonical receipt instead of stdout.")
+    receipt_migrate_parser.add_argument(
+        "--target-version", default="1.0", help="Target receipt schema. Defaults to %(default)s."
+    )
+    receipt_migrate_parser.set_defaults(handler_name="handle_receipt_migrate")
 
     probe_parser = subparsers.add_parser(
         "probe",

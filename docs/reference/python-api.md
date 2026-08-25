@@ -287,9 +287,33 @@ Args:
 
 Base error carrying a stable machine-readable category.
 
+## `ReceiptBuilder`
+
+Build redacted receipts from the same prepared workflow and stable results.
+
+### `build(self, batch: 'WorkflowBatch', *, hash_content: 'bool' = False) -> 'RunReceipt'`
+
+Create a private-by-default receipt; content hashes are explicit opt-in.
+
 ## `ResizeOptions`
 
 ResizeOptions(width: 'int', height: 'int', video_codec: 'str | None' = None, audio_codec: 'str | None' = None, pixel_format: 'str' = 'yuv420p', threads: 'int | None' = None)
+
+## `RunReceipt`
+
+Validated schema 1.0 receipt suitable for storage or bug reports.
+
+### `to_dict(self) -> 'dict[str, Any]'`
+
+No public docstring is available.
+
+### `to_json(self) -> 'str'`
+
+No public docstring is available.
+
+### `write(self, path: 'str | Path') -> 'Path'`
+
+No public docstring is available.
 
 ## `StreamInfo`
 

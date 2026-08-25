@@ -7,8 +7,9 @@ This reference is generated from the same `argparse` tree used by the installed 
 
 ```text
 usage: pyffmpegcore [-h] [--verbose | --quiet] [--force] [--dry-run | --explain] [--plan-json]
-       [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}] [--ffmpeg-path
-       FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] [--version] COMMAND ...
+       [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}] [--receipt
+       FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] [--version]
+       COMMAND ...
 
 PyFFmpegCore CLI. A task-focused terminal interface for the verified media workflows in this
 repository.
@@ -19,6 +20,7 @@ positional arguments:
     smoke-test          Generate local synthetic media and verify a complete workflow.
     completion          Print a shell completion script for bash, zsh, or PowerShell.
     profile             List, explain, or validate versioned workflow profiles.
+    receipt             Validate a run receipt or build a private bug-report bundle.
     probe               Inspect a media file and print simplified metadata.
     convert             Convert a media file into a new format.
     compress            Compress a video file with CRF or target-size settings.
@@ -45,6 +47,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -64,7 +68,8 @@ command-specific flags. See CLI_HELP.md for task-based copy-paste examples.
 ```text
 usage: pyffmpegcore doctor [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] [--json]
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       [--json]
 
 Show FFmpeg, FFprobe, and environment diagnostics.
 
@@ -81,6 +86,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -93,7 +100,8 @@ options:
 ```text
 usage: pyffmpegcore smoke-test [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] [--keep-dir KEEP_DIR] [--json]
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       [--keep-dir KEEP_DIR] [--json]
 
 Generate a tiny local media file, extract a thumbnail, probe both artifacts, and clean up unless
 --keep-dir is provided.
@@ -111,6 +119,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -125,7 +135,8 @@ options:
 ```text
 usage: pyffmpegcore completion [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] {bash,zsh,powershell}
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       {bash,zsh,powershell}
 
 Print a shell completion script for bash, zsh, or PowerShell.
 
@@ -146,6 +157,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -157,7 +170,8 @@ options:
 ```text
 usage: pyffmpegcore profile [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] COMMAND ...
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       COMMAND ...
 
 Inspect built-in profiles or validate a strict local JSON/TOML profile.
 
@@ -180,6 +194,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -191,7 +207,8 @@ options:
 ```text
 usage: pyffmpegcore profile list [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] [--json]
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       [--json]
 
 options:
   -h, --help            show this help message and exit
@@ -206,6 +223,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -218,7 +237,8 @@ options:
 ```text
 usage: pyffmpegcore profile show [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] [--json] name
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       [--json] name
 
 positional arguments:
   name                  Profile name, for example web/mp4-compatible.
@@ -236,6 +256,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -248,7 +270,8 @@ options:
 ```text
 usage: pyffmpegcore profile validate [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] [--json] path
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       [--json] path
 
 positional arguments:
   path                  Path to a .json or .toml profile.
@@ -266,6 +289,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -273,12 +298,151 @@ options:
   --json                Print the validated profile as JSON.
 ```
 
+## `pyffmpegcore receipt`
+
+```text
+usage: pyffmpegcore receipt [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
+       [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       COMMAND ...
+
+Validate a run receipt or build a private bug-report bundle.
+
+positional arguments:
+  COMMAND
+    validate            Validate a versioned receipt without accessing its media.
+    bug-report          Combine a redacted receipt with current doctor facts.
+    migrate             Validate, redact again, and canonicalize a receipt schema.
+
+options:
+  -h, --help            show this help message and exit
+  --verbose             Show more detailed command output.
+  --quiet               Reduce command output to essentials.
+  --force               Allow overwriting existing output files or directories.
+  --dry-run             Preflight and print the exact plan without writing files.
+  --explain             Explain streams, operations, trade-offs, and the exact plan without writing
+  files.
+  --plan-json           Print --dry-run or --explain as versioned JSON.
+  --result-json         Print the writing command's versioned plan, preflight, and result as JSON.
+  --timeout SECONDS     Stop a writing command after this positive number of seconds.
+  --temp-files {clean,keep-on-error,keep}
+                        Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
+  --ffmpeg-path FFMPEG_PATH
+                        Path to the ffmpeg executable. Defaults to ffmpeg.
+  --ffprobe-path FFPROBE_PATH
+                        Path to the ffprobe executable. Defaults to ffprobe.
+```
+
+## `pyffmpegcore receipt validate`
+
+```text
+usage: pyffmpegcore receipt validate [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
+       [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       [--json] path
+
+positional arguments:
+  path                  Path to a receipt JSON file.
+
+options:
+  -h, --help            show this help message and exit
+  --verbose             Show more detailed command output.
+  --quiet               Reduce command output to essentials.
+  --force               Allow overwriting existing output files or directories.
+  --dry-run             Preflight and print the exact plan without writing files.
+  --explain             Explain streams, operations, trade-offs, and the exact plan without writing
+  files.
+  --plan-json           Print --dry-run or --explain as versioned JSON.
+  --result-json         Print the writing command's versioned plan, preflight, and result as JSON.
+  --timeout SECONDS     Stop a writing command after this positive number of seconds.
+  --temp-files {clean,keep-on-error,keep}
+                        Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
+  --ffmpeg-path FFMPEG_PATH
+                        Path to the ffmpeg executable. Defaults to ffmpeg.
+  --ffprobe-path FFPROBE_PATH
+                        Path to the ffprobe executable. Defaults to ffprobe.
+  --json                Print validation facts as JSON.
+```
+
+## `pyffmpegcore receipt bug-report`
+
+```text
+usage: pyffmpegcore receipt bug-report [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
+       [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       [--output OUTPUT] path
+
+positional arguments:
+  path                  Path to a validated receipt JSON file.
+
+options:
+  -h, --help            show this help message and exit
+  --verbose             Show more detailed command output.
+  --quiet               Reduce command output to essentials.
+  --force               Allow overwriting existing output files or directories.
+  --dry-run             Preflight and print the exact plan without writing files.
+  --explain             Explain streams, operations, trade-offs, and the exact plan without writing
+  files.
+  --plan-json           Print --dry-run or --explain as versioned JSON.
+  --result-json         Print the writing command's versioned plan, preflight, and result as JSON.
+  --timeout SECONDS     Stop a writing command after this positive number of seconds.
+  --temp-files {clean,keep-on-error,keep}
+                        Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
+  --ffmpeg-path FFMPEG_PATH
+                        Path to the ffmpeg executable. Defaults to ffmpeg.
+  --ffprobe-path FFPROBE_PATH
+                        Path to the ffprobe executable. Defaults to ffprobe.
+  --output OUTPUT       Write the JSON bundle instead of stdout.
+```
+
+## `pyffmpegcore receipt migrate`
+
+```text
+usage: pyffmpegcore receipt migrate [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
+       [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       [--output OUTPUT] [--target-version TARGET_VERSION] path
+
+positional arguments:
+  path                  Path to the source receipt JSON file.
+
+options:
+  -h, --help            show this help message and exit
+  --verbose             Show more detailed command output.
+  --quiet               Reduce command output to essentials.
+  --force               Allow overwriting existing output files or directories.
+  --dry-run             Preflight and print the exact plan without writing files.
+  --explain             Explain streams, operations, trade-offs, and the exact plan without writing
+  files.
+  --plan-json           Print --dry-run or --explain as versioned JSON.
+  --result-json         Print the writing command's versioned plan, preflight, and result as JSON.
+  --timeout SECONDS     Stop a writing command after this positive number of seconds.
+  --temp-files {clean,keep-on-error,keep}
+                        Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
+  --ffmpeg-path FFMPEG_PATH
+                        Path to the ffmpeg executable. Defaults to ffmpeg.
+  --ffprobe-path FFPROBE_PATH
+                        Path to the ffprobe executable. Defaults to ffprobe.
+  --output OUTPUT       Write the canonical receipt instead of stdout.
+  --target-version TARGET_VERSION
+                        Target receipt schema. Defaults to 1.0.
+```
+
 ## `pyffmpegcore probe`
 
 ```text
 usage: pyffmpegcore probe [-h] [--verbose | --quiet] [--force] [--dry-run | --explain] [--plan-json]
-       [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}] [--ffmpeg-path
-       FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] --input INPUT [--json]
+       [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}] [--receipt
+       FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] --input
+       INPUT [--json]
 
 Inspect a media file and print simplified metadata.
 
@@ -295,6 +459,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -308,10 +474,10 @@ options:
 ```text
 usage: pyffmpegcore convert [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] --input INPUT --output OUTPUT
-       [--audio-only] [--video-codec VIDEO_CODEC] [--audio-codec AUDIO_CODEC] [--video-bitrate
-       VIDEO_BITRATE] [--audio-bitrate AUDIO_BITRATE] [--pix-fmt PIX_FMT] [--threads THREADS]
-       [--hwaccel HWACCEL]
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       --input INPUT --output OUTPUT [--audio-only] [--video-codec VIDEO_CODEC] [--audio-codec
+       AUDIO_CODEC] [--video-bitrate VIDEO_BITRATE] [--audio-bitrate AUDIO_BITRATE] [--pix-fmt
+       PIX_FMT] [--threads THREADS] [--hwaccel HWACCEL]
 
 Convert a media file into a new format.
 
@@ -328,6 +494,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -354,12 +522,12 @@ options:
 ```text
 usage: pyffmpegcore compress [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] --input INPUT --output OUTPUT
-       [--crf CRF] [--target-size-kb TARGET_SIZE_KB | --target-size TARGET_SIZE] [--two-pass |
-       --single-pass] [--video-codec VIDEO_CODEC] [--audio-codec AUDIO_CODEC] [--video-bitrate
-       VIDEO_BITRATE] [--audio-bitrate AUDIO_BITRATE] [--preset PRESET] [--threads THREADS]
-       [--min-video-bitrate MIN_VIDEO_BITRATE] [--container-overhead-percent
-       CONTAINER_OVERHEAD_PERCENT]
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       --input INPUT --output OUTPUT [--crf CRF] [--target-size-kb TARGET_SIZE_KB | --target-size
+       TARGET_SIZE] [--two-pass | --single-pass] [--video-codec VIDEO_CODEC] [--audio-codec
+       AUDIO_CODEC] [--video-bitrate VIDEO_BITRATE] [--audio-bitrate AUDIO_BITRATE] [--preset
+       PRESET] [--threads THREADS] [--min-video-bitrate MIN_VIDEO_BITRATE]
+       [--container-overhead-percent CONTAINER_OVERHEAD_PERCENT]
 
 Compress a video file with CRF or target-size settings.
 
@@ -376,6 +544,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -410,9 +580,9 @@ options:
 ```text
 usage: pyffmpegcore extract-audio [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] --input INPUT --output OUTPUT
-       [--audio-codec AUDIO_CODEC] [--audio-bitrate AUDIO_BITRATE] [--sample-rate SAMPLE_RATE]
-       [--channels CHANNELS] [--threads THREADS]
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       --input INPUT --output OUTPUT [--audio-codec AUDIO_CODEC] [--audio-bitrate AUDIO_BITRATE]
+       [--sample-rate SAMPLE_RATE] [--channels CHANNELS] [--threads THREADS]
 
 Extract the audio stream from a media file.
 
@@ -429,6 +599,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -450,8 +622,9 @@ options:
 ```text
 usage: pyffmpegcore thumbnail [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] --input INPUT --output OUTPUT
-       [--timestamp TIMESTAMP] [--width WIDTH] [--height HEIGHT] [--quality QUALITY]
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       --input INPUT --output OUTPUT [--timestamp TIMESTAMP] [--width WIDTH] [--height HEIGHT]
+       [--quality QUALITY]
 
 Extract a thumbnail image from a video file.
 
@@ -468,6 +641,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -486,8 +661,8 @@ options:
 ```text
 usage: pyffmpegcore waveform [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] --input INPUT --output OUTPUT
-       [--width WIDTH] [--height HEIGHT] [--colors COLORS]
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       --input INPUT --output OUTPUT [--width WIDTH] [--height HEIGHT] [--colors COLORS]
 
 Generate a waveform image from audio or video-with-audio.
 
@@ -504,6 +679,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -519,8 +696,9 @@ options:
 
 ```text
 usage: pyffmpegcore speed [-h] [--verbose | --quiet] [--force] [--dry-run | --explain] [--plan-json]
-       [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}] [--ffmpeg-path
-       FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] SPEED_COMMAND ...
+       [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}] [--receipt
+       FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       SPEED_COMMAND ...
 
 Change playback speed for video or audio media.
 
@@ -542,6 +720,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -553,8 +733,8 @@ options:
 ```text
 usage: pyffmpegcore speed video [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] --input INPUT --output OUTPUT
-       --factor FACTOR [--no-pitch-preserve]
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       --input INPUT --output OUTPUT --factor FACTOR [--no-pitch-preserve]
 
 Change playback speed for a video file.
 
@@ -571,6 +751,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -586,8 +768,8 @@ options:
 ```text
 usage: pyffmpegcore speed audio [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] --input INPUT --output OUTPUT
-       --factor FACTOR [--no-pitch-preserve]
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       --input INPUT --output OUTPUT --factor FACTOR [--no-pitch-preserve]
 
 Change playback speed for an audio file.
 
@@ -604,6 +786,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -619,9 +803,9 @@ options:
 ```text
 usage: pyffmpegcore concat [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] --inputs INPUTS [INPUTS ...]
-       --output OUTPUT [--mode {copy,reencode}] [--video-codec VIDEO_CODEC] [--audio-codec
-       AUDIO_CODEC]
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       --inputs INPUTS [INPUTS ...] --output OUTPUT [--mode {copy,reencode}] [--video-codec
+       VIDEO_CODEC] [--audio-codec AUDIO_CODEC]
 
 Join multiple video clips into one output.
 
@@ -638,6 +822,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -658,7 +844,8 @@ options:
 ```text
 usage: pyffmpegcore subtitles [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] SUBTITLES_COMMAND ...
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       SUBTITLES_COMMAND ...
 
 Add, extract, or burn subtitle tracks.
 
@@ -681,6 +868,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -692,8 +881,8 @@ options:
 ```text
 usage: pyffmpegcore subtitles add [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] --video VIDEO --subtitle SUBTITLE
-       --output OUTPUT [--language LANGUAGE]
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       --video VIDEO --subtitle SUBTITLE --output OUTPUT [--language LANGUAGE]
 
 Add an external subtitle file as a selectable track.
 
@@ -710,6 +899,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -725,8 +916,8 @@ options:
 ```text
 usage: pyffmpegcore subtitles extract [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] --video VIDEO --output OUTPUT
-       [--stream-index STREAM_INDEX]
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       --video VIDEO --output OUTPUT [--stream-index STREAM_INDEX]
 
 Extract a subtitle stream from a video file.
 
@@ -743,6 +934,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -758,8 +951,9 @@ options:
 ```text
 usage: pyffmpegcore subtitles burn [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] --video VIDEO --subtitle SUBTITLE
-       --output OUTPUT [--font-size FONT_SIZE] [--font-color FONT_COLOR]
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       --video VIDEO --subtitle SUBTITLE --output OUTPUT [--font-size FONT_SIZE] [--font-color
+       FONT_COLOR]
 
 Burn subtitle text permanently into the video image.
 
@@ -776,6 +970,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -794,7 +990,8 @@ options:
 ```text
 usage: pyffmpegcore mix-audio [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] MIX_AUDIO_COMMAND ...
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       MIX_AUDIO_COMMAND ...
 
 Mix, concatenate, mash up, or layer multiple audio sources.
 
@@ -818,6 +1015,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -829,8 +1028,8 @@ options:
 ```text
 usage: pyffmpegcore mix-audio mix [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] --inputs INPUTS [INPUTS ...]
-       --output OUTPUT [--volumes [VOLUMES ...]]
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       --inputs INPUTS [INPUTS ...] --output OUTPUT [--volumes [VOLUMES ...]]
 
 Mix multiple audio sources together.
 
@@ -847,6 +1046,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -863,8 +1064,8 @@ options:
 ```text
 usage: pyffmpegcore mix-audio concat [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] --inputs INPUTS [INPUTS ...]
-       --output OUTPUT
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       --inputs INPUTS [INPUTS ...] --output OUTPUT
 
 Concatenate audio files one after another.
 
@@ -881,6 +1082,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -895,8 +1098,8 @@ options:
 ```text
 usage: pyffmpegcore mix-audio mashup [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] --inputs INPUTS [INPUTS ...]
-       --output OUTPUT [--crossfade-duration CROSSFADE_DURATION]
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       --inputs INPUTS [INPUTS ...] --output OUTPUT [--crossfade-duration CROSSFADE_DURATION]
 
 Crossfade multiple audio files into a mashup.
 
@@ -913,6 +1116,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -929,9 +1134,9 @@ options:
 ```text
 usage: pyffmpegcore mix-audio background [-h] [--verbose | --quiet] [--force] [--dry-run |
        --explain] [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files
-       {clean,keep-on-error,keep}] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
-       --main-input MAIN_INPUT --background-input BACKGROUND_INPUT --output OUTPUT [--bg-volume
-       BG_VOLUME]
+       {clean,keep-on-error,keep}] [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH]
+       [--ffprobe-path FFPROBE_PATH] --main-input MAIN_INPUT --background-input BACKGROUND_INPUT
+       --output OUTPUT [--bg-volume BG_VOLUME]
 
 Layer background music under a main audio track.
 
@@ -948,6 +1153,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -966,9 +1173,9 @@ options:
 ```text
 usage: pyffmpegcore normalize-audio [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] --input INPUT --output OUTPUT
-       [--method {loudnorm,master}] [--target-i TARGET_I] [--target-tp TARGET_TP] [--target-lra
-       TARGET_LRA]
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       --input INPUT --output OUTPUT [--method {loudnorm,master}] [--target-i TARGET_I] [--target-tp
+       TARGET_TP] [--target-lra TARGET_LRA]
 
 Normalize or master an audio file.
 
@@ -985,6 +1192,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -1005,7 +1214,8 @@ options:
 ```text
 usage: pyffmpegcore images [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] IMAGES_COMMAND ...
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       IMAGES_COMMAND ...
 
 Batch-convert or optimize image directories.
 
@@ -1028,6 +1238,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -1039,8 +1251,9 @@ options:
 ```text
 usage: pyffmpegcore images convert [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] --input-dir INPUT_DIR --output-dir
-       OUTPUT_DIR [--format FORMAT] [--quality QUALITY] [--resize WIDTH HEIGHT]
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       --input-dir INPUT_DIR --output-dir OUTPUT_DIR [--format FORMAT] [--quality QUALITY] [--resize
+       WIDTH HEIGHT]
 
 Convert a directory of images into another format.
 
@@ -1057,6 +1270,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -1076,8 +1291,9 @@ options:
 ```text
 usage: pyffmpegcore images optimize [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] --input-dir INPUT_DIR --output-dir
-       OUTPUT_DIR [--max-width MAX_WIDTH] [--max-height MAX_HEIGHT] [--quality QUALITY]
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       --input-dir INPUT_DIR --output-dir OUTPUT_DIR [--max-width MAX_WIDTH] [--max-height
+       MAX_HEIGHT] [--quality QUALITY]
 
 Resize and convert images into web-friendly JPEG outputs.
 
@@ -1094,6 +1310,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
@@ -1114,8 +1332,8 @@ options:
 ```text
 usage: pyffmpegcore images webp [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
-       [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] --input-dir INPUT_DIR --output-dir
-       OUTPUT_DIR [--quality QUALITY]
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       --input-dir INPUT_DIR --output-dir OUTPUT_DIR [--quality QUALITY]
 
 Convert a directory of images into WebP outputs.
 
@@ -1132,6 +1350,8 @@ options:
   --timeout SECONDS     Stop a writing command after this positive number of seconds.
   --temp-files {clean,keep-on-error,keep}
                         Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
   --ffmpeg-path FFMPEG_PATH
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH

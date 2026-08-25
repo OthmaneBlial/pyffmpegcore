@@ -270,11 +270,11 @@ P0 Truth and reproducibility
 
 ### P3.4 Privacy-aware run receipts
 
-- [ ] Add optional versioned JSON receipts containing the plan, tool versions, normalized progress summary, elapsed time, exit category, warnings, and input/output probe summaries.
-- [ ] Redact URL credentials, secrets, and private path components by default; document the redaction policy with adversarial tests.
-- [ ] Make content hashing opt-in for large or private files and record the hash algorithm explicitly.
-- [ ] Add a receipt validation command and a bug-report flow that attaches `doctor --json` plus a redacted receipt without requiring private media.
-- [ ] Publish the schema, examples, compatibility rules, and migrations.
+- [x] Add optional versioned JSON receipts containing the plan, tool versions, normalized progress summary, elapsed time, exit category, warnings, and input/output probe summaries.
+- [x] Redact URL credentials, secrets, and private path components by default; document the redaction policy with adversarial tests.
+- [x] Make content hashing opt-in for large or private files and record the hash algorithm explicitly.
+- [x] Add a receipt validation command and a bug-report flow that attaches `doctor --json` plus a redacted receipt without requiring private media.
+- [x] Publish the schema, examples, compatibility rules, and migrations.
 
 **P3 acceptance gate**
 
