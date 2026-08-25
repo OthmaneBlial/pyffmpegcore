@@ -392,6 +392,64 @@ def main(argv: list[str] | None = None) -> int:
             ):
                 return 1
 
+            pipeline_file = outputs_dir / "installed-pipeline.json"
+            pipeline_state = outputs_dir / "installed-pipeline-state.json"
+            pipeline_events = outputs_dir / "installed-pipeline-events.jsonl"
+            pipeline_receipts = outputs_dir / "installed-pipeline-receipts"
+            pipeline_video = outputs_dir / "pipeline-video.mp4"
+            pipeline_poster = outputs_dir / "pipeline-poster.jpg"
+            pipeline_file.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "1.0",
+                        "name": "installed_contract",
+                        "steps": [
+                            {
+                                "id": "web",
+                                "profile": "web/mp4-compatible",
+                                "input": str(args.media_root / "sample_video_mov.mov"),
+                                "output": str(pipeline_video),
+                            },
+                            {
+                                "id": "poster",
+                                "workflow": "thumbnail",
+                                "input": "${steps.web.output}",
+                                "output": str(pipeline_poster),
+                                "options": {"timestamp": "00:00:00.100", "width": 160},
+                            },
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            pipeline_run = run_command(
+                [
+                    str(cli_path),
+                    "pipeline",
+                    "run",
+                    str(pipeline_file),
+                    "--state",
+                    str(pipeline_state),
+                    "--events",
+                    str(pipeline_events),
+                    "--receipt-dir",
+                    str(pipeline_receipts),
+                    "--result-json",
+                ]
+            )
+            add_report_entry(report["commands"], "pipeline-typed-dag", pipeline_run)
+            try:
+                pipeline_payload = json.loads(pipeline_run.stdout)
+            except json.JSONDecodeError:
+                return 1
+            if (
+                pipeline_run.returncode != 0
+                or not pipeline_video.exists()
+                or not pipeline_poster.exists()
+                or pipeline_payload.get("summary", {}).get("succeeded") != 2
+            ):
+                return 1
+
         if args.json:
             print(json.dumps(report, indent=2))
         else:

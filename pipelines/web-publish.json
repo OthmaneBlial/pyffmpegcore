@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "name": "web_publish",
+  "description": "Create a browser-compatible video and a representative poster image.",
+  "variables": {
+    "INPUT": "media/source.mov",
+    "OUTPUT_DIR": "build/web-publish"
+  },
+  "cache": {
+    "enabled": true,
+    "directory": ".pyffmpegcore/cache",
+    "content_aware": true
+  },
+  "steps": [
+    {
+      "id": "web_video",
+      "profile": "web/mp4-compatible",
+      "input": "${INPUT}",
+      "output": "${OUTPUT_DIR}/video.mp4"
+    },
+    {
+      "id": "poster",
+      "workflow": "thumbnail",
+      "input": "${steps.web_video.output}",
+      "output": "${OUTPUT_DIR}/poster.jpg",
+      "options": {
+        "timestamp": "00:00:00.100",
+        "width": 1280,
+        "quality": 2
+      }
+    }
+  ]
+}

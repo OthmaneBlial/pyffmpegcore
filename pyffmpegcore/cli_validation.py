@@ -23,6 +23,8 @@ def validate_global_contract(args: argparse.Namespace, writing_commands: Collect
         command == "profile" and getattr(args, "profile_command", None) == "run"
     ) or (
         command == "batch" and getattr(args, "batch_command", None) == "run"
+    ) or (
+        command == "pipeline" and getattr(args, "pipeline_command", None) == "run"
     )
     if getattr(args, "plan_json", False) and not preview:
         raise CLIError("--plan-json requires --dry-run or --explain.", exit_code=2)

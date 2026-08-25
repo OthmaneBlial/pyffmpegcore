@@ -34,6 +34,18 @@ from .cli_validation import (
 )
 from .domain import JobResult, ProgressEvent, TemporaryFilePolicy
 from .errors import ValidationError
+from .pipeline import (
+    PipelineCompiler,
+    PipelineEvent,
+    PipelinePlan,
+    PipelinePreflightEngine,
+    PipelineRun,
+    PipelineRunner,
+    PipelineSpec,
+    PipelineStepPlan,
+    migrate_pipeline_document,
+    variables_from_environment,
+)
 from .planning import parse_size
 from .preflight import PreflightEngine
 from .presentation import render_plan_json, render_plan_text
@@ -540,6 +552,166 @@ def handle_batch_run(args: argparse.Namespace) -> int:
             f"{result.cancelled_count} cancelled, {result.resumed_count} resumed",
         )
     return _batch_exit_code(result)
+
+
+def _load_cli_pipeline(args: argparse.Namespace) -> PipelinePlan:
+    """Compile a pipeline using only named environment variables and typed workflows."""
+    ctx = build_context(args)
+    spec = PipelineSpec.read(args.pipeline)
+    plan = PipelineCompiler(ffmpeg_path=ctx.ffmpeg_path, ffprobe_path=ctx.ffprobe_path).compile(
+        spec,
+        variables=variables_from_environment(getattr(args, "var", [])),
+        force=ctx.force,
+        timeout_seconds=getattr(args, "timeout", None),
+        cache_enabled=getattr(args, "cache_enabled", None),
+    )
+    temporary_files = TemporaryFilePolicy(getattr(args, "temp_files", "clean"))
+    return replace(
+        plan,
+        steps=tuple(
+            PipelineStepPlan(
+                step.id,
+                step.needs,
+                replace(step.plan, policy=replace(step.plan.policy, temporary_files=temporary_files)),
+            )
+            for step in plan.steps
+        ),
+    )
+
+
+def handle_pipeline_validate(args: argparse.Namespace) -> int:
+    """Strictly parse, resolve, and compile a declarative pipeline."""
+    pipeline = _load_cli_pipeline(args)
+    if args.json:
+        print(json.dumps({"valid": True, "pipeline": pipeline.to_dict()}, indent=2))
+    else:
+        echo(build_context(args), f"Valid pipeline: {pipeline.name}; {len(pipeline.steps)} typed steps")
+    return EXIT_OK
+
+
+def handle_pipeline_graph(args: argparse.Namespace) -> int:
+    """Render a compiled dependency graph without probing inputs."""
+    print(_load_cli_pipeline(args).graph(args.format))
+    return EXIT_OK
+
+
+def handle_pipeline_migrate(args: argparse.Namespace) -> int:
+    """Canonicalize a validated pipeline into the requested JSON schema."""
+    if args.output.exists() and not args.force:
+        raise CLIError(f"Pipeline output already exists: {args.output}. Re-run with --force.")
+    source = PipelineSpec.read(args.input)
+    migrated = migrate_pipeline_document(source.to_dict(), args.to)
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_text(json.dumps(migrated, indent=2) + "\n", encoding="utf-8")
+    echo(build_context(args), f"Migrated pipeline {source.schema_version} -> {args.to}: {args.output}")
+    return EXIT_OK
+
+
+def _render_pipeline_preview(args: argparse.Namespace, pipeline: PipelinePlan) -> int:
+    ctx = build_context(args)
+    prepared = PipelinePreflightEngine(ffmpeg_path=ctx.ffmpeg_path, ffprobe_path=ctx.ffprobe_path).prepare(
+        pipeline,
+        allow_existing_outputs=args.resume or pipeline.cache.enabled,
+    )
+    if args.plan_json:
+        print(json.dumps(prepared.to_dict(), indent=2))
+    else:
+        echo(ctx, f"Pipeline: {pipeline.name}")
+        echo(ctx, pipeline.graph("text"))
+        for step in prepared.steps:
+            print()
+            echo(ctx, f"Step: {step.id}")
+            echo(ctx, render_plan_text(step.plan, step.preflight, explain=bool(args.explain)))
+    return EXIT_OK if prepared.ok else EXIT_VALIDATION_ERROR
+
+
+def _pipeline_exit_code(result: PipelineRun) -> int:
+    if result.succeeded:
+        return EXIT_OK
+    if result.succeeded_count:
+        return EXIT_PARTIAL_SUCCESS
+    categories = {
+        item.execution.result.exit_category
+        for item in result.items
+        if item.execution is not None and item.status == "failed"
+    }
+    if categories == {"environment"}:
+        return EXIT_ENVIRONMENT_ERROR
+    if categories and categories <= {"validation"}:
+        return EXIT_VALIDATION_ERROR
+    return EXIT_RUNTIME_ERROR
+
+
+def handle_pipeline_run(args: argparse.Namespace) -> int:
+    """Preflight the entire DAG, then run it with receipts, state, cache, and events."""
+    ctx = build_context(args)
+    if getattr(args, "receipt", None) is not None:
+        raise CLIError("Pipeline steps require --receipt-dir so each step keeps its own receipt.", exit_code=2)
+    pipeline = _load_cli_pipeline(args)
+    if args.dry_run or args.explain:
+        return _render_pipeline_preview(args, pipeline)
+    if args.resume and args.state is None and not pipeline.cache.enabled:
+        raise CLIError("--resume requires --state FILE unless pipeline caching supplies its own state.", exit_code=2)
+    prepared = PipelinePreflightEngine(ffmpeg_path=ctx.ffmpeg_path, ffprobe_path=ctx.ffprobe_path).prepare(
+        pipeline,
+        allow_existing_outputs=args.resume or pipeline.cache.enabled,
+    )
+    if not prepared.ok:
+        if args.result_json:
+            print(json.dumps(prepared.to_dict(), indent=2))
+        else:
+            for step in prepared.steps:
+                if not step.preflight.ok:
+                    echo_error(f"{step.id}: {step.preflight.render()}")
+        return EXIT_VALIDATION_ERROR
+
+    outputs = {Path(value).resolve() for step in pipeline.steps for value in step.plan.outputs}
+    for option, destination in (("--state", args.state), ("--events", args.events)):
+        if destination is not None and destination.resolve() in outputs:
+            raise CLIError(f"{option} must not overwrite a pipeline media output.")
+    if args.events is not None and args.events.exists() and not (ctx.force or args.resume):
+        raise CLIError(f"Events file already exists: {args.events}. Use --resume or --force.")
+    if args.state is not None and args.state.exists() and not (ctx.force or args.resume):
+        raise CLIError(f"State file already exists: {args.state}. Use --resume or --force.")
+    if args.receipt_dir is not None and args.receipt_dir.exists() and any(args.receipt_dir.iterdir()):
+        if not (ctx.force or args.resume):
+            raise CLIError(f"Receipt directory is not empty: {args.receipt_dir}. Use --resume or --force.")
+
+    event_handle = None
+    try:
+        if args.events is not None:
+            args.events.parent.mkdir(parents=True, exist_ok=True)
+            event_handle = args.events.open("w", encoding="utf-8")
+
+        def write_event(event: PipelineEvent) -> None:
+            if event_handle is not None:
+                event_handle.write(json.dumps(event.to_dict(pipeline.secret_values), ensure_ascii=False) + "\n")
+                event_handle.flush()
+
+        result = PipelineRunner(ffmpeg_path=ctx.ffmpeg_path, ffprobe_path=ctx.ffprobe_path).run(
+            pipeline,
+            state_path=args.state,
+            resume=args.resume,
+            receipt_dir=args.receipt_dir,
+            hash_content=bool(args.hash_content),
+            event_callback=write_event if event_handle is not None else None,
+        )
+    finally:
+        if event_handle is not None:
+            event_handle.close()
+    if args.result_json:
+        print(json.dumps(result.to_dict(), indent=2))
+    else:
+        for item in result.items:
+            if item.status in {"failed", "blocked"}:
+                echo_error(f"{item.step_id}: {(item.detail or item.status).strip()}")
+        echo(
+            ctx,
+            "Pipeline: "
+            f"{result.succeeded_count} succeeded, {result.failed_count} failed, "
+            f"{result.blocked_count} blocked, {result.cancelled_count} cancelled",
+        )
+    return _pipeline_exit_code(result)
 
 
 def build_context(args: argparse.Namespace) -> CLIContext:
@@ -1178,6 +1350,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         "handle_batch_validate": handle_batch_validate,
         "handle_completion": handle_completion,
         "handle_doctor": handle_doctor,
+        "handle_pipeline_graph": handle_pipeline_graph,
+        "handle_pipeline_migrate": handle_pipeline_migrate,
+        "handle_pipeline_run": handle_pipeline_run,
+        "handle_pipeline_validate": handle_pipeline_validate,
         "handle_planned_command": handle_planned_command,
         "handle_probe": handle_probe,
         "handle_profile_list": handle_profile_list,
@@ -1200,7 +1376,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         echo_verbose(ctx, f"ffmpeg={ctx.ffmpeg_path}")
         echo_verbose(ctx, f"ffprobe={ctx.ffprobe_path}")
         preview = validate_global_contract(args, WRITING_COMMANDS)
-        if getattr(args, "command", None) == "batch":
+        if getattr(args, "command", None) in {"batch", "pipeline"}:
             return int(handler(args))
         if preview:
             plan = build_cli_plan(args)

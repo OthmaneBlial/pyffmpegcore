@@ -46,6 +46,22 @@ from .errors import (
     PyFFmpegCoreError,
     ValidationError,
 )
+from .pipeline import (
+    PipelineCachePolicy,
+    PipelineCompiler,
+    PipelineEvent,
+    PipelinePlan,
+    PipelinePreflightEngine,
+    PipelineRun,
+    PipelineRunner,
+    PipelineSpec,
+    PipelineStepOutcome,
+    PipelineStepPlan,
+    PipelineStepSpec,
+    PreparedPipeline,
+    migrate_pipeline_document,
+    variables_from_environment,
+)
 from .planning import WorkflowPlanner, parse_size
 from .preflight import PreflightCheck, PreflightEngine, PreflightReport
 from .probe import FFprobeRunner
@@ -81,8 +97,20 @@ __all__ = [
     "JobTimeoutError",
     "MediaInfo",
     "OverwritePolicy",
+    "PipelineCachePolicy",
+    "PipelineCompiler",
+    "PipelineEvent",
+    "PipelinePlan",
+    "PipelinePreflightEngine",
+    "PipelineRun",
+    "PipelineRunner",
+    "PipelineSpec",
+    "PipelineStepOutcome",
+    "PipelineStepPlan",
+    "PipelineStepSpec",
     "Profile",
     "ProfileRegistry",
+    "PreparedPipeline",
     "PreparedWorkflow",
     "PreflightCheck",
     "PreflightEngine",
@@ -104,7 +132,9 @@ __all__ = [
     "build_bug_report",
     "is_transient_failure",
     "migrate_receipt",
+    "migrate_pipeline_document",
     "parse_size",
     "validate_receipt",
     "validate_batch_jobs",
+    "variables_from_environment",
 ]

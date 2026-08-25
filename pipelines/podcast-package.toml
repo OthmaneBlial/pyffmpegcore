@@ -1,0 +1,29 @@
+schema_version = "1.0"
+name = "podcast_package"
+description = "Normalize speech delivery and render a shareable waveform image."
+
+[variables]
+INPUT = "media/episode.wav"
+OUTPUT_DIR = "build/podcast-package"
+
+[cache]
+enabled = true
+directory = ".pyffmpegcore/cache"
+content_aware = true
+
+[[steps]]
+id = "normalized_audio"
+profile = "audio/podcast-speech"
+input = "${INPUT}"
+output = "${OUTPUT_DIR}/episode.m4a"
+
+[[steps]]
+id = "waveform"
+workflow = "waveform"
+input = "${steps.normalized_audio.output}"
+output = "${OUTPUT_DIR}/waveform.png"
+
+[steps.options]
+width = 1200
+height = 300
+colors = "0x7c3aed"

@@ -279,6 +279,83 @@ def build_parser() -> argparse.ArgumentParser:
     )
     batch_run_parser.set_defaults(handler_name="handle_batch_run")
 
+    pipeline_parser = subparsers.add_parser(
+        "pipeline",
+        parents=[common_parent],
+        help="Validate, visualize, migrate, or run a typed declarative media pipeline.",
+        description="Compose supported typed workflows as a versioned JSON or TOML dependency graph.",
+    )
+    pipeline_subparsers = pipeline_parser.add_subparsers(dest="pipeline_command", metavar="COMMAND")
+
+    pipeline_validate_parser = pipeline_subparsers.add_parser(
+        "validate",
+        parents=[common_parent],
+        help="Strictly validate and compile a pipeline without writing media.",
+    )
+    pipeline_validate_parser.add_argument("pipeline", type=Path, help="Versioned .json or .toml pipeline.")
+    pipeline_validate_parser.add_argument(
+        "--var",
+        action="append",
+        default=[],
+        metavar="ENV_NAME",
+        help="Read one declared variable from the environment; repeat as needed.",
+    )
+    pipeline_validate_parser.add_argument("--json", action="store_true", help="Print the compiled pipeline as JSON.")
+    pipeline_validate_parser.set_defaults(handler_name="handle_pipeline_validate")
+
+    pipeline_graph_parser = pipeline_subparsers.add_parser(
+        "graph",
+        parents=[common_parent],
+        help="Render pipeline dependencies without probing or executing media.",
+    )
+    pipeline_graph_parser.add_argument("pipeline", type=Path, help="Versioned .json or .toml pipeline.")
+    pipeline_graph_parser.add_argument(
+        "--var",
+        action="append",
+        default=[],
+        metavar="ENV_NAME",
+        help="Read one declared variable from the environment; repeat as needed.",
+    )
+    pipeline_graph_parser.add_argument(
+        "--format",
+        choices=("text", "mermaid", "dot"),
+        default="text",
+        help="Dependency graph format. Defaults to %(default)s.",
+    )
+    pipeline_graph_parser.set_defaults(handler_name="handle_pipeline_graph")
+
+    pipeline_migrate_parser = pipeline_subparsers.add_parser(
+        "migrate",
+        parents=[common_parent],
+        help="Validate and migrate a pipeline to a supported schema version.",
+    )
+    pipeline_migrate_parser.add_argument("input", type=Path, help="Source pipeline JSON or TOML.")
+    pipeline_migrate_parser.add_argument("output", type=Path, help="Canonical migrated JSON output.")
+    pipeline_migrate_parser.add_argument("--to", default="1.0", help="Target schema version. Defaults to %(default)s.")
+    pipeline_migrate_parser.set_defaults(handler_name="handle_pipeline_migrate")
+
+    pipeline_run_parser = pipeline_subparsers.add_parser(
+        "run",
+        parents=[common_parent],
+        help="Preflight and execute a typed pipeline with resume, cache, events, and receipts.",
+    )
+    pipeline_run_parser.add_argument("pipeline", type=Path, help="Versioned .json or .toml pipeline.")
+    pipeline_run_parser.add_argument(
+        "--var",
+        action="append",
+        default=[],
+        metavar="ENV_NAME",
+        help="Read one declared variable from the environment; repeat as needed.",
+    )
+    pipeline_run_parser.add_argument("--state", type=Path, help="Atomic pipeline resume-state JSON path.")
+    pipeline_run_parser.add_argument("--resume", action="store_true", help="Resume steps matching state and outputs.")
+    pipeline_run_parser.add_argument("--events", type=Path, help="Write privacy-redacted pipeline events as JSON Lines.")
+    pipeline_run_parser.add_argument("--receipt-dir", type=Path, help="Write one redacted receipt per executed step.")
+    cache_group = pipeline_run_parser.add_mutually_exclusive_group()
+    cache_group.add_argument("--cache", dest="cache_enabled", action="store_true", help="Enable completion caching.")
+    cache_group.add_argument("--no-cache", dest="cache_enabled", action="store_false", help="Disable completion caching.")
+    pipeline_run_parser.set_defaults(handler_name="handle_pipeline_run", cache_enabled=None)
+
     receipt_parser = subparsers.add_parser(
         "receipt",
         parents=[common_parent],

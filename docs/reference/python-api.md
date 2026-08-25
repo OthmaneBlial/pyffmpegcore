@@ -250,6 +250,94 @@ No public docstring is available.
 
 Python 3.10-compatible string enumeration.
 
+## `PipelineCachePolicy`
+
+Optional output-validity cache; content hashing is explicit.
+
+### `to_dict(self) -> 'dict[str, object]'`
+
+No public docstring is available.
+
+## `PipelineCompiler`
+
+Resolve variables/dependencies and compile every step through the typed planner.
+
+### `compile(self, spec: 'PipelineSpec', *, variables: 'dict[str, str] | None' = None, force: 'bool' = False, timeout_seconds: 'float | None' = None, cache_enabled: 'bool | None' = None) -> 'PipelinePlan'`
+
+No public docstring is available.
+
+## `PipelineEvent`
+
+PipelineEvent(sequence: 'int', event: 'str', step_id: 'str', detail: 'str | None' = None, schema_version: 'str' = '1.0')
+
+### `to_dict(self, secrets: 'tuple[str, ...]' = ()) -> 'dict[str, object]'`
+
+No public docstring is available.
+
+## `PipelinePlan`
+
+Compiled DAG whose steps contain argument arrays, never shell strings.
+
+### `graph(self, format: 'str' = 'text') -> 'str'`
+
+Render the dependency DAG as text, Mermaid, or Graphviz DOT.
+
+### `to_dict(self) -> 'dict[str, object]'`
+
+No public docstring is available.
+
+## `PipelinePreflightEngine`
+
+Preflight an entire DAG while explicitly deferring dependency outputs.
+
+### `prepare(self, pipeline: 'PipelinePlan', *, allow_existing_outputs: 'bool' = False) -> 'PreparedPipeline'`
+
+No public docstring is available.
+
+## `PipelineRun`
+
+PipelineRun(pipeline: 'PipelinePlan', items: 'tuple[PipelineStepOutcome, ...]', schema_version: 'str' = '1.0')
+
+### `to_dict(self) -> 'dict[str, object]'`
+
+No public docstring is available.
+
+## `PipelineRunner`
+
+Execute a prepared DAG with dependency blocking, cancellation, resume, and caching.
+
+### `run(self, pipeline: 'PipelinePlan', *, cancellation: 'threading.Event | None' = None, state_path: 'str | Path | None' = None, resume: 'bool' = False, receipt_dir: 'str | Path | None' = None, hash_content: 'bool' = False, event_callback: 'Any' = None) -> 'PipelineRun'`
+
+No public docstring is available.
+
+## `PipelineSpec`
+
+Versioned pipeline source with strict variables, cache, and typed steps.
+
+### `to_dict(self) -> 'dict[str, object]'`
+
+No public docstring is available.
+
+## `PipelineStepOutcome`
+
+PipelineStepOutcome(step_id: 'str', status: 'str', cache_key: 'str', execution: 'WorkflowExecution | None' = None, receipt: 'str | None' = None, detail: 'str | None' = None)
+
+### `to_dict(self, secrets: 'tuple[str, ...]' = ()) -> 'dict[str, object]'`
+
+No public docstring is available.
+
+## `PipelineStepPlan`
+
+One topologically ordered typed plan and its dependencies.
+
+## `PipelineStepSpec`
+
+One strict declarative step before variable and dependency resolution.
+
+### `to_dict(self) -> 'dict[str, object]'`
+
+No public docstring is available.
+
 ## `Profile`
 
 A named, versioned set of choices for one supported workflow.
@@ -277,6 +365,14 @@ Load one strict versioned profile from JSON or TOML.
 ### `plan(self, name: 'str', planner: 'WorkflowPlanner', input_file: 'str', output_file: 'str', *, subtitle_file: 'str | None' = None, force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
 
 Compile a maintained built-in profile through the shared typed planner.
+
+## `PreparedPipeline`
+
+Whole-pipeline structural, capability, and external-input preflight facts.
+
+### `to_dict(self) -> 'dict[str, object]'`
+
+No public docstring is available.
 
 ## `PreparedWorkflow`
 

@@ -24,6 +24,7 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 - Measured target-size before/after proof in human, machine-result, and receipt output.
 - Executable built-in profiles with output-contract validation and cross-platform golden media smoke tests.
 - Bounded mixed-media batches with strict manifests, JSONL events, per-item receipts, classified retries, and signature-based resume.
+- Typed JSON/TOML pipelines with DAG preflight, graph output, cancellation/resume, optional content-aware caching, secret masking, schema migration, and three golden templates.
 
 ### Changed
 

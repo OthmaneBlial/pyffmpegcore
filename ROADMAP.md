@@ -300,11 +300,11 @@ P0 Truth and reproducibility
 
 ### P4.2 Declarative pipelines
 
-- [ ] Define a versioned TOML/JSON pipeline schema that composes existing typed workflows rather than raw shell strings.
-- [ ] Add whole-pipeline preflight, dry-run, dependency visualization, cancellation, resume, and optional content-aware caching.
-- [ ] Include tested pipelines for “web publish,” “podcast package,” and “video plus thumbnails/subtitles.”
-- [ ] Keep secrets outside pipeline files and redact them from plans, logs, cache keys, and receipts.
-- [ ] Add schema migration tools before breaking the first stable pipeline format.
+- [x] Define a versioned TOML/JSON pipeline schema that composes existing typed workflows rather than raw shell strings.
+- [x] Add whole-pipeline preflight, dry-run, dependency visualization, cancellation, resume, and optional content-aware caching.
+- [x] Include tested pipelines for “web publish,” “podcast package,” and “video plus thumbnails/subtitles.”
+- [x] Keep secrets outside pipeline files and redact them from plans, logs, cache keys, and receipts.
+- [x] Add schema migration tools before breaking the first stable pipeline format.
 
 ### P4.3 Distribution integrations after the contract stabilizes
 

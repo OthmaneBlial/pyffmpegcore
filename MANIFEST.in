@@ -6,6 +6,7 @@ recursive-include examples *.py
 recursive-include scripts *.py
 recursive-include tests *.py *.json
 recursive-include docs *.md *.json
+recursive-include pipelines *.json *.toml
 prune examples/__pycache__
 prune tests/media/downloads
 global-exclude __pycache__

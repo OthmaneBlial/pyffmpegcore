@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "name": "video_thumbnails_subtitles",
+  "description": "Add selectable captions, create the web delivery copy, and extract a poster.",
+  "variables": {
+    "INPUT": "media/source.mov",
+    "CAPTIONS": "media/captions.srt",
+    "OUTPUT_DIR": "build/video-package"
+  },
+  "cache": {
+    "enabled": true,
+    "directory": ".pyffmpegcore/cache",
+    "content_aware": true
+  },
+  "steps": [
+    {
+      "id": "captioned_video",
+      "profile": "subtitles/accessibility",
+      "input": "${INPUT}",
+      "subtitle": "${CAPTIONS}",
+      "output": "${OUTPUT_DIR}/captioned.mp4"
+    },
+    {
+      "id": "web_video",
+      "profile": "web/mp4-compatible",
+      "input": "${steps.captioned_video.output}",
+      "output": "${OUTPUT_DIR}/video.mp4"
+    },
+    {
+      "id": "poster",
+      "workflow": "thumbnail",
+      "input": "${steps.captioned_video.output}",
+      "output": "${OUTPUT_DIR}/poster.jpg",
+      "options": {
+        "timestamp": "00:00:00.100",
+        "width": 1280,
+        "quality": 2
+      }
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://othmaneblial.github.io/pyffmpegcore/schemas/pipeline-1.0.schema.json",
+  "title": "PyFFmpegCore pipeline 1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "name", "steps"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "name": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,79}$"},
+    "description": {"type": "string"},
+    "variables": {
+      "type": "object",
+      "additionalProperties": {"type": "string"}
+    },
+    "secret_variables": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,79}$"}
+    },
+    "cache": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "directory": {"type": "string", "minLength": 1},
+        "content_aware": {"type": "boolean"}
+      }
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "input", "output"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,79}$"},
+          "needs": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {"type": "string"}
+          },
+          "profile": {"type": "string", "minLength": 1},
+          "workflow": {
+            "enum": [
+              "convert",
+              "compress",
+              "extract-audio",
+              "thumbnail",
+              "waveform",
+              "normalize-audio",
+              "subtitles/add",
+              "subtitles/burn",
+              "image/convert"
+            ]
+          },
+          "input": {"type": "string", "minLength": 1},
+          "output": {"type": "string", "minLength": 1},
+          "subtitle": {"type": "string", "minLength": 1},
+          "options": {"type": "object"},
+          "force": {"type": "boolean"}
+        },
+        "oneOf": [
+          {"required": ["profile"], "not": {"required": ["workflow"]}},
+          {"required": ["workflow"], "not": {"required": ["profile"]}}
+        ]
+      }
+    }
+  }
+}
