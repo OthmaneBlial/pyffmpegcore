@@ -29,6 +29,7 @@ nav:
   - Five-minute start: quickstart.md
   - Installation: installation.md
   - Workflow profiles: profiles.md
+  - Capability preflight: preflight.md
   - Recipes:
       - Overview: recipes/index.md
       - Web-compatible video: recipes/web-video.md

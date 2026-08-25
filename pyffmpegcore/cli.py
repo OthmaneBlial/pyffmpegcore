@@ -7,7 +7,6 @@ from __future__ import annotations
 import argparse
 import json
 import platform
-import re
 import shlex
 import shutil
 import subprocess
@@ -19,6 +18,7 @@ from pathlib import Path
 from typing import Any
 
 from . import __version__
+from .capabilities import CapabilityInventory
 from .probe import FFprobeRunner
 from .profiles import Profile, ProfileRegistry
 from .runner import FFmpegRunner, escape_path_for_concat, escape_path_for_filter
@@ -40,9 +40,6 @@ _AUDIO_CODEC_BY_EXTENSION = {
     ".wav": "pcm_s16le",
 }
 _BITRATELESS_AUDIO_CODECS = {"flac", "pcm_s16le"}
-_CORE_ENCODERS = ("aac", "flac", "libmp3lame", "libopus", "libvpx-vp9", "libx264", "mpeg4", "pcm_s16le")
-_CORE_FILTERS = ("acrossfade", "amix", "atempo", "drawtext", "loudnorm", "scale", "showwavespic", "subtitles")
-
 ROOT_HELP_EPILOG = """Examples:
   pyffmpegcore doctor
   pyffmpegcore probe --input sample.mp4 --json
@@ -1306,54 +1303,8 @@ def inspect_binary(binary_path: str) -> dict[str, Any]:
 
 
 def inspect_ffmpeg_capabilities(binary_path: str) -> dict[str, Any]:
-    """Collect a stable summary of encoders, filters, and hardware accelerators."""
-
-    def list_names(option: str) -> set[str]:
-        try:
-            result = subprocess.run(
-                [binary_path, "-hide_banner", option],
-                capture_output=True,
-                text=True,
-                check=False,
-            )
-        except OSError:
-            return set()
-        if result.returncode != 0:
-            return set()
-
-        names = set()
-        for line in result.stdout.splitlines():
-            match = re.match(r"^\s*[A-Z.|]{2,6}\s+(\S+)", line)
-            if match and match.group(1) != "=":
-                names.add(match.group(1))
-        return names
-
-    encoders = list_names("-encoders")
-    filters = list_names("-filters")
-    try:
-        hwaccels_result = subprocess.run(
-            [binary_path, "-hide_banner", "-hwaccels"],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-    except OSError:
-        hwaccels_result = None
-    hardware_accelerators = []
-    if hwaccels_result is not None and hwaccels_result.returncode == 0:
-        hardware_accelerators = [
-            line.strip()
-            for line in hwaccels_result.stdout.splitlines()
-            if line.strip() and not line.startswith("Hardware acceleration methods:")
-        ]
-
-    return {
-        "encoder_count": len(encoders),
-        "filter_count": len(filters),
-        "core_encoders": {name: name in encoders for name in _CORE_ENCODERS},
-        "core_filters": {name: name in filters for name in _CORE_FILTERS},
-        "hardware_accelerators": hardware_accelerators,
-    }
+    """Collect a versioned inventory used by doctor and workflow preflight."""
+    return CapabilityInventory.inspect(binary_path).to_dict()
 
 
 def collect_doctor_report(ctx: CLIContext) -> dict[str, Any]:
@@ -1412,7 +1363,26 @@ def render_doctor_report(ctx: CLIContext, report: dict[str, Any]) -> None:
     if capabilities:
         missing_encoders = [name for name, available in capabilities["core_encoders"].items() if not available]
         missing_filters = [name for name, available in capabilities["core_filters"].items() if not available]
-        echo(ctx, f"Capabilities: {capabilities['encoder_count']} encoders, {capabilities['filter_count']} filters")
+        echo(
+            ctx,
+            "Capabilities: "
+            f"{capabilities['encoder_count']} encoders, "
+            f"{capabilities['decoder_count']} decoders, "
+            f"{capabilities['filter_count']} filters, "
+            f"{capabilities['muxer_count']} muxers, "
+            f"{capabilities['demuxer_count']} demuxers",
+        )
+        echo(
+            ctx,
+            f"Protocols: {len(capabilities['input_protocols'])} input, {len(capabilities['output_protocols'])} output",
+        )
+        subtitle_support = capabilities["subtitle_support"]
+        echo(
+            ctx,
+            "Subtitles: "
+            f"encoders={','.join(subtitle_support['text_encoders']) or 'none'}, "
+            f"burn-filter={'yes' if subtitle_support['burn_filter'] else 'no'}",
+        )
         echo(ctx, f"Hardware acceleration: {', '.join(capabilities['hardware_accelerators']) or 'none reported'}")
         if missing_encoders:
             echo(ctx, f"Optional core encoders missing: {', '.join(missing_encoders)}")

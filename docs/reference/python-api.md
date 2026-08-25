@@ -7,6 +7,22 @@ The Python API is synchronous and currently marked beta. Prefer explicit keyword
 
 The installed FFmpeg build cannot satisfy the requested workflow.
 
+## `CapabilityInventory`
+
+Versioned inventory of an installed FFmpeg executable.
+
+### `missing(self, requirements: 'tuple[str, ...]') -> 'tuple[str, ...]'`
+
+No public docstring is available.
+
+### `supports(self, requirement: 'str') -> 'bool'`
+
+Check a normalized `kind:name` requirement.
+
+### `to_dict(self) -> 'dict[str, Any]'`
+
+No public docstring is available.
+
 ## `CapturePolicy`
 
 Python 3.10-compatible string enumeration.
@@ -201,6 +217,30 @@ No public docstring is available.
 ### `load_file(self, path: 'str | Path') -> 'Profile'`
 
 Load one strict versioned profile from JSON or TOML.
+
+## `PreflightCheck`
+
+One deterministic preflight fact.
+
+## `PreflightEngine`
+
+Check a plan without creating directories, outputs, or temporary files.
+
+### `check(self, plan: 'ExecutionPlan') -> 'PreflightReport'`
+
+No public docstring is available.
+
+## `PreflightReport`
+
+Versioned preflight result shared by human and JSON presenters.
+
+### `render(self) -> 'str'`
+
+No public docstring is available.
+
+### `to_dict(self) -> 'dict[str, Any]'`
+
+No public docstring is available.
 
 ## `ProgressCallback`
 

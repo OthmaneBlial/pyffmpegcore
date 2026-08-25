@@ -245,7 +245,7 @@ P0 Truth and reproducibility
 
 ### P3.1 Capability-aware preflight
 
-- [ ] Expand `doctor` beyond executable presence to inventory required encoders, decoders, filters, muxers, protocols, subtitle support, and hardware accelerators.
+- [x] Expand `doctor` beyond executable presence to inventory required encoders, decoders, filters, muxers, protocols, subtitle support, and hardware accelerators.
 - [ ] Preflight each job against input streams, output/container compatibility, disk space, write permissions, collisions, and installed FFmpeg capabilities.
 - [ ] Explain the exact missing capability and provide a tested fallback or an OS-specific remedy when one exists.
 - [ ] Produce the same preflight facts as readable text and versioned JSON.

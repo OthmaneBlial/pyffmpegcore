@@ -4,14 +4,21 @@ Machine-readable outputs are versioned as their contracts stabilize.
 
 ## `doctor --json`
 
-The current beta document contains `cli_version`, `platform`, `python`, `ffmpeg`, `ffprobe`, and `capabilities`. Capability keys include counts, selected core encoder/filter availability, and hardware accelerators.
+The current beta document contains `cli_version`, `platform`, `python`, `ffmpeg`, `ffprobe`, and `capabilities`. The versioned capability inventory includes full encoder, decoder, filter, muxer, demuxer, protocol, subtitle, and hardware-accelerator facts plus core availability summaries.
 
 ## `probe --json`
 
-The current simplified probe document contains format fields, normalized duration/size/bitrate, stream summaries, first video/audio convenience objects, and chapters when present. It is not yet a lossless representation of all FFprobe data.
+The simplified probe document contains format fields, normalized duration/size/bitrate, tags, stream summaries, dispositions, language, rotation, color/HDR facts, side data, attachments, and chapters. Python callers can request `raw=True` or call `probe_raw()` for the lossless FFprobe document.
 
 ## `smoke-test --json`
 
 The document uses `schema_version: "1.0"` and reports status, retention behavior, workspace policy, and probe summaries for the synthetic input and generated thumbnail.
 
-Planned execution plans, receipts, profiles, and pipelines have separate schema files and migration rules. Human terminal output is allowed to evolve; versioned JSON fields follow the documented compatibility and deprecation policy.
+## Plans, results, profiles, and preflight
+
+- `ExecutionPlan` uses `schema_version: "1.0"` and stores the exact argument vector as an array.
+- `JobResult` uses `schema_version: "1.0"` and categorizes success, runtime failure, timeout, cancellation, and validation refusal.
+- profiles use `schema_version: "1.0"` plus an independent positive `profile_version`.
+- `PreflightReport` uses `schema_version: "1.0"`; human output is rendered from the same check objects.
+
+Receipts and pipelines have separate schema files and migration rules. Human terminal output is allowed to evolve; versioned JSON fields follow the documented compatibility and deprecation policy.

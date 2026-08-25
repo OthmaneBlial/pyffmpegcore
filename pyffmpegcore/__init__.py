@@ -7,6 +7,7 @@ metadata extraction, and progress tracking around local FFmpeg binaries.
 Copyright (c) 2025 Othmane BLIAL
 """
 
+from .capabilities import CapabilityInventory
 from .domain import (
     CapturePolicy,
     CompressOptions,
@@ -31,6 +32,7 @@ from .errors import (
     PyFFmpegCoreError,
     ValidationError,
 )
+from .preflight import PreflightCheck, PreflightEngine, PreflightReport
 from .probe import FFprobeRunner
 from .profiles import Profile, ProfileRegistry
 from .progress import ProgressCallback, ProgressTracker
@@ -39,6 +41,7 @@ from .runner import FFmpegRunner
 __version__ = "0.2.0"
 __all__ = [
     "CapabilityUnavailableError",
+    "CapabilityInventory",
     "CapturePolicy",
     "CompressOptions",
     "ConvertOptions",
@@ -56,6 +59,9 @@ __all__ = [
     "OverwritePolicy",
     "Profile",
     "ProfileRegistry",
+    "PreflightCheck",
+    "PreflightEngine",
+    "PreflightReport",
     "ProgressCallback",
     "ProgressEvent",
     "ProgressTracker",
