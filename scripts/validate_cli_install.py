@@ -16,19 +16,48 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MEDIA_ROOT = REPO_ROOT / "tests" / "media" / "downloads"
 DOWNLOADER = REPO_ROOT / "tests" / "media" / "download_fixtures.py"
+COMMAND_TIMEOUT_SECONDS = 300.0
 
 
-def run_command(command: list[str], cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
+def run_command(
+    command: list[str],
+    cwd: Path | None = None,
+    *,
+    label: str | None = None,
+    timeout_seconds: float = COMMAND_TIMEOUT_SECONDS,
+) -> subprocess.CompletedProcess[str]:
     """
-    Run a subprocess and capture output for reporting.
+    Run a bounded subprocess and capture output for reporting.
     """
-    return subprocess.run(
-        command,
-        cwd=str(cwd) if cwd is not None else None,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    if label is not None:
+        print(f"clean-install check: starting {label}", file=sys.stderr, flush=True)
+    try:
+        result = subprocess.run(
+            command,
+            cwd=str(cwd) if cwd is not None else None,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=timeout_seconds,
+        )
+    except subprocess.TimeoutExpired as exc:
+        stdout = exc.stdout.decode("utf-8", errors="replace") if isinstance(exc.stdout, bytes) else (exc.stdout or "")
+        stderr = exc.stderr.decode("utf-8", errors="replace") if isinstance(exc.stderr, bytes) else (exc.stderr or "")
+        separator = "\n" if stderr else ""
+        result = subprocess.CompletedProcess(
+            command,
+            124,
+            stdout,
+            f"{stderr}{separator}Command timed out after {timeout_seconds:g} seconds.",
+        )
+    if label is not None:
+        state = "passed" if result.returncode == 0 else "failed"
+        print(
+            f"clean-install check: {state} {label} (rc={result.returncode})",
+            file=sys.stderr,
+            flush=True,
+        )
+    return result
 
 
 def venv_python(venv_dir: Path) -> Path:
@@ -65,7 +94,11 @@ def ensure_media(media_root: Path) -> None:
     if all(path.exists() for path in required):
         return
 
-    result = run_command([sys.executable, str(DOWNLOADER)], cwd=REPO_ROOT)
+    result = run_command(
+        [sys.executable, str(DOWNLOADER)],
+        cwd=REPO_ROOT,
+        label="generate-fixtures",
+    )
     if result.returncode != 0:
         raise RuntimeError(result.stderr or result.stdout or "Fixture generation failed.")
 
@@ -194,6 +227,7 @@ def main(argv: list[str] | None = None) -> int:
             build = run_command(
                 [sys.executable, "-m", "build", "--wheel", "--outdir", str(build_dir)],
                 cwd=args.project_root,
+                label="build-wheel",
             )
             add_report_entry(commands, "build-wheel", build)
             if build.returncode != 0:
@@ -209,7 +243,10 @@ def main(argv: list[str] | None = None) -> int:
                 "sha256": sha256_for_file(wheel_path),
             }
 
-        create_venv = run_command([sys.executable, "-m", "venv", str(venv_dir)])
+        create_venv = run_command(
+            [sys.executable, "-m", "venv", str(venv_dir)],
+            label="create-venv",
+        )
         add_report_entry(commands, "create-venv", create_venv)
         if create_venv.returncode != 0:
             return 1
@@ -217,22 +254,28 @@ def main(argv: list[str] | None = None) -> int:
         python_path = venv_python(venv_dir)
         cli_path = venv_cli(venv_dir)
 
-        upgrade_pip = run_command([str(python_path), "-m", "pip", "install", "--upgrade", "pip"])
+        upgrade_pip = run_command(
+            [str(python_path), "-m", "pip", "install", "--upgrade", "pip"],
+            label="upgrade-pip",
+        )
         add_report_entry(commands, "upgrade-pip", upgrade_pip)
         if upgrade_pip.returncode != 0:
             return 1
 
-        install = run_command([str(python_path), "-m", "pip", "install", str(wheel_path)])
+        install = run_command(
+            [str(python_path), "-m", "pip", "install", str(wheel_path)],
+            label="install-wheel",
+        )
         add_report_entry(commands, "install-wheel", install)
         if install.returncode != 0:
             return 1
 
-        version = run_command([str(cli_path), "--version"])
+        version = run_command([str(cli_path), "--version"], label="cli-version")
         add_report_entry(commands, "cli-version", version)
         if version.returncode != 0:
             return 1
 
-        doctor = run_command([str(cli_path), "doctor", "--json"])
+        doctor = run_command([str(cli_path), "doctor", "--json"], label="cli-doctor")
         add_report_entry(commands, "cli-doctor", doctor)
         if not doctor_result_is_acceptable(doctor, require_binaries=not args.skip_media):
             return 1
@@ -247,7 +290,8 @@ def main(argv: list[str] | None = None) -> int:
                     "--input",
                     str(args.media_root / "sample_mp4_h264.mp4"),
                     "--json",
-                ]
+                ],
+                label="probe-json",
             )
             add_report_entry(commands, "probe-json", probe)
             if probe.returncode != 0:
@@ -266,7 +310,8 @@ def main(argv: list[str] | None = None) -> int:
                     "libx264",
                     "--audio-codec",
                     "aac",
-                ]
+                ],
+                label="convert",
             )
             add_report_entry(commands, "convert", convert)
             if convert.returncode != 0 or not convert_output.exists():
@@ -281,7 +326,8 @@ def main(argv: list[str] | None = None) -> int:
                     str(args.media_root / "sample_mp4_h264.mp4"),
                     "--output",
                     str(audio_output),
-                ]
+                ],
+                label="extract-audio",
             )
             add_report_entry(commands, "extract-audio", extract)
             if extract.returncode != 0 or not audio_output.exists():
@@ -300,7 +346,8 @@ def main(argv: list[str] | None = None) -> int:
                     "00:00:01",
                     "--width",
                     "640",
-                ]
+                ],
+                label="thumbnail",
             )
             add_report_entry(commands, "thumbnail", thumbnail)
             if thumbnail.returncode != 0 or not thumb_output.exists():
@@ -333,7 +380,7 @@ def main(argv: list[str] | None = None) -> int:
                 ]
                 if subtitle_name is not None:
                     profile_command.extend(["--subtitle", str(args.media_root / subtitle_name)])
-                profile_run = run_command(profile_command)
+                profile_run = run_command(profile_command, label=f"profile-{profile_name}")
                 add_report_entry(commands, f"profile-{profile_name}", profile_run)
                 if profile_run.returncode != 0 or not profile_output.exists():
                     return 1
@@ -379,7 +426,8 @@ def main(argv: list[str] | None = None) -> int:
                     "--receipt-dir",
                     str(batch_receipts),
                     "--result-json",
-                ]
+                ],
+                label="batch-mixed-media",
             )
             add_report_entry(commands, "batch-mixed-media", batch_run)
             try:
@@ -436,7 +484,8 @@ def main(argv: list[str] | None = None) -> int:
                     "--receipt-dir",
                     str(pipeline_receipts),
                     "--result-json",
-                ]
+                ],
+                label="pipeline-typed-dag",
             )
             add_report_entry(commands, "pipeline-typed-dag", pipeline_run)
             try:
