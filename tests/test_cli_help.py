@@ -26,6 +26,7 @@ def test_root_help_includes_examples_and_completion():
     assert result.returncode == 0
     assert "Examples:" in result.stdout
     assert "pyffmpegcore completion bash" in result.stdout
+    assert "smoke-test" in result.stdout
     assert "See CLI_HELP.md for task-based copy-paste examples." in result.stdout
 
 

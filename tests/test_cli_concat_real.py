@@ -48,8 +48,9 @@ def test_concat_copy_real_media_handles_special_paths(tmp_path):
     assert result.returncode == 0
     assert output_file.exists()
     metadata = FFprobeRunner().probe(str(output_file))
+    input_duration = FFprobeRunner().get_duration(str(media["video_mp4_h264_1080p"]))
     assert metadata["video"]["codec"] == "h264"
-    assert metadata["duration"] == pytest.approx(11.5, abs=0.5)
+    assert metadata["duration"] == pytest.approx(input_duration * 2, abs=0.5)
 
 
 @pytest.mark.real_media

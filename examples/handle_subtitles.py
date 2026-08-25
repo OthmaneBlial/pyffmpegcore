@@ -78,7 +78,7 @@ def burn_subtitles(video_file: str, subtitle_file: str, output_file: str,
 
     escaped_path = escape_path_for_filter(subtitle_source)
     subtitle_filter = (
-        f"subtitles='{escaped_path}':"
+        f"subtitles=filename='{escaped_path}':"
         f"force_style='FontSize={font_size},PrimaryColour={font_color}'"
     )
 

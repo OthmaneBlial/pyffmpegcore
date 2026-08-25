@@ -12,7 +12,7 @@ import sys
 import pytest
 
 from pyffmpegcore import FFmpegRunner
-from tests.media_utils import ensure_downloaded_media
+from tests.media_utils import ensure_downloaded_media, ffmpeg_has_filter
 
 
 SHORT_SRT = """1
@@ -111,6 +111,8 @@ def test_subtitles_burn_real_media_changes_frame_content(tmp_path):
     """
     Burning subtitles should change the rendered frame content.
     """
+    if not ffmpeg_has_filter("subtitles"):
+        pytest.skip("Local FFmpeg build does not include the subtitles filter")
     media = ensure_downloaded_media()
     subtitle_file = tmp_path / "subtitles with one's cues.srt"
     subtitle_file.write_text(SHORT_SRT, encoding="utf-8")

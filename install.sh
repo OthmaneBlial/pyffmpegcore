@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-PACKAGE_SPEC="${PYFFMPEGCORE_PACKAGE_SPEC:-pyffmpegcore}"
+PACKAGE_SPEC="${PYFFMPEGCORE_PACKAGE_SPEC:-git+https://github.com/OthmaneBlial/pyffmpegcore.git@main}"
 INSTALL_METHOD="auto"
 PYTHON_BIN="${PYTHON_BIN:-python3}"
 SKIP_DOCTOR=0
@@ -16,7 +16,7 @@ Usage:
 
 Options:
   --method auto|pipx|pip   Choose the install method. Defaults to auto.
-  --spec VALUE             Package spec to install. Defaults to pyffmpegcore.
+  --spec VALUE             Package spec to install. Defaults to the public GitHub source.
   --python VALUE           Python executable to use for pip installs.
   --skip-doctor            Skip the final pyffmpegcore doctor check.
   --help                   Show this help text.

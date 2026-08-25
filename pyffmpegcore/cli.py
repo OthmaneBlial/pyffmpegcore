@@ -114,44 +114,54 @@ class CLIProgressPrinter:
             )
 
 
-def add_global_arguments(parser: argparse.ArgumentParser) -> None:
+def add_global_arguments(
+    parser: argparse.ArgumentParser,
+    *,
+    suppress_defaults: bool = False,
+) -> None:
     """
     Add global CLI arguments shared by the root parser and future subcommands.
     """
+    bool_default = argparse.SUPPRESS if suppress_defaults else False
+    ffmpeg_default = argparse.SUPPRESS if suppress_defaults else "ffmpeg"
+    ffprobe_default = argparse.SUPPRESS if suppress_defaults else "ffprobe"
     verbosity = parser.add_mutually_exclusive_group()
     verbosity.add_argument(
         "--verbose",
         action="store_true",
+        default=bool_default,
         help="Show more detailed command output.",
     )
     verbosity.add_argument(
         "--quiet",
         action="store_true",
+        default=bool_default,
         help="Reduce command output to essentials.",
     )
     parser.add_argument(
         "--force",
         action="store_true",
+        default=bool_default,
         help="Allow overwriting existing output files or directories.",
     )
     parser.add_argument(
         "--ffmpeg-path",
-        default="ffmpeg",
-        help="Path to the ffmpeg executable. Defaults to %(default)s.",
+        default=ffmpeg_default,
+        help="Path to the ffmpeg executable. Defaults to ffmpeg.",
     )
     parser.add_argument(
         "--ffprobe-path",
-        default="ffprobe",
-        help="Path to the ffprobe executable. Defaults to %(default)s.",
+        default=ffprobe_default,
+        help="Path to the ffprobe executable. Defaults to ffprobe.",
     )
 
 
-def build_global_parent() -> argparse.ArgumentParser:
+def build_global_parent(*, suppress_defaults: bool = False) -> argparse.ArgumentParser:
     """
     Build the shared parent parser used by the root parser and subcommands.
     """
     parent = argparse.ArgumentParser(add_help=False)
-    add_global_arguments(parent)
+    add_global_arguments(parent, suppress_defaults=suppress_defaults)
     return parent
 
 
@@ -159,10 +169,11 @@ def build_parser() -> argparse.ArgumentParser:
     """
     Build the top-level CLI parser.
     """
-    common_parent = build_global_parent()
+    root_parent = build_global_parent()
+    common_parent = build_global_parent(suppress_defaults=True)
     parser = argparse.ArgumentParser(
         prog="pyffmpegcore",
-        parents=[common_parent],
+        parents=[root_parent],
         description=(
             "PyFFmpegCore CLI. A task-focused terminal interface for the "
             "verified media workflows in this repository."
@@ -189,6 +200,27 @@ def build_parser() -> argparse.ArgumentParser:
         help="Print the diagnostics as JSON.",
     )
     doctor_parser.set_defaults(handler=handle_doctor)
+
+    smoke_parser = subparsers.add_parser(
+        "smoke-test",
+        parents=[common_parent],
+        help="Generate local synthetic media and verify a complete workflow.",
+        description=(
+            "Generate a tiny local media file, extract a thumbnail, probe both "
+            "artifacts, and clean up unless --keep-dir is provided."
+        ),
+    )
+    smoke_parser.add_argument(
+        "--keep-dir",
+        type=Path,
+        help="Keep generated artifacts in this directory instead of using a temporary directory.",
+    )
+    smoke_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the smoke-test result as JSON.",
+    )
+    smoke_parser.set_defaults(handler=handle_smoke_test)
 
     completion_parser = subparsers.add_parser(
         "completion",
@@ -459,7 +491,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Change playback speed for video or audio media.",
         description="Change playback speed for video or audio media.",
     )
-    speed_subparsers = speed_parser.add_subparsers(dest="speed_command", metavar="SPEED_COMMAND")
+    speed_subparsers = speed_parser.add_subparsers(
+        dest="speed_command",
+        metavar="SPEED_COMMAND",
+        required=True,
+    )
 
     speed_video_parser = speed_subparsers.add_parser(
         "video",
@@ -547,6 +583,7 @@ def build_parser() -> argparse.ArgumentParser:
     subtitles_subparsers = subtitles_parser.add_subparsers(
         dest="subtitles_command",
         metavar="SUBTITLES_COMMAND",
+        required=True,
     )
 
     subtitles_add_parser = subtitles_subparsers.add_parser(
@@ -612,6 +649,7 @@ def build_parser() -> argparse.ArgumentParser:
     mix_audio_subparsers = mix_audio_parser.add_subparsers(
         dest="mix_audio_command",
         metavar="MIX_AUDIO_COMMAND",
+        required=True,
     )
 
     mix_audio_mix_parser = mix_audio_subparsers.add_parser(
@@ -713,7 +751,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Batch-convert or optimize image directories.",
         description="Batch-convert or optimize image directories.",
     )
-    images_subparsers = images_parser.add_subparsers(dest="images_command", metavar="IMAGES_COMMAND")
+    images_subparsers = images_parser.add_subparsers(
+        dest="images_command",
+        metavar="IMAGES_COMMAND",
+        required=True,
+    )
 
     images_convert_parser = images_subparsers.add_parser(
         "convert",
@@ -1087,6 +1129,14 @@ def echo(ctx: CLIContext, message: str) -> None:
         print(message)
 
 
+def echo_verbose(ctx: CLIContext, message: str) -> None:
+    """
+    Print diagnostic detail to stderr when verbose mode is enabled.
+    """
+    if ctx.verbose:
+        print(f"[verbose] {message}", file=sys.stderr)
+
+
 def echo_error(message: str) -> None:
     """
     Print a user-facing error message to stderr.
@@ -1227,6 +1277,128 @@ def handle_doctor(args: argparse.Namespace) -> int:
         render_doctor_report(ctx, report)
 
     return exit_code
+
+
+def _run_smoke_test(ctx: CLIContext, workspace: Path, retained: bool) -> dict[str, Any]:
+    """
+    Generate and verify a tiny local workflow without repository fixtures.
+    """
+    workspace.mkdir(parents=True, exist_ok=True)
+    input_path = workspace / "synthetic-input.mp4"
+    thumbnail_path = workspace / "synthetic-thumbnail.jpg"
+    runner = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path)
+
+    generation = runner.run(
+        [
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-f",
+            "lavfi",
+            "-i",
+            "testsrc2=size=320x180:rate=24",
+            "-f",
+            "lavfi",
+            "-i",
+            "sine=frequency=660:sample_rate=44100",
+            "-t",
+            "1",
+            "-c:v",
+            "mpeg4",
+            "-q:v",
+            "8",
+            "-c:a",
+            "aac",
+            "-pix_fmt",
+            "yuv420p",
+            "-shortest",
+            "-y",
+            str(input_path),
+        ]
+    )
+    raise_for_completed_process_error(generation)
+
+    thumbnail = runner.extract_thumbnail(
+        str(input_path),
+        str(thumbnail_path),
+        timestamp="00:00:00.200",
+        width=160,
+        quality=3,
+    )
+    raise_for_completed_process_error(thumbnail)
+
+    probe = FFprobeRunner(ffprobe_path=ctx.ffprobe_path)
+    input_metadata = probe.probe(str(input_path))
+    thumbnail_metadata = probe.probe(str(thumbnail_path))
+    video = input_metadata.get("video", {})
+    image = thumbnail_metadata.get("video", {})
+    if video.get("width") != 320 or video.get("height") != 180:
+        raise CLIError("Synthetic video verification returned an unexpected resolution.")
+    if image.get("width") != 160:
+        raise CLIError("Synthetic thumbnail verification returned an unexpected width.")
+
+    return {
+        "schema_version": "1.0",
+        "status": "ok",
+        "retained": retained,
+        "workspace": str(workspace.resolve()) if retained else None,
+        "input": {
+            "filename": input_path.name,
+            "size_bytes": input_path.stat().st_size,
+            "format": input_metadata.get("format_name"),
+            "duration_seconds": input_metadata.get("duration"),
+            "video": input_metadata.get("video"),
+            "audio": input_metadata.get("audio"),
+        },
+        "output": {
+            "filename": thumbnail_path.name,
+            "size_bytes": thumbnail_path.stat().st_size,
+            "image": thumbnail_metadata.get("video"),
+        },
+    }
+
+
+def _render_smoke_report(ctx: CLIContext, report: dict[str, Any]) -> None:
+    """
+    Render a compact human-readable smoke-test summary.
+    """
+    video = report["input"]["video"]
+    image = report["output"]["image"]
+    echo(ctx, "Smoke test: PASS")
+    echo(
+        ctx,
+        f"Synthetic input: {video.get('codec', 'unknown')} "
+        f"{video.get('width')}x{video.get('height')} "
+        f"({format_bytes(report['input']['size_bytes'])})",
+    )
+    echo(
+        ctx,
+        f"Verified thumbnail: {image.get('width')}x{image.get('height')} "
+        f"({format_bytes(report['output']['size_bytes'])})",
+    )
+    if report["retained"]:
+        echo(ctx, f"Artifacts: {report['workspace']}")
+    else:
+        echo(ctx, "Artifacts: cleaned up")
+
+
+def handle_smoke_test(args: argparse.Namespace) -> int:
+    """
+    Run a package-installed synthetic end-to-end verification.
+    """
+    ctx = build_context(args)
+    if args.keep_dir is not None:
+        workspace = prepare_output_dir(str(args.keep_dir), force=ctx.force, option_name="--keep-dir")
+        report = _run_smoke_test(ctx, workspace, retained=True)
+    else:
+        with tempfile.TemporaryDirectory(prefix="pyffmpegcore-smoke-") as temp_dir:
+            report = _run_smoke_test(ctx, Path(temp_dir), retained=False)
+
+    if args.json:
+        print(json.dumps(report, indent=2))
+    else:
+        _render_smoke_report(ctx, report)
+    return EXIT_OK
 
 
 def render_probe_report(ctx: CLIContext, metadata: dict[str, Any]) -> None:
@@ -1849,7 +2021,7 @@ def handle_subtitles_burn(args: argparse.Namespace) -> int:
         subtitle_source = temporary_subtitle_file
 
     subtitle_filter = (
-        f"subtitles='{escape_path_for_filter(str(subtitle_source))}':"
+        f"subtitles=filename='{escape_path_for_filter(str(subtitle_source))}':"
         f"force_style='FontSize={args.font_size},PrimaryColour={args.font_color}'"
     )
 
@@ -2236,10 +2408,15 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     handler = getattr(args, "handler", None)
     if handler is None:
-        parser.print_help()
-        return EXIT_OK
+        echo_error("A complete command is required. Run `pyffmpegcore --help` for usage.")
+        parser.print_usage(file=sys.stderr)
+        return EXIT_USAGE_ERROR
 
     try:
+        ctx = build_context(args)
+        echo_verbose(ctx, f"command={getattr(args, 'command', None)}")
+        echo_verbose(ctx, f"ffmpeg={ctx.ffmpeg_path}")
+        echo_verbose(ctx, f"ffprobe={ctx.ffprobe_path}")
         return int(handler(args))
     except CLIError as exc:
         echo_error(str(exc))

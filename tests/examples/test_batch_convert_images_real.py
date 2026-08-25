@@ -15,7 +15,7 @@ from examples.batch_convert_images import (
     optimize_images_for_web,
 )
 from pyffmpegcore import FFprobeRunner
-from tests.media_utils import ensure_downloaded_media
+from tests.media_utils import ensure_downloaded_media, ffmpeg_has_encoder
 
 
 def _probe(path: str) -> dict:
@@ -24,6 +24,8 @@ def _probe(path: str) -> dict:
 
 @pytest.mark.real_media
 def test_convert_image_real_media_resizes_png_to_webp(tmp_path):
+    if not ffmpeg_has_encoder("libwebp"):
+        pytest.skip("Local FFmpeg build does not include the libwebp encoder")
     media = ensure_downloaded_media()
     output_file = tmp_path / "converted.webp"
 
@@ -112,6 +114,8 @@ def test_optimize_images_for_web_real_media_resizes_oversized_inputs(tmp_path):
 
 @pytest.mark.real_media
 def test_convert_to_webp_batch_real_media_reports_broken_files(tmp_path):
+    if not ffmpeg_has_encoder("libwebp"):
+        pytest.skip("Local FFmpeg build does not include the libwebp encoder")
     media = ensure_downloaded_media()
     input_dir = tmp_path / "inputs"
     output_dir = tmp_path / "webp"

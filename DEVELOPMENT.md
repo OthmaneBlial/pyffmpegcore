@@ -4,13 +4,13 @@ This document defines the maintained local workflow for working on PyFFmpegCore.
 
 ## Current Baseline
 
-As of March 28, 2026, the repository baseline is:
+The maintained repository baseline is:
 
 - `ffmpeg` and `ffprobe` are required on `PATH`
 - `python -m compileall pyffmpegcore tests examples` passes
 - `python -m pytest` passes locally in the supported virtual environment
-- the test suite includes real-media validation and auto-downloads fixtures when needed
-- build artifacts, caches, and downloaded fixtures are ignored by git
+- the test suite includes real-media validation and generates fixtures when needed
+- build artifacts, caches, and generated fixtures are ignored by git
 
 ## Supported Local Workflow
 
@@ -42,17 +42,17 @@ python -m pytest tests/examples/test_examples_smoke_real.py
 python -m pytest tests -m real_media
 ```
 
-## Internet Media Fixtures
+## Deterministic Media Fixtures
 
-The real integration phases use internet-backed sample files pinned by checksum metadata.
+The real integration phases use local FFmpeg `lavfi` sources plus a first-party subtitle sample. The manifest records the origin, license, generator arguments, and expected media properties.
 
 ```bash
 python tests/media/download_fixtures.py
 ```
 
-Downloaded fixture files are written to `tests/media/downloads/` and are ignored by git.
+Generated fixture files are written to `tests/media/downloads/` and are ignored by git.
 
-The full test suite will also download them automatically on first use.
+The full test suite validates and regenerates them automatically when needed. Use `--force` for a true cold generation pass.
 
 ## FFmpeg Checks
 

@@ -11,8 +11,8 @@ The CLI is currently distributed through standard Python packaging only:
 
 The install paths built on top of that are:
 
-- `pipx install pyffmpegcore`
-- `python -m pip install --user pyffmpegcore`
+- `pipx install git+https://github.com/OthmaneBlial/pyffmpegcore.git@main` until PyPI publication
+- `python -m pip install --user git+https://github.com/OthmaneBlial/pyffmpegcore.git@main` until PyPI publication
 - `./install.sh`
 - `.\install.ps1`
 

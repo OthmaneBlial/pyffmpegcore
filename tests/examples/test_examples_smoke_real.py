@@ -16,7 +16,7 @@ from examples import (
     generate_waveform,
 )
 from pyffmpegcore import FFprobeRunner
-from tests.media_utils import ensure_downloaded_media
+from tests.media_utils import ensure_downloaded_media, ffmpeg_has_filter
 
 
 def _probe(path: str) -> dict:
@@ -132,6 +132,8 @@ def test_generate_waveform_example_smoke_real_media(tmp_path):
         width=640,
         height=160,
     ) is True
+    if not ffmpeg_has_filter("drawtext"):
+        pytest.skip("Local FFmpeg build does not include the drawtext filter")
     assert generate_waveform.generate_waveform_with_metadata(
         audio_input,
         str(metadata_output_dir),

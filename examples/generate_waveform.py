@@ -108,18 +108,21 @@ def generate_waveform_animation(audio_path: str, output_path: str, duration: flo
 
     # Create animated waveform
     vf_filter = (
-        f"showwaves=s={width}x{height}:"
+        f"[0:a]showwaves=s={width}x{height}:"
         "mode=line:"
         "colors=blue:"
         "scale=lin:"
-        "draw=full"
+        "draw=full[v]"
     )
 
     args = [
         "-i", audio_path,
         "-filter_complex", vf_filter,
+        "-map", "[v]",
+        "-map", "0:a?",
         "-t", str(duration),  # Limit duration
         "-c:v", "libx264",
+        "-c:a", "aac",
         "-preset", "fast",
         "-crf", "22",
         "-y", output_path

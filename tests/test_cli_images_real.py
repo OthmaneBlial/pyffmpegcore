@@ -11,7 +11,7 @@ import sys
 import pytest
 
 from pyffmpegcore.probe import FFprobeRunner
-from tests.media_utils import ensure_downloaded_media
+from tests.media_utils import ensure_downloaded_media, ffmpeg_has_encoder
 
 
 @pytest.mark.real_media
@@ -96,6 +96,8 @@ def test_images_webp_real_media_reports_partial_failure(tmp_path):
     """
     The WebP conversion command should convert valid images and report broken inputs cleanly.
     """
+    if not ffmpeg_has_encoder("libwebp"):
+        pytest.skip("Local FFmpeg build does not include the libwebp encoder")
     media = ensure_downloaded_media()
     input_dir = tmp_path / "input"
     output_dir = tmp_path / "webp"

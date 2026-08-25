@@ -13,7 +13,7 @@ import pytest
 from pyffmpegcore import FFmpegRunner
 from pyffmpegcore.probe import FFprobeRunner
 from tests.cli_helpers import run_installed_cli
-from tests.media_utils import ensure_downloaded_media
+from tests.media_utils import ensure_downloaded_media, ffmpeg_has_encoder, ffmpeg_has_filter
 
 
 SHORT_SRT = """1
@@ -229,6 +229,8 @@ def test_installed_cli_subtitles_real_media(tmp_path):
     """
     The installed command should add, extract, and burn subtitles on real media.
     """
+    if not ffmpeg_has_filter("subtitles"):
+        pytest.skip("Local FFmpeg build does not include the subtitles filter")
     media = ensure_downloaded_media()
     subtitle_file = tmp_path / "external subtitles.srt"
     subtitle_file.write_text(SHORT_SRT, encoding="utf-8")
@@ -429,15 +431,16 @@ def test_installed_cli_image_workflows_real_media(tmp_path):
     assert optimized_probe["video"]["width"] <= 320
     assert optimized_probe["video"]["height"] <= 240
 
-    webp = run_installed_cli(
-        "images",
-        "webp",
-        "--input-dir",
-        str(input_dir),
-        "--output-dir",
-        str(webp_dir),
-        "--quality",
-        "80",
-    )
-    assert webp.returncode == 6
-    assert (webp_dir / "sample one.webp").exists()
+    if ffmpeg_has_encoder("libwebp"):
+        webp = run_installed_cli(
+            "images",
+            "webp",
+            "--input-dir",
+            str(input_dir),
+            "--output-dir",
+            str(webp_dir),
+            "--quality",
+            "80",
+        )
+        assert webp.returncode == 6
+        assert (webp_dir / "sample one.webp").exists()

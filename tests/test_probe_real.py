@@ -1,5 +1,5 @@
 """
-Real-media tests for FFprobeRunner using downloaded internet fixtures.
+Real-media tests for FFprobeRunner using locally generated fixtures.
 """
 
 from __future__ import annotations

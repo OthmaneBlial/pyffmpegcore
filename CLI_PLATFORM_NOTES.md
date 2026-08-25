@@ -6,14 +6,14 @@ This file records the honest platform expectations for the `pyffmpegcore` CLI.
 
 - `ffmpeg` and `ffprobe` must be installed separately.
 - `pipx` is the cleanest install path for most CLI users.
-- `python -m pip install --user pyffmpegcore` may require a new shell before the command appears on `PATH`.
+- user-level `pip` installs may require a new shell before the command appears on `PATH`.
 - Paths with spaces are part of the clean-install smoke checks.
 
 ## Linux And macOS
 
 - `install.sh` is the one-command bootstrap path.
-- `pipx install pyffmpegcore` is the preferred packaging path.
-- The local March 28, 2026 validation was deepest on Linux.
+- `pipx install git+https://github.com/OthmaneBlial/pyffmpegcore.git@main` is the public source path until PyPI publication.
+- Current platform proof lives in CI rather than a dated local claim.
 
 ## Windows
 

@@ -12,7 +12,7 @@ from examples.concatenate_videos import concatenate_videos_basic
 from examples.handle_subtitles import burn_subtitles
 from pyffmpegcore import FFprobeRunner
 from pyffmpegcore.runner import escape_path_for_concat, escape_path_for_filter
-from tests.media_utils import ensure_downloaded_media
+from tests.media_utils import ensure_downloaded_media, ffmpeg_has_filter
 
 
 SHORT_SRT = """1
@@ -57,6 +57,8 @@ def test_real_media_workflows_handle_spaces_and_quotes_in_paths(tmp_path):
         [str(first_clip), str(second_clip)],
         str(concat_output),
     ) is True
+    if not ffmpeg_has_filter("subtitles"):
+        pytest.skip("Local FFmpeg build does not include the subtitles filter")
     assert burn_subtitles(
         str(first_clip),
         str(subtitle_file),

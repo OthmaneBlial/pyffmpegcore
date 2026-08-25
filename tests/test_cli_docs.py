@@ -16,7 +16,8 @@ def test_readme_is_cli_first():
     """
     readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
     assert "PyFFmpegCore is now designed to be used first as a CLI" in readme
-    assert "pipx install pyffmpegcore" in readme
+    assert "pipx install git+https://github.com/OthmaneBlial/pyffmpegcore.git@main" in readme
+    assert "pyffmpegcore smoke-test" in readme
     assert "pyffmpegcore doctor" in readme
     assert "## Python API" in readme
 

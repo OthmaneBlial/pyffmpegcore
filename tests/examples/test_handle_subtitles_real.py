@@ -16,7 +16,7 @@ from examples.handle_subtitles import (
     extract_subtitles,
 )
 from pyffmpegcore import FFmpegRunner
-from tests.media_utils import ensure_downloaded_media
+from tests.media_utils import ensure_downloaded_media, ffmpeg_has_filter
 
 
 SHORT_SRT = """1
@@ -88,6 +88,8 @@ def test_add_and_extract_subtitles_real_media(tmp_path):
 
 @pytest.mark.real_media
 def test_burn_subtitles_real_media_changes_frame_content(tmp_path):
+    if not ffmpeg_has_filter("subtitles"):
+        pytest.skip("Local FFmpeg build does not include the subtitles filter")
     media = ensure_downloaded_media()
     subtitle_file = tmp_path / "subtitles with one's cues.srt"
     burned_output = tmp_path / "video_burned_subtitles.mp4"

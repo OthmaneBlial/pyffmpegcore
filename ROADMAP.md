@@ -81,10 +81,10 @@ P0 Truth and reproducibility
 
 ### P0.1 Repair correctness before release
 
-- [ ] Fix global argument handling so `pyffmpegcore --force convert ...` and `pyffmpegcore convert --force ...` are equivalent, or document and enforce one syntax with an explicit parser error.
-- [ ] Give `--verbose` defined, tested behavior or remove it until behavior exists.
-- [ ] Make incomplete groups such as `pyffmpegcore subtitles` exit with usage code `2` and write the diagnostic to stderr.
-- [ ] Add golden CLI contract tests covering root/subcommand option placement, nested groups, stdout/stderr separation, exit codes, paths with spaces/apostrophes/Unicode, and overwrite refusal.
+- [x] Fix global argument handling so `pyffmpegcore --force convert ...` and `pyffmpegcore convert --force ...` are equivalent, or document and enforce one syntax with an explicit parser error.
+- [x] Give `--verbose` defined, tested behavior or remove it until behavior exists.
+- [x] Make incomplete groups such as `pyffmpegcore subtitles` exit with usage code `2` and write the diagnostic to stderr.
+- [x] Add golden CLI contract tests covering root/subcommand option placement, nested groups, stdout/stderr separation, exit codes, paths with spaces/apostrophes/Unicode, and overwrite refusal.
 - [ ] Audit every handler for the stable exit-code categories documented in `CLI_SPEC.md`.
 - [ ] Ensure the CLI and Python layer both use argument arrays and never interpolate untrusted values through a shell.
 
@@ -96,12 +96,12 @@ P0 Truth and reproducibility
 
 ### P0.2 Make test media deterministic and legally usable
 
-- [ ] Replace mutable third-party fixture URLs with tiny redistribution-safe fixtures or deterministic media generated locally with FFmpeg `lavfi` sources.
-- [ ] Record the origin, license, generator command, codec/container expectations, and SHA-256 for every non-generated fixture.
+- [x] Replace mutable third-party fixture URLs with tiny redistribution-safe fixtures or deterministic media generated locally with FFmpeg `lavfi` sources.
+- [x] Record the origin, license, generator command, codec/container expectations, and SHA-256 for every non-generated fixture.
 - [ ] Add a true cold-cache CI job that cannot reuse the fixture cache.
 - [ ] Add a scheduled cold-cache run to detect upstream runner or FFmpeg drift between releases.
-- [ ] Add a package-installed `pyffmpegcore demo` or `pyffmpegcore smoke-test` that generates a tiny synthetic input, runs one transformation, probes the result, reports success, and cleans up unless asked to retain artifacts.
-- [ ] Replace hard-coded test counts in prose with a linked CI result or generated compatibility report.
+- [x] Add a package-installed `pyffmpegcore demo` or `pyffmpegcore smoke-test` that generates a tiny synthetic input, runs one transformation, probes the result, reports success, and cleans up unless asked to retain artifacts.
+- [x] Replace hard-coded test counts in prose with a linked CI result or generated compatibility report.
 
 **Acceptance gate**
 

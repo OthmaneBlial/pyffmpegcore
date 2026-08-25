@@ -4,7 +4,7 @@ This project now ships a `pyffmpegcore` console command.
 
 ## Requirements
 
-- Python `3.8+`
+- Python `3.10+`
 - `ffmpeg`
 - `ffprobe`
 
@@ -15,9 +15,10 @@ Install FFmpeg first using your normal OS package manager or binary installer.
 `pipx` is the cleanest option for most CLI users because it installs the app in an isolated environment but still exposes the command globally.
 
 ```bash
-pipx install pyffmpegcore
+pipx install git+https://github.com/OthmaneBlial/pyffmpegcore.git@main
 pyffmpegcore --version
 pyffmpegcore doctor
+pyffmpegcore smoke-test
 ```
 
 ## Install With One Command On Linux Or macOS
@@ -41,7 +42,7 @@ PYFFMPEGCORE_PACKAGE_SPEC=. ./install.sh --method pip
 If you prefer a user-level Python install:
 
 ```bash
-python -m pip install --user pyffmpegcore
+python -m pip install --user git+https://github.com/OthmaneBlial/pyffmpegcore.git@main
 pyffmpegcore --version
 ```
 
@@ -76,6 +77,14 @@ You should see:
 - whether `ffprobe` was found
 
 If either binary is missing, install it first and rerun `pyffmpegcore doctor`.
+
+Then run the repository-independent synthetic verification:
+
+```bash
+pyffmpegcore smoke-test
+```
+
+The install commands will switch to the shorter PyPI form only after a public package release exists.
 
 ## Windows Installer
 

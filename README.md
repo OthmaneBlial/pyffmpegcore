@@ -15,9 +15,8 @@ Use it when you want to:
 - mix or normalize audio
 - batch-convert images
 
-[![PyPI version](https://badge.fury.io/py/pyffmpegcore.svg)](https://pypi.org/project/pyffmpegcore/)
-[![Python versions](https://img.shields.io/pypi/pyversions/pyffmpegcore.svg)](https://pypi.org/project/pyffmpegcore/)
-[![License](https://img.shields.io/pypi/l/pyffmpegcore.svg)](https://pypi.org/project/pyffmpegcore/)
+[![CI](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/ci.yml/badge.svg)](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/OthmaneBlial/pyffmpegcore)](LICENSE)
 
 ## What This Project Is
 
@@ -31,35 +30,35 @@ It also still exposes a Python API for developers, but the easiest way to use th
 
 ## What Is Verified
 
-As of March 28, 2026, the repo was validated locally with:
+The continuously verified repository baseline includes:
 
-- Python `3.12`
+- the Python versions declared in the CI compatibility matrix
 - `ffmpeg` and `ffprobe` available on `PATH`
-- `105` library and CLI tests
-- real downloaded video, audio, subtitle, and image fixtures
+- unit, CLI, packaging, and real-media tests
+- locally generated video, audio, subtitle, and image fixtures
 - end-to-end CLI checks for the shipped commands
 - path handling for spaces and apostrophes in important workflows
 
-The strongest validation was done on Linux. The repo also now includes installer, packaging, and clean-install checks for the CLI path.
+See the linked CI run for current platform evidence instead of relying on a dated test count.
 
 ## Install
 
 You need:
 
-- Python `3.8+`
+- Python `3.10+`
 - `ffmpeg`
 - `ffprobe`
 
-Install the CLI with `pipx`:
+Until the first PyPI release is published, install the current public source with `pipx`:
 
 ```bash
-pipx install pyffmpegcore
+pipx install git+https://github.com/OthmaneBlial/pyffmpegcore.git@main
 ```
 
 Or with regular `pip`:
 
 ```bash
-python -m pip install --user pyffmpegcore
+python -m pip install --user git+https://github.com/OthmaneBlial/pyffmpegcore.git@main
 ```
 
 From a repo checkout you can also use the one-command installers:
@@ -79,6 +78,7 @@ Then confirm the install:
 ```bash
 pyffmpegcore --version
 pyffmpegcore doctor
+pyffmpegcore smoke-test
 ```
 
 More install details are in [CLI_INSTALL.md](CLI_INSTALL.md).
@@ -119,13 +119,13 @@ pyffmpegcore extract-audio --input interview.mp4 --output interview.mp3
 
 ## Practice With The Same Real Files Used In Tests
 
-If you want safe practice files instead of your own media, download the same fixtures used in real validation:
+If you want safe practice files instead of your own media, generate the same deterministic fixtures used in real validation:
 
 ```bash
 python tests/media/download_fixtures.py
 ```
 
-That creates files under `tests/media/downloads/`.
+That creates files under `tests/media/downloads/` without downloading third-party media.
 
 Main practice files:
 

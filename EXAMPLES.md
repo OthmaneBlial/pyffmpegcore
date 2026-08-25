@@ -15,7 +15,7 @@ pyffmpegcore --version
 pyffmpegcore doctor
 ```
 
-If you want the exact practice files used in real tests:
+If you want the exact locally generated practice files used in real tests:
 
 ```bash
 python tests/media/download_fixtures.py

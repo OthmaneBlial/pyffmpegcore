@@ -63,7 +63,7 @@ def ensure_media(media_root: Path) -> None:
 
     result = run_command([sys.executable, str(DOWNLOADER)], cwd=REPO_ROOT)
     if result.returncode != 0:
-        raise RuntimeError(result.stderr or result.stdout or "Fixture download failed.")
+        raise RuntimeError(result.stderr or result.stdout or "Fixture generation failed.")
 
 
 def add_report_entry(
@@ -98,7 +98,7 @@ def main(argv: list[str] | None = None) -> int:
         "--media-root",
         type=Path,
         default=DEFAULT_MEDIA_ROOT,
-        help="Directory containing downloaded media fixtures. Defaults to %(default)s.",
+        help="Directory containing generated media fixtures. Defaults to %(default)s.",
     )
     parser.add_argument(
         "--skip-media",
