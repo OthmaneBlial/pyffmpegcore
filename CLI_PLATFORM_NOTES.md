@@ -4,6 +4,7 @@ This file records the honest platform expectations for the `pyffmpegcore` CLI.
 
 ## Shared Rules
 
+- Python 3.10 through 3.14 is the maintained package range.
 - `ffmpeg` and `ffprobe` must be installed separately.
 - `pipx` is the cleanest install path for most CLI users.
 - user-level `pip` installs may require a new shell before the command appears on `PATH`.
@@ -29,13 +30,13 @@ The repository now includes a reusable validator:
 python scripts/validate_cli_install.py
 ```
 
-What it checks:
+By default it builds a wheel locally. Release and compatibility jobs instead pass `--artifact dist/` so every platform tests the exact same prebuilt wheel. It checks:
 
-- build a fresh wheel
+- build a fresh wheel or select exactly one supplied wheel
 - create a clean virtual environment
 - install the wheel into that environment
 - run `pyffmpegcore --version`
 - run `pyffmpegcore doctor --json`
 - run a small real-media smoke pass unless `--skip-media` is used
 
-This validator is meant to run on Linux, macOS, and Windows CI runners.
+The required compatibility matrix runs it on Linux, macOS, and Windows with Python 3.10 and 3.14. Intermediate Python versions run the package contract on Linux. See [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) for the tested-versus-expected policy.

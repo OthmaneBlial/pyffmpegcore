@@ -27,6 +27,11 @@ def test_doctor_json_smoke():
     assert payload["python"]["version"]
     assert payload["ffmpeg"]["available"] is True
     assert payload["ffprobe"]["available"] is True
+    assert payload["ffmpeg"]["configuration"] is not None
+    assert payload["capabilities"]["encoder_count"] > 0
+    assert payload["capabilities"]["filter_count"] > 0
+    assert "libx264" in payload["capabilities"]["core_encoders"]
+    assert "scale" in payload["capabilities"]["core_filters"]
 
 
 def test_doctor_reports_missing_binary_with_environment_exit_code():
@@ -52,3 +57,4 @@ def test_doctor_reports_missing_binary_with_environment_exit_code():
     payload = json.loads(result.stdout)
     assert payload["ffmpeg"]["available"] is False
     assert "Executable not found" in payload["ffmpeg"]["error"]
+    assert payload["capabilities"] is None

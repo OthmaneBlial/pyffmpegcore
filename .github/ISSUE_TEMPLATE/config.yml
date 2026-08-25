@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security report
+    url: https://github.com/OthmaneBlial/pyffmpegcore/security/advisories/new
+    about: Report a vulnerability privately.
+  - name: Support guide
+    url: https://github.com/OthmaneBlial/pyffmpegcore/blob/main/SUPPORT.md
+    about: Check diagnostics and choose the right support route.

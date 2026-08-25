@@ -1,39 +1,30 @@
 # Release Checklist
 
-Acceptance date: 2026-03-28
+This checklist is a gate, not a record of an older local run. The complete procedure is in [docs/RELEASING.md](docs/RELEASING.md).
 
-## Release Gate
+## Product and Documentation
 
-- [x] Fresh media fixtures downloaded into a clean temporary workspace with `tests/media/download_fixtures.py --output-dir /tmp/pyffmpegcore-acceptance-fb_h_f3q/fixtures --force`
-- [x] End-to-end acceptance run executed from `/tmp/pyffmpegcore-acceptance-fb_h_f3q/work dir with spaces`
-- [x] Full automated test suite passed with `.venv/bin/python -m pytest`
-- [x] Distribution artifacts built with `.venv/bin/python -m build`
+- [ ] Runtime version, signed tag, wheel metadata, changelog, and release name match.
+- [ ] README installation commands and badges are live and honest.
+- [ ] Compatibility policy names only combinations with visible required checks.
+- [ ] Security, support, contribution, and migration guidance is current.
 
-## Fresh Acceptance Coverage
+## Automated Evidence
 
-The final acceptance run used newly downloaded public sample media, not the repository cache, and exercised these verified workflows:
+- [ ] Ruff, formatting, mypy, fast tests, and the 80% full-suite coverage gate pass.
+- [ ] Python 3.10–3.14 package matrix passes.
+- [ ] The same prebuilt wheel passes media smoke tests on Linux, macOS, and Windows with Python 3.10 and 3.14.
+- [ ] Cold deterministic fixtures pass without cache reuse.
+- [ ] `twine check`, wheel contents, sdist contents, and clean isolated installation pass.
+- [ ] CodeQL and OpenSSF Scorecard findings are triaged.
 
-- `examples/convert_video.py`
-- `examples/extract_metadata.py`
-- `examples/compress_with_progress.py`
-- `examples/extract_thumbnail.py`
-- `examples/generate_waveform.py`
-- `examples/adjust_video_speed.py`
-- `examples/concatenate_videos.py`
-- `examples/handle_subtitles.py`
-- `examples/mix_audio.py`
-- `examples/normalize_audio.py`
-- `examples/batch_convert_images.py`
+## Publication
 
-Representative outputs were then re-checked with `ffprobe` and decoded with `ffmpeg -v error -i <output> -f null -` to confirm they were readable artifacts.
+- [ ] PyPI project ownership and the GitHub `pypi` environment are confirmed.
+- [ ] Trusted Publishing identity is scoped to `release.yml` and the `pypi` environment.
+- [ ] Release workflow dry-run passes.
+- [ ] The signed, protected version tag starts the release workflow.
+- [ ] PyPI files, SHA-256 checksums, provenance attestations, and the GitHub Release describe the same artifacts.
+- [ ] Clean public `pipx install`, `--version`, `doctor`, and `smoke-test` pass after publication.
 
-## Final Validation Results
-
-- `.venv/bin/python -m pytest`: `105 passed in 127.31s`
-- `.venv/bin/python -m build`: built `pyffmpegcore-0.1.2.tar.gz` and `pyffmpegcore-0.1.2-py3-none-any.whl`
-
-## Honest Caveats
-
-- The deepest acceptance pass in this session was run on Linux.
-- The environment was terminal-only, so true interactive human playback review was not possible here.
-- Manual acceptance was approximated with fresh downloads, end-to-end example execution, output probing, and decode checks. If a release requires human sight-and-sound review, that should still be repeated on a workstation with a media player before publishing.
+Record final links and exact check runs in the GitHub Release rather than placing a stale test count in this file.

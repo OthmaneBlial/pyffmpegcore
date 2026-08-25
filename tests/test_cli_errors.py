@@ -10,6 +10,8 @@ import sys
 
 import pytest
 
+from pyffmpegcore.cli import main
+
 
 def test_cli_missing_input_returns_validation_error(tmp_path):
     """
@@ -102,6 +104,29 @@ def test_cli_processing_failure_returns_runtime_error(tmp_path):
     )
 
     assert result.returncode == 5
+
+
+@pytest.mark.parametrize(
+    ("method", "arguments"),
+    [
+        ("compress", ["compress", "--crf", "28"]),
+        ("extract_thumbnail", ["thumbnail"]),
+        ("generate_waveform", ["waveform"]),
+    ],
+)
+def test_handler_value_errors_return_validation_category(tmp_path, monkeypatch, method, arguments):
+    """Typed option validation failures must remain category 4, not processing failures."""
+    input_file = tmp_path / "input.mp4"
+    output_file = tmp_path / "output.mp4"
+    input_file.write_bytes(b"fixture")
+
+    def reject_options(*_args, **_kwargs):
+        raise ValueError("invalid typed option")
+
+    monkeypatch.setattr(f"pyffmpegcore.cli.FFmpegRunner.{method}", reject_options)
+    argv = [*arguments, "--input", str(input_file), "--output", str(output_file)]
+
+    assert main(argv) == 4
 
 
 @pytest.mark.real_media

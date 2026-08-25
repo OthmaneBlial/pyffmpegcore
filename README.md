@@ -1,6 +1,6 @@
 # PyFFmpegCore
 
-A terminal-first media toolkit built on top of `ffmpeg` and `ffprobe`.
+The safe, explainable FFmpeg task runner for the terminal, Python, and CI.
 
 Use it when you want to:
 
@@ -16,6 +16,8 @@ Use it when you want to:
 - batch-convert images
 
 [![CI](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/ci.yml/badge.svg)](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/codeql.yml/badge.svg)](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/codeql.yml)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/OthmaneBlial/pyffmpegcore/badge)](https://securityscorecards.dev/viewer/?uri=github.com/OthmaneBlial/pyffmpegcore)
 [![License](https://img.shields.io/github/license/OthmaneBlial/pyffmpegcore)](LICENSE)
 
 ## What This Project Is
@@ -39,7 +41,7 @@ The continuously verified repository baseline includes:
 - end-to-end CLI checks for the shipped commands
 - path handling for spaces and apostrophes in important workflows
 
-See the linked CI run for current platform evidence instead of relying on a dated test count.
+See the [compatibility policy and live evidence](docs/COMPATIBILITY.md) instead of relying on a dated test count.
 
 ## Install
 
@@ -255,7 +257,7 @@ The quick command guide is in [CLI_HELP.md](CLI_HELP.md). More task-based exampl
 If you want to call the project from Python code instead of the CLI:
 
 ```bash
-python -m pip install pyffmpegcore
+python -m pip install "git+https://github.com/OthmaneBlial/pyffmpegcore.git@main"
 ```
 
 Example:
@@ -270,3 +272,15 @@ print(result.returncode)
 ```
 
 The Python API remains useful, but the supported public path is now the `pyffmpegcore` terminal command first.
+
+## Trust and Participation
+
+- [Security policy and private reporting](SECURITY.md)
+- [Command-execution threat model](docs/SECURITY_MODEL.md)
+- [Compatibility policy](docs/COMPATIBILITY.md)
+- [Contributing guide](CONTRIBUTING.md)
+- [Support routes](SUPPORT.md)
+- [Changelog](CHANGELOG.md)
+- [Release and recovery procedure](docs/RELEASING.md)
+
+The project is pre-PyPI until the public release workflow completes successfully. Source installs from `main` are convenient for evaluation but are not immutable release evidence.

@@ -6,6 +6,7 @@ This document defines the maintained local workflow for working on PyFFmpegCore.
 
 The maintained repository baseline is:
 
+- Python 3.10 through 3.14 for the package contract
 - `ffmpeg` and `ffprobe` are required on `PATH`
 - `python -m compileall pyffmpegcore tests examples` passes
 - `python -m pytest` passes locally in the supported virtual environment
@@ -30,9 +31,16 @@ The `dev` extra is the supported way to install local test and build tooling for
 Run these commands before and after meaningful changes:
 
 ```bash
+python -m ruff check pyffmpegcore scripts examples tests
+python -m ruff format --check pyffmpegcore scripts examples tests
+python -m mypy pyffmpegcore
 python -m compileall pyffmpegcore tests examples
-python -m pytest
+python -m pytest -m "not real_media"
+python tests/media/download_fixtures.py --force
+python -m pytest --cov=pyffmpegcore --cov-report=term-missing
 python -m build
+python -m twine check dist/*
+python -m check_wheel_contents dist/*.whl
 ```
 
 Useful targeted commands:
@@ -53,6 +61,8 @@ python tests/media/download_fixtures.py
 Generated fixture files are written to `tests/media/downloads/` and are ignored by git.
 
 The full test suite validates and regenerates them automatically when needed. Use `--force` for a true cold generation pass.
+
+The fast tier is useful while editing. Changes to media execution, paths, filters, codecs, packaging, or platform behavior are complete only after the relevant real-media or exact-artifact tier passes. See [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md).
 
 ## FFmpeg Checks
 

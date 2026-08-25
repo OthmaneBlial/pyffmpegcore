@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pyffmpegcore"
 dynamic = ["version"]
-description = "Safe, explainable FFmpeg workflows for the terminal, Python, and CI"
+description = "The safe, explainable FFmpeg task runner for the terminal, Python, and CI"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"

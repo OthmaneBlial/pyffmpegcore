@@ -1,0 +1,56 @@
+name: Bug report
+description: Report a reproducible PyFFmpegCore defect
+title: "[Bug]: "
+labels: [bug, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: Do not include private media, URL credentials, or security vulnerabilities. Use the private route in SECURITY.md for security reports.
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the observed behavior and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Minimal reproduction
+      description: Include the exact command or Python call, exit code, and a synthetic reproduction when possible.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Doctor output
+      description: Paste sanitized output from `pyffmpegcore doctor --json`.
+      render: json
+    validations:
+      required: true
+  - type: dropdown
+    id: artifact
+    attributes:
+      label: Installation source
+      options:
+        - PyPI release
+        - GitHub release wheel
+        - Source checkout from main
+        - Editable development install
+    validations:
+      required: true
+  - type: textarea
+    id: stderr
+    attributes:
+      label: Relevant stderr or traceback
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Safety checks
+      options:
+        - label: I removed credentials, personal paths, and private metadata.
+          required: true
+        - label: This is not a security vulnerability.
+          required: true

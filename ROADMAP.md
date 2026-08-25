@@ -85,8 +85,8 @@ P0 Truth and reproducibility
 - [x] Give `--verbose` defined, tested behavior or remove it until behavior exists.
 - [x] Make incomplete groups such as `pyffmpegcore subtitles` exit with usage code `2` and write the diagnostic to stderr.
 - [x] Add golden CLI contract tests covering root/subcommand option placement, nested groups, stdout/stderr separation, exit codes, paths with spaces/apostrophes/Unicode, and overwrite refusal.
-- [ ] Audit every handler for the stable exit-code categories documented in `CLI_SPEC.md`.
-- [ ] Ensure the CLI and Python layer both use argument arrays and never interpolate untrusted values through a shell.
+- [x] Audit every handler for the stable exit-code categories documented in `CLI_SPEC.md`.
+- [x] Ensure the CLI and Python layer both use argument arrays and never interpolate untrusted values through a shell.
 
 **Acceptance gate**
 
@@ -98,8 +98,8 @@ P0 Truth and reproducibility
 
 - [x] Replace mutable third-party fixture URLs with tiny redistribution-safe fixtures or deterministic media generated locally with FFmpeg `lavfi` sources.
 - [x] Record the origin, license, generator command, codec/container expectations, and SHA-256 for every non-generated fixture.
-- [ ] Add a true cold-cache CI job that cannot reuse the fixture cache.
-- [ ] Add a scheduled cold-cache run to detect upstream runner or FFmpeg drift between releases.
+- [x] Add a true cold-cache CI job that cannot reuse the fixture cache.
+- [x] Add a scheduled cold-cache run to detect upstream runner or FFmpeg drift between releases.
 - [x] Add a package-installed `pyffmpegcore demo` or `pyffmpegcore smoke-test` that generates a tiny synthetic input, runs one transformation, probes the result, reports success, and cleans up unless asked to retain artifacts.
 - [x] Replace hard-coded test counts in prose with a linked CI result or generated compatibility report.
 
@@ -114,12 +114,12 @@ P0 Truth and reproducibility
 - [ ] Confirm the `pyffmpegcore` project name and maintainer account controls in PyPI.
 - [x] Single-source the version or enforce equality between package metadata, runtime `__version__`, CLI `--version`, tag, wheel metadata, and release name.
 - [x] Add `twine check`, wheel/sdist content checks, clean artifact installation, and README rendering validation.
-- [ ] Build the wheel and sdist once in an unprivileged job; test those exact files; never rebuild inside the publishing job.
+- [x] Build the wheel and sdist once in an unprivileged job; test those exact files; never rebuild inside the publishing job.
 - [ ] Configure a protected GitHub Environment named `pypi` and PyPI Trusted Publishing with narrowly scoped OIDC permissions.
 - [ ] Publish the first honest beta from a signed/protected tag only after every earlier P0 gate passes.
 - [ ] Create a matching GitHub Release with release notes, compatibility statement, SHA-256 checksums, and links to PyPI attestations.
-- [ ] Document rollback, yanking, deprecation, and security-fix procedures.
-- [ ] Replace broken badges immediately; restore PyPI badges only after the public endpoints are healthy. Add the existing CI badge now.
+- [x] Document rollback, yanking, deprecation, and security-fix procedures.
+- [x] Replace broken badges immediately; restore PyPI badges only after the public endpoints are healthy. Add the existing CI badge now.
 
 **Acceptance gate**
 
@@ -130,12 +130,12 @@ P0 Truth and reproducibility
 
 ### P0.4 Publish only tested support claims
 
-- [ ] Adopt an explicit Python policy. The recommended initial public matrix is Python 3.10–3.14; keep an older version only if it has real CI coverage and a stated support reason.
-- [ ] Run fast/package tests on every claimed Python version.
-- [ ] Run installed CLI and real-media smoke tests on Linux, macOS, and Windows for a baseline and newest supported Python.
-- [ ] Capture Python, OS, architecture, FFmpeg, FFprobe, encoder, and filter versions as CI artifacts.
-- [ ] Define a small FFmpeg compatibility policy and test representative supported builds rather than relying only on the runner's system package.
-- [ ] Make `requires-python`, classifiers, README, platform notes, docs, and release notes agree.
+- [x] Adopt an explicit Python policy. The recommended initial public matrix is Python 3.10–3.14; keep an older version only if it has real CI coverage and a stated support reason.
+- [x] Run fast/package tests on every claimed Python version.
+- [x] Run installed CLI and real-media smoke tests on Linux, macOS, and Windows for a baseline and newest supported Python.
+- [x] Capture Python, OS, architecture, FFmpeg, FFprobe, encoder, and filter versions as CI artifacts.
+- [x] Define a small FFmpeg compatibility policy and test representative supported builds rather than relying only on the runner's system package.
+- [x] Make `requires-python`, classifiers, README, platform notes, docs, and release notes agree.
 
 **Acceptance gate**
 
@@ -146,13 +146,13 @@ P0 Truth and reproducibility
 ### P0.5 Establish the minimum trust surface
 
 - [ ] Add `SECURITY.md` with supported versions, a private reporting route, scope, and realistic response/disclosure expectations; enable private vulnerability reporting.
-- [ ] Add `CONTRIBUTING.md`, link it to `DEVELOPMENT.md`, and document fast versus real-media test tiers.
-- [ ] Add a code of conduct, bug/recipe issue forms, a pull-request template, and support routing.
+- [x] Add `CONTRIBUTING.md`, link it to `DEVELOPMENT.md`, and document fast versus real-media test tiers.
+- [x] Add a code of conduct, bug/recipe issue forms, a pull-request template, and support routing.
 - [ ] Protect `main` against deletion and force pushes; require stable CI checks before merge.
 - [ ] Enable Dependabot alerts, security updates, and weekly updates for Python and GitHub Actions.
-- [ ] Pin external Actions to full commit SHAs with readable version comments.
-- [ ] Enable CodeQL and OpenSSF Scorecard reporting; triage the controls, not merely the score.
-- [ ] Document the command-execution threat model: shell avoidance, filter/path escaping, URL credentials, malicious metadata, temporary files, resource exhaustion, and overwrite policy.
+- [x] Pin external Actions to full commit SHAs with readable version comments.
+- [x] Enable CodeQL and OpenSSF Scorecard reporting; triage the controls, not merely the score.
+- [x] Document the command-execution threat model: shell avoidance, filter/path escaping, URL credentials, malicious metadata, temporary files, resource exhaustion, and overwrite policy.
 
 **Acceptance gate**
 
@@ -224,8 +224,8 @@ P0 Truth and reproducibility
 
 ### P2.3 Make quality evidence continuous
 
-- [ ] Add formatting/linting, static typing, coverage measurement, package metadata validation, and artifact-content checks.
-- [ ] Define a meaningful coverage threshold by risk area; do not optimize only for a headline percentage.
+- [x] Add formatting/linting, static typing, coverage measurement, package metadata validation, and artifact-content checks.
+- [x] Define a meaningful coverage threshold by risk area; do not optimize only for a headline percentage.
 - [ ] Test stream selection, metadata preservation, corrupted inputs, missing codecs/filters, full disks, interruption, timeouts, and cleanup.
 - [ ] Generate tiny media permutations for video-only, audio-only, multi-audio, subtitles, chapters, cover art, rotation, variable frame rate, and Unicode metadata.
 - [ ] Decide whether the sdist is a runtime source artifact or a self-contained testable source artifact, then enforce its exact contents.

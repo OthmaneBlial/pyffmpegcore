@@ -1,0 +1,39 @@
+name: Recipe request
+description: Propose a repeatable media workflow with a concrete input and output contract
+title: "[Recipe]: "
+labels: [recipe, needs-triage]
+body:
+  - type: textarea
+    id: job
+    attributes:
+      label: Job to be done
+      description: Describe the real workflow, who needs it, and why raw FFmpeg is currently error-prone.
+    validations:
+      required: true
+  - type: textarea
+    id: input
+    attributes:
+      label: Input contract
+      description: Containers, codecs, streams, dimensions, duration range, and relevant edge cases.
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Expected output and validation
+      description: State how a machine can prove success, including ffprobe properties or tolerances.
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Known FFmpeg command or references
+      description: Optional command, documentation link, or workaround. Remove credentials and private paths.
+      render: shell
+  - type: checkboxes
+    id: fixture
+    attributes:
+      label: Fixture safety
+      options:
+        - label: The workflow can be reproduced with generated or redistribution-safe media.
+          required: true

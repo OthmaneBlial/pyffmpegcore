@@ -7,6 +7,7 @@ from __future__ import annotations
 import argparse
 import json
 import platform
+import re
 import shlex
 import shutil
 import subprocess
@@ -38,6 +39,8 @@ _AUDIO_CODEC_BY_EXTENSION = {
     ".wav": "pcm_s16le",
 }
 _BITRATELESS_AUDIO_CODECS = {"flac", "pcm_s16le"}
+_CORE_ENCODERS = ("aac", "flac", "libmp3lame", "libopus", "libvpx-vp9", "libx264", "mpeg4", "pcm_s16le")
+_CORE_FILTERS = ("acrossfade", "amix", "atempo", "drawtext", "loudnorm", "scale", "showwavespic", "subtitles")
 
 ROOT_HELP_EPILOG = """Examples:
   pyffmpegcore doctor
@@ -1204,11 +1207,67 @@ def inspect_binary(binary_path: str) -> dict[str, Any]:
 
     if result.returncode == 0:
         report["available"] = True
-        report["version"] = result.stdout.splitlines()[0] if result.stdout else ""
+        output_lines = result.stdout.splitlines()
+        report["version"] = output_lines[0] if output_lines else ""
+        report["configuration"] = next(
+            (line.removeprefix("configuration: ") for line in output_lines if line.startswith("configuration: ")),
+            None,
+        )
         return report
 
     report["error"] = result.stderr.strip() or "Version probe failed"
     return report
+
+
+def inspect_ffmpeg_capabilities(binary_path: str) -> dict[str, Any]:
+    """Collect a stable summary of encoders, filters, and hardware accelerators."""
+
+    def list_names(option: str) -> set[str]:
+        try:
+            result = subprocess.run(
+                [binary_path, "-hide_banner", option],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+        except OSError:
+            return set()
+        if result.returncode != 0:
+            return set()
+
+        names = set()
+        for line in result.stdout.splitlines():
+            match = re.match(r"^\s*[A-Z.|]{2,6}\s+(\S+)", line)
+            if match and match.group(1) != "=":
+                names.add(match.group(1))
+        return names
+
+    encoders = list_names("-encoders")
+    filters = list_names("-filters")
+    try:
+        hwaccels_result = subprocess.run(
+            [binary_path, "-hide_banner", "-hwaccels"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except OSError:
+        hwaccels_result = None
+    hardware_accelerators = []
+    if hwaccels_result is not None and hwaccels_result.returncode == 0:
+        hardware_accelerators = [
+            line.strip()
+            for line in hwaccels_result.stdout.splitlines()
+            if line.strip() and not line.startswith("Hardware acceleration methods:")
+        ]
+
+    return {
+        "encoder_count": len(encoders),
+        "filter_count": len(filters),
+        "core_encoders": {name: name in encoders for name in _CORE_ENCODERS},
+        "core_filters": {name: name in filters for name in _CORE_FILTERS},
+        "hardware_accelerators": hardware_accelerators,
+    }
 
 
 def collect_doctor_report(ctx: CLIContext) -> dict[str, Any]:
@@ -1217,6 +1276,7 @@ def collect_doctor_report(ctx: CLIContext) -> dict[str, Any]:
     """
     ffmpeg = inspect_binary(ctx.ffmpeg_path)
     ffprobe = inspect_binary(ctx.ffprobe_path)
+    capabilities = inspect_ffmpeg_capabilities(ctx.ffmpeg_path) if ffmpeg["available"] else None
     return {
         "cli_version": __version__,
         "platform": {
@@ -1230,6 +1290,7 @@ def collect_doctor_report(ctx: CLIContext) -> dict[str, Any]:
         },
         "ffmpeg": ffmpeg,
         "ffprobe": ffprobe,
+        "capabilities": capabilities,
     }
 
 
@@ -1260,6 +1321,17 @@ def render_doctor_report(ctx: CLIContext, report: dict[str, Any]) -> None:
             )
             if binary_report["error"]:
                 echo(ctx, f"  {binary_report['error']}")
+
+    capabilities = report.get("capabilities")
+    if capabilities:
+        missing_encoders = [name for name, available in capabilities["core_encoders"].items() if not available]
+        missing_filters = [name for name, available in capabilities["core_filters"].items() if not available]
+        echo(ctx, f"Capabilities: {capabilities['encoder_count']} encoders, {capabilities['filter_count']} filters")
+        echo(ctx, f"Hardware acceleration: {', '.join(capabilities['hardware_accelerators']) or 'none reported'}")
+        if missing_encoders:
+            echo(ctx, f"Optional core encoders missing: {', '.join(missing_encoders)}")
+        if missing_filters:
+            echo(ctx, f"Optional core filters missing: {', '.join(missing_filters)}")
 
 
 def handle_doctor(args: argparse.Namespace) -> int:
@@ -1581,10 +1653,10 @@ def handle_compress(args: argparse.Namespace) -> int:
             progress_callback=progress_callback,
             **kwargs,
         )
-    except (RuntimeError, ValueError) as exc:
-        message = str(exc)
-        exit_code = EXIT_ENVIRONMENT_ERROR if "was not found" in message else EXIT_RUNTIME_ERROR
-        raise CLIError(message, exit_code=exit_code) from exc
+    except ValueError as exc:
+        raise CLIError(str(exc), exit_code=EXIT_VALIDATION_ERROR) from exc
+    except RuntimeError as exc:
+        raise runtime_error_to_cli_error(exc) from exc
 
     raise_for_completed_process_error(result)
     summarize_output_file(ctx, output_path)
@@ -1647,10 +1719,10 @@ def handle_thumbnail(args: argparse.Namespace) -> int:
             height=args.height,
             quality=args.quality,
         )
-    except (RuntimeError, ValueError) as exc:
-        message = str(exc)
-        exit_code = EXIT_ENVIRONMENT_ERROR if "was not found" in message else EXIT_RUNTIME_ERROR
-        raise CLIError(message, exit_code=exit_code) from exc
+    except ValueError as exc:
+        raise CLIError(str(exc), exit_code=EXIT_VALIDATION_ERROR) from exc
+    except RuntimeError as exc:
+        raise runtime_error_to_cli_error(exc) from exc
 
     raise_for_completed_process_error(result)
     summarize_output_file(ctx, output_path)
@@ -1673,10 +1745,10 @@ def handle_waveform(args: argparse.Namespace) -> int:
             height=args.height,
             colors=args.colors,
         )
-    except (RuntimeError, ValueError) as exc:
-        message = str(exc)
-        exit_code = EXIT_ENVIRONMENT_ERROR if "was not found" in message else EXIT_RUNTIME_ERROR
-        raise CLIError(message, exit_code=exit_code) from exc
+    except ValueError as exc:
+        raise CLIError(str(exc), exit_code=EXIT_VALIDATION_ERROR) from exc
+    except RuntimeError as exc:
+        raise runtime_error_to_cli_error(exc) from exc
 
     raise_for_completed_process_error(result)
     summarize_output_file(ctx, output_path)
