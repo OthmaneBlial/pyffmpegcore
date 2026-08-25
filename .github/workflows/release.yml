@@ -31,7 +31,11 @@ jobs:
           cache: pip
       - name: Require a signed tag for publication
         if: github.event_name == 'push'
-        run: git tag --verify "$GITHUB_REF_NAME"
+        run: >-
+          git
+          -c gpg.format=ssh
+          -c gpg.ssh.allowedSignersFile=.github/allowed_signers
+          tag --verify "$GITHUB_REF_NAME"
       - name: Verify tag and runtime versions agree
         if: github.event_name == 'push'
         run: python -c "import pyffmpegcore,os; expected='v'+pyffmpegcore.__version__; actual=os.environ['GITHUB_REF_NAME']; assert actual == expected, f'{actual} != {expected}'"

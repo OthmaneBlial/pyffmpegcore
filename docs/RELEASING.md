@@ -14,7 +14,19 @@ Only a maintainer with repository and PyPI project control may publish a release
 1. Confirm every earlier P0 roadmap gate and all required checks are green.
 2. Update `CHANGELOG.md`, compatibility notes, and the runtime version.
 3. Run the Release workflow manually in dry-run mode.
-4. Create a signed annotated tag matching the runtime version exactly, for example `v0.2.0`.
+4. Create an SSH-signed annotated tag matching the runtime version exactly.
+   The maintainer key must match `.github/allowed_signers`, and the GitHub tag
+   ruleset prevents deletion and non-fast-forward updates of `v*` refs:
+
+   ```bash
+   git -c gpg.format=ssh \
+     -c user.signingkey="$HOME/.ssh/id_ed25519" \
+     tag -s v0.2.0 -m "pyffmpegcore 0.2.0"
+   git -c gpg.format=ssh \
+     -c gpg.ssh.allowedSignersFile=.github/allowed_signers \
+     tag --verify v0.2.0
+   ```
+
 5. Push the tag. The workflow builds once, tests the exact wheel on the supported OS/Python anchors, attests it, publishes it through OIDC, and creates a matching GitHub Release with checksums.
 6. Verify the PyPI JSON/Simple endpoints, clean `pipx install`, `--version`, `doctor`, and `smoke-test` from the public artifact.
 
