@@ -6,7 +6,12 @@ from __future__ import annotations
 
 import pytest
 
-from pyffmpegcore.cli import CLIError, prepare_output_dir, prepare_output_path, require_existing_input
+from pyffmpegcore.cli_validation import (
+    CLIError,
+    prepare_output_dir,
+    prepare_output_path,
+    require_existing_input,
+)
 
 
 def test_require_existing_input_rejects_missing_path(tmp_path):

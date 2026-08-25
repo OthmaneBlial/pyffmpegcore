@@ -14,6 +14,7 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 - Versioned `ExecutionPlan`, `PreflightReport`, `ProgressEvent`, and `JobResult` contracts.
 - `--dry-run`, `--explain`, `--plan-json`, and executing `--result-json` modes for every writing command.
 - Explicit CLI timeout and temporary-file retention policies with child-process-safe keyboard cancellation.
+- Separated CLI registration and validation layers while preserving the public command contract.
 
 ### Changed
 

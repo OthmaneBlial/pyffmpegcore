@@ -128,6 +128,12 @@ Higher-level frameworks can be reconsidered later only if they solve a real user
 - Every writing command should accept non-mutating `--dry-run`/`--explain` previews and an executing `--result-json` machine-result mode.
 - Required file paths should use explicit names rather than positional guessing where readability matters.
 - Commands that write files should require an explicit output target unless a later phase defines a safe default.
+
+The CLI is intentionally layered: `cli_parser` owns registration, `cli_validation`
+owns cross-command and path checks, `cli_planning` builds typed plans,
+`cli_execution` runs prepared workflows, and `presentation` owns versioned plan
+rendering. `cli` composes those layers and retains the task-specific diagnostic
+handlers.
 - Help text should show at least one short example for user-facing commands.
 - The CLI should return numeric exit codes instead of relying only on exception text.
 

@@ -207,7 +207,7 @@ P0 Truth and reproducibility
 
 ### P2.1 Separate parsing, planning, execution, and presentation
 
-- [ ] Split the monolithic CLI into command registration, input validation, workflow planning, execution, and human/JSON rendering modules.
+- [x] Split the monolithic CLI into command registration, input validation, workflow planning, execution, and human/JSON rendering modules.
 - [x] Move every FFmpeg command builder out of CLI handlers and examples into shared workflow services.
 - [x] Make examples thin consumers of the same public layer used by the CLI.
 - [x] Preserve a low-level `run(args)` escape hatch without letting it bypass safety defaults silently.
