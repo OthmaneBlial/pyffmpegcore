@@ -17,8 +17,8 @@ The document uses `schema_version: "1.0"` and reports status, retention behavior
 ## Plans, results, profiles, and preflight
 
 - `ExecutionPlan` uses `schema_version: "1.0"` and stores the exact argument vector as an array.
-- `JobResult` uses `schema_version: "1.0"` and categorizes success, runtime failure, timeout, cancellation, and validation refusal.
+- `JobResult` uses `schema_version: "1.0"` and categorizes success, runtime failure, timeout, cancellation, and validation refusal. It includes the final normalized `ProgressEvent`, capture-policy output, warnings, and output existence/size facts.
 - profiles use `schema_version: "1.0"` plus an independent positive `profile_version`.
 - `PreflightReport` uses `schema_version: "1.0"`; human output is rendered from the same check objects.
 
-Receipts and pipelines have separate schema files and migration rules. Human terminal output is allowed to evolve; versioned JSON fields follow the documented compatibility and deprecation policy.
+Receipts and pipelines will use separate schema files and migration rules. Human terminal output is allowed to evolve; versioned JSON fields follow the documented compatibility and deprecation policy.

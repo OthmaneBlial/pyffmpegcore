@@ -177,6 +177,7 @@ class JobResult:
     elapsed_seconds: float
     stdout: str | None = None
     stderr: str | None = None
+    progress: ProgressEvent | None = None
     warnings: tuple[str, ...] = ()
     outputs: tuple[dict[str, Any], ...] = ()
     schema_version: str = RESULT_SCHEMA_VERSION

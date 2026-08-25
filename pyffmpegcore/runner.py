@@ -10,7 +10,7 @@ import subprocess
 import threading
 from collections.abc import Callable
 
-from .domain import ExecutionPlan, JobResult
+from .domain import ExecutionPlan, JobResult, ProgressEvent
 from .executor import ExecutionEngine
 from .progress import ProgressTracker
 
@@ -47,9 +47,14 @@ class FFmpegRunner:
         plan: ExecutionPlan,
         *,
         cancellation: threading.Event | None = None,
+        progress_callback: Callable[[ProgressEvent], None] | None = None,
     ) -> JobResult:
         """Execute a typed plan and return a stable structured result."""
-        return ExecutionEngine().execute(plan, cancellation=cancellation)
+        return ExecutionEngine().execute(
+            plan,
+            cancellation=cancellation,
+            progress_callback=progress_callback,
+        )
 
     def run(
         self,

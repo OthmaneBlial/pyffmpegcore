@@ -25,9 +25,15 @@ pyffmpegcore compress \
   --plan-json > plan.json
 ```
 
-The `command` and each multi-pass `steps[].command` value are JSON arrays, never shell strings. Human output uses platform-appropriate quoting only for display; PyFFmpegCore executes the original array without a shell.
+The `command` and each multi-pass `steps[].command` value are JSON arrays, never shell strings. Human output uses unambiguous shell-like quoting only for display; PyFFmpegCore executes the original array without a shell.
 
 Plans normalize paths so the same request is snapshot-testable. Environment-specific capability and free-space facts live in the separate preflight object and do not change the plan.
+
+## Execute the same plan from Python
+
+`FFmpegRunner.execute_plan()` executes the exact typed plan and returns a `JobResult` rather than a raw process object. FFmpeg's `-progress pipe:1` protocol is part of every workflow plan, and the final normalized `ProgressEvent` is stored in the result. A callback can receive the typed events while the job runs.
+
+The execution policy controls overwrite refusal, timeout, cancellation, captured output, and temporary-file retention. Two-pass logs, concat manifests, and defensive subtitle copies are materialized in an isolated workspace only when execution begins. The default `clean` policy removes that workspace after success or failure; `keep-on-error` is available for explicit diagnostics.
 
 ## Target-size feasibility
 

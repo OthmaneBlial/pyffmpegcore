@@ -10,6 +10,7 @@ import pytest
 
 from pyffmpegcore.capabilities import CapabilityInventory
 from pyffmpegcore.cli import main
+from tests.media_utils import ensure_downloaded_media
 
 MEDIA_ROOT = Path(__file__).parent / "media" / "downloads"
 VIDEO = MEDIA_ROOT / "sample_mp4_h264.mp4"
@@ -20,6 +21,12 @@ SUBTITLE = MEDIA_ROOT / "sample_subtitles.srt"
 @pytest.fixture(scope="module")
 def capability_inventory():
     return CapabilityInventory.inspect("ffmpeg")
+
+
+@pytest.fixture(scope="module", autouse=True)
+def deterministic_media_fixtures():
+    """Generate the tiny local fixtures even in a clean quality-job checkout."""
+    ensure_downloaded_media()
 
 
 @pytest.mark.parametrize(

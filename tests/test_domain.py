@@ -15,6 +15,7 @@ from pyffmpegcore import (
     FFmpegRunner,
     JobStatus,
     OverwritePolicy,
+    TemporaryFilePolicy,
     ValidationError,
 )
 
@@ -102,6 +103,22 @@ def test_execution_policy_refuses_existing_outputs(tmp_path):
     assert output.read_text(encoding="utf-8") == "keep"
 
 
+def test_execution_missing_binary_does_not_create_output_parent(tmp_path):
+    output = tmp_path / "not-created" / "output.mp4"
+    plan = ExecutionPlan(
+        workflow="test/missing",
+        command=(str(tmp_path / "missing-ffmpeg"), "-version"),
+        inputs=(),
+        outputs=(str(output),),
+    )
+
+    result = FFmpegRunner().execute_plan(plan)
+
+    assert result.exit_category == "environment"
+    assert result.returncode is None
+    assert not output.parent.exists()
+
+
 def test_execution_policy_supports_timeout_and_cancellation():
     timeout_plan = ExecutionPlan(
         workflow="test/timeout",
@@ -126,3 +143,77 @@ def test_execution_policy_supports_timeout_and_cancellation():
     assert timed_out.exit_category == "timeout"
     assert cancelled.status is JobStatus.CANCELLED
     assert cancelled.exit_category == "cancelled"
+
+
+def test_execution_materializes_and_cleans_concat_manifest(tmp_path, monkeypatch):
+    workspace = tmp_path / "temporary"
+
+    def create_workspace(**_kwargs):
+        workspace.mkdir()
+        return str(workspace)
+
+    monkeypatch.setattr("pyffmpegcore.executor.tempfile.mkdtemp", create_workspace)
+    output = tmp_path / "manifest-copy.txt"
+    code = "from pathlib import Path; import sys; Path(sys.argv[2]).write_text(Path(sys.argv[1]).read_text())"
+    plan = ExecutionPlan(
+        workflow="test/manifest",
+        command=(sys.executable, "-c", code, "<pyffmpegcore-concat-manifest>", str(output)),
+        inputs=(),
+        outputs=(str(output),),
+        metadata={"concat_manifest": [str(tmp_path / "clip's name.mp4")]},
+    )
+
+    result = FFmpegRunner().execute_plan(plan)
+
+    assert result.succeeded
+    assert "clip'\\''s name.mp4" in output.read_text(encoding="utf-8")
+    assert not workspace.exists()
+
+
+def test_execution_retains_temporary_workspace_on_error_when_requested(tmp_path, monkeypatch):
+    workspace = tmp_path / "retained"
+
+    def create_workspace(**_kwargs):
+        workspace.mkdir()
+        return str(workspace)
+
+    monkeypatch.setattr("pyffmpegcore.executor.tempfile.mkdtemp", create_workspace)
+    plan = ExecutionPlan(
+        workflow="test/retained",
+        command=(sys.executable, "-c", "raise SystemExit(7)", "<pyffmpegcore-passlog>"),
+        inputs=(),
+        outputs=(),
+        policy=ExecutionPolicy(temporary_files=TemporaryFilePolicy.KEEP_ON_ERROR),
+    )
+
+    result = FFmpegRunner().execute_plan(plan)
+
+    assert result.status is JobStatus.FAILED
+    assert workspace.is_dir()
+    assert any(str(workspace) in warning for warning in result.warnings)
+
+
+def test_execution_emits_typed_structured_progress(tmp_path):
+    output = tmp_path / "progress.txt"
+    code = (
+        "from pathlib import Path; import sys; "
+        "print('frame=12'); print('out_time_us=1500000'); print('speed=1.25x'); print('progress=end'); "
+        "Path(sys.argv[1]).write_text('done')"
+    )
+    plan = ExecutionPlan(
+        workflow="test/progress",
+        command=(sys.executable, "-c", code, str(output), "-progress", "pipe:1"),
+        inputs=(),
+        outputs=(str(output),),
+    )
+    events = []
+
+    result = FFmpegRunner().execute_plan(plan, progress_callback=events.append)
+
+    assert result.succeeded
+    assert result.progress is not None
+    assert result.progress.status == "end"
+    assert result.progress.frame == 12
+    assert result.progress.time_seconds == 1.5
+    assert result.progress.speed == 1.25
+    assert events == [result.progress]

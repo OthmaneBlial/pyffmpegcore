@@ -71,7 +71,7 @@ Compress a video file.
 
 Convert a video or audio file to another format.
 
-### `execute_plan(self, plan: 'ExecutionPlan', *, cancellation: 'threading.Event | None' = None) -> 'JobResult'`
+### `execute_plan(self, plan: 'ExecutionPlan', *, cancellation: 'threading.Event | None' = None, progress_callback: 'Callable[[ProgressEvent], None] | None' = None) -> 'JobResult'`
 
 Execute a typed plan and return a stable structured result.
 

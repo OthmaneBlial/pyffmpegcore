@@ -121,7 +121,12 @@ class WorkflowPlanner:
         metadata: dict[str, object] | None = None,
         steps: tuple[ExecutionStep, ...] = (),
     ) -> ExecutionPlan:
-        command = (self.ffmpeg_path, *args)
+        progress_options = ("-progress", "pipe:1", "-nostats")
+        command = (self.ffmpeg_path, *progress_options, *args)
+        structured_steps = tuple(
+            ExecutionStep(step.name, (step.command[0], *progress_options, *step.command[1:])) for step in steps
+        )
+        plan_metadata = {"structured_progress": True, **dict(metadata or {})}
         return ExecutionPlan(
             workflow=workflow,
             command=command,
@@ -132,8 +137,8 @@ class WorkflowPlanner:
             selected_streams=streams,
             operations=operations,
             warnings=warnings,
-            metadata=dict(metadata or {}),
-            steps=steps,
+            metadata=plan_metadata,
+            steps=structured_steps,
         )
 
     def convert(
@@ -422,7 +427,21 @@ class WorkflowPlanner:
             raise ValidationError("thumbnail dimensions must be positive and quality must be between 1 and 31")
         source, output = normalized_path(input_file), normalized_path(output_file)
         scale = f"scale={width}:{height if height is not None else -1}"
-        args = ["-i", source, "-ss", timestamp, "-frames:v", "1", "-vf", scale, "-q:v", str(quality), output]
+        args = [
+            "-i",
+            source,
+            "-ss",
+            timestamp,
+            "-frames:v",
+            "1",
+            "-vf",
+            scale,
+            "-q:v",
+            str(quality),
+            "-update",
+            "1",
+            output,
+        ]
         return self._plan(
             "thumbnail",
             args,
@@ -457,6 +476,8 @@ class WorkflowPlanner:
             "-map",
             "[waveform]",
             "-frames:v",
+            "1",
+            "-update",
             "1",
             output,
         ]
