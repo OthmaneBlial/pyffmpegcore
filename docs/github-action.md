@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
-      - uses: OthmaneBlial/pyffmpegcore@ACTION_COMMIT_SHA
+      - uses: OthmaneBlial/pyffmpegcore@9f27576eef892ed73398dd99e0f90d5e60d16b43
         env:
           OUTPUT_DIR: build/release
         with:
@@ -19,8 +19,9 @@ jobs:
           artifacts: build/**
 ```
 
-Replace `ACTION_COMMIT_SHA` with the immutable revision documented below. A
-moving branch or tag is convenient for exploration but is not a reproducible
+The Action reference above is the immutable revision that passed the
+[local/container/Action receipt-parity run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/32893610275).
+A moving branch or tag is convenient for exploration but is not a reproducible
 supply-chain boundary.
 
 ## Security and evidence behavior
@@ -40,5 +41,5 @@ supply-chain boundary.
 
 The default image is
 `ghcr.io/othmaneblial/pyffmpegcore@sha256:d251ae8b20430cd671f64c4007998ce31d21e503ff06f9a309c7f33f6b8dbf3e`.
-The exact Action commit is filled only after the local/container/Action
-receipt-parity workflow passes.
+The verified Action commit is
+`9f27576eef892ed73398dd99e0f90d5e60d16b43`.

@@ -309,7 +309,7 @@ P0 Truth and reproducibility
 ### P4.3 Distribution integrations after the contract stabilizes
 
 - [x] Publish a pinned, multi-architecture GHCR image containing a documented FFmpeg build only after licensing, codec, update, SBOM, and vulnerability-maintenance review.
-- [ ] Offer a GitHub Action that runs a versioned pipeline and uploads receipts/output artifacts; pin the container and action by digest/SHA.
+- [x] Offer a GitHub Action that runs a versioned pipeline and uploads receipts/output artifacts; pin the container and action by digest/SHA.
 - [x] Document `pipx` and `uv tool install`; consider a Homebrew tap only after public demand is measured.
 - [x] Benchmark startup, processing overhead, artifact size, and cache behavior against raw FFmpeg. PyFFmpegCore must add negligible orchestration overhead.
 
