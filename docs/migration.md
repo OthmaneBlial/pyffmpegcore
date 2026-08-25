@@ -21,6 +21,8 @@ batch = engine.run(engine.planner.extract_audio("video.mp4", "audio.mp3"))
 result = batch.items[0].result
 ```
 
-The older `FFmpegRunner` convenience methods remain beta compatibility helpers for now. New code should use `WorkflowEngine`; the low-level `FFmpegRunner.run(args)` escape hatch does not add preflight policy automatically.
+`FFmpegRunner` convenience methods now compile typed shared plans and return `JobResult`. They no longer accept arbitrary `**kwargs`; the renamed explicit parameters are `pixel_format`, `container_overhead_percent`, and `minimum_video_bitrate`. New code should prefer `WorkflowEngine` when it needs the plan, preflight, and item envelope together.
+
+The low-level `FFmpegRunner.run(args)` escape hatch still returns `CompletedProcess`, never invokes a shell, and injects overwrite refusal (`-n`) unless the argument vector already contains an explicit `-n` or `-y`.
 
 The Python API remains beta. Public incompatible changes require a changelog entry, migration example, and deprecation window when security and correctness allow.

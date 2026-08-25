@@ -235,6 +235,8 @@ class WorkflowPlanner:
             args.extend(["-pix_fmt", options.pixel_format])
         if options.threads is not None:
             args.extend(["-threads", str(options.threads)])
+        if Path(output).suffix.lower() in {".mp4", ".mov", ".m4v"}:
+            args.extend(["-movflags", "+faststart"])
         args.append(output)
         return self._plan(
             "resize",
@@ -333,6 +335,8 @@ class WorkflowPlanner:
             if options.threads is not None:
                 first = (*first[:-1], "-threads", str(options.threads), first[-1])
                 second_args.extend(["-threads", str(options.threads)])
+            if Path(output).suffix.lower() in {".mp4", ".mov", ".m4v"}:
+                second_args.extend(["-movflags", "+faststart"])
             second_args.append(output)
             second = (self.ffmpeg_path, *second_args)
             steps = (ExecutionStep("analysis-pass", first), ExecutionStep("encode-pass", second))
@@ -367,6 +371,8 @@ class WorkflowPlanner:
             args.extend(["-c:a", options.audio_codec, "-b:a", options.audio_bitrate])
             if options.threads is not None:
                 args.extend(["-threads", str(options.threads)])
+            if Path(output).suffix.lower() in {".mp4", ".mov", ".m4v"}:
+                args.extend(["-movflags", "+faststart"])
             args.append(output)
         return self._plan(
             "compress",

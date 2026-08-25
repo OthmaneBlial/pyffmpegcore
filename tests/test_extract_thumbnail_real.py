@@ -74,4 +74,4 @@ def test_extract_thumbnail_invalid_timestamp_fails_clearly(tmp_path):
     )
 
     assert result.returncode != 0
-    assert "Command:" in result.stderr
+    assert "Invalid duration" in result.stderr or "Invalid argument" in result.stderr

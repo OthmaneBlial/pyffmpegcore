@@ -62,4 +62,4 @@ def test_extract_audio_invalid_codec_fails_clearly(tmp_path):
     )
 
     assert result.returncode != 0
-    assert "Command:" in result.stderr
+    assert "Missing required capability: encoder:not_a_real_codec" in result.stderr

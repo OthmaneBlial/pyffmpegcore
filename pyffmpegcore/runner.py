@@ -1,46 +1,49 @@
-"""
-FFmpeg command execution and helper methods.
-"""
+"""Typed workflow facade plus an explicit low-level FFmpeg escape hatch."""
 
 from __future__ import annotations
 
-import glob
-import os
+import shlex
 import subprocess
 import threading
 from collections.abc import Callable
 
-from .domain import ExecutionPlan, JobResult, ProgressEvent
+from .domain import (
+    CompressOptions,
+    ConvertOptions,
+    ExecutionPlan,
+    JobResult,
+    OverwritePolicy,
+    ProgressEvent,
+    ResizeOptions,
+)
 from .executor import ExecutionEngine
+from .planning import WorkflowPlanner
 from .progress import ProgressTracker
 
 
 def escape_path_for_filter(path: str) -> str:
-    """
-    Escape a file path for use in FFmpeg filter strings.
-    """
-    escaped = path.replace("\\", "/")
-    escaped = escaped.replace(":", "\\:")
+    """Escape a file path for use inside an FFmpeg filter expression."""
+    escaped = path.replace("\\", "/").replace(":", "\\:")
     return escaped.replace("'", "\\'")
 
 
 def escape_path_for_concat(path: str) -> str:
-    """
-    Escape a file path for use in FFmpeg concat files.
-    """
-    escaped = path.replace("\\", "/")
-    escaped = escaped.replace("'", "'\\''")
+    """Quote a path for an FFmpeg concat-demuxer manifest."""
+    escaped = path.replace("\\", "/").replace("'", "'\\''")
     return f"'{escaped}'"
 
 
 class FFmpegRunner:
-    """
-    Execute FFmpeg commands and expose helper methods for common workflows.
-    """
+    """Execute typed workflows or an explicit non-shell argument vector."""
 
-    def __init__(self, ffmpeg_path: str = "ffmpeg", ffprobe_path: str = "ffprobe"):
+    def __init__(self, ffmpeg_path: str = "ffmpeg", ffprobe_path: str = "ffprobe") -> None:
         self.ffmpeg_path = ffmpeg_path
         self.ffprobe_path = ffprobe_path
+
+    @property
+    def planner(self) -> WorkflowPlanner:
+        """Return a planner configured with this runner's executable paths."""
+        return WorkflowPlanner(ffmpeg_path=self.ffmpeg_path, ffprobe_path=self.ffprobe_path)
 
     def execute_plan(
         self,
@@ -59,97 +62,91 @@ class FFmpegRunner:
     def run(
         self,
         args: list[str],
-        progress_callback: Callable | None = None,
-    ) -> subprocess.CompletedProcess:
-        """
-        Run FFmpeg with the provided argument list.
-        """
-        cmd = [self.ffmpeg_path] + args
-
+        progress_callback: Callable[[dict[str, object]], None] | None = None,
+        *,
+        overwrite: OverwritePolicy = OverwritePolicy.REFUSE,
+    ) -> subprocess.CompletedProcess[str]:
+        """Run a raw argument vector without a shell and with explicit overwrite policy."""
+        command_args = list(args)
+        if "-n" not in command_args and "-y" not in command_args:
+            command_args.insert(0, "-y" if overwrite is OverwritePolicy.REPLACE else "-n")
+        command = [self.ffmpeg_path, *command_args]
         try:
-            if progress_callback is not None:
-                result = ProgressTracker(progress_callback).run(cmd)
-            else:
-                result = subprocess.run(cmd, capture_output=True, text=True)
+            result = (
+                ProgressTracker(progress_callback).run(command)
+                if progress_callback is not None
+                else subprocess.run(command, capture_output=True, text=True)
+            )
         except FileNotFoundError as exc:
             raise RuntimeError(
                 f"FFmpeg executable '{self.ffmpeg_path}' was not found. Install FFmpeg or pass a valid ffmpeg_path."
             ) from exc
-
-        return self._annotate_failure(cmd, result)
+        return self._annotate_failure(command, result)
 
     def run_with_progress(
         self,
         args: list[str],
         show_percentage: bool = True,
-    ) -> subprocess.CompletedProcess:
-        """
-        Run FFmpeg and print lightweight progress updates.
-        """
+        *,
+        overwrite: OverwritePolicy = OverwritePolicy.REFUSE,
+    ) -> subprocess.CompletedProcess[str]:
+        """Run the low-level escape hatch and print its legacy progress stream."""
 
-        def progress_callback(progress: dict) -> None:
+        def progress_callback(progress: dict[str, object]) -> None:
             if progress.get("status") == "end":
                 print("\rProgress: complete", flush=True)
-                return
+            elif show_percentage and isinstance(progress.get("time_seconds"), float):
+                print(f"\rProgress time: {progress['time_seconds']:.2f}s", end="", flush=True)
+            elif progress.get("frame") is not None:
+                print(f"\rFrame: {progress['frame']}", end="", flush=True)
 
-            if show_percentage and "time_seconds" in progress:
-                print(
-                    f"\rProgress time: {progress['time_seconds']:.2f}s",
-                    end="",
-                    flush=True,
-                )
-            elif "frame" in progress:
-                print(
-                    f"\rFrame: {progress['frame']}",
-                    end="",
-                    flush=True,
-                )
+        return self.run(args, progress_callback, overwrite=overwrite)
 
-        return self.run(args, progress_callback)
+    def _run_workflow(
+        self,
+        plan: ExecutionPlan,
+        *,
+        progress_callback: Callable[[ProgressEvent], None] | None = None,
+    ) -> JobResult:
+        from .workflow import WorkflowEngine
+
+        batch = WorkflowEngine(ffmpeg_path=self.ffmpeg_path, ffprobe_path=self.ffprobe_path).run(
+            plan,
+            progress_callback=progress_callback,
+        )
+        return batch.items[0].result
 
     def convert(
         self,
         input_file: str,
         output_file: str,
-        progress_callback=None,
+        *,
+        video_codec: str | None = None,
+        audio_codec: str | None = None,
+        video_bitrate: str | None = None,
+        audio_bitrate: str | None = None,
+        pixel_format: str = "yuv420p",
+        threads: int | None = None,
         audio_only: bool = False,
-        hwaccel=None,
-        **kwargs,
-    ) -> subprocess.CompletedProcess:
-        """
-        Convert a video or audio file to another format.
-        """
-        args: list[str] = []
-
-        if hwaccel:
-            args.extend(["-hwaccel", hwaccel])
-
-        args.extend(["-i", input_file])
-
-        if audio_only:
-            args.append("-vn")
-
-        video_codec = kwargs.get("video_codec")
-        if video_codec and not audio_only:
-            args.extend(["-c:v", video_codec])
-
-        audio_codec = kwargs.get("audio_codec")
-        if audio_codec:
-            args.extend(["-c:a", audio_codec])
-
-        if "video_bitrate" in kwargs and not audio_only:
-            args.extend(["-b:v", kwargs["video_bitrate"]])
-        if "audio_bitrate" in kwargs:
-            args.extend(["-b:a", kwargs["audio_bitrate"]])
-
-        if not audio_only and video_codec != "copy":
-            args.extend(["-pix_fmt", kwargs.get("pix_fmt", "yuv420p")])
-
-        self._append_threads(args, kwargs)
-        self._append_movflags(args, output_file, kwargs)
-
-        args.extend(["-y", output_file])
-        return self.run(args, progress_callback)
+        hardware_acceleration: str | None = None,
+        force: bool = False,
+        progress_callback: Callable[[ProgressEvent], None] | None = None,
+    ) -> JobResult:
+        """Plan, preflight, and execute a typed conversion."""
+        options = ConvertOptions(
+            video_codec=video_codec,
+            audio_codec=audio_codec,
+            video_bitrate=video_bitrate,
+            audio_bitrate=audio_bitrate,
+            pixel_format=pixel_format,
+            threads=threads,
+            audio_only=audio_only,
+            hardware_acceleration=hardware_acceleration,
+        )
+        return self._run_workflow(
+            self.planner.convert(input_file, output_file, options, force=force),
+            progress_callback=progress_callback,
+        )
 
     def resize(
         self,
@@ -157,255 +154,95 @@ class FFmpegRunner:
         output_file: str,
         width: int,
         height: int,
-        progress_callback=None,
-        **kwargs,
-    ) -> subprocess.CompletedProcess:
-        """
-        Resize a video to the specified dimensions.
-        """
-        if width <= 0 or height <= 0:
-            raise ValueError("width and height must be positive integers")
-
-        args = ["-i", input_file, "-vf", f"scale={width}:{height}"]
-
-        video_codec = kwargs.get("video_codec")
-        audio_codec = kwargs.get("audio_codec")
-        if video_codec:
-            args.extend(["-c:v", video_codec])
-        if audio_codec:
-            args.extend(["-c:a", audio_codec])
-
-        if video_codec != "copy":
-            args.extend(["-pix_fmt", kwargs.get("pix_fmt", "yuv420p")])
-
-        self._append_threads(args, kwargs)
-        self._append_movflags(args, output_file, kwargs)
-
-        args.extend(["-y", output_file])
-        return self.run(args, progress_callback)
+        *,
+        video_codec: str | None = None,
+        audio_codec: str | None = None,
+        pixel_format: str = "yuv420p",
+        threads: int | None = None,
+        force: bool = False,
+        progress_callback: Callable[[ProgressEvent], None] | None = None,
+    ) -> JobResult:
+        """Plan, preflight, and execute a typed resize."""
+        options = ResizeOptions(
+            width=width,
+            height=height,
+            video_codec=video_codec,
+            audio_codec=audio_codec,
+            pixel_format=pixel_format,
+            threads=threads,
+        )
+        return self._run_workflow(
+            self.planner.resize(input_file, output_file, options, force=force),
+            progress_callback=progress_callback,
+        )
 
     def compress(
         self,
         input_file: str,
         output_file: str,
-        target_size_kb: int = None,
+        *,
+        target_size_kb: int | None = None,
         crf: int = 23,
         two_pass: bool = True,
-        progress_callback=None,
-        **kwargs,
-    ) -> subprocess.CompletedProcess:
-        """
-        Compress a video file.
-        """
+        video_codec: str = "libx264",
+        audio_codec: str = "aac",
+        video_bitrate: str | None = None,
+        audio_bitrate: str = "128k",
+        preset: str = "medium",
+        pixel_format: str = "yuv420p",
+        threads: int | None = None,
+        container_overhead_percent: float = 1.0,
+        minimum_video_bitrate: int = 100 * 1024,
+        force: bool = False,
+        progress_callback: Callable[[ProgressEvent], None] | None = None,
+    ) -> JobResult:
+        """Plan, preflight, and execute typed single- or two-pass compression."""
         if target_size_kb is not None and target_size_kb <= 0:
             raise ValueError("target_size_kb must be a positive integer")
-        if not 0 <= crf <= 51:
-            raise ValueError("crf must be between 0 and 51")
-
-        if target_size_kb and two_pass:
-            return self._compress_two_pass(
-                input_file,
-                output_file,
-                target_size_kb,
-                progress_callback,
-                **kwargs,
-            )
-
-        return self._compress_single_pass(
-            input_file,
-            output_file,
-            crf,
-            progress_callback,
-            **kwargs,
+        options = CompressOptions(
+            target_size_bytes=target_size_kb * 1024 if target_size_kb is not None else None,
+            crf=crf,
+            two_pass=two_pass,
+            video_codec=video_codec,
+            audio_codec=audio_codec,
+            video_bitrate=video_bitrate,
+            audio_bitrate=audio_bitrate,
+            preset=preset,
+            pixel_format=pixel_format,
+            threads=threads,
+            container_overhead_percent=container_overhead_percent,
+            minimum_video_bitrate=minimum_video_bitrate,
         )
-
-    def _compress_single_pass(
-        self,
-        input_file: str,
-        output_file: str,
-        crf: int,
-        progress_callback=None,
-        **kwargs,
-    ) -> subprocess.CompletedProcess:
-        args = ["-i", input_file]
-
-        video_codec = kwargs.get("video_codec", "libx264")
-        args.extend(["-c:v", video_codec])
-
-        if video_codec != "copy":
-            if "video_bitrate" in kwargs:
-                args.extend(["-b:v", kwargs["video_bitrate"]])
-            else:
-                args.extend(["-crf", str(crf)])
-            args.extend(["-preset", kwargs.get("preset", "medium")])
-            args.extend(["-pix_fmt", kwargs.get("pix_fmt", "yuv420p")])
-
-        args.extend(["-c:a", kwargs.get("audio_codec", "aac")])
-        if "audio_bitrate" in kwargs:
-            args.extend(["-b:a", kwargs["audio_bitrate"]])
-
-        self._append_threads(args, kwargs)
-        self._append_movflags(args, output_file, kwargs)
-
-        args.extend(["-y", output_file])
-        return self.run(args, progress_callback)
-
-    def _compress_two_pass(
-        self,
-        input_file: str,
-        output_file: str,
-        target_size_kb: int,
-        progress_callback=None,
-        **kwargs,
-    ) -> subprocess.CompletedProcess:
-        video_codec = kwargs.get("video_codec", "libx264")
-        if video_codec == "copy":
-            raise ValueError(
-                "video_codec='copy' is not supported with two-pass compression. Use single-pass compression instead."
-            )
-
-        from .probe import FFprobeRunner
-
-        metadata = FFprobeRunner(self.ffprobe_path).probe(input_file)
-        duration = metadata.get("duration", 60) or 60
-        audio_bitrate = kwargs.get("audio_bitrate", "128k")
-
-        audio_bitrate_bps = self._parse_bitrate(audio_bitrate)
-        total_audio_kb = (audio_bitrate_bps * duration) / (8 * 1024)
-
-        overhead_pct = kwargs.get("overhead_pct", 1.0)
-        container_overhead_kb = target_size_kb * (overhead_pct / 100.0)
-        available_kb = target_size_kb - total_audio_kb - container_overhead_kb
-
-        min_video_bitrate_bps = int(kwargs.get("min_video_bitrate_bps", 100 * 1024))
-        if min_video_bitrate_bps <= 0:
-            raise ValueError("min_video_bitrate_bps must be positive")
-        minimum_video_kb = min_video_bitrate_bps * duration / (8 * 1024)
-        if available_kb < minimum_video_kb:
-            overhead_fraction = overhead_pct / 100.0
-            minimum_target_kb = int((total_audio_kb + minimum_video_kb) / (1 - overhead_fraction)) + 1
-            raise ValueError(
-                f"Target size {target_size_kb}KB is too small and not feasible at the "
-                f"{min_video_bitrate_bps} bps quality "
-                f"floor; use at least {minimum_target_kb}KB or lower the audio bitrate"
-            )
-
-        video_bitrate_bps = int((available_kb * 8 * 1024) / duration)
-        video_bitrate = f"{video_bitrate_bps // 1024}k"
-
-        preset = kwargs.get("preset", "medium")
-        passlog = f"{output_file}.pass"
-
-        pass1_args = [
-            "-i",
-            input_file,
-            "-c:v",
-            video_codec,
-            "-b:v",
-            video_bitrate,
-            "-preset",
-            preset,
-            "-pass",
-            "1",
-            "-passlogfile",
-            passlog,
-            "-an",
-            "-f",
-            "null",
-            os.devnull,
-        ]
-        self._append_threads(pass1_args, kwargs)
-
-        result1 = self.run(pass1_args)
-        if result1.returncode != 0:
-            self._cleanup_pass_logs(output_file)
-            return result1
-
-        pass2_args = [
-            "-i",
-            input_file,
-            "-c:v",
-            video_codec,
-            "-b:v",
-            video_bitrate,
-            "-preset",
-            preset,
-            "-pass",
-            "2",
-            "-passlogfile",
-            passlog,
-            "-pix_fmt",
-            kwargs.get("pix_fmt", "yuv420p"),
-            "-c:a",
-            kwargs.get("audio_codec", "aac"),
-        ]
-
-        if "audio_bitrate" in kwargs:
-            pass2_args.extend(["-b:a", kwargs["audio_bitrate"]])
-
-        self._append_threads(pass2_args, kwargs)
-        self._append_movflags(pass2_args, output_file, kwargs)
-
-        pass2_args.extend(["-y", output_file])
-        result2 = self.run(pass2_args, progress_callback)
-
-        self._cleanup_pass_logs(output_file)
-        return result2
-
-    def _parse_bitrate(self, bitrate_str: str) -> int:
-        """
-        Parse bitrate strings such as '128k' or '2M' to bits per second.
-        """
-        if bitrate_str.endswith("k"):
-            return int(bitrate_str[:-1]) * 1024
-        if bitrate_str.endswith("M"):
-            return int(float(bitrate_str[:-1]) * 1024 * 1024)
-        return int(bitrate_str)
-
-    def _cleanup_pass_logs(self, output_file: str):
-        """
-        Remove FFmpeg two-pass log files.
-        """
-        patterns = [
-            f"{output_file}.pass",
-            f"{output_file}.pass-0.log",
-            f"{output_file}.pass-0.log.mbtree",
-            f"{output_file}.pass-0.log.temp",
-            f"{output_file}.pass*",
-        ]
-
-        for pattern in patterns:
-            for filepath in glob.glob(pattern):
-                try:
-                    os.remove(filepath)
-                except OSError:
-                    pass
+        return self._run_workflow(
+            self.planner.compress(input_file, output_file, options, force=force),
+            progress_callback=progress_callback,
+        )
 
     def extract_audio(
         self,
         input_file: str,
         output_file: str,
-        progress_callback=None,
-        **kwargs,
-    ) -> subprocess.CompletedProcess:
-        """
-        Extract audio from a media file.
-        """
-        args = ["-i", input_file, "-vn"]
-
-        audio_codec = kwargs.get("audio_codec", self._default_audio_codec(output_file))
-        args.extend(["-c:a", audio_codec])
-        if "audio_bitrate" in kwargs and audio_codec != "copy":
-            args.extend(["-b:a", kwargs["audio_bitrate"]])
-        if "sample_rate" in kwargs:
-            args.extend(["-ar", str(kwargs["sample_rate"])])
-        if "channels" in kwargs:
-            args.extend(["-ac", str(kwargs["channels"])])
-
-        self._append_threads(args, kwargs)
-
-        args.extend(["-y", output_file])
-        return self.run(args, progress_callback)
+        *,
+        audio_codec: str | None = None,
+        audio_bitrate: str = "192k",
+        sample_rate: int | None = None,
+        channels: int | None = None,
+        threads: int | None = None,
+        force: bool = False,
+        progress_callback: Callable[[ProgressEvent], None] | None = None,
+    ) -> JobResult:
+        """Plan, preflight, and execute typed audio extraction."""
+        plan = self.planner.extract_audio(
+            input_file,
+            output_file,
+            audio_codec=audio_codec,
+            audio_bitrate=audio_bitrate,
+            sample_rate=sample_rate,
+            channels=channels,
+            threads=threads,
+            force=force,
+        )
+        return self._run_workflow(plan, progress_callback=progress_callback)
 
     def extract_thumbnail(
         self,
@@ -413,35 +250,23 @@ class FFmpegRunner:
         output_file: str,
         timestamp: str = "00:00:01",
         width: int = 320,
-        height: int = None,
+        height: int | None = None,
         quality: int = 2,
-    ) -> subprocess.CompletedProcess:
-        """
-        Extract a thumbnail from a video at a specific timestamp.
-        """
-        if width <= 0:
-            raise ValueError("width must be a positive integer")
-        if height is not None and height <= 0:
-            raise ValueError("height must be a positive integer when provided")
-        if not 1 <= quality <= 31:
-            raise ValueError("quality must be between 1 and 31")
-
-        scale_filter = f"scale={width}:-1" if height is None else f"scale={width}:{height}"
-        args = [
-            "-i",
+        *,
+        force: bool = False,
+        progress_callback: Callable[[ProgressEvent], None] | None = None,
+    ) -> JobResult:
+        """Plan, preflight, and execute typed thumbnail extraction."""
+        plan = self.planner.thumbnail(
             input_file,
-            "-ss",
-            timestamp,
-            "-vframes",
-            "1",
-            "-vf",
-            scale_filter,
-            "-q:v",
-            str(quality),
-            "-y",
             output_file,
-        ]
-        return self.run(args)
+            timestamp=timestamp,
+            width=width,
+            height=height,
+            quality=quality,
+            force=force,
+        )
+        return self._run_workflow(plan, progress_callback=progress_callback)
 
     def adjust_speed(
         self,
@@ -449,31 +274,20 @@ class FFmpegRunner:
         output_file: str,
         speed_factor: float = 1.0,
         audio_pitch: bool = True,
-    ) -> subprocess.CompletedProcess:
-        """
-        Adjust playback speed for a media file with video and audio streams.
-        """
-        if speed_factor <= 0:
-            raise ValueError("speed_factor must be positive")
-
-        vf_filters = []
-        af_filters = []
-
-        if speed_factor != 1.0:
-            vf_filters.append(f"setpts={1 / speed_factor}*PTS")
-            if audio_pitch:
-                af_filters.append(self._build_atempo_chain(speed_factor))
-            else:
-                af_filters.append(f"asetrate=44100*{speed_factor},aresample=44100")
-
-        args = ["-i", input_file]
-        if vf_filters:
-            args.extend(["-vf", ",".join(vf_filters)])
-        if af_filters:
-            args.extend(["-af", ",".join(af_filters)])
-
-        args.extend(["-c:v", "libx264", "-c:a", "aac", "-y", output_file])
-        return self.run(args)
+        *,
+        force: bool = False,
+        progress_callback: Callable[[ProgressEvent], None] | None = None,
+    ) -> JobResult:
+        """Plan, preflight, and execute typed video speed adjustment."""
+        plan = self.planner.speed(
+            "video",
+            input_file,
+            output_file,
+            factor=speed_factor,
+            preserve_pitch=audio_pitch,
+            force=force,
+        )
+        return self._run_workflow(plan, progress_callback=progress_callback)
 
     def generate_waveform(
         self,
@@ -482,106 +296,46 @@ class FFmpegRunner:
         width: int = 800,
         height: int = 200,
         colors: str = "white",
-    ) -> subprocess.CompletedProcess:
-        """
-        Generate a waveform image from an audio stream.
-        """
-        if width <= 0 or height <= 0:
-            raise ValueError("width and height must be positive integers")
-
-        args = [
-            "-i",
+        *,
+        force: bool = False,
+        progress_callback: Callable[[ProgressEvent], None] | None = None,
+    ) -> JobResult:
+        """Plan, preflight, and execute typed waveform rendering."""
+        plan = self.planner.waveform(
             input_file,
-            "-filter_complex",
-            f"[0:a]showwavespic=s={width}x{height}:colors={colors}[waveform]",
-            "-map",
-            "[waveform]",
-            "-frames:v",
-            "1",
-            "-y",
             output_file,
-        ]
-        return self.run(args)
+            width=width,
+            height=height,
+            colors=colors,
+            force=force,
+        )
+        return self._run_workflow(plan, progress_callback=progress_callback)
 
-    def _build_atempo_chain(self, speed_factor: float) -> str:
-        """
-        Build an atempo filter chain for arbitrary positive speed factors.
-        """
-        if 0.5 <= speed_factor <= 2.0:
-            return f"atempo={speed_factor}"
-
-        factors = []
-        current = speed_factor
-
-        while current > 2.0:
-            factors.append(2.0)
-            current /= 2.0
-
-        while current < 0.5:
-            factors.append(0.5)
-            current /= 0.5
-
-        if current != 1.0:
-            factors.append(current)
-
-        return ",".join(f"atempo={factor}" for factor in factors)
-
-    def _default_audio_codec(self, output_file: str) -> str:
-        """
-        Pick a default audio codec based on the output extension.
-        """
-        extension = os.path.splitext(output_file)[1].lower()
-        codec_by_extension = {
-            ".aac": "aac",
-            ".flac": "flac",
-            ".m4a": "aac",
-            ".mp3": "libmp3lame",
-            ".ogg": "libvorbis",
-            ".opus": "libopus",
-            ".wav": "pcm_s16le",
-        }
-        return codec_by_extension.get(extension, "aac")
-
-    def _append_threads(self, args: list[str], kwargs: dict) -> None:
-        if "threads" in kwargs:
-            args.extend(["-threads", str(kwargs["threads"])])
-
-    def _append_movflags(self, args: list[str], output_file: str, kwargs: dict) -> None:
-        movflags = kwargs.get("movflags", "+faststart")
-        if output_file.endswith((".mp4", ".m4v")) and movflags:
-            args.extend(["-movflags", movflags])
+    def get_version(self) -> str:
+        """Return the FFmpeg version banner line."""
+        try:
+            result = subprocess.run(
+                [self.ffmpeg_path, "-version"],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+        except FileNotFoundError as exc:
+            raise RuntimeError(f"FFmpeg executable '{self.ffmpeg_path}' was not found.") from exc
+        return result.stdout.splitlines()[0]
 
     def _annotate_failure(
         self,
-        cmd: list[str],
-        result: subprocess.CompletedProcess,
-    ) -> subprocess.CompletedProcess:
+        command: list[str],
+        result: subprocess.CompletedProcess[str],
+    ) -> subprocess.CompletedProcess[str]:
         if result.returncode == 0:
             return result
-
-        stderr = (result.stderr or "").strip()
-        prefix = f"FFmpeg command failed with exit code {result.returncode}."
-        command = " ".join(cmd)
-        annotated_stderr = f"{prefix}\nCommand: {command}"
-        if stderr:
-            annotated_stderr = f"{annotated_stderr}\n{stderr}"
-
+        command_text = shlex.join(command)
+        details = result.stderr.strip() or "FFmpeg did not provide stderr output."
         return subprocess.CompletedProcess(
-            result.args if hasattr(result, "args") else cmd,
-            result.returncode,
-            getattr(result, "stdout", ""),
-            annotated_stderr,
+            args=result.args,
+            returncode=result.returncode,
+            stdout=result.stdout,
+            stderr=f"FFmpeg command failed with exit code {result.returncode}.\nCommand: {command_text}\n{details}",
         )
-
-    def get_version(self) -> str:
-        """
-        Return the FFmpeg version banner line.
-        """
-        result = subprocess.run(
-            [self.ffmpeg_path, "-version"],
-            capture_output=True,
-            text=True,
-        )
-        if result.returncode == 0:
-            return result.stdout.split("\n")[0]
-        raise RuntimeError(f"Failed to get FFmpeg version: {result.stderr}")

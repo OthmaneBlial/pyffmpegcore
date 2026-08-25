@@ -20,7 +20,7 @@ def test_two_pass_compress_real_fixture_hits_target_tolerance(tmp_path):
         str(media["video_mp4_h264_1080p"]),
         str(output_file),
         target_size_kb=target_size_kb,
-        overhead_pct=2.0,
+        container_overhead_percent=2.0,
         threads=1,
     )
 
@@ -50,4 +50,4 @@ def test_two_pass_compress_rejects_too_small_target_real_fixture(tmp_path):
             target_size_kb=20,
         )
 
-    assert "too small" in str(exc_info.value)
+    assert "not feasible" in str(exc_info.value)

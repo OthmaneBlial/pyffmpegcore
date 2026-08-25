@@ -57,51 +57,51 @@ One named argument-vector step inside a multi-pass plan.
 
 ## `FFmpegRunner`
 
-Execute FFmpeg commands and expose helper methods for common workflows.
+Execute typed workflows or an explicit non-shell argument vector.
 
-### `adjust_speed(self, input_file: 'str', output_file: 'str', speed_factor: 'float' = 1.0, audio_pitch: 'bool' = True) -> 'subprocess.CompletedProcess'`
+### `adjust_speed(self, input_file: 'str', output_file: 'str', speed_factor: 'float' = 1.0, audio_pitch: 'bool' = True, *, force: 'bool' = False, progress_callback: 'Callable[[ProgressEvent], None] | None' = None) -> 'JobResult'`
 
-Adjust playback speed for a media file with video and audio streams.
+Plan, preflight, and execute typed video speed adjustment.
 
-### `compress(self, input_file: 'str', output_file: 'str', target_size_kb: 'int' = None, crf: 'int' = 23, two_pass: 'bool' = True, progress_callback=None, **kwargs) -> 'subprocess.CompletedProcess'`
+### `compress(self, input_file: 'str', output_file: 'str', *, target_size_kb: 'int | None' = None, crf: 'int' = 23, two_pass: 'bool' = True, video_codec: 'str' = 'libx264', audio_codec: 'str' = 'aac', video_bitrate: 'str | None' = None, audio_bitrate: 'str' = '128k', preset: 'str' = 'medium', pixel_format: 'str' = 'yuv420p', threads: 'int | None' = None, container_overhead_percent: 'float' = 1.0, minimum_video_bitrate: 'int' = 102400, force: 'bool' = False, progress_callback: 'Callable[[ProgressEvent], None] | None' = None) -> 'JobResult'`
 
-Compress a video file.
+Plan, preflight, and execute typed single- or two-pass compression.
 
-### `convert(self, input_file: 'str', output_file: 'str', progress_callback=None, audio_only: 'bool' = False, hwaccel=None, **kwargs) -> 'subprocess.CompletedProcess'`
+### `convert(self, input_file: 'str', output_file: 'str', *, video_codec: 'str | None' = None, audio_codec: 'str | None' = None, video_bitrate: 'str | None' = None, audio_bitrate: 'str | None' = None, pixel_format: 'str' = 'yuv420p', threads: 'int | None' = None, audio_only: 'bool' = False, hardware_acceleration: 'str | None' = None, force: 'bool' = False, progress_callback: 'Callable[[ProgressEvent], None] | None' = None) -> 'JobResult'`
 
-Convert a video or audio file to another format.
+Plan, preflight, and execute a typed conversion.
 
 ### `execute_plan(self, plan: 'ExecutionPlan', *, cancellation: 'threading.Event | None' = None, progress_callback: 'Callable[[ProgressEvent], None] | None' = None) -> 'JobResult'`
 
 Execute a typed plan and return a stable structured result.
 
-### `extract_audio(self, input_file: 'str', output_file: 'str', progress_callback=None, **kwargs) -> 'subprocess.CompletedProcess'`
+### `extract_audio(self, input_file: 'str', output_file: 'str', *, audio_codec: 'str | None' = None, audio_bitrate: 'str' = '192k', sample_rate: 'int | None' = None, channels: 'int | None' = None, threads: 'int | None' = None, force: 'bool' = False, progress_callback: 'Callable[[ProgressEvent], None] | None' = None) -> 'JobResult'`
 
-Extract audio from a media file.
+Plan, preflight, and execute typed audio extraction.
 
-### `extract_thumbnail(self, input_file: 'str', output_file: 'str', timestamp: 'str' = '00:00:01', width: 'int' = 320, height: 'int' = None, quality: 'int' = 2) -> 'subprocess.CompletedProcess'`
+### `extract_thumbnail(self, input_file: 'str', output_file: 'str', timestamp: 'str' = '00:00:01', width: 'int' = 320, height: 'int | None' = None, quality: 'int' = 2, *, force: 'bool' = False, progress_callback: 'Callable[[ProgressEvent], None] | None' = None) -> 'JobResult'`
 
-Extract a thumbnail from a video at a specific timestamp.
+Plan, preflight, and execute typed thumbnail extraction.
 
-### `generate_waveform(self, input_file: 'str', output_file: 'str', width: 'int' = 800, height: 'int' = 200, colors: 'str' = 'white') -> 'subprocess.CompletedProcess'`
+### `generate_waveform(self, input_file: 'str', output_file: 'str', width: 'int' = 800, height: 'int' = 200, colors: 'str' = 'white', *, force: 'bool' = False, progress_callback: 'Callable[[ProgressEvent], None] | None' = None) -> 'JobResult'`
 
-Generate a waveform image from an audio stream.
+Plan, preflight, and execute typed waveform rendering.
 
 ### `get_version(self) -> 'str'`
 
 Return the FFmpeg version banner line.
 
-### `resize(self, input_file: 'str', output_file: 'str', width: 'int', height: 'int', progress_callback=None, **kwargs) -> 'subprocess.CompletedProcess'`
+### `resize(self, input_file: 'str', output_file: 'str', width: 'int', height: 'int', *, video_codec: 'str | None' = None, audio_codec: 'str | None' = None, pixel_format: 'str' = 'yuv420p', threads: 'int | None' = None, force: 'bool' = False, progress_callback: 'Callable[[ProgressEvent], None] | None' = None) -> 'JobResult'`
 
-Resize a video to the specified dimensions.
+Plan, preflight, and execute a typed resize.
 
-### `run(self, args: 'list[str]', progress_callback: 'Callable | None' = None) -> 'subprocess.CompletedProcess'`
+### `run(self, args: 'list[str]', progress_callback: 'Callable[[dict[str, object]], None] | None' = None, *, overwrite: 'OverwritePolicy' = <OverwritePolicy.REFUSE: 'refuse'>) -> 'subprocess.CompletedProcess[str]'`
 
-Run FFmpeg with the provided argument list.
+Run a raw argument vector without a shell and with explicit overwrite policy.
 
-### `run_with_progress(self, args: 'list[str]', show_percentage: 'bool' = True) -> 'subprocess.CompletedProcess'`
+### `run_with_progress(self, args: 'list[str]', show_percentage: 'bool' = True, *, overwrite: 'OverwritePolicy' = <OverwritePolicy.REFUSE: 'refuse'>) -> 'subprocess.CompletedProcess[str]'`
 
-Run FFmpeg and print lightweight progress updates.
+Run the low-level escape hatch and print its legacy progress stream.
 
 ## `FFprobeRunner`
 

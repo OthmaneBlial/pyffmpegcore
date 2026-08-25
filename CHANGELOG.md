@@ -21,6 +21,7 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 - The package version is sourced from `pyffmpegcore.__version__`.
 - All CLI writing commands now compile, preflight, and execute through the shared typed workflow engine.
 - Repository examples now consume the same public `WorkflowEngine` and curated plans as the CLI; unsupported experimental raw-command variants were removed.
+- `FFmpegRunner` convenience methods now use typed plans and return `JobResult`; only the guarded low-level `run(args)` escape hatch returns `CompletedProcess`.
 
 ### Fixed
 

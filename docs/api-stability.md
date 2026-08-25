@@ -13,4 +13,4 @@ After 1.0, public API and versioned JSON schemas follow semantic versioning. Pat
 
 Profile, plan, pipeline, and receipt schemas have independent `schema_version` fields. A schema migration command must exist before a supported version is removed.
 
-The low-level argument-vector escape hatch remains available for advanced FFmpeg use, but it is intentionally less stable than typed workflows. It never invokes a command shell, and overwrite behavior must be explicit.
+The low-level argument-vector escape hatch remains available for advanced FFmpeg use, but it is intentionally less stable than typed workflows. It never invokes a command shell, injects overwrite refusal by default, and accepts an explicit `OverwritePolicy` when replacement is intended.

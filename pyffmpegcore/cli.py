@@ -21,7 +21,7 @@ from . import __version__
 from .capabilities import CapabilityInventory
 from .cli_execution import CLIExecutionBundle, execute_prepared_cli_job, prepare_cli_job
 from .cli_planning import build_cli_plan
-from .domain import ProgressEvent
+from .domain import JobResult, ProgressEvent
 from .errors import ValidationError
 from .preflight import PreflightEngine
 from .presentation import render_plan_json, render_plan_text
@@ -1645,7 +1645,7 @@ def handle_probe(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
-def raise_for_completed_process_error(result: subprocess.CompletedProcess) -> None:
+def raise_for_completed_process_error(result: subprocess.CompletedProcess | JobResult) -> None:
     """
     Raise a user-facing CLI error when an FFmpeg command fails.
     """

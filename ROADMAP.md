@@ -210,13 +210,13 @@ P0 Truth and reproducibility
 - [ ] Split the monolithic CLI into command registration, input validation, workflow planning, execution, and human/JSON rendering modules.
 - [x] Move every FFmpeg command builder out of CLI handlers and examples into shared workflow services.
 - [x] Make examples thin consumers of the same public layer used by the CLI.
-- [ ] Preserve a low-level `run(args)` escape hatch without letting it bypass safety defaults silently.
+- [x] Preserve a low-level `run(args)` escape hatch without letting it bypass safety defaults silently.
 
 ### P2.2 Replace weak public contracts
 
-- [ ] Replace public `**kwargs` bags with typed option models whose unsupported fields fail immediately.
+- [x] Replace public `**kwargs` bags with typed option models whose unsupported fields fail immediately.
 - [x] Introduce stable domain types such as `MediaInfo`, `StreamInfo`, `ExecutionPlan`, `JobResult`, `ProgressEvent`, and categorized exceptions.
-- [ ] Return a stable result containing command, status, elapsed time, stdout/stderr policy, warnings, and output metadata instead of exposing only `CompletedProcess`.
+- [x] Return a stable result containing command, status, elapsed time, stdout/stderr policy, warnings, and output metadata instead of exposing only `CompletedProcess`.
 - [ ] Use explicit overwrite, timeout, cancellation, temporary-file, and cleanup policies in both CLI and Python.
 - [x] Add raw and simplified FFprobe modes; preserve tags, dispositions, chapters, stream language, rotation, color/HDR metadata, and attachments where relevant.
 - [x] Ensure custom FFmpeg and FFprobe paths propagate through every workflow, including target-size compression.

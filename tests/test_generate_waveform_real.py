@@ -72,4 +72,4 @@ def test_generate_waveform_without_audio_fails_clearly(tmp_path):
     )
 
     assert result.returncode != 0
-    assert "Command:" in result.stderr
+    assert "Missing required streams: audio" in result.stderr

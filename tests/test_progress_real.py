@@ -29,18 +29,18 @@ def test_progress_callback_emits_real_updates(tmp_path):
     assert output_file.exists()
     assert updates
 
-    progress_updates = [update for update in updates if update.get("status") == "progress"]
-    end_updates = [update for update in updates if update.get("status") == "end"]
+    progress_updates = [update for update in updates if update.status == "running"]
+    end_updates = [update for update in updates if update.status == "end"]
 
     assert progress_updates
     assert end_updates
 
-    time_points = [update["time_seconds"] for update in updates if "time_seconds" in update]
+    time_points = [update.time_seconds for update in updates if update.time_seconds is not None]
     assert time_points
     assert time_points == sorted(time_points)
 
-    frame_points = [update["frame"] for update in updates if "frame" in update]
+    frame_points = [update.frame for update in updates if update.frame is not None]
     assert frame_points == sorted(frame_points)
 
-    speed_points = [update["speed"] for update in updates if "speed" in update]
+    speed_points = [update.speed for update in updates if update.speed is not None]
     assert any(speed > 0 for speed in speed_points)
