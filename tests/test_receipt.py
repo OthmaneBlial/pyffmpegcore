@@ -11,6 +11,7 @@ from pyffmpegcore import (
     ExecutionPlan,
     JobResult,
     JobStatus,
+    PreflightCheck,
     PreflightReport,
     PreparedWorkflow,
     ReceiptBuilder,
@@ -47,7 +48,16 @@ def _batch(tmp_path):
         outputs=(str(output),),
         metadata={"api_key": "metadata-secret", "nested": f"token=inline-secret path={source}"},
     )
-    report = PreflightReport(plan.workflow, ())
+    report = PreflightReport(
+        plan.workflow,
+        (
+            PreflightCheck(
+                f"output/{output}",
+                "pass",
+                f"Output parent is writable: {output.parent}",
+            ),
+        ),
+    )
     result = JobResult(
         workflow=plan.workflow,
         command=plan.command,
@@ -62,7 +72,7 @@ def _batch(tmp_path):
 
 
 def test_receipt_redacts_credentials_private_paths_and_secrets_by_default(tmp_path):
-    batch, source, _output = _batch(tmp_path)
+    batch, source, output = _batch(tmp_path)
 
     receipt = ReceiptBuilder(ffmpeg_path="missing-ffmpeg", ffprobe_path="missing-ffprobe").build(batch)
     rendered = receipt.to_json()
@@ -75,6 +85,8 @@ def test_receipt_redacts_credentials_private_paths_and_secrets_by_default(tmp_pa
     assert "metadata-secret" not in rendered
     assert "inline-secret" not in rendered
     assert str(source.parent) not in rendered
+    assert str(output.parent) not in rendered
+    assert "Output parent is writable: <path>" in rendered
     assert "<path>/source.bin" in rendered
     assert receipt.document["privacy"]["content_hashing"] == "disabled"
     assert receipt.document["content_hashes"] == []

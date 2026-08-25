@@ -53,7 +53,11 @@ def _private_path_map(document: Any) -> dict[str, str]:
             paths.add(value)
 
     collect(document)
-    return {value: f"<path>/{Path(value).name}" for value in sorted(paths, key=len, reverse=True)}
+    replacements = {value: f"<path>/{Path(value).name}" for value in sorted(paths, key=len, reverse=True)}
+    parents = {str(parent) for value in paths for parent in Path(value).parents if parent != parent.parent}
+    for parent in sorted(parents, key=len, reverse=True):
+        replacements.setdefault(parent, "<path>")
+    return replacements
 
 
 def redact_receipt_value(value: Any, path_map: dict[str, str] | None = None) -> Any:
