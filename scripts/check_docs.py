@@ -7,7 +7,10 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DOC_ROOTS = [REPO_ROOT / "README.md", *sorted((REPO_ROOT / "docs").rglob("*.md"))]
+DOC_ROOTS = [
+    *sorted(REPO_ROOT.glob("*.md")),
+    *sorted((REPO_ROOT / "docs").rglob("*.md")),
+]
 LINK_PATTERN = re.compile(r"(?<!!)\[[^]]+\]\(([^)]+)\)")
 IMAGE_PATTERN = re.compile(r"!\[([^]]*)\]\(([^)]+)\)")
 

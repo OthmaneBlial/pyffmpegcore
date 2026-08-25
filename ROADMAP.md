@@ -350,6 +350,11 @@ P0 Truth and reproducibility
 - [x] Ask users for the workflow they completed and friction encountered, not merely for a star.
 - [x] Never use star exchanges, mass unsolicited posting, fake benchmarks, or unverified “fastest/easiest/secure” claims.
 
+The source-backed [public-beta launch runbook](LAUNCH.md) records current
+channel rules, factual copy, hard release gates, and a publication log. The
+distribution checkbox stays open until a real public post URL and working
+artifact are recorded; preparing copy is not treated as distribution.
+
 **P5 acceptance gate**
 
 - Each release has a tag, PyPI artifact, attestation, changelog entry, compatibility evidence, one demonstrated workflow, and contributor credit.
