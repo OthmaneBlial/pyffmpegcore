@@ -20,6 +20,8 @@ Use it when you want to:
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/OthmaneBlial/pyffmpegcore/badge)](https://securityscorecards.dev/viewer/?uri=github.com/OthmaneBlial/pyffmpegcore)
 [![License](https://img.shields.io/github/license/OthmaneBlial/pyffmpegcore)](LICENSE)
 
+[Documentation](https://othmaneblial.github.io/pyffmpegcore/) · [Five-minute start](https://othmaneblial.github.io/pyffmpegcore/quickstart/) · [Recipes](https://othmaneblial.github.io/pyffmpegcore/recipes/) · [Security](SECURITY.md)
+
 ## What This Project Is
 
 PyFFmpegCore is now designed to be used first as a CLI:

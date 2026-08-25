@@ -173,7 +173,7 @@ P0 Truth and reproducibility
 - [ ] State the primary user, supported environment, required external FFmpeg dependency, and explicit limits above the fold.
 - [x] Add a short “When to use PyFFmpegCore / when not to” comparison against raw FFmpeg, `ffmpeg-python`, `python-ffmpeg`, `ffmpegio`, and PyAV.
 - [x] Keep the comparison factual: PyFFmpegCore is for task safety and reproducibility, not arbitrary graph DSLs, async builders, NumPy frame I/O, or direct packet/frame access.
-- [ ] Set the GitHub homepage to the documentation site and add Documentation/Changelog project URLs to package metadata.
+- [x] Set the GitHub homepage to the documentation site and add Documentation/Changelog project URLs to package metadata.
 
 ### P1.2 Build a proof-led README
 
@@ -186,7 +186,7 @@ P0 Truth and reproducibility
 
 ### P1.3 Create task-first documentation
 
-- [ ] Publish searchable docs with installation, five-minute start, CLI reference, Python API reference, recipes, troubleshooting, exit codes, JSON schemas, compatibility, changelog, security, and migration notes.
+- [x] Publish searchable docs with installation, five-minute start, CLI reference, Python API reference, recipes, troubleshooting, exit codes, JSON schemas, compatibility, changelog, security, and migration notes.
 - [x] Generate CLI reference from the parser and Python API reference from the public typed layer to prevent drift.
 - [x] Add recipe pages organized by user outcome: web-compatible video, exact-size upload, audio extraction, podcast normalization, subtitles, thumbnails, and image batches.
 - [x] Add copy-paste examples for Bash, PowerShell, and Python where behavior differs.

@@ -52,7 +52,7 @@ docs = [
 Homepage = "https://github.com/OthmaneBlial/pyffmpegcore"
 Repository = "https://github.com/OthmaneBlial/pyffmpegcore"
 Issues = "https://github.com/OthmaneBlial/pyffmpegcore/issues"
-Documentation = "https://github.com/OthmaneBlial/pyffmpegcore/tree/main/docs"
+Documentation = "https://othmaneblial.github.io/pyffmpegcore/"
 Changelog = "https://github.com/OthmaneBlial/pyffmpegcore/blob/main/CHANGELOG.md"
 Security = "https://github.com/OthmaneBlial/pyffmpegcore/security/policy"
 
