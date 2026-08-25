@@ -123,9 +123,7 @@ def test_background_music_and_mashup_real_media(tmp_path):
     assert background_metadata["audio"]["codec"] == "mp3"
     assert mashup_metadata["audio"]["codec"] == "mp3"
     assert background_metadata["duration"] == pytest.approx(main_metadata["duration"], abs=0.35)
-    expected_mashup_duration = (
-        first_audio_metadata["duration"] + second_audio_metadata["duration"] - 1.0
-    )
+    expected_mashup_duration = first_audio_metadata["duration"] + second_audio_metadata["duration"] - 1.0
     assert mashup_metadata["duration"] == pytest.approx(expected_mashup_duration, abs=0.5)
 
 

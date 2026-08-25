@@ -2,16 +2,13 @@
 Tests for batch_convert_images example functionality.
 """
 
-import pytest
-from unittest.mock import patch, MagicMock
-from pyffmpegcore.runner import FFmpegRunner
-from pyffmpegcore.probe import FFprobeRunner
+from unittest.mock import MagicMock, patch
 
 
 class TestBatchImageConversion:
     """Test batch image conversion functionality."""
 
-    @patch('pyffmpegcore.runner.FFmpegRunner.run')
+    @patch("pyffmpegcore.runner.FFmpegRunner.run")
     def test_convert_image_basic(self, mock_run):
         """Test basic image conversion."""
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
@@ -23,9 +20,9 @@ class TestBatchImageConversion:
         assert result is True
         mock_run.assert_called_once()
 
-    @patch('glob.glob')
-    @patch('pyffmpegcore.runner.FFmpegRunner.run')
-    @patch('os.makedirs')
+    @patch("glob.glob")
+    @patch("pyffmpegcore.runner.FFmpegRunner.run")
+    @patch("os.makedirs")
     def test_batch_convert_images(self, mock_makedirs, mock_run, mock_glob):
         """Test batch image conversion."""
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
@@ -40,9 +37,9 @@ class TestBatchImageConversion:
         assert results["failed"] == 0
         assert mock_run.call_count == 2
 
-    @patch('pyffmpegcore.runner.FFmpegRunner.run')
-    @patch('glob.glob')
-    @patch('os.makedirs')
+    @patch("pyffmpegcore.runner.FFmpegRunner.run")
+    @patch("glob.glob")
+    @patch("os.makedirs")
     def test_optimize_images_for_web(self, mock_makedirs, mock_glob, mock_run):
         """Test web optimization with resizing."""
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
@@ -57,14 +54,20 @@ class TestBatchImageConversion:
         assert results["total"] == 6
         assert mock_run.called  # Should resize and convert
 
-    @patch('pyffmpegcore.runner.FFmpegRunner.run')
-    @patch('glob.glob')
-    @patch('os.makedirs')
+    @patch("pyffmpegcore.runner.FFmpegRunner.run")
+    @patch("glob.glob")
+    @patch("os.makedirs")
     def test_convert_to_webp_batch(self, mock_makedirs, mock_glob, mock_run):
         """Test WebP batch conversion."""
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
         # Mock glob to return 2 files total (some patterns might return empty)
-        mock_glob.side_effect = [["image1.jpg"], ["image2.png"], [], [], []]  # Different patterns return different results
+        mock_glob.side_effect = [
+            ["image1.jpg"],
+            ["image2.png"],
+            [],
+            [],
+            [],
+        ]  # Different patterns return different results
 
         from examples.batch_convert_images import convert_to_webp_batch
 

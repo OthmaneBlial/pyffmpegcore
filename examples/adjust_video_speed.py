@@ -9,7 +9,6 @@ using the existing FFmpeg runner.
 from __future__ import annotations
 
 import os
-from typing import Dict, Optional
 
 from pyffmpegcore import FFmpegRunner, FFprobeRunner
 
@@ -41,7 +40,7 @@ def _build_atempo_chain(speed_factor: float) -> str:
     return ",".join(f"atempo={factor}" for factor in factors)
 
 
-def _probe_media(input_file: str) -> Optional[Dict[str, object]]:
+def _probe_media(input_file: str) -> dict[str, object] | None:
     try:
         return FFprobeRunner().probe(input_file)
     except Exception as exc:
@@ -78,10 +77,7 @@ def change_video_speed(
             sample_rate = metadata.get("audio", {}).get("sample_rate", 44100)
             audio_filter = f"asetrate={sample_rate}*{speed_multiplier},aresample={sample_rate}"
 
-        filter_complex = (
-            f"[0:v]setpts=(PTS-STARTPTS)/{speed_multiplier}[v];"
-            f"[0:a]{audio_filter}[a]"
-        )
+        filter_complex = f"[0:v]setpts=(PTS-STARTPTS)/{speed_multiplier}[v];[0:a]{audio_filter}[a]"
         args.extend(
             [
                 "-filter_complex",
@@ -218,9 +214,7 @@ def create_video_summary(
     filter_parts = []
 
     for index, (start, end) in enumerate(segments):
-        filter_parts.append(
-            f"[0:v]trim=start={start}:end={end},setpts=(PTS-STARTPTS)/{speed_multiplier}[v{index}]"
-        )
+        filter_parts.append(f"[0:v]trim=start={start}:end={end},setpts=(PTS-STARTPTS)/{speed_multiplier}[v{index}]")
         if has_audio:
             filter_parts.append(
                 f"[0:a]atrim=start={start}:end={end},asetpts=PTS-STARTPTS,{_build_atempo_chain(speed_multiplier)}[a{index}]"

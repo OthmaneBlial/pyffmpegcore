@@ -10,7 +10,6 @@ from pathlib import Path
 
 import pytest
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SHELL_INSTALLER = REPO_ROOT / "install.sh"
 POWERSHELL_INSTALLER = REPO_ROOT / "install.ps1"

@@ -2,10 +2,9 @@
 Tests for ProgressTracker.
 """
 
-import pytest
-import subprocess
-from unittest.mock import patch, MagicMock, call
-from pyffmpegcore.progress import ProgressTracker, ProgressCallback
+from unittest.mock import MagicMock, patch
+
+from pyffmpegcore.progress import ProgressCallback, ProgressTracker
 
 
 class TestProgressTracker:
@@ -55,8 +54,8 @@ class TestProgressTracker:
         assert tracker._time_to_seconds("01:00:00.00") == 3600.0
         assert tracker._time_to_seconds("5.5") == 5.5
 
-    @patch('subprocess.Popen')
-    @patch('threading.Thread')
+    @patch("subprocess.Popen")
+    @patch("threading.Thread")
     def test_run_with_progress(self, mock_thread, mock_popen):
         """Test run method with progress callback."""
         # Mock process
@@ -96,7 +95,7 @@ class TestProgressCallback:
         callback = ProgressCallback()
 
         # Mock print to capture output
-        with patch('builtins.print') as mock_print:
+        with patch("builtins.print") as mock_print:
             callback({"frame": 100, "fps": 25.0})
             mock_print.assert_called_once_with("Progress: {'frame': 100, 'fps': 25.0}")
 
@@ -104,7 +103,7 @@ class TestProgressCallback:
         """Test callback with total duration."""
         callback = ProgressCallback(total_duration=120.0)
 
-        with patch('builtins.print') as mock_print:
+        with patch("builtins.print") as mock_print:
             callback({"time_seconds": 60.0})
             mock_print.assert_called_once_with("50.0% - {'time_seconds': 60.0}")
 
@@ -112,7 +111,7 @@ class TestProgressCallback:
         """Test callback with end status."""
         callback = ProgressCallback(total_duration=120.0)
 
-        with patch('builtins.print') as mock_print:
+        with patch("builtins.print") as mock_print:
             callback({"status": "end"})
             mock_print.assert_called_once_with("100% - Conversion completed!")
 

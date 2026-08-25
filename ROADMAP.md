@@ -112,8 +112,8 @@ P0 Truth and reproducibility
 ### P0.3 Publish a real public beta
 
 - [ ] Confirm the `pyffmpegcore` project name and maintainer account controls in PyPI.
-- [ ] Single-source the version or enforce equality between package metadata, runtime `__version__`, CLI `--version`, tag, wheel metadata, and release name.
-- [ ] Add `twine check`, wheel/sdist content checks, clean artifact installation, and README rendering validation.
+- [x] Single-source the version or enforce equality between package metadata, runtime `__version__`, CLI `--version`, tag, wheel metadata, and release name.
+- [x] Add `twine check`, wheel/sdist content checks, clean artifact installation, and README rendering validation.
 - [ ] Build the wheel and sdist once in an unprivileged job; test those exact files; never rebuild inside the publishing job.
 - [ ] Configure a protected GitHub Environment named `pypi` and PyPI Trusted Publishing with narrowly scoped OIDC permissions.
 - [ ] Publish the first honest beta from a signed/protected tag only after every earlier P0 gate passes.

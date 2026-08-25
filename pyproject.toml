@@ -1,14 +1,14 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=77.0.3", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyffmpegcore"
-version = "0.1.2"
-description = "A lightweight Python wrapper around FFmpeg/FFprobe for common video/audio tasks"
+dynamic = ["version"]
+description = "Safe, explainable FFmpeg workflows for the terminal, Python, and CI"
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 authors = [
     {name = "Othmane BLIAL", email = "blial.othmane@gmail.com"},
 ]
@@ -21,11 +21,11 @@ classifiers = [
     "Intended Audience :: Developers",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Multimedia :: Video",
     "Topic :: Multimedia :: Sound/Audio",
     "Topic :: Software Development :: Libraries :: Python Modules",
@@ -35,14 +35,21 @@ dependencies = []
 [project.optional-dependencies]
 dev = [
     "build>=1.2.0",
+    "check-wheel-contents>=0.6.0",
+    "mypy>=1.10.0",
     "pytest>=8.0.0",
-    "typing_extensions>=4.8.0",
+    "pytest-cov>=5.0.0",
+    "ruff>=0.6.0",
+    "twine>=5.1.0",
 ]
 
 [project.urls]
 Homepage = "https://github.com/OthmaneBlial/pyffmpegcore"
 Repository = "https://github.com/OthmaneBlial/pyffmpegcore"
 Issues = "https://github.com/OthmaneBlial/pyffmpegcore/issues"
+Documentation = "https://github.com/OthmaneBlial/pyffmpegcore/tree/main/docs"
+Changelog = "https://github.com/OthmaneBlial/pyffmpegcore/blob/main/CHANGELOG.md"
+Security = "https://github.com/OthmaneBlial/pyffmpegcore/security/policy"
 
 [project.scripts]
 pyffmpegcore = "pyffmpegcore.cli:main"
@@ -53,6 +60,9 @@ packages = ["pyffmpegcore"]
 [tool.setuptools.package-dir]
 "" = "."
 
+[tool.setuptools.dynamic]
+version = {attr = "pyffmpegcore.__version__"}
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
@@ -60,14 +70,34 @@ python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "-v --tb=short"
 markers = [
-    "real_media: tests that use downloaded internet fixtures",
+    "real_media: tests that execute FFmpeg against locally generated media fixtures",
 ]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+check_untyped_defs = true
+ignore_missing_imports = true
+no_implicit_optional = false
+warn_redundant_casts = true
+warn_unused_configs = true
+warn_unused_ignores = true
 
 [tool.coverage.run]
 source = ["pyffmpegcore"]
 omit = ["*/tests/*", "*/test_*"]
+patch = ["subprocess"]
 
 [tool.coverage.report]
+fail_under = 80
+show_missing = true
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",

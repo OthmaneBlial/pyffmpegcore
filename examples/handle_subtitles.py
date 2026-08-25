@@ -18,6 +18,7 @@ import tempfile
 from pyffmpegcore import FFmpegRunner, FFprobeRunner
 from pyffmpegcore.runner import escape_path_for_filter
 
+
 def extract_subtitles(video_file: str, output_file: str, stream_index: int = 0) -> bool:
     """
     Extract subtitles from a video file.
@@ -33,10 +34,14 @@ def extract_subtitles(video_file: str, output_file: str, stream_index: int = 0) 
     runner = FFmpegRunner()
 
     args = [
-        "-i", video_file,
-        "-map", f"0:s:{stream_index}",  # Extract specific subtitle stream
-        "-c:s", "srt",
-        "-y", output_file
+        "-i",
+        video_file,
+        "-map",
+        f"0:s:{stream_index}",  # Extract specific subtitle stream
+        "-c:s",
+        "srt",
+        "-y",
+        output_file,
     ]
 
     result = runner.run(args)
@@ -48,8 +53,10 @@ def extract_subtitles(video_file: str, output_file: str, stream_index: int = 0) 
         print(f"Failed to extract subtitles: {result.stderr}")
         return False
 
-def burn_subtitles(video_file: str, subtitle_file: str, output_file: str,
-                  font_size: int = 24, font_color: str = "&HFFFFFF") -> bool:
+
+def burn_subtitles(
+    video_file: str, subtitle_file: str, output_file: str, font_size: int = 24, font_color: str = "&HFFFFFF"
+) -> bool:
     """
     Burn subtitles permanently into a video file.
 
@@ -78,15 +85,18 @@ def burn_subtitles(video_file: str, subtitle_file: str, output_file: str,
 
     escaped_path = escape_path_for_filter(subtitle_source)
     subtitle_filter = (
-        f"subtitles=filename='{escaped_path}':"
-        f"force_style='FontSize={font_size},PrimaryColour={font_color}'"
+        f"subtitles=filename='{escaped_path}':force_style='FontSize={font_size},PrimaryColour={font_color}'"
     )
 
     args = [
-        "-i", video_file,
-        "-vf", subtitle_filter,
-        "-c:a", "copy",  # Copy audio without re-encoding
-        "-y", output_file
+        "-i",
+        video_file,
+        "-vf",
+        subtitle_filter,
+        "-c:a",
+        "copy",  # Copy audio without re-encoding
+        "-y",
+        output_file,
     ]
 
     try:
@@ -102,8 +112,8 @@ def burn_subtitles(video_file: str, subtitle_file: str, output_file: str,
     print(f"Failed to burn subtitles: {result.stderr}")
     return False
 
-def add_subtitle_track(video_file: str, subtitle_file: str, output_file: str,
-                      language: str = "eng") -> bool:
+
+def add_subtitle_track(video_file: str, subtitle_file: str, output_file: str, language: str = "eng") -> bool:
     """
     Add subtitles as a separate track (not burned) to a video file.
 
@@ -119,16 +129,26 @@ def add_subtitle_track(video_file: str, subtitle_file: str, output_file: str,
     runner = FFmpegRunner()
 
     args = [
-        "-i", video_file,
-        "-i", subtitle_file,
-        "-map", "0:v:0",
-        "-map", "0:a?",
-        "-map", "1:0",
-        "-c:v", "copy",  # Copy video
-        "-c:a", "copy",  # Copy audio
-        "-c:s", "mov_text",  # Subtitle codec for MP4
-        "-metadata:s:s:0", f"language={language}",
-        "-y", output_file
+        "-i",
+        video_file,
+        "-i",
+        subtitle_file,
+        "-map",
+        "0:v:0",
+        "-map",
+        "0:a?",
+        "-map",
+        "1:0",
+        "-c:v",
+        "copy",  # Copy video
+        "-c:a",
+        "copy",  # Copy audio
+        "-c:s",
+        "mov_text",  # Subtitle codec for MP4
+        "-metadata:s:s:0",
+        f"language={language}",
+        "-y",
+        output_file,
     ]
 
     result = runner.run(args)
@@ -139,6 +159,7 @@ def add_subtitle_track(video_file: str, subtitle_file: str, output_file: str,
     else:
         print(f"Failed to add subtitle track: {result.stderr}")
         return False
+
 
 def convert_subtitle_format(input_file: str, output_file: str) -> bool:
     """
@@ -153,10 +174,7 @@ def convert_subtitle_format(input_file: str, output_file: str) -> bool:
     """
     runner = FFmpegRunner()
 
-    args = [
-        "-i", input_file,
-        "-y", output_file
-    ]
+    args = ["-i", input_file, "-y", output_file]
 
     result = runner.run(args)
 
@@ -167,8 +185,8 @@ def convert_subtitle_format(input_file: str, output_file: str) -> bool:
         print(f"Failed to convert subtitles: {result.stderr}")
         return False
 
-def create_multi_language_subtitles(video_file: str, subtitle_files: dict,
-                                   output_file: str) -> bool:
+
+def create_multi_language_subtitles(video_file: str, subtitle_files: dict, output_file: str) -> bool:
     """
     Add multiple subtitle tracks in different languages to a video.
 
@@ -194,11 +212,8 @@ def create_multi_language_subtitles(video_file: str, subtitle_files: dict,
     args.extend(["-c:v", "copy", "-c:a", "copy", "-c:s", "mov_text"])
 
     # Add each subtitle track
-    for i, (lang_code, subtitle_file) in enumerate(subtitle_files.items()):
-        args.extend([
-            f"-metadata:s:s:{i}", f"language={lang_code}",
-            f"-metadata:s:s:{i}", f"title={lang_code.upper()}"
-        ])
+    for i, lang_code in enumerate(subtitle_files):
+        args.extend([f"-metadata:s:s:{i}", f"language={lang_code}", f"-metadata:s:s:{i}", f"title={lang_code.upper()}"])
 
     args.extend(["-y", output_file])
 
@@ -210,6 +225,7 @@ def create_multi_language_subtitles(video_file: str, subtitle_files: dict,
     else:
         print(f"Failed to add multi-language subtitles: {result.stderr}")
         return False
+
 
 def extract_hardcoded_subtitles(video_file: str, output_file: str) -> bool:
     """
@@ -228,8 +244,6 @@ def extract_hardcoded_subtitles(video_file: str, output_file: str) -> bool:
     print("Warning: Extracting hardcoded subtitles requires OCR tools and is not reliable.")
     print("For best results, use videos with embedded subtitle tracks.")
 
-    runner = FFmpegRunner()
-
     # This is a placeholder - actual OCR subtitle extraction would require
     # additional tools like Tesseract OCR and is quite complex
     # For now, we'll just show the approach
@@ -237,6 +251,7 @@ def extract_hardcoded_subtitles(video_file: str, output_file: str) -> bool:
     print("Hardcoded subtitle extraction requires additional OCR tools.")
     print("Consider using videos with embedded subtitle streams instead.")
     return False
+
 
 def get_subtitle_info(video_file: str) -> list:
     """
@@ -260,7 +275,7 @@ def get_subtitle_info(video_file: str) -> list:
                     "index": stream.get("index"),
                     "codec": stream.get("codec_name"),
                     "language": stream.get("tags", {}).get("language", "und"),
-                    "title": stream.get("tags", {}).get("title", "")
+                    "title": stream.get("tags", {}).get("title", ""),
                 }
                 subtitle_streams.append(subtitle_info)
 
@@ -269,6 +284,7 @@ def get_subtitle_info(video_file: str) -> list:
     except Exception as e:
         print(f"Could not probe video file: {e}")
         return []
+
 
 def main():
     """Demonstrate subtitle handling capabilities."""
@@ -301,8 +317,9 @@ def main():
 
     print("\n=== Burn Subtitles into Video ===")
     if os.path.exists(subtitle_file):
-        success = burn_subtitles(video_file, subtitle_file, "video_with_burned_subs.mp4",
-                               font_size=32, font_color="&H00FFFF")  # Yellow in BGR
+        success = burn_subtitles(
+            video_file, subtitle_file, "video_with_burned_subs.mp4", font_size=32, font_color="&H00FFFF"
+        )  # Yellow in BGR
         if success:
             print("✓ Subtitles burned into video")
     else:
@@ -310,8 +327,7 @@ def main():
 
     print("\n=== Add Subtitle Track ===")
     if os.path.exists(subtitle_file):
-        success = add_subtitle_track(video_file, subtitle_file, "video_with_sub_track.mp4",
-                                   language="eng")
+        success = add_subtitle_track(video_file, subtitle_file, "video_with_sub_track.mp4", language="eng")
         if success:
             print("✓ Subtitle track added")
     else:
@@ -325,18 +341,13 @@ def main():
 
     print("\n=== Multi-Language Subtitles ===")
     # Example with multiple languages
-    multi_subs = {
-        "eng": "subtitles_en.srt",
-        "spa": "subtitles_es.srt",
-        "fra": "subtitles_fr.srt"
-    }
+    multi_subs = {"eng": "subtitles_en.srt", "spa": "subtitles_es.srt", "fra": "subtitles_fr.srt"}
 
     # Check if any subtitle files exist
     existing_subs = {lang: path for lang, path in multi_subs.items() if os.path.exists(path)}
 
     if existing_subs:
-        success = create_multi_language_subtitles(video_file, existing_subs,
-                                                "video_multi_lang_subs.mp4")
+        success = create_multi_language_subtitles(video_file, existing_subs, "video_multi_lang_subs.mp4")
         if success:
             print("✓ Multi-language subtitles added")
     else:
@@ -345,6 +356,7 @@ def main():
     print("\nSubtitle handling examples completed!")
     print("Output files: extracted_subtitles.srt, video_with_burned_subs.mp4,")
     print("              video_with_sub_track.mp4, subtitles.vtt, video_multi_lang_subs.mp4")
+
 
 if __name__ == "__main__":
     main()

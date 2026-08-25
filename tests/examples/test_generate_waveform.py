@@ -2,16 +2,15 @@
 Tests for generate_waveform example functionality.
 """
 
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 from pyffmpegcore.runner import FFmpegRunner
-from pyffmpegcore.probe import FFprobeRunner
 
 
 class TestWaveformGeneration:
     """Test audio waveform generation functionality."""
 
-    @patch('pyffmpegcore.runner.FFmpegRunner.run')
+    @patch("pyffmpegcore.runner.FFmpegRunner.run")
     def test_generate_waveform_image(self, mock_run):
         """Test basic waveform image generation."""
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
@@ -24,7 +23,7 @@ class TestWaveformGeneration:
         args = mock_run.call_args[0][0]
         assert "showwavespic" in " ".join(args)
 
-    @patch('pyffmpegcore.runner.FFmpegRunner.run')
+    @patch("pyffmpegcore.runner.FFmpegRunner.run")
     def test_generate_detailed_waveform(self, mock_run):
         """Test detailed waveform generation."""
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
@@ -38,7 +37,7 @@ class TestWaveformGeneration:
         assert "showwavespic" in " ".join(args)
         assert "colors=red" in " ".join(args)
 
-    @patch('pyffmpegcore.runner.FFmpegRunner.run')
+    @patch("pyffmpegcore.runner.FFmpegRunner.run")
     def test_generate_waveform_animation(self, mock_run):
         """Test animated waveform generation."""
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
@@ -54,16 +53,13 @@ class TestWaveformGeneration:
         assert "-t" in args
         assert "10" in args
 
-    @patch('pyffmpegcore.probe.FFprobeRunner.probe')
-    @patch('pyffmpegcore.runner.FFmpegRunner.run')
-    @patch('os.makedirs')
+    @patch("pyffmpegcore.probe.FFprobeRunner.probe")
+    @patch("pyffmpegcore.runner.FFmpegRunner.run")
+    @patch("os.makedirs")
     def test_generate_waveform_with_metadata(self, mock_makedirs, mock_run, mock_probe):
         """Test waveform generation with metadata overlay."""
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
-        mock_probe.return_value = {
-            "duration": 180.5,
-            "audio": {"sample_rate": 44100, "channels": 2}
-        }
+        mock_probe.return_value = {"duration": 180.5, "audio": {"sample_rate": 44100, "channels": 2}}
 
         from examples.generate_waveform import generate_waveform_with_metadata
 

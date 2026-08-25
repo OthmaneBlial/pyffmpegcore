@@ -5,6 +5,7 @@ Example: Extract metadata from a video file.
 
 from pyffmpegcore import FFprobeRunner
 
+
 def main():
     # Initialize FFprobe runner
     ffprobe = FFprobeRunner()
@@ -42,6 +43,7 @@ def main():
     print(f"Duration: {duration:.2f}s")
     print(f"Resolution: {resolution}")
     print(f"Bitrate: {bitrate} bps")
+
 
 if __name__ == "__main__":
     main()

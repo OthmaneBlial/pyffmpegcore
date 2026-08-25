@@ -2,10 +2,11 @@
 Progress tracking for FFmpeg operations.
 """
 
+import re
 import subprocess
 import threading
-from typing import Callable, Dict, Any, Optional
-import re
+from collections.abc import Callable
+from typing import Any
 
 
 class ProgressTracker:
@@ -13,7 +14,7 @@ class ProgressTracker:
     Tracks FFmpeg progress by parsing progress output.
     """
 
-    def __init__(self, callback: Callable[[Dict[str, Any]], None], use_pipe: bool = True):
+    def __init__(self, callback: Callable[[dict[str, Any]], None], use_pipe: bool = True):
         """
         Initialize the progress tracker.
 
@@ -23,7 +24,7 @@ class ProgressTracker:
                      If False, fall back to stderr parsing.
         """
         self.callback = callback
-        self.progress = {}
+        self.progress: dict[str, Any] = {}
         self.use_pipe = use_pipe
 
     def run(self, cmd: list) -> subprocess.CompletedProcess:
@@ -48,13 +49,7 @@ class ProgressTracker:
         # Add progress options to command
         progress_cmd = cmd + ["-progress", "pipe:1", "-nostats", "-loglevel", "error"]
 
-        process = subprocess.Popen(
-            progress_cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            bufsize=1
-        )
+        process = subprocess.Popen(progress_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
 
         # Read progress from stdout
         progress_thread = threading.Thread(target=self._read_progress_pipe, args=(process.stdout,))
@@ -71,21 +66,13 @@ class ProgressTracker:
             self.progress["status"] = "end"
             self.callback(self.progress.copy())
 
-        return subprocess.CompletedProcess(
-            cmd, process.returncode, "", stderr
-        )
+        return subprocess.CompletedProcess(cmd, process.returncode, "", stderr)
 
     def _run_with_stderr(self, cmd: list) -> subprocess.CompletedProcess:
         """
         Fallback: Run FFmpeg and parse stderr for progress (legacy method).
         """
-        process = subprocess.Popen(
-            cmd,
-            stderr=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            text=True,
-            bufsize=1
-        )
+        process = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True, bufsize=1)
 
         # Start a thread to read stderr
         stderr_thread = threading.Thread(target=self._read_stderr, args=(process.stderr,))
@@ -102,9 +89,7 @@ class ProgressTracker:
             self.progress["status"] = "end"
             self.callback(self.progress.copy())
 
-        return subprocess.CompletedProcess(
-            cmd, process.returncode, stdout, ""
-        )
+        return subprocess.CompletedProcess(cmd, process.returncode, stdout, "")
 
     def _read_progress_pipe(self, stdout_pipe):
         """
@@ -146,7 +131,7 @@ class ProgressTracker:
                 # Call callback with current progress
                 self.callback(self.progress.copy())
 
-    def _parse_progress_pipe_line(self, line: str) -> Optional[Dict[str, Any]]:
+    def _parse_progress_pipe_line(self, line: str) -> dict[str, Any] | None:
         """
         Parse a single key=value line from FFmpeg -progress pipe:1 output.
 
@@ -157,12 +142,12 @@ class ProgressTracker:
             Dictionary with parsed progress data or None
         """
         line = line.strip()
-        if '=' not in line:
+        if "=" not in line:
             return None
 
-        key, value = line.split('=', 1)
+        key, value = line.split("=", 1)
 
-        def with_status(payload: Dict[str, Any]) -> Dict[str, Any]:
+        def with_status(payload: dict[str, Any]) -> dict[str, Any]:
             payload.setdefault("status", "progress")
             return payload
 
@@ -176,7 +161,7 @@ class ProgressTracker:
         elif key == "bitrate":
             # Remove 'kbits/s' suffix
             if value != "N/A":
-                return with_status({"bitrate_kbps": float(value.replace('kbits/s', ''))})
+                return with_status({"bitrate_kbps": float(value.replace("kbits/s", ""))})
         elif key == "total_size":
             if value != "N/A":
                 return with_status({"size_kb": int(value) / 1024})  # Convert bytes to KB
@@ -194,7 +179,7 @@ class ProgressTracker:
             return with_status({"time_seconds": secs})
         elif key == "speed":
             if value != "N/A":
-                return with_status({"speed": float(value.replace('x', ''))})
+                return with_status({"speed": float(value.replace("x", ""))})
         elif key == "progress":
             if value == "end":
                 return {"status": "end"}
@@ -202,7 +187,7 @@ class ProgressTracker:
 
         return None
 
-    def _parse_progress_line(self, line: str) -> Optional[Dict[str, Any]]:
+    def _parse_progress_line(self, line: str) -> dict[str, Any] | None:
         """
         Parse a single line of FFmpeg progress output (fallback method).
 
@@ -214,9 +199,9 @@ class ProgressTracker:
         """
         # FFmpeg progress lines look like: "frame=  123 fps=25.0 q=28.0 size=   12345kB time=00:00:05.00 bitrate=1234.5kbits/s speed=1.25x"
         progress_pattern = re.compile(
-            r'frame=\s*(\d+)\s+fps=\s*([\d.]+)\s+.*?'
-            r'size=\s*([\d.]+)kB\s+time=\s*([\d:.]+)\s+'
-            r'bitrate=\s*([\d.]+)kbits/s\s+speed=\s*([\d.]+)x'
+            r"frame=\s*(\d+)\s+fps=\s*([\d.]+)\s+.*?"
+            r"size=\s*([\d.]+)kB\s+time=\s*([\d:.]+)\s+"
+            r"bitrate=\s*([\d.]+)kbits/s\s+speed=\s*([\d.]+)x"
         )
 
         match = progress_pattern.search(line)
@@ -233,7 +218,7 @@ class ProgressTracker:
                 "time_seconds": time_seconds,
                 "bitrate_kbps": float(bitrate_kbps),
                 "speed": float(speed),
-                "status": "progress"
+                "status": "progress",
             }
 
         # Check for completion
@@ -252,7 +237,7 @@ class ProgressTracker:
         Returns:
             Time in seconds
         """
-        parts = time_str.split(':')
+        parts = time_str.split(":")
         if len(parts) == 3:
             hours, minutes, seconds = parts
             return int(hours) * 3600 + int(minutes) * 60 + float(seconds)
@@ -263,7 +248,7 @@ class ProgressTracker:
             return float(time_str)
 
     @staticmethod
-    def simple_progress_callback(progress: Dict[str, Any]):
+    def simple_progress_callback(progress: dict[str, Any]):
         """
         A simple progress callback that prints progress to console.
 
@@ -291,7 +276,7 @@ class ProgressCallback:
     A helper class for creating progress callbacks with context.
     """
 
-    def __init__(self, total_duration: Optional[float] = None):
+    def __init__(self, total_duration: float | None = None):
         """
         Initialize progress callback helper.
 
@@ -300,7 +285,7 @@ class ProgressCallback:
         """
         self.total_duration = total_duration
 
-    def __call__(self, progress: Dict[str, Any]):
+    def __call__(self, progress: dict[str, Any]):
         """
         Progress callback that can calculate percentage if duration is known.
         """

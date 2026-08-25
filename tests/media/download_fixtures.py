@@ -12,7 +12,6 @@ import sys
 import tempfile
 from pathlib import Path
 
-
 SCRIPT_DIR = Path(__file__).resolve().parent
 DEFAULT_MANIFEST = SCRIPT_DIR / "manifest.json"
 DEFAULT_OUTPUT_DIR = SCRIPT_DIR / "downloads"
@@ -57,9 +56,7 @@ def validate_fixture(path: Path, fixture: dict, ffprobe_path: str) -> None:
     format_contains = validation.get("format_contains")
     format_name = metadata.get("format", {}).get("format_name", "")
     if format_contains and format_contains not in format_name:
-        raise RuntimeError(
-            f"Unexpected format for {path.name}: expected {format_contains!r} in {format_name!r}"
-        )
+        raise RuntimeError(f"Unexpected format for {path.name}: expected {format_contains!r} in {format_name!r}")
 
     for stream_type in ("video", "audio"):
         expected_codec = validation.get(f"{stream_type}_codec")
@@ -71,8 +68,7 @@ def validate_fixture(path: Path, fixture: dict, ffprobe_path: str) -> None:
         actual_codec = candidates[0].get("codec_name")
         if actual_codec != expected_codec:
             raise RuntimeError(
-                f"Unexpected {stream_type} codec for {path.name}: "
-                f"expected {expected_codec}, got {actual_codec}"
+                f"Unexpected {stream_type} codec for {path.name}: expected {expected_codec}, got {actual_codec}"
             )
 
     video_streams = [stream for stream in streams if stream.get("codec_type") == "video"]
@@ -82,8 +78,7 @@ def validate_fixture(path: Path, fixture: dict, ffprobe_path: str) -> None:
             expected = validation.get(dimension)
             if expected is not None and video.get(dimension) != expected:
                 raise RuntimeError(
-                    f"Unexpected {dimension} for {path.name}: "
-                    f"expected {expected}, got {video.get(dimension)}"
+                    f"Unexpected {dimension} for {path.name}: expected {expected}, got {video.get(dimension)}"
                 )
 
     minimum_duration = validation.get("minimum_duration")
@@ -92,8 +87,7 @@ def validate_fixture(path: Path, fixture: dict, ffprobe_path: str) -> None:
         duration = float(duration_text or 0)
         if duration < float(minimum_duration):
             raise RuntimeError(
-                f"Fixture {path.name} is too short: expected at least "
-                f"{minimum_duration}s, got {duration}s"
+                f"Fixture {path.name} is too short: expected at least {minimum_duration}s, got {duration}s"
             )
 
 
@@ -135,17 +129,12 @@ def generate_fixture(
                 "-loglevel",
                 "error",
                 "-y",
-                *[
-                    str(temp_path) if token == "{output}" else token
-                    for token in generator["args"]
-                ],
+                *[str(temp_path) if token == "{output}" else token for token in generator["args"]],
             ]
             print(f"[generate] {destination.name}")
             result = subprocess.run(command, capture_output=True, text=True, check=False)
             if result.returncode != 0:
-                raise RuntimeError(
-                    result.stderr.strip() or f"FFmpeg failed to generate {destination.name}"
-                )
+                raise RuntimeError(result.stderr.strip() or f"FFmpeg failed to generate {destination.name}")
         else:
             raise RuntimeError(f"Unsupported generator type: {generator['type']}")
 

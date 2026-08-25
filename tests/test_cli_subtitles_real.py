@@ -14,7 +14,6 @@ import pytest
 from pyffmpegcore import FFmpegRunner
 from tests.media_utils import ensure_downloaded_media, ffmpeg_has_filter
 
-
 SHORT_SRT = """1
 00:00:00,000 --> 00:00:02,500
 Welcome to the CLI subtitle file!
@@ -144,19 +143,25 @@ def test_subtitles_burn_real_media_changes_frame_content(tmp_path):
     assert [stream["codec_type"] for stream in streams] == ["video", "audio"]
 
     runner = FFmpegRunner()
-    assert runner.extract_thumbnail(
-        str(media["video_mp4_h264_1080p"]),
-        str(original_frame),
-        timestamp="00:00:01.000",
-        width=960,
-    ).returncode == 0
-    assert runner.extract_thumbnail(
-        str(burned_output),
-        str(burned_frame),
-        timestamp="00:00:01.000",
-        width=960,
-    ).returncode == 0
+    assert (
+        runner.extract_thumbnail(
+            str(media["video_mp4_h264_1080p"]),
+            str(original_frame),
+            timestamp="00:00:01.000",
+            width=960,
+        ).returncode
+        == 0
+    )
+    assert (
+        runner.extract_thumbnail(
+            str(burned_output),
+            str(burned_frame),
+            timestamp="00:00:01.000",
+            width=960,
+        ).returncode
+        == 0
+    )
 
-    assert hashlib.sha256(original_frame.read_bytes()).hexdigest() != hashlib.sha256(
-        burned_frame.read_bytes()
-    ).hexdigest()
+    assert (
+        hashlib.sha256(original_frame.read_bytes()).hexdigest() != hashlib.sha256(burned_frame.read_bytes()).hexdigest()
+    )

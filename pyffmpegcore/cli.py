@@ -5,21 +5,21 @@ Command-line entrypoint for PyFFmpegCore.
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass
 import json
 import platform
-from pathlib import Path
 import shlex
 import shutil
 import subprocess
 import sys
 import tempfile
-from typing import Any, Sequence
+from collections.abc import Sequence
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
 from . import __version__
 from .probe import FFprobeRunner
 from .runner import FFmpegRunner, escape_path_for_concat, escape_path_for_filter
-
 
 EXIT_OK = 0
 EXIT_ENVIRONMENT_ERROR = 3
@@ -175,8 +175,7 @@ def build_parser() -> argparse.ArgumentParser:
         prog="pyffmpegcore",
         parents=[root_parent],
         description=(
-            "PyFFmpegCore CLI. A task-focused terminal interface for the "
-            "verified media workflows in this repository."
+            "PyFFmpegCore CLI. A task-focused terminal interface for the verified media workflows in this repository."
         ),
         epilog=ROOT_HELP_EPILOG,
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -884,10 +883,10 @@ def render_bash_completion(program_name: str, metadata: dict[tuple[str, ...], di
         f"_{program_name}_completion() {{",
         "    local cur key",
         "    COMPREPLY=()",
-        "    cur=\"${COMP_WORDS[COMP_CWORD]}\"",
+        '    cur="${COMP_WORDS[COMP_CWORD]}"',
         "    key=root",
         "    for ((i=1; i<COMP_CWORD; i++)); do",
-        "        case \"$key:${COMP_WORDS[i]}\" in",
+        '        case "$key:${COMP_WORDS[i]}" in',
     ]
 
     for path, node in metadata.items():
@@ -900,16 +899,14 @@ def render_bash_completion(program_name: str, metadata: dict[tuple[str, ...], di
         [
             "        esac",
             "    done",
-            "    case \"$key\" in",
+            '    case "$key" in',
         ]
     )
 
     for path, node in metadata.items():
         key = completion_key(path)
         candidates = " ".join(node["subcommands"] + node["options"])
-        lines.append(
-            f"        {key}) COMPREPLY=( $(compgen -W {shlex.quote(candidates)} -- \"$cur\") ) ;;"
-        )
+        lines.append(f'        {key}) COMPREPLY=( $(compgen -W {shlex.quote(candidates)} -- "$cur") ) ;;')
 
     lines.extend(
         [
@@ -929,25 +926,25 @@ def render_zsh_completion(program_name: str, metadata: dict[tuple[str, ...], dic
         f"#compdef {program_name}",
         "",
         f"_{program_name}() {{",
-        "  local key=\"root\"",
+        '  local key="root"',
         "  local -a candidates",
         "  local word",
         "  for (( i=2; i<CURRENT; i++ )); do",
-        "    word=\"${words[i]}\"",
-        "    case \"$key:$word\" in",
+        '    word="${words[i]}"',
+        '    case "$key:$word" in',
     ]
 
     for path, node in metadata.items():
         key = completion_key(path)
         for subcommand in node["subcommands"]:
             next_key = completion_key(path + (subcommand,))
-            lines.append(f"      {key}:{subcommand}) key=\"{next_key}\" ;;")
+            lines.append(f'      {key}:{subcommand}) key="{next_key}" ;;')
 
     lines.extend(
         [
             "    esac",
             "  done",
-            "  case \"$key\" in",
+            '  case "$key" in',
         ]
     )
 
@@ -1177,7 +1174,11 @@ def inspect_binary(binary_path: str) -> dict[str, Any]:
     Inspect a binary path for existence and version information.
     """
     is_explicit_path = any(sep in binary_path for sep in ("/", "\\"))
-    resolved = str(Path(binary_path).resolve()) if is_explicit_path and Path(binary_path).exists() else shutil.which(binary_path)
+    resolved = (
+        str(Path(binary_path).resolve())
+        if is_explicit_path and Path(binary_path).exists()
+        else shutil.which(binary_path)
+    )
     report: dict[str, Any] = {
         "requested": binary_path,
         "resolved": resolved,
@@ -1735,10 +1736,7 @@ def run_video_speed(
             sample_rate = metadata.get("audio", {}).get("sample_rate", 44100)
             audio_filter = f"asetrate={sample_rate}*{factor},aresample={sample_rate}"
 
-        filter_complex = (
-            f"[0:v]setpts=(PTS-STARTPTS)/{factor}[v];"
-            f"[0:a]{audio_filter}[a]"
-        )
+        filter_complex = f"[0:v]setpts=(PTS-STARTPTS)/{factor}[v];[0:a]{audio_filter}[a]"
         args.extend(["-filter_complex", filter_complex, "-map", "[v]", "-map", "[a]"])
     else:
         args.extend(["-vf", f"setpts=(PTS-STARTPTS)/{factor}"])
@@ -2108,9 +2106,7 @@ def handle_mix_audio_mix(args: argparse.Namespace) -> int:
             filter_parts.append(f"[{index}:a]anull[a{index}]")
 
     mix_inputs = "".join(f"[a{index}]" for index in range(len(input_paths)))
-    filter_parts.append(
-        f"{mix_inputs}amix=inputs={len(input_paths)}:duration=longest:normalize=0[aout]"
-    )
+    filter_parts.append(f"{mix_inputs}amix=inputs={len(input_paths)}:duration=longest:normalize=0[aout]")
     ffmpeg_args.extend(["-filter_complex", ";".join(filter_parts), "-map", "[aout]"])
     append_audio_output_options(ffmpeg_args, output_path, bitrate="192k")
     ffmpeg_args.extend(["-y", str(output_path)])
@@ -2170,8 +2166,7 @@ def handle_mix_audio_mashup(args: argparse.Namespace) -> int:
     for index in range(1, len(input_paths)):
         next_label = f"[a{index}]"
         filter_parts.append(
-            f"{current_label}[{index}:a]acrossfade="
-            f"d={args.crossfade_duration}:c1=tri:c2=tri{next_label}"
+            f"{current_label}[{index}:a]acrossfade=d={args.crossfade_duration}:c1=tri:c2=tri{next_label}"
         )
         current_label = next_label
     ffmpeg_args.extend(["-filter_complex", ";".join(filter_parts), "-map", current_label])
@@ -2298,10 +2293,7 @@ def report_batch_results(ctx: CLIContext, label: str, results: dict[str, int]) -
     """
     echo(
         ctx,
-        (
-            f"{label}: {results['successful']} succeeded, "
-            f"{results['failed']} failed, {results['total']} total"
-        ),
+        (f"{label}: {results['successful']} succeeded, {results['failed']} failed, {results['total']} total"),
     )
 
 
@@ -2400,7 +2392,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         args = parser.parse_args(argv)
     except SystemExit as exc:
-        return int(exc.code)
+        return exc.code if isinstance(exc.code, int) else EXIT_USAGE_ERROR
 
     if not argv:
         parser.print_help()

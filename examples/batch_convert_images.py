@@ -10,14 +10,16 @@ which is useful for:
 - Batch processing workflows
 """
 
-from pyffmpegcore import FFmpegRunner, FFprobeRunner
-import os
 import glob
+import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import List, Tuple, Dict
 
-def convert_image(input_path: str, output_path: str, quality: int = 80,
-                 resize: Tuple[int, int] = None, **kwargs) -> bool:
+from pyffmpegcore import FFmpegRunner, FFprobeRunner
+
+
+def convert_image(
+    input_path: str, output_path: str, quality: int = 80, resize: tuple[int, int] = None, **kwargs
+) -> bool:
     """
     Convert a single image to a different format.
 
@@ -50,16 +52,16 @@ def convert_image(input_path: str, output_path: str, quality: int = 80,
     # Set quality based on output format
     output_ext = os.path.splitext(output_path)[1].lower()
 
-    if output_ext in ['.jpg', '.jpeg']:
+    if output_ext in [".jpg", ".jpeg"]:
         args.extend(["-q:v", str(min(31, max(1, 31 - int(quality * 31 / 100))))])  # FFmpeg quality scale
-    elif output_ext in ['.webp']:
+    elif output_ext in [".webp"]:
         args.extend(["-quality", str(quality)])
-    elif output_ext in ['.png']:
+    elif output_ext in [".png"]:
         args.extend(["-compression_level", str(min(9, max(0, 9 - int(quality * 9 / 100))))])
 
     # Additional kwargs
     for key, value in kwargs.items():
-        if key.startswith('ffmpeg_'):  # Allow direct FFmpeg options
+        if key.startswith("ffmpeg_"):  # Allow direct FFmpeg options
             args.extend([f"-{key[7:]}", str(value)])
 
     # Treat image-to-image conversions as single-frame outputs.
@@ -76,10 +78,16 @@ def convert_image(input_path: str, output_path: str, quality: int = 80,
         print(f"Failed to convert {input_path}: {result.stderr}")
         return False
 
-def batch_convert_images(input_dir: str, output_dir: str,
-                        input_formats: List[str] = ['*.png', '*.jpg', '*.jpeg', '*.tiff', '*.bmp'],
-                        output_format: str = 'jpg', quality: int = 85,
-                        resize: Tuple[int, int] = None, max_workers: int = 4) -> Dict[str, int]:
+
+def batch_convert_images(
+    input_dir: str,
+    output_dir: str,
+    input_formats: list[str] | None = None,
+    output_format: str = "jpg",
+    quality: int = 85,
+    resize: tuple[int, int] | None = None,
+    max_workers: int = 4,
+) -> dict[str, int]:
     """
     Batch convert all images in a directory to a new format.
 
@@ -96,6 +104,7 @@ def batch_convert_images(input_dir: str, output_dir: str,
         Dictionary with conversion statistics
     """
     os.makedirs(output_dir, exist_ok=True)
+    input_formats = input_formats or ["*.png", "*.jpg", "*.jpeg", "*.tiff", "*.bmp"]
 
     # Find all input files
     input_files = []
@@ -140,8 +149,10 @@ def batch_convert_images(input_dir: str, output_dir: str,
 
     return results
 
-def optimize_images_for_web(input_dir: str, output_dir: str, max_width: int = 1920,
-                           max_height: int = 1080, quality: int = 85) -> Dict[str, int]:
+
+def optimize_images_for_web(
+    input_dir: str, output_dir: str, max_width: int = 1920, max_height: int = 1080, quality: int = 85
+) -> dict[str, int]:
     """
     Optimize images for web usage with resizing and format conversion.
 
@@ -161,7 +172,7 @@ def optimize_images_for_web(input_dir: str, output_dir: str, max_width: int = 19
     # Get image metadata to determine if resizing is needed
     ffprobe = FFprobeRunner()
 
-    def should_resize(image_path: str) -> Tuple[bool, Tuple[int, int]]:
+    def should_resize(image_path: str) -> tuple[bool, tuple[int, int]]:
         """Check if image needs resizing and return target dimensions."""
         try:
             # Use FFprobeRunner.probe to get metadata
@@ -178,7 +189,7 @@ def optimize_images_for_web(input_dir: str, output_dir: str, max_width: int = 19
                     return True, (new_width, new_height)
 
             return False, (0, 0)
-        except:
+        except (OSError, RuntimeError, TypeError, ValueError):
             return False, (0, 0)
 
     # Custom conversion function that checks dimensions
@@ -196,7 +207,7 @@ def optimize_images_for_web(input_dir: str, output_dir: str, max_width: int = 19
             return convert_image(input_file, output_path, quality=quality)
 
     # Find all images
-    image_patterns = ['*.png', '*.jpg', '*.jpeg', '*.tiff', '*.bmp', '*.gif']
+    image_patterns = ["*.png", "*.jpg", "*.jpeg", "*.tiff", "*.bmp", "*.gif"]
     input_files = []
     for pattern in image_patterns:
         input_files.extend(glob.glob(os.path.join(input_dir, pattern)))
@@ -221,8 +232,8 @@ def optimize_images_for_web(input_dir: str, output_dir: str, max_width: int = 19
 
     return results
 
-def convert_to_webp_batch(input_dir: str, output_dir: str, quality: int = 80,
-                         lossless: bool = False) -> Dict[str, int]:
+
+def convert_to_webp_batch(input_dir: str, output_dir: str, quality: int = 80, lossless: bool = False) -> dict[str, int]:
     """
     Convert images to WebP format for better web performance.
 
@@ -244,12 +255,9 @@ def convert_to_webp_batch(input_dir: str, output_dir: str, quality: int = 80,
     # Note: quality is handled by the convert_image function for WebP
 
     return batch_convert_images(
-        input_dir=input_dir,
-        output_dir=output_dir,
-        output_format="webp",
-        quality=quality,
-        **webp_options
+        input_dir=input_dir, output_dir=output_dir, output_format="webp", quality=quality, **webp_options
     )
+
 
 def main():
     """Demonstrate batch image conversion capabilities."""
@@ -257,47 +265,31 @@ def main():
     # Example 1: Basic batch conversion (PNG to JPEG)
     print("=== Batch converting PNG to JPEG ===")
     results = batch_convert_images(
-        input_dir="images/",
-        output_dir="converted/jpg/",
-        input_formats=["*.png"],
-        output_format="jpg",
-        quality=90
+        input_dir="images/", output_dir="converted/jpg/", input_formats=["*.png"], output_format="jpg", quality=90
     )
     print(f"Converted {results['successful']}/{results['total']} images")
 
     # Example 2: Web optimization with resizing
     print("\n=== Optimizing images for web ===")
     results = optimize_images_for_web(
-        input_dir="images/",
-        output_dir="optimized/",
-        max_width=1920,
-        max_height=1080,
-        quality=85
+        input_dir="images/", output_dir="optimized/", max_width=1920, max_height=1080, quality=85
     )
     print(f"Optimized {results['successful']}/{results['total']} images")
 
     # Example 3: Convert to WebP for better compression
     print("\n=== Converting to WebP format ===")
-    results = convert_to_webp_batch(
-        input_dir="images/",
-        output_dir="webp/",
-        quality=80,
-        lossless=False
-    )
+    results = convert_to_webp_batch(input_dir="images/", output_dir="webp/", quality=80, lossless=False)
     print(f"Converted {results['successful']}/{results['total']} images to WebP")
 
     # Example 4: Resize all images to thumbnails
     print("\n=== Creating thumbnails ===")
     results = batch_convert_images(
-        input_dir="images/",
-        output_dir="thumbnails/",
-        output_format="jpg",
-        quality=80,
-        resize=(320, 240)
+        input_dir="images/", output_dir="thumbnails/", output_format="jpg", quality=80, resize=(320, 240)
     )
     print(f"Created {results['successful']}/{results['total']} thumbnails")
 
     print("\nBatch image conversion examples completed!")
+
 
 if __name__ == "__main__":
     main()

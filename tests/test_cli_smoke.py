@@ -4,9 +4,9 @@ Smoke tests for the root CLI entrypoint.
 
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
-import json
 
 from pyffmpegcore import __version__
 

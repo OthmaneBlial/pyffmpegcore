@@ -7,9 +7,9 @@ like conversion, compression, metadata extraction, and progress tracking.
 Copyright (c) 2025 Othmane BLIAL
 """
 
-from .runner import FFmpegRunner
 from .probe import FFprobeRunner
-from .progress import ProgressTracker, ProgressCallback
+from .progress import ProgressCallback, ProgressTracker
+from .runner import FFmpegRunner
 
-__version__ = "0.1.2"
+__version__ = "0.2.0"
 __all__ = ["FFmpegRunner", "FFprobeRunner", "ProgressTracker", "ProgressCallback"]

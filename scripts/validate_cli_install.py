@@ -5,13 +5,13 @@ Validate a clean CLI install in an isolated virtual environment.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
-from pathlib import Path
 import shutil
 import subprocess
 import sys
 import tempfile
-
+from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MEDIA_ROOT = REPO_ROOT / "tests" / "media" / "downloads"
@@ -84,6 +84,28 @@ def add_report_entry(
     )
 
 
+def sha256_for_file(path: Path) -> str:
+    """Return the SHA-256 digest for an artifact."""
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def resolve_artifact(candidate: Path) -> Path:
+    """Resolve a wheel path, accepting a directory containing exactly one wheel."""
+    candidate = candidate.expanduser().resolve()
+    if candidate.is_dir():
+        wheels = sorted(candidate.glob("pyffmpegcore-*.whl"))
+        if len(wheels) != 1:
+            raise ValueError(f"Expected exactly one pyffmpegcore wheel in {candidate}, found {len(wheels)}.")
+        return wheels[0]
+    if candidate.suffix != ".whl" or not candidate.is_file():
+        raise ValueError(f"Artifact must be an existing .whl file or a directory containing one: {candidate}")
+    return candidate
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Validate a clean pyffmpegcore CLI install in an isolated virtual environment."
@@ -99,6 +121,11 @@ def main(argv: list[str] | None = None) -> int:
         type=Path,
         default=DEFAULT_MEDIA_ROOT,
         help="Directory containing generated media fixtures. Defaults to %(default)s.",
+    )
+    parser.add_argument(
+        "--artifact",
+        type=Path,
+        help="Install this prebuilt wheel (or the only wheel in this directory) instead of rebuilding it.",
     )
     parser.add_argument(
         "--skip-media",
@@ -127,18 +154,31 @@ def main(argv: list[str] | None = None) -> int:
         build_dir.mkdir(parents=True, exist_ok=True)
         outputs_dir.mkdir(parents=True, exist_ok=True)
 
-        build = run_command(
-            [sys.executable, "-m", "build", "--wheel", "--outdir", str(build_dir)],
-            cwd=args.project_root,
-        )
-        add_report_entry(report["commands"], "build-wheel", build)
-        if build.returncode != 0:
-            return 1
+        if args.artifact is not None:
+            wheel_path = resolve_artifact(args.artifact)
+            report["artifact"] = {
+                "source": "prebuilt",
+                "filename": wheel_path.name,
+                "sha256": sha256_for_file(wheel_path),
+            }
+        else:
+            build = run_command(
+                [sys.executable, "-m", "build", "--wheel", "--outdir", str(build_dir)],
+                cwd=args.project_root,
+            )
+            add_report_entry(report["commands"], "build-wheel", build)
+            if build.returncode != 0:
+                return 1
 
-        wheels = sorted(build_dir.glob("pyffmpegcore-*.whl"))
-        if not wheels:
-            raise RuntimeError("No wheel was produced during clean-install validation.")
-        wheel_path = wheels[-1]
+            wheels = sorted(build_dir.glob("pyffmpegcore-*.whl"))
+            if len(wheels) != 1:
+                raise RuntimeError(f"Expected one wheel during clean-install validation, found {len(wheels)}.")
+            wheel_path = wheels[0]
+            report["artifact"] = {
+                "source": "local-build",
+                "filename": wheel_path.name,
+                "sha256": sha256_for_file(wheel_path),
+            }
 
         create_venv = run_command([sys.executable, "-m", "venv", str(venv_dir)])
         add_report_entry(report["commands"], "create-venv", create_venv)

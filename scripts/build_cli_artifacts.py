@@ -7,10 +7,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-from pathlib import Path
 import subprocess
 import sys
-
+from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -74,9 +73,7 @@ def collect_artifact_report(outdir: Path) -> dict[str, object]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(
-        description="Build the supported pyffmpegcore CLI distribution artifacts."
-    )
+    parser = argparse.ArgumentParser(description="Build the supported pyffmpegcore CLI distribution artifacts.")
     parser.add_argument(
         "--project-root",
         type=Path,

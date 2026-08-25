@@ -7,7 +7,7 @@ from __future__ import annotations
 import glob
 import os
 import subprocess
-from typing import Callable, List, Optional
+from collections.abc import Callable
 
 from .progress import ProgressTracker
 
@@ -40,8 +40,8 @@ class FFmpegRunner:
 
     def run(
         self,
-        args: List[str],
-        progress_callback: Optional[Callable] = None,
+        args: list[str],
+        progress_callback: Callable | None = None,
     ) -> subprocess.CompletedProcess:
         """
         Run FFmpeg with the provided argument list.
@@ -55,15 +55,14 @@ class FFmpegRunner:
                 result = subprocess.run(cmd, capture_output=True, text=True)
         except FileNotFoundError as exc:
             raise RuntimeError(
-                f"FFmpeg executable '{self.ffmpeg_path}' was not found. "
-                "Install FFmpeg or pass a valid ffmpeg_path."
+                f"FFmpeg executable '{self.ffmpeg_path}' was not found. Install FFmpeg or pass a valid ffmpeg_path."
             ) from exc
 
         return self._annotate_failure(cmd, result)
 
     def run_with_progress(
         self,
-        args: List[str],
+        args: list[str],
         show_percentage: bool = True,
     ) -> subprocess.CompletedProcess:
         """
@@ -102,7 +101,7 @@ class FFmpegRunner:
         """
         Convert a video or audio file to another format.
         """
-        args: List[str] = []
+        args: list[str] = []
 
         if hwaccel:
             args.extend(["-hwaccel", hwaccel])
@@ -244,8 +243,7 @@ class FFmpegRunner:
         video_codec = kwargs.get("video_codec", "libx264")
         if video_codec == "copy":
             raise ValueError(
-                "video_codec='copy' is not supported with two-pass compression. "
-                "Use single-pass compression instead."
+                "video_codec='copy' is not supported with two-pass compression. Use single-pass compression instead."
             )
 
         from .probe import FFprobeRunner
@@ -263,8 +261,7 @@ class FFmpegRunner:
 
         if available_kb <= 0:
             raise ValueError(
-                f"Target size {target_size_kb}KB too small for {duration:.1f}s "
-                f"video with {audio_bitrate} audio"
+                f"Target size {target_size_kb}KB too small for {duration:.1f}s video with {audio_bitrate} audio"
             )
 
         min_video_bitrate_bps = 100 * 1024
@@ -523,18 +520,18 @@ class FFmpegRunner:
         }
         return codec_by_extension.get(extension, "aac")
 
-    def _append_threads(self, args: List[str], kwargs: dict) -> None:
+    def _append_threads(self, args: list[str], kwargs: dict) -> None:
         if "threads" in kwargs:
             args.extend(["-threads", str(kwargs["threads"])])
 
-    def _append_movflags(self, args: List[str], output_file: str, kwargs: dict) -> None:
+    def _append_movflags(self, args: list[str], output_file: str, kwargs: dict) -> None:
         movflags = kwargs.get("movflags", "+faststart")
         if output_file.endswith((".mp4", ".m4v")) and movflags:
             args.extend(["-movflags", movflags])
 
     def _annotate_failure(
         self,
-        cmd: List[str],
+        cmd: list[str],
         result: subprocess.CompletedProcess,
     ) -> subprocess.CompletedProcess:
         if result.returncode == 0:

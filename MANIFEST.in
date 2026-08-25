@@ -1,5 +1,12 @@
 include LICENSE
+include *.md
+include install.sh
+include install.ps1
 recursive-include examples *.py
+recursive-include scripts *.py
+recursive-include tests *.py *.json
+recursive-include docs *.md *.json *.yml *.yaml
 prune examples/__pycache__
+prune tests/media/downloads
 global-exclude __pycache__
 global-exclude *.py[cod]

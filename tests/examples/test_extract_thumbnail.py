@@ -2,16 +2,15 @@
 Tests for extract_thumbnail example functionality.
 """
 
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 from pyffmpegcore.runner import FFmpegRunner
-from pyffmpegcore.probe import FFprobeRunner
 
 
 class TestThumbnailExtraction:
     """Test thumbnail extraction functionality."""
 
-    @patch('pyffmpegcore.runner.FFmpegRunner.run')
+    @patch("pyffmpegcore.runner.FFmpegRunner.run")
     def test_extract_thumbnail_basic(self, mock_run):
         """Test basic thumbnail extraction."""
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
@@ -29,8 +28,8 @@ class TestThumbnailExtraction:
         assert "-vframes" in args
         assert "1" in args
 
-    @patch('pyffmpegcore.runner.FFmpegRunner.run')
-    @patch('os.makedirs')
+    @patch("pyffmpegcore.runner.FFmpegRunner.run")
+    @patch("os.makedirs")
     def test_extract_multiple_thumbnails(self, mock_makedirs, mock_run):
         """Test multiple thumbnail extraction."""
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
@@ -44,9 +43,9 @@ class TestThumbnailExtraction:
         assert mock_run.call_count == 2
         assert mock_makedirs.called
 
-    @patch('pyffmpegcore.probe.FFprobeRunner.probe')
-    @patch('pyffmpegcore.runner.FFmpegRunner.run')
-    @patch('os.makedirs')
+    @patch("pyffmpegcore.probe.FFprobeRunner.probe")
+    @patch("pyffmpegcore.runner.FFmpegRunner.run")
+    @patch("os.makedirs")
     def test_extract_smart_thumbnails(self, mock_makedirs, mock_run, mock_probe):
         """Test smart thumbnail extraction."""
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")

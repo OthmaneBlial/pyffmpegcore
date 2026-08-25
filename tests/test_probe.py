@@ -2,9 +2,11 @@
 Tests for FFprobeRunner.
 """
 
-import pytest
-from unittest.mock import patch, MagicMock
 import json
+from unittest.mock import MagicMock, patch
+
+import pytest
+
 from pyffmpegcore.probe import FFprobeRunner
 
 
@@ -19,7 +21,7 @@ class TestFFprobeRunner:
         runner = FFprobeRunner("/custom/path/ffprobe")
         assert runner.ffprobe_path == "/custom/path/ffprobe"
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_probe(self, mock_run):
         """Test probe method with mock data."""
         mock_data = {
@@ -28,7 +30,7 @@ class TestFFprobeRunner:
                 "format_name": "mp4",
                 "duration": "120.5",
                 "size": "15728640",
-                "bit_rate": "1048576"
+                "bit_rate": "1048576",
             },
             "streams": [
                 {
@@ -38,7 +40,7 @@ class TestFFprobeRunner:
                     "width": 1920,
                     "height": 1080,
                     "bit_rate": "1000000",
-                    "duration": "120.5"
+                    "duration": "120.5",
                 },
                 {
                     "index": 1,
@@ -46,9 +48,9 @@ class TestFFprobeRunner:
                     "codec_name": "aac",
                     "sample_rate": "44100",
                     "channels": 2,
-                    "bit_rate": "128000"
-                }
-            ]
+                    "bit_rate": "128000",
+                },
+            ],
         }
 
         mock_run.return_value = MagicMock(returncode=0, stdout=json.dumps(mock_data), stderr="")
@@ -63,7 +65,7 @@ class TestFFprobeRunner:
         assert result["audio"]["codec"] == "aac"
         assert result["audio"]["sample_rate"] == 44100  # Now int instead of string
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_get_duration(self, mock_run):
         """Test get_duration method."""
         mock_data = {"format": {"duration": "60.0"}}
@@ -74,14 +76,10 @@ class TestFFprobeRunner:
 
         assert duration == 60.0
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_get_resolution(self, mock_run):
         """Test get_resolution method."""
-        mock_data = {
-            "streams": [
-                {"codec_type": "video", "width": 1280, "height": 720}
-            ]
-        }
+        mock_data = {"streams": [{"codec_type": "video", "width": 1280, "height": 720}]}
         mock_run.return_value = MagicMock(returncode=0, stdout=json.dumps(mock_data), stderr="")
 
         runner = FFprobeRunner()
@@ -89,14 +87,10 @@ class TestFFprobeRunner:
 
         assert resolution == (1280, 720)
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_get_resolution_no_video(self, mock_run):
         """Test get_resolution with no video stream."""
-        mock_data = {
-            "streams": [
-                {"codec_type": "audio"}
-            ]
-        }
+        mock_data = {"streams": [{"codec_type": "audio"}]}
         mock_run.return_value = MagicMock(returncode=0, stdout=json.dumps(mock_data), stderr="")
 
         runner = FFprobeRunner()
@@ -104,7 +98,7 @@ class TestFFprobeRunner:
 
         assert resolution is None
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_get_bitrate(self, mock_run):
         """Test get_bitrate method."""
         mock_data = {"format": {"bit_rate": "1500000"}}
@@ -115,7 +109,7 @@ class TestFFprobeRunner:
 
         assert bitrate == 1500000
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_get_version(self, mock_run):
         """Test get_version method."""
         mock_run.return_value = MagicMock(returncode=0, stdout="ffprobe version 4.4\n", stderr="")
@@ -125,7 +119,7 @@ class TestFFprobeRunner:
 
         assert "ffprobe version 4.4" in version
 
-    @patch('subprocess.run', side_effect=FileNotFoundError("missing"))
+    @patch("subprocess.run", side_effect=FileNotFoundError("missing"))
     def test_probe_missing_binary_error(self, mock_run):
         """Test probe raises a readable error when FFprobe is missing."""
         runner = FFprobeRunner("/missing/ffprobe")

@@ -14,7 +14,6 @@ from pyffmpegcore import FFprobeRunner
 from pyffmpegcore.runner import escape_path_for_concat, escape_path_for_filter
 from tests.media_utils import ensure_downloaded_media, ffmpeg_has_filter
 
-
 SHORT_SRT = """1
 00:00:00,000 --> 00:00:02,500
 Path handling subtitle line one.
@@ -53,17 +52,23 @@ def test_real_media_workflows_handle_spaces_and_quotes_in_paths(tmp_path):
     shutil.copy2(media["video_mp4_h264_1080p"], second_clip)
     subtitle_file.write_text(SHORT_SRT, encoding="utf-8")
 
-    assert concatenate_videos_basic(
-        [str(first_clip), str(second_clip)],
-        str(concat_output),
-    ) is True
+    assert (
+        concatenate_videos_basic(
+            [str(first_clip), str(second_clip)],
+            str(concat_output),
+        )
+        is True
+    )
     if not ffmpeg_has_filter("subtitles"):
         pytest.skip("Local FFmpeg build does not include the subtitles filter")
-    assert burn_subtitles(
-        str(first_clip),
-        str(subtitle_file),
-        str(burned_output),
-    ) is True
+    assert (
+        burn_subtitles(
+            str(first_clip),
+            str(subtitle_file),
+            str(burned_output),
+        )
+        is True
+    )
 
     concat_metadata = probe.probe(str(concat_output))
     burned_metadata = probe.probe(str(burned_output))

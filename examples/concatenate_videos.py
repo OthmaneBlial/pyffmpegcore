@@ -16,6 +16,7 @@ import tempfile
 from pyffmpegcore import FFmpegRunner
 from pyffmpegcore.runner import escape_path_for_concat
 
+
 def create_concat_file(video_files: list, concat_file: str):
     """
     Create a concat file for FFmpeg.
@@ -27,6 +28,7 @@ def create_concat_file(video_files: list, concat_file: str):
     with open(concat_file, "w", encoding="utf-8") as f:
         for video_file in video_files:
             f.write(f"file {escape_path_for_concat(video_file)}\n")
+
 
 def concatenate_videos_basic(video_files: list, output_file: str) -> bool:
     """
@@ -59,11 +61,16 @@ def concatenate_videos_basic(video_files: list, output_file: str) -> bool:
 
         # Use concat demuxer
         args = [
-            "-f", "concat",
-            "-safe", "0",  # Allow absolute paths
-            "-i", concat_file,
-            "-c", "copy",  # Copy streams without re-encoding (fastest)
-            "-y", output_file
+            "-f",
+            "concat",
+            "-safe",
+            "0",  # Allow absolute paths
+            "-i",
+            concat_file,
+            "-c",
+            "copy",  # Copy streams without re-encoding (fastest)
+            "-y",
+            output_file,
         ]
 
         result = runner.run(args)
@@ -82,8 +89,10 @@ def concatenate_videos_basic(video_files: list, output_file: str) -> bool:
         except OSError:
             pass
 
-def concatenate_videos_reencode(video_files: list, output_file: str,
-                               video_codec: str = "libx264", audio_codec: str = "aac") -> bool:
+
+def concatenate_videos_reencode(
+    video_files: list, output_file: str, video_codec: str = "libx264", audio_codec: str = "aac"
+) -> bool:
     """
     Concatenate videos with re-encoding (handles different codecs/formats).
 
@@ -104,7 +113,7 @@ def concatenate_videos_reencode(video_files: list, output_file: str,
 
     # Build input arguments
     args = []
-    for i, video_file in enumerate(video_files):
+    for video_file in video_files:
         args.extend(["-i", video_file])
 
     # Build filter complex for concatenation
@@ -118,14 +127,22 @@ def concatenate_videos_reencode(video_files: list, output_file: str,
     video_concat = "".join(video_filters) + f"concat=n={len(video_files)}:v=1:a=0[vout]"
     audio_concat = "".join(audio_filters) + f"concat=n={len(video_files)}:v=0:a=1[aout]"
 
-    args.extend([
-        "-filter_complex", f"{video_concat};{audio_concat}",
-        "-map", "[vout]",
-        "-map", "[aout]",
-        "-c:v", video_codec,
-        "-c:a", audio_codec,
-        "-y", output_file
-    ])
+    args.extend(
+        [
+            "-filter_complex",
+            f"{video_concat};{audio_concat}",
+            "-map",
+            "[vout]",
+            "-map",
+            "[aout]",
+            "-c:v",
+            video_codec,
+            "-c:a",
+            audio_codec,
+            "-y",
+            output_file,
+        ]
+    )
 
     result = runner.run(args)
 
@@ -136,8 +153,8 @@ def concatenate_videos_reencode(video_files: list, output_file: str,
         print(f"Failed to concatenate videos: {result.stderr}")
         return False
 
-def concatenate_videos_with_transitions(video_files: list, output_file: str,
-                                       transition_duration: float = 1.0) -> bool:
+
+def concatenate_videos_with_transitions(video_files: list, output_file: str, transition_duration: float = 1.0) -> bool:
     """
     Concatenate videos with crossfade transitions between clips.
 
@@ -155,6 +172,7 @@ def concatenate_videos_with_transitions(video_files: list, output_file: str,
 
     # Get durations for offset calculation
     from pyffmpegcore import FFprobeRunner
+
     ffprobe = FFprobeRunner()
     durations = []
     for video_file in video_files:
@@ -162,7 +180,7 @@ def concatenate_videos_with_transitions(video_files: list, output_file: str,
             metadata = ffprobe.probe(video_file)
             duration = metadata.get("duration", 0)
             durations.append(duration)
-        except:
+        except (OSError, TypeError, ValueError):
             durations.append(0)
 
     runner = FFmpegRunner()
@@ -190,23 +208,29 @@ def concatenate_videos_with_transitions(video_files: list, output_file: str,
             f"{current_video}[{i}:v]xfade=transition=fade:duration={transition_duration}:offset={offset}[v{i}];"
         )
         # Audio crossfade
-        filter_parts.append(
-            f"{current_audio}[{i}:a]acrossfade=d={transition_duration}:c1=tri:c2=tri[a{i}];"
-        )
+        filter_parts.append(f"{current_audio}[{i}:a]acrossfade=d={transition_duration}:c1=tri:c2=tri[a{i}];")
 
         current_video = f"[v{i}]"
         current_audio = f"[a{i}]"
 
     filter_complex = "".join(filter_parts) + f"{current_video}copy[vout];{current_audio}acopy[aout]"
 
-    args.extend([
-        "-filter_complex", filter_complex,
-        "-map", "[vout]",
-        "-map", "[aout]",
-        "-c:v", "libx264",
-        "-c:a", "aac",
-        "-y", output_file
-    ])
+    args.extend(
+        [
+            "-filter_complex",
+            filter_complex,
+            "-map",
+            "[vout]",
+            "-map",
+            "[aout]",
+            "-c:v",
+            "libx264",
+            "-c:a",
+            "aac",
+            "-y",
+            output_file,
+        ]
+    )
 
     result = runner.run(args)
 
@@ -216,6 +240,7 @@ def concatenate_videos_with_transitions(video_files: list, output_file: str,
     else:
         print(f"Failed to concatenate videos: {result.stderr}")
         return False
+
 
 def get_video_info(video_files: list) -> list:
     """
@@ -241,7 +266,7 @@ def get_video_info(video_files: list) -> list:
                 "size": metadata.get("size", 0),
                 "video_codec": metadata.get("video", {}).get("codec", "unknown"),
                 "audio_codec": metadata.get("audio", {}).get("codec", "unknown"),
-                "resolution": f"{metadata.get('video', {}).get('width', 0)}x{metadata.get('video', {}).get('height', 0)}"
+                "resolution": f"{metadata.get('video', {}).get('width', 0)}x{metadata.get('video', {}).get('height', 0)}",
             }
             video_info.append(info)
         except Exception as e:
@@ -250,15 +275,12 @@ def get_video_info(video_files: list) -> list:
 
     return video_info
 
+
 def main():
     """Demonstrate video concatenation capabilities."""
 
     # Example video files (replace with your actual files)
-    video_files = [
-        "clip1.mp4",
-        "clip2.mp4",
-        "clip3.mp4"
-    ]
+    video_files = ["clip1.mp4", "clip2.mp4", "clip3.mp4"]
 
     # Check if files exist
     existing_files = [f for f in video_files if os.path.exists(f)]
@@ -295,6 +317,7 @@ def main():
 
     print("\nVideo concatenation examples completed!")
     print("Output files: concatenated_basic.mp4, concatenated_reencoded.mp4, concatenated_transitions.mp4")
+
 
 if __name__ == "__main__":
     main()

@@ -2,9 +2,9 @@
 FFprobe metadata extraction.
 """
 
-import subprocess
 import json
-from typing import Dict, Any, Optional
+import subprocess
+from typing import Any
 
 
 class FFprobeRunner:
@@ -21,7 +21,7 @@ class FFprobeRunner:
         """
         self.ffprobe_path = ffprobe_path
 
-    def probe(self, input_file: str) -> Dict[str, Any]:
+    def probe(self, input_file: str) -> dict[str, Any]:
         """
         Extract simplified metadata from a media file.
 
@@ -33,20 +33,21 @@ class FFprobeRunner:
         """
         cmd = [
             self.ffprobe_path,
-            "-v", "quiet",
-            "-print_format", "json",
+            "-v",
+            "quiet",
+            "-print_format",
+            "json",
             "-show_format",
             "-show_streams",
             "-show_chapters",
-            input_file
+            input_file,
         ]
 
         try:
             result = subprocess.run(cmd, capture_output=True, text=True)
         except FileNotFoundError as exc:
             raise RuntimeError(
-                f"FFprobe executable '{self.ffprobe_path}' was not found. "
-                "Install FFmpeg or pass a valid ffprobe_path."
+                f"FFprobe executable '{self.ffprobe_path}' was not found. Install FFmpeg or pass a valid ffprobe_path."
             ) from exc
 
         if result.returncode != 0:
@@ -56,7 +57,7 @@ class FFprobeRunner:
         data = json.loads(result.stdout)
         return self._simplify_metadata(data)
 
-    def _simplify_metadata(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def _simplify_metadata(self, data: dict[str, Any]) -> dict[str, Any]:
         """
         Simplify the raw ffprobe JSON output into a more user-friendly format.
 
@@ -117,9 +118,10 @@ class FFprobeRunner:
 
             if audio_streams:
                 audio = audio_streams[0]  # Usually the first audio stream
+                sample_rate = audio.get("sample_rate")
                 metadata["audio"] = {
                     "codec": audio.get("codec_name"),
-                    "sample_rate": int(audio.get("sample_rate")) if audio.get("sample_rate") else None,
+                    "sample_rate": int(sample_rate) if sample_rate is not None else None,
                     "channels": audio.get("channels"),
                     "bit_rate": audio.get("bit_rate"),
                 }
@@ -152,7 +154,7 @@ class FFprobeRunner:
         metadata = self.probe(input_file)
         return metadata.get("duration", 0.0)
 
-    def get_resolution(self, input_file: str) -> Optional[tuple]:
+    def get_resolution(self, input_file: str) -> tuple | None:
         """
         Get the resolution of a video file.
 
@@ -168,7 +170,7 @@ class FFprobeRunner:
             return (video.get("width"), video.get("height"))
         return None
 
-    def get_bitrate(self, input_file: str) -> Optional[int]:
+    def get_bitrate(self, input_file: str) -> int | None:
         """
         Get the bitrate of a media file.
 
@@ -188,8 +190,7 @@ class FFprobeRunner:
         Returns:
             Version string
         """
-        result = subprocess.run([self.ffprobe_path, "-version"],
-                              capture_output=True, text=True)
+        result = subprocess.run([self.ffprobe_path, "-version"], capture_output=True, text=True)
         if result.returncode == 0:
-            return result.stdout.split('\n')[0]
+            return result.stdout.split("\n")[0]
         raise RuntimeError(f"Failed to get FFprobe version: {result.stderr}")

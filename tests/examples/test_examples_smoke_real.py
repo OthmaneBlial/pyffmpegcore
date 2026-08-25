@@ -79,12 +79,15 @@ def test_extract_thumbnail_example_smoke_real_media(tmp_path):
     multiple_output_dir = tmp_path / "multiple"
     smart_output_dir = tmp_path / "smart"
 
-    assert extract_thumbnail.extract_thumbnail(
-        input_file,
-        str(single_output),
-        timestamp="00:00:01",
-        width=320,
-    ) is True
+    assert (
+        extract_thumbnail.extract_thumbnail(
+            input_file,
+            str(single_output),
+            timestamp="00:00:01",
+            width=320,
+        )
+        is True
+    )
 
     extract_thumbnail.extract_multiple_thumbnails(
         input_file,
@@ -113,31 +116,43 @@ def test_generate_waveform_example_smoke_real_media(tmp_path):
     animation_output = tmp_path / "wave_anim.mp4"
     metadata_output_dir = tmp_path / "wave_meta"
 
-    assert generate_waveform.generate_waveform_image(
-        audio_input,
-        str(basic_output),
-        width=800,
-        height=200,
-    ) is True
-    assert generate_waveform.generate_detailed_waveform(
-        audio_input,
-        str(detailed_output),
-        width=900,
-        height=240,
-    ) is True
-    assert generate_waveform.generate_waveform_animation(
-        audio_input,
-        str(animation_output),
-        duration=2,
-        width=640,
-        height=160,
-    ) is True
+    assert (
+        generate_waveform.generate_waveform_image(
+            audio_input,
+            str(basic_output),
+            width=800,
+            height=200,
+        )
+        is True
+    )
+    assert (
+        generate_waveform.generate_detailed_waveform(
+            audio_input,
+            str(detailed_output),
+            width=900,
+            height=240,
+        )
+        is True
+    )
+    assert (
+        generate_waveform.generate_waveform_animation(
+            audio_input,
+            str(animation_output),
+            duration=2,
+            width=640,
+            height=160,
+        )
+        is True
+    )
     if not ffmpeg_has_filter("drawtext"):
         pytest.skip("Local FFmpeg build does not include the drawtext filter")
-    assert generate_waveform.generate_waveform_with_metadata(
-        audio_input,
-        str(metadata_output_dir),
-    ) is True
+    assert (
+        generate_waveform.generate_waveform_with_metadata(
+            audio_input,
+            str(metadata_output_dir),
+        )
+        is True
+    )
 
     basic_metadata = _probe(str(basic_output))
     detailed_metadata = _probe(str(detailed_output))

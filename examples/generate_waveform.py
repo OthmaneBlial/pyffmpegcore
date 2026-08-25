@@ -16,8 +16,10 @@ import tempfile
 from pyffmpegcore import FFmpegRunner, FFprobeRunner
 from pyffmpegcore.runner import escape_path_for_filter
 
-def generate_waveform_image(audio_path: str, output_path: str, width: int = 800,
-                           height: int = 200, colors: str = "white"):
+
+def generate_waveform_image(
+    audio_path: str, output_path: str, width: int = 800, height: int = 200, colors: str = "white"
+):
     """
     Generate a waveform visualization image from an audio file.
 
@@ -34,10 +36,14 @@ def generate_waveform_image(audio_path: str, output_path: str, width: int = 800,
     vf_filter = f"showwavespic=s={width}x{height}:colors={colors}"
 
     args = [
-        "-i", audio_path,
-        "-filter_complex", vf_filter,
-        "-frames:v", "1",  # Generate single frame
-        "-y", output_path
+        "-i",
+        audio_path,
+        "-filter_complex",
+        vf_filter,
+        "-frames:v",
+        "1",  # Generate single frame
+        "-y",
+        output_path,
     ]
 
     result = ffmpeg.run(args)
@@ -49,8 +55,8 @@ def generate_waveform_image(audio_path: str, output_path: str, width: int = 800,
         print(f"Failed to generate waveform: {result.stderr}")
         return False
 
-def generate_detailed_waveform(audio_path: str, output_path: str, width: int = 1200,
-                              height: int = 300):
+
+def generate_detailed_waveform(audio_path: str, output_path: str, width: int = 1200, height: int = 300):
     """
     Generate a detailed waveform with multiple colors and styling.
 
@@ -63,19 +69,9 @@ def generate_detailed_waveform(audio_path: str, output_path: str, width: int = 1
     ffmpeg = FFmpegRunner()
 
     # Create a more detailed waveform with styling
-    vf_filter = (
-        f"showwavespic=s={width}x{height}:"
-        "colors=blue|red|green|yellow|orange|purple:"
-        "scale=lin:"
-        "draw=full"
-    )
+    vf_filter = f"showwavespic=s={width}x{height}:colors=blue|red|green|yellow|orange|purple:scale=lin:draw=full"
 
-    args = [
-        "-i", audio_path,
-        "-filter_complex", vf_filter,
-        "-frames:v", "1",
-        "-y", output_path
-    ]
+    args = ["-i", audio_path, "-filter_complex", vf_filter, "-frames:v", "1", "-y", output_path]
 
     result = ffmpeg.run(args)
 
@@ -86,8 +82,10 @@ def generate_detailed_waveform(audio_path: str, output_path: str, width: int = 1
         print(f"Failed to generate detailed waveform: {result.stderr}")
         return False
 
-def generate_waveform_animation(audio_path: str, output_path: str, duration: float = None,
-                               width: int = 800, height: int = 200):
+
+def generate_waveform_animation(
+    audio_path: str, output_path: str, duration: float = None, width: int = 800, height: int = 200
+):
     """
     Generate an animated waveform video showing the audio over time.
 
@@ -107,25 +105,29 @@ def generate_waveform_animation(audio_path: str, output_path: str, duration: flo
         duration = metadata.get("duration", 30)  # Default 30 seconds
 
     # Create animated waveform
-    vf_filter = (
-        f"[0:a]showwaves=s={width}x{height}:"
-        "mode=line:"
-        "colors=blue:"
-        "scale=lin:"
-        "draw=full[v]"
-    )
+    vf_filter = f"[0:a]showwaves=s={width}x{height}:mode=line:colors=blue:scale=lin:draw=full[v]"
 
     args = [
-        "-i", audio_path,
-        "-filter_complex", vf_filter,
-        "-map", "[v]",
-        "-map", "0:a?",
-        "-t", str(duration),  # Limit duration
-        "-c:v", "libx264",
-        "-c:a", "aac",
-        "-preset", "fast",
-        "-crf", "22",
-        "-y", output_path
+        "-i",
+        audio_path,
+        "-filter_complex",
+        vf_filter,
+        "-map",
+        "[v]",
+        "-map",
+        "0:a?",
+        "-t",
+        str(duration),  # Limit duration
+        "-c:v",
+        "libx264",
+        "-c:a",
+        "aac",
+        "-preset",
+        "fast",
+        "-crf",
+        "22",
+        "-y",
+        output_path,
     ]
 
     result = ffmpeg.run(args)
@@ -136,6 +138,7 @@ def generate_waveform_animation(audio_path: str, output_path: str, duration: flo
     else:
         print(f"Failed to generate animated waveform: {result.stderr}")
         return False
+
 
 def generate_waveform_with_metadata(audio_path: str, output_dir: str):
     """
@@ -162,10 +165,7 @@ def generate_waveform_with_metadata(audio_path: str, output_dir: str):
 
     if success:
         metadata_text = (
-            f"File: {filename}\n"
-            f"Duration: {duration:.1f}s\n"
-            f"Sample Rate: {sample_rate} Hz\n"
-            f"Channels: {channels}"
+            f"File: {filename}\nDuration: {duration:.1f}s\nSample Rate: {sample_rate} Hz\nChannels: {channels}"
         )
 
         ffmpeg = FFmpegRunner()
@@ -189,11 +189,7 @@ def generate_waveform_with_metadata(audio_path: str, output_dir: str):
                 "x=10:y=10:fontsize=24:fontcolor=white:box=1:boxcolor=black@0.5"
             )
 
-            args = [
-                "-i", waveform_path,
-                "-vf", vf_filter,
-                "-y", final_path
-            ]
+            args = ["-i", waveform_path, "-vf", vf_filter, "-y", final_path]
 
             result = ffmpeg.run(args)
         finally:
@@ -208,6 +204,7 @@ def generate_waveform_with_metadata(audio_path: str, output_dir: str):
         return False
 
     return False
+
 
 def batch_generate_waveforms(audio_dir: str, output_dir: str, pattern: str = "*.mp3"):
     """
@@ -240,6 +237,7 @@ def batch_generate_waveforms(audio_dir: str, output_dir: str, pattern: str = "*.
         else:
             print(f"✗ Failed: {filename}")
 
+
 def main():
     """Demonstrate waveform generation capabilities."""
 
@@ -264,6 +262,7 @@ def main():
     batch_generate_waveforms("audio_collection/", "waveforms_batch/", "*.mp3")
 
     print("\nWaveform generation examples completed!")
+
 
 if __name__ == "__main__":
     main()

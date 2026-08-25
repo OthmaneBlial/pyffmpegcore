@@ -8,7 +8,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 VALIDATOR = REPO_ROOT / "scripts" / "validate_cli_install.py"
 
@@ -26,5 +25,6 @@ def test_clean_install_validator_help():
 
     assert result.returncode == 0
     assert "Validate a clean pyffmpegcore CLI install" in result.stdout
+    assert "--artifact" in result.stdout
     assert "--skip-media" in result.stdout
     assert "--keep-temp" in result.stdout

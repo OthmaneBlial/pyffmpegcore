@@ -4,8 +4,6 @@ Tests for shared CLI file-handling helpers.
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
 from pyffmpegcore.cli import CLIError, prepare_output_dir, prepare_output_path, require_existing_input

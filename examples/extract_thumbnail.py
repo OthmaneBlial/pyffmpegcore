@@ -10,11 +10,19 @@ files at specific timestamps, which is useful for:
 - Video editing workflows
 """
 
-from pyffmpegcore import FFmpegRunner, FFprobeRunner
 import os
 
-def extract_thumbnail(video_path: str, output_path: str, timestamp: str = "00:00:01",
-                     width: int = 320, height: int = None, quality: int = 2):
+from pyffmpegcore import FFmpegRunner, FFprobeRunner
+
+
+def extract_thumbnail(
+    video_path: str,
+    output_path: str,
+    timestamp: str = "00:00:01",
+    width: int = 320,
+    height: int = None,
+    quality: int = 2,
+):
     """
     Extract a thumbnail from a video at a specific timestamp.
 
@@ -39,12 +47,18 @@ def extract_thumbnail(video_path: str, output_path: str, timestamp: str = "00:00
 
     # Seek to timestamp and extract single frame
     args = [
-        "-i", video_path,
-        "-ss", timestamp,  # Seek to timestamp
-        "-vframes", "1",   # Extract 1 frame
-        "-vf", ",".join(vf_filters),
-        "-q:v", str(quality),  # Quality setting
-        "-y", output_path
+        "-i",
+        video_path,
+        "-ss",
+        timestamp,  # Seek to timestamp
+        "-vframes",
+        "1",  # Extract 1 frame
+        "-vf",
+        ",".join(vf_filters),
+        "-q:v",
+        str(quality),  # Quality setting
+        "-y",
+        output_path,
     ]
 
     result = ffmpeg.run(args)
@@ -56,8 +70,8 @@ def extract_thumbnail(video_path: str, output_path: str, timestamp: str = "00:00
         print(f"Failed to extract thumbnail: {result.stderr}")
         return False
 
-def extract_multiple_thumbnails(video_path: str, output_dir: str, timestamps: list,
-                               width: int = 320):
+
+def extract_multiple_thumbnails(video_path: str, output_dir: str, timestamps: list, width: int = 320):
     """
     Extract multiple thumbnails from different timestamps in a video.
 
@@ -70,12 +84,13 @@ def extract_multiple_thumbnails(video_path: str, output_dir: str, timestamps: li
     os.makedirs(output_dir, exist_ok=True)
 
     for i, timestamp in enumerate(timestamps):
-        output_path = os.path.join(output_dir, f"{i+1:02d}.jpg")
+        output_path = os.path.join(output_dir, f"{i + 1:02d}.jpg")
         success = extract_thumbnail(video_path, output_path, timestamp, width)
         if success:
-            print(f"Extracted thumbnail {i+1}/{len(timestamps)} at {timestamp}")
+            print(f"Extracted thumbnail {i + 1}/{len(timestamps)} at {timestamp}")
         else:
             print(f"Failed to extract thumbnail at {timestamp}")
+
 
 def extract_smart_thumbnails(video_path: str, output_dir: str, count: int = 5, width: int = 320):
     """
@@ -111,6 +126,7 @@ def extract_smart_thumbnails(video_path: str, output_dir: str, count: int = 5, w
     print(f"Extracting {count} thumbnails at {duration:.1f}s intervals")
     extract_multiple_thumbnails(video_path, output_dir, timestamps, width)
 
+
 def main():
     """Demonstrate thumbnail extraction capabilities."""
 
@@ -128,6 +144,7 @@ def main():
     extract_smart_thumbnails("sample.mp4", "smart_thumbnails/", count=6, width=320)
 
     print("\nThumbnail extraction examples completed!")
+
 
 if __name__ == "__main__":
     main()

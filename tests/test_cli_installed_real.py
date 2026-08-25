@@ -15,7 +15,6 @@ from pyffmpegcore.probe import FFprobeRunner
 from tests.cli_helpers import run_installed_cli
 from tests.media_utils import ensure_downloaded_media, ffmpeg_has_encoder, ffmpeg_has_filter
 
-
 SHORT_SRT = """1
 00:00:00,000 --> 00:00:02,500
 Welcome to the installed CLI subtitle file!
@@ -284,21 +283,27 @@ def test_installed_cli_subtitles_real_media(tmp_path):
     ]
 
     runner = FFmpegRunner()
-    assert runner.extract_thumbnail(
-        str(media["video_mp4_h264_1080p"]),
-        str(original_frame),
-        timestamp="00:00:01.000",
-        width=960,
-    ).returncode == 0
-    assert runner.extract_thumbnail(
-        str(burned_output),
-        str(burned_frame),
-        timestamp="00:00:01.000",
-        width=960,
-    ).returncode == 0
-    assert hashlib.sha256(original_frame.read_bytes()).hexdigest() != hashlib.sha256(
-        burned_frame.read_bytes()
-    ).hexdigest()
+    assert (
+        runner.extract_thumbnail(
+            str(media["video_mp4_h264_1080p"]),
+            str(original_frame),
+            timestamp="00:00:01.000",
+            width=960,
+        ).returncode
+        == 0
+    )
+    assert (
+        runner.extract_thumbnail(
+            str(burned_output),
+            str(burned_frame),
+            timestamp="00:00:01.000",
+            width=960,
+        ).returncode
+        == 0
+    )
+    assert (
+        hashlib.sha256(original_frame.read_bytes()).hexdigest() != hashlib.sha256(burned_frame.read_bytes()).hexdigest()
+    )
 
 
 @pytest.mark.real_media

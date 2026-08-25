@@ -15,7 +15,6 @@ import os
 
 from pyffmpegcore import FFmpegRunner, FFprobeRunner
 
-
 _AUDIO_CODEC_BY_EXTENSION = {
     ".aac": "aac",
     ".flac": "flac",
@@ -40,9 +39,9 @@ def _append_audio_output_options(
         args.extend(["-b:a", bitrate])
 
 
-def normalize_audio_loudnorm(audio_file: str, output_file: str,
-                           target_i: float = -16.0, target_tp: float = -1.5,
-                           target_lra: float = 11.0) -> bool:
+def normalize_audio_loudnorm(
+    audio_file: str, output_file: str, target_i: float = -16.0, target_tp: float = -1.5, target_lra: float = 11.0
+) -> bool:
     """
     Normalize audio using FFmpeg's loudnorm filter (EBU R128 standard).
 
@@ -62,8 +61,10 @@ def normalize_audio_loudnorm(audio_file: str, output_file: str,
     loudnorm_filter = f"loudnorm=I={target_i}:TP={target_tp}:LRA={target_lra}"
 
     args = [
-        "-i", audio_file,
-        "-af", loudnorm_filter,
+        "-i",
+        audio_file,
+        "-af",
+        loudnorm_filter,
     ]
     _append_audio_output_options(args, output_file, bitrate="192k")
     args.extend(["-y", output_file])
@@ -76,6 +77,7 @@ def normalize_audio_loudnorm(audio_file: str, output_file: str,
     else:
         print(f"Failed to normalize audio: {result.stderr}")
         return False
+
 
 def normalize_audio_peak_level(audio_file: str, output_file: str, target_db: float = -3.0) -> bool:
     """
@@ -98,8 +100,10 @@ def normalize_audio_peak_level(audio_file: str, output_file: str, target_db: flo
     volume_filter = f"volume={target_db}dB"
 
     args = [
-        "-i", audio_file,
-        "-af", volume_filter,
+        "-i",
+        audio_file,
+        "-af",
+        volume_filter,
     ]
     _append_audio_output_options(args, output_file, bitrate="192k")
     args.extend(["-y", output_file])
@@ -113,8 +117,15 @@ def normalize_audio_peak_level(audio_file: str, output_file: str, target_db: flo
         print(f"Failed to normalize audio peak: {result.stderr}")
         return False
 
-def apply_compression(audio_file: str, output_file: str, threshold: float = -20.0,
-                     ratio: float = 4.0, attack: float = 0.0001, release: float = 0.2) -> bool:
+
+def apply_compression(
+    audio_file: str,
+    output_file: str,
+    threshold: float = -20.0,
+    ratio: float = 4.0,
+    attack: float = 0.0001,
+    release: float = 0.2,
+) -> bool:
     """
     Apply dynamic range compression to audio.
 
@@ -135,8 +146,10 @@ def apply_compression(audio_file: str, output_file: str, threshold: float = -20.
     compand_filter = f"compand=attacks={attack}:decays={release}:points=-70/-70|-60/-20|{threshold}/{threshold}|20/20"
 
     args = [
-        "-i", audio_file,
-        "-af", compand_filter,
+        "-i",
+        audio_file,
+        "-af",
+        compand_filter,
     ]
     _append_audio_output_options(args, output_file, bitrate="192k")
     args.extend(["-y", output_file])
@@ -149,6 +162,7 @@ def apply_compression(audio_file: str, output_file: str, threshold: float = -20.
     else:
         print(f"Failed to apply compression: {result.stderr}")
         return False
+
 
 def apply_limiter(audio_file: str, output_file: str, limit_db: float = -1.0) -> bool:
     """
@@ -168,8 +182,10 @@ def apply_limiter(audio_file: str, output_file: str, limit_db: float = -1.0) -> 
     limiter_filter = f"alimiter=limit={limit_db}dB:level=disabled"
 
     args = [
-        "-i", audio_file,
-        "-af", limiter_filter,
+        "-i",
+        audio_file,
+        "-af",
+        limiter_filter,
     ]
     _append_audio_output_options(args, output_file, bitrate="192k")
     args.extend(["-y", output_file])
@@ -182,6 +198,7 @@ def apply_limiter(audio_file: str, output_file: str, limit_db: float = -1.0) -> 
     else:
         print(f"Failed to apply limiter: {result.stderr}")
         return False
+
 
 def create_mastered_audio(audio_file: str, output_file: str) -> bool:
     """
@@ -207,8 +224,10 @@ def create_mastered_audio(audio_file: str, output_file: str) -> bool:
     )
 
     args = [
-        "-i", audio_file,
-        "-af", mastering_chain,
+        "-i",
+        audio_file,
+        "-af",
+        mastering_chain,
     ]
     _append_audio_output_options(args, output_file, bitrate="256k")
     args.extend(["-y", output_file])
@@ -221,6 +240,7 @@ def create_mastered_audio(audio_file: str, output_file: str) -> bool:
     else:
         print(f"Failed to master audio: {result.stderr}")
         return False
+
 
 def analyze_audio_levels(audio_file: str) -> dict:
     """
@@ -243,11 +263,12 @@ def analyze_audio_levels(audio_file: str) -> dict:
             "sample_rate": metadata.get("audio", {}).get("sample_rate", 0),
             "channels": metadata.get("audio", {}).get("channels", 0),
             "bitrate": metadata.get("audio", {}).get("bit_rate", 0),
-            "codec": metadata.get("audio", {}).get("codec", "unknown")
+            "codec": metadata.get("audio", {}).get("codec", "unknown"),
         }
     except Exception as e:
         print(f"Could not analyze audio: {e}")
         return {"error": str(e)}
+
 
 def batch_normalize_audio(audio_dir: str, output_dir: str, method: str = "loudnorm") -> dict:
     """
@@ -266,7 +287,7 @@ def batch_normalize_audio(audio_dir: str, output_dir: str, method: str = "loudno
     os.makedirs(output_dir, exist_ok=True)
 
     # Find audio files
-    audio_patterns = ['*.mp3', '*.wav', '*.flac', '*.aac', '*.m4a']
+    audio_patterns = ["*.mp3", "*.wav", "*.flac", "*.aac", "*.m4a"]
     audio_files = []
     for pattern in audio_patterns:
         audio_files.extend(glob.glob(os.path.join(audio_dir, pattern)))
@@ -304,6 +325,7 @@ def batch_normalize_audio(audio_dir: str, output_dir: str, method: str = "loudno
             print(f"✗ Failed: {filename}")
 
     return results
+
 
 def main():
     """Demonstrate audio normalization capabilities."""
@@ -358,6 +380,7 @@ def main():
     print("\nAudio normalization examples completed!")
     print("Output files: normalized_loudnorm.mp3, normalized_peak.mp3,")
     print("              compressed.mp3, limited.mp3, mastered.mp3")
+
 
 if __name__ == "__main__":
     main()

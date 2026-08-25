@@ -7,9 +7,8 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
-from functools import lru_cache
+from functools import cache, lru_cache
 from pathlib import Path
-
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MEDIA_ROOT = REPO_ROOT / "tests" / "media"
@@ -18,7 +17,7 @@ DOWNLOADS_DIR = MEDIA_ROOT / "downloads"
 DOWNLOADER = MEDIA_ROOT / "download_fixtures.py"
 
 
-@lru_cache(maxsize=None)
+@cache
 def ffmpeg_has_filter(filter_name: str, ffmpeg_path: str = "ffmpeg") -> bool:
     """Return whether the local FFmpeg build exposes a named filter."""
     result = subprocess.run(
@@ -36,7 +35,7 @@ def ffmpeg_has_filter(filter_name: str, ffmpeg_path: str = "ffmpeg") -> bool:
     )
 
 
-@lru_cache(maxsize=None)
+@cache
 def ffmpeg_has_encoder(encoder_name: str, ffmpeg_path: str = "ffmpeg") -> bool:
     """Return whether the local FFmpeg build exposes a named encoder."""
     result = subprocess.run(
@@ -62,10 +61,7 @@ def load_manifest() -> dict:
 @lru_cache(maxsize=1)
 def ensure_downloaded_media() -> dict[str, Path]:
     manifest = load_manifest()
-    fixture_map = {
-        fixture["id"]: DOWNLOADS_DIR / fixture["filename"]
-        for fixture in manifest["fixtures"]
-    }
+    fixture_map = {fixture["id"]: DOWNLOADS_DIR / fixture["filename"] for fixture in manifest["fixtures"]}
 
     subprocess.run(
         [sys.executable, str(DOWNLOADER)],
