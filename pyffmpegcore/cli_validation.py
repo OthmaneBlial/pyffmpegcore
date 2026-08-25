@@ -19,18 +19,21 @@ def validate_global_contract(args: argparse.Namespace, writing_commands: Collect
     """Validate cross-command option combinations and return preview mode."""
     preview = bool(getattr(args, "dry_run", False) or getattr(args, "explain", False))
     command = getattr(args, "command", None)
+    is_writing = command in writing_commands or (
+        command == "profile" and getattr(args, "profile_command", None) == "run"
+    )
     if getattr(args, "plan_json", False) and not preview:
         raise CLIError("--plan-json requires --dry-run or --explain.", exit_code=2)
     if getattr(args, "result_json", False) and preview:
         raise CLIError("--result-json cannot be combined with --dry-run or --explain.", exit_code=2)
-    if getattr(args, "result_json", False) and command not in writing_commands:
+    if getattr(args, "result_json", False) and not is_writing:
         raise CLIError("--result-json requires a media-writing command.", exit_code=2)
-    if getattr(args, "timeout", None) is not None and command not in writing_commands:
+    if getattr(args, "timeout", None) is not None and not is_writing:
         raise CLIError("--timeout requires a media-writing command.", exit_code=2)
-    if getattr(args, "temp_files", "clean") != "clean" and command not in writing_commands:
+    if getattr(args, "temp_files", "clean") != "clean" and not is_writing:
         raise CLIError("--temp-files requires a media-writing command.", exit_code=2)
     receipt = getattr(args, "receipt", None)
-    if receipt is not None and command not in writing_commands:
+    if receipt is not None and not is_writing:
         raise CLIError("--receipt requires a media-writing command.", exit_code=2)
     if receipt is not None and preview:
         raise CLIError("--receipt requires execution and cannot be combined with --dry-run or --explain.", exit_code=2)

@@ -6,7 +6,7 @@ import json
 
 import pytest
 
-from pyffmpegcore import ProfileRegistry, ValidationError
+from pyffmpegcore import ProfileRegistry, ValidationError, WorkflowPlanner
 from tests.cli_helpers import run_installed_cli
 
 
@@ -105,3 +105,31 @@ def test_profile_cli_lists_shows_and_validates(tmp_path):
     assert json.loads(shown.stdout)["name"] == "web/mp4-compatible"
     assert validated.returncode == 0
     assert json.loads(validated.stdout)["valid"] is True
+
+
+def test_builtin_profile_compiles_through_shared_typed_planner(tmp_path):
+    plan = ProfileRegistry().plan(
+        "web/mp4-compatible",
+        WorkflowPlanner(),
+        str(tmp_path / "input.webm"),
+        str(tmp_path / "output.mp4"),
+    )
+
+    assert plan.workflow == "convert"
+    assert plan.metadata["profile"] == {
+        "schema_version": "1.0",
+        "name": "web/mp4-compatible",
+        "profile_version": 1,
+    }
+    assert "encoder:libx264" in plan.required_capabilities
+    assert plan.operations[0] == "apply profile web/mp4-compatible v1"
+
+
+def test_builtin_profile_rejects_an_output_that_breaks_its_contract(tmp_path):
+    with pytest.raises(ValidationError, match="requires an output extension"):
+        ProfileRegistry().plan(
+            "archive/mezzanine",
+            WorkflowPlanner(),
+            str(tmp_path / "input.mp4"),
+            str(tmp_path / "output.mp4"),
+        )

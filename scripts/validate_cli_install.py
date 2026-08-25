@@ -57,6 +57,10 @@ def ensure_media(media_root: Path) -> None:
         media_root / "sample_mp4_h264.mp4",
         media_root / "sample_webm_vp9.webm",
         media_root / "sample_audio_mp3.mp3",
+        media_root / "sample_audio_wav.wav",
+        media_root / "sample_rich_streams.mkv",
+        media_root / "sample_subtitles.srt",
+        media_root / "sample_video_mov.mov",
     ]
     if all(path.exists() for path in required):
         return
@@ -300,6 +304,38 @@ def main(argv: list[str] | None = None) -> int:
             add_report_entry(report["commands"], "thumbnail", thumbnail)
             if thumbnail.returncode != 0 or not thumb_output.exists():
                 return 1
+
+            profile_cases = [
+                ("web/mp4-compatible", "sample_rich_streams.mkv", "web-profile.mp4", None),
+                ("web/small-upload", "sample_rich_streams.mkv", "small-profile.mp4", None),
+                ("audio/podcast-speech", "sample_audio_wav.wav", "podcast-profile.m4a", None),
+                (
+                    "subtitles/accessibility",
+                    "sample_video_mov.mov",
+                    "subtitle-profile.mp4",
+                    "sample_subtitles.srt",
+                ),
+                ("archive/mezzanine", "sample_rich_streams.mkv", "archive-profile.mkv", None),
+            ]
+            for profile_name, input_name, output_name, subtitle_name in profile_cases:
+                profile_output = outputs_dir / output_name
+                profile_command = [
+                    str(cli_path),
+                    "profile",
+                    "run",
+                    profile_name,
+                    "--input",
+                    str(args.media_root / input_name),
+                    "--output",
+                    str(profile_output),
+                    "--quiet",
+                ]
+                if subtitle_name is not None:
+                    profile_command.extend(["--subtitle", str(args.media_root / subtitle_name)])
+                profile_run = run_command(profile_command)
+                add_report_entry(report["commands"], f"profile-{profile_name}", profile_run)
+                if profile_run.returncode != 0 or not profile_output.exists():
+                    return 1
 
         if args.json:
             print(json.dumps(report, indent=2))

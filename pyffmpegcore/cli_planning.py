@@ -9,6 +9,7 @@ from typing import TypedDict
 from .domain import CompressOptions, ConvertOptions, TemporaryFilePolicy
 from .errors import ValidationError
 from .planning import WorkflowPlanner, parse_bitrate, parse_size
+from .profiles import ProfileRegistry
 
 
 def _planner(args: argparse.Namespace) -> WorkflowPlanner:
@@ -32,6 +33,16 @@ def _build_cli_plan(args: argparse.Namespace):
     planner = _planner(args)
     shared = _shared(args)
     command = args.command
+    if command == "profile" and getattr(args, "profile_command", None) == "run":
+        return ProfileRegistry().plan(
+            args.name,
+            planner,
+            args.input,
+            args.output,
+            subtitle_file=getattr(args, "subtitle", None),
+            force=shared["force"],
+            timeout_seconds=shared["timeout_seconds"],
+        )
     if command == "convert":
         convert_options = ConvertOptions(
             video_codec=args.video_codec,

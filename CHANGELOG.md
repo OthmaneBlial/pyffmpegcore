@@ -22,6 +22,7 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 - Versioned workflow capability-catalog reports across Linux, macOS, and Windows compatibility jobs.
 - Structured FFmpeg progress with an explicit unsupported-option-only legacy stderr fallback.
 - Measured target-size before/after proof in human, machine-result, and receipt output.
+- Executable built-in profiles with output-contract validation and cross-platform golden media smoke tests.
 
 ### Changed
 

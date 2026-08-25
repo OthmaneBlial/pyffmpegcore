@@ -180,6 +180,7 @@ positional arguments:
     list                List built-in workflow profiles.
     show                Explain one built-in profile.
     validate            Validate a local versioned JSON or TOML profile.
+    run                 Execute a maintained built-in profile through the shared workflow engine.
 
 options:
   -h, --help            show this help message and exit
@@ -296,6 +297,41 @@ options:
   --ffprobe-path FFPROBE_PATH
                         Path to the ffprobe executable. Defaults to ffprobe.
   --json                Print the validated profile as JSON.
+```
+
+## `pyffmpegcore profile run`
+
+```text
+usage: pyffmpegcore profile run [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
+       [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       --input INPUT --output OUTPUT [--subtitle SUBTITLE] name
+
+positional arguments:
+  name                  Built-in profile name.
+
+options:
+  -h, --help            show this help message and exit
+  --verbose             Show more detailed command output.
+  --quiet               Reduce command output to essentials.
+  --force               Allow overwriting existing output files or directories.
+  --dry-run             Preflight and print the exact plan without writing files.
+  --explain             Explain streams, operations, trade-offs, and the exact plan without writing
+  files.
+  --plan-json           Print --dry-run or --explain as versioned JSON.
+  --result-json         Print the writing command's versioned plan, preflight, and result as JSON.
+  --timeout SECONDS     Stop a writing command after this positive number of seconds.
+  --temp-files {clean,keep-on-error,keep}
+                        Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
+  --ffmpeg-path FFMPEG_PATH
+                        Path to the ffmpeg executable. Defaults to ffmpeg.
+  --ffprobe-path FFPROBE_PATH
+                        Path to the ffprobe executable. Defaults to ffprobe.
+  --input INPUT         Input media path.
+  --output OUTPUT       Output media path.
+  --subtitle SUBTITLE   External subtitle path required by subtitles/accessibility.
 ```
 
 ## `pyffmpegcore receipt`

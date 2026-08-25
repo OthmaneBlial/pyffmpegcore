@@ -226,6 +226,20 @@ def build_parser() -> argparse.ArgumentParser:
     profile_validate_parser.add_argument("--json", action="store_true", help="Print the validated profile as JSON.")
     profile_validate_parser.set_defaults(handler_name="handle_profile_validate")
 
+    profile_run_parser = profile_subparsers.add_parser(
+        "run",
+        parents=[common_parent],
+        help="Execute a maintained built-in profile through the shared workflow engine.",
+    )
+    profile_run_parser.add_argument("name", help="Built-in profile name.")
+    profile_run_parser.add_argument("--input", required=True, help="Input media path.")
+    profile_run_parser.add_argument("--output", required=True, help="Output media path.")
+    profile_run_parser.add_argument(
+        "--subtitle",
+        help="External subtitle path required by subtitles/accessibility.",
+    )
+    profile_run_parser.set_defaults(handler_name="handle_planned_command")
+
     receipt_parser = subparsers.add_parser(
         "receipt",
         parents=[common_parent],

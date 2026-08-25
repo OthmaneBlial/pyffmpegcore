@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import json
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
+from .domain import CompressOptions, ConvertOptions, ExecutionPlan
 from .errors import ValidationError
+from .planning import WorkflowPlanner
 
 PROFILE_SCHEMA_VERSION = "1.0"
 _PROFILE_FIELDS = {
@@ -179,3 +181,89 @@ class ProfileRegistry:
         if not isinstance(payload, dict):
             raise ValidationError("Profile document must be an object/table")
         return Profile.from_dict(payload)
+
+    def plan(
+        self,
+        name: str,
+        planner: WorkflowPlanner,
+        input_file: str,
+        output_file: str,
+        *,
+        subtitle_file: str | None = None,
+        force: bool = False,
+        timeout_seconds: float | None = None,
+    ) -> ExecutionPlan:
+        """Compile a maintained built-in profile through the shared typed planner."""
+        profile = self.get(name)
+        options = profile.options
+        suffix = Path(output_file).suffix.casefold()
+        expected_suffixes = {
+            "web/mp4-compatible": {".mp4"},
+            "web/small-upload": {".mp4"},
+            "audio/podcast-speech": {".aac", ".m4a"},
+            "subtitles/accessibility": {".mp4"},
+            "archive/mezzanine": {".mkv"},
+        }[profile.name]
+        if suffix not in expected_suffixes:
+            expected = ", ".join(sorted(expected_suffixes))
+            raise ValidationError(f"profile {profile.name} requires an output extension in: {expected}")
+
+        if profile.name in {"web/mp4-compatible", "archive/mezzanine"}:
+            plan = planner.convert(
+                input_file,
+                output_file,
+                ConvertOptions(
+                    video_codec=str(options["video_codec"]),
+                    audio_codec=str(options["audio_codec"]),
+                    pixel_format=str(options.get("pixel_format", "yuv420p")),
+                ),
+                force=force,
+                timeout_seconds=timeout_seconds,
+            )
+        elif profile.name == "web/small-upload":
+            plan = planner.compress(
+                input_file,
+                output_file,
+                CompressOptions(
+                    crf=int(options["crf"]),
+                    preset=str(options["preset"]),
+                    video_codec=str(options["video_codec"]),
+                    audio_bitrate=str(options["audio_bitrate"]),
+                ),
+                force=force,
+                timeout_seconds=timeout_seconds,
+            )
+        elif profile.name == "audio/podcast-speech":
+            plan = planner.normalize_audio(
+                input_file,
+                output_file,
+                target_i=float(options["lufs"]),
+                target_tp=float(options["true_peak"]),
+                target_lra=float(options["loudness_range"]),
+                force=force,
+                timeout_seconds=timeout_seconds,
+            )
+        else:
+            if subtitle_file is None:
+                raise ValidationError("profile subtitles/accessibility requires --subtitle")
+            plan = planner.subtitles(
+                "add",
+                input_file,
+                output_file,
+                subtitle_file=subtitle_file,
+                language=str(options["language"]),
+                force=force,
+                timeout_seconds=timeout_seconds,
+            )
+
+        requirements = tuple(dict.fromkeys((*plan.required_capabilities, *profile.required_capabilities)))
+        metadata = {
+            **plan.metadata,
+            "profile": {
+                "schema_version": profile.schema_version,
+                "name": profile.name,
+                "profile_version": profile.profile_version,
+            },
+        }
+        operations = (f"apply profile {profile.name} v{profile.profile_version}", *plan.operations)
+        return replace(plan, required_capabilities=requirements, metadata=metadata, operations=operations)
