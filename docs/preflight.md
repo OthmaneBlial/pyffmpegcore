@@ -31,3 +31,13 @@ print(report.to_dict())
 Human and JSON rendering come from the same immutable checks. JSON uses `schema_version: "1.0"`. A missing capability names the exact `kind:name` requirement and provides either an available maintained fallback or an OS-specific installation remedy.
 
 The workflow-rule catalog lives in `pyffmpegcore.capabilities.WORKFLOW_CAPABILITY_RULES`. Plans may add stricter requirements; they cannot remove the workflow baseline.
+
+The catalog itself is schema-versioned and structurally validated. Each exact
+wheel smoke job and the weekly cold-fixture job evaluates every workflow rule
+against the installed FFmpeg inventory on Linux, macOS, and Windows, then
+uploads `capability-catalog-report.json`. A missing optional capability remains
+visible per workflow; an invalid catalog fails the job.
+
+```bash
+python scripts/validate_capability_catalog.py --json
+```

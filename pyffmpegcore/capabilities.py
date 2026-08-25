@@ -8,6 +8,10 @@ from dataclasses import asdict, dataclass
 from typing import Any
 
 CAPABILITY_SCHEMA_VERSION = "1.0"
+CAPABILITY_RULES_SCHEMA_VERSION = "1.0"
+CAPABILITY_KINDS = frozenset(
+    {"encoder", "decoder", "filter", "muxer", "demuxer", "input-protocol", "output-protocol", "hwaccel"}
+)
 
 CORE_ENCODERS = ("aac", "flac", "libmp3lame", "libopus", "libvpx-vp9", "libx264", "mpeg4", "pcm_s16le")
 CORE_DECODERS = ("aac", "flac", "h264", "hevc", "mp3", "pcm_s16le", "vp9")
@@ -164,3 +168,41 @@ class CapabilityInventory:
 def requirements_for(workflow: str, extra: tuple[str, ...] = ()) -> tuple[str, ...]:
     """Return de-duplicated required capabilities for a workflow plan."""
     return tuple(dict.fromkeys((*WORKFLOW_CAPABILITY_RULES.get(workflow, ()), *extra)))
+
+
+def validate_capability_rule_catalog() -> tuple[str, ...]:
+    """Return structural errors for the versioned workflow capability catalog."""
+    errors = []
+    for workflow, requirements in sorted(WORKFLOW_CAPABILITY_RULES.items()):
+        if not workflow or workflow.strip() != workflow:
+            errors.append(f"invalid workflow key: {workflow!r}")
+        if len(requirements) != len(set(requirements)):
+            errors.append(f"duplicate requirements for {workflow}")
+        for requirement in requirements:
+            if ":" not in requirement:
+                errors.append(f"invalid requirement for {workflow}: {requirement!r}")
+                continue
+            kind, name = requirement.split(":", 1)
+            if kind not in CAPABILITY_KINDS or not name:
+                errors.append(f"invalid requirement for {workflow}: {requirement!r}")
+    return tuple(errors)
+
+
+def capability_rule_report(inventory: CapabilityInventory) -> dict[str, Any]:
+    """Evaluate every maintained workflow baseline against one installed FFmpeg build."""
+    errors = validate_capability_rule_catalog()
+    return {
+        "schema_version": CAPABILITY_RULES_SCHEMA_VERSION,
+        "inventory_schema_version": inventory.schema_version,
+        "binary": inventory.binary,
+        "catalog_valid": not errors,
+        "catalog_errors": list(errors),
+        "workflows": {
+            workflow: {
+                "requirements": list(requirements),
+                "available": [item for item in requirements if inventory.supports(item)],
+                "missing": [item for item in requirements if not inventory.supports(item)],
+            }
+            for workflow, requirements in sorted(WORKFLOW_CAPABILITY_RULES.items())
+        },
+    }

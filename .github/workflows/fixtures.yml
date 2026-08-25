@@ -48,11 +48,15 @@ jobs:
           tests/examples/test_examples_smoke_real.py
       - name: Save compatibility report
         run: python -m pyffmpegcore doctor --json > compatibility-report.json
+      - name: Evaluate workflow capability catalog
+        run: python scripts/validate_capability_catalog.py --json > capability-catalog-report.json
       - name: Upload drift evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: scheduled-compatibility-${{ runner.os }}
-          path: compatibility-report.json
+          path: |
+            compatibility-report.json
+            capability-catalog-report.json
           if-no-files-found: warn
           retention-days: 30

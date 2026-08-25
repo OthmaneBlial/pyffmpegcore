@@ -133,6 +133,8 @@ jobs:
           path: dist
       - name: Generate fixtures from an empty directory
         run: python tests/media/download_fixtures.py --force
+      - name: Evaluate capability rules on this FFmpeg build
+        run: python scripts/validate_capability_catalog.py --json > capability-catalog-report.json
       - name: Install and exercise the exact wheel
         run: python scripts/validate_cli_install.py --artifact dist --json > compatibility-report.json
       - name: Upload compatibility evidence
@@ -140,7 +142,9 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: compatibility-${{ runner.os }}-py${{ matrix.python-version }}
-          path: compatibility-report.json
+          path: |
+            compatibility-report.json
+            capability-catalog-report.json
           if-no-files-found: warn
           retention-days: 14
 

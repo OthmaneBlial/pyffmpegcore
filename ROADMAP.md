@@ -249,7 +249,7 @@ P0 Truth and reproducibility
 - [x] Preflight each job against input streams, output/container compatibility, disk space, write permissions, collisions, and installed FFmpeg capabilities.
 - [x] Explain the exact missing capability and provide a tested fallback or an OS-specific remedy when one exists.
 - [x] Produce the same preflight facts as readable text and versioned JSON.
-- [ ] Maintain a capability-rules catalog keyed by workflow and test it across the supported FFmpeg matrix.
+- [x] Maintain a capability-rules catalog keyed by workflow and test it across the supported FFmpeg matrix.
 
 ### P3.2 Deterministic plans and explanations
 

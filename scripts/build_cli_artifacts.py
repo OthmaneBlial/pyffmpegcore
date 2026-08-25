@@ -59,6 +59,7 @@ SDIST_REQUIRED_PATHS = frozenset(
         "pyffmpegcore/__init__.py",
         "pyffmpegcore/cli.py",
         "scripts/build_cli_artifacts.py",
+        "scripts/validate_capability_catalog.py",
         "tests/media/download_fixtures.py",
         "tests/media/manifest.json",
     }
