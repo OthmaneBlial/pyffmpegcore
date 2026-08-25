@@ -809,9 +809,9 @@ options:
 usage: pyffmpegcore convert [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
        [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
-       --input INPUT --output OUTPUT [--audio-only] [--video-codec VIDEO_CODEC] [--audio-codec
-       AUDIO_CODEC] [--video-bitrate VIDEO_BITRATE] [--audio-bitrate AUDIO_BITRATE] [--pix-fmt
-       PIX_FMT] [--threads THREADS] [--hwaccel HWACCEL]
+       --input INPUT --output OUTPUT [--audio-only] [--preserve-all-streams] [--video-codec
+       VIDEO_CODEC] [--audio-codec AUDIO_CODEC] [--video-bitrate VIDEO_BITRATE] [--audio-bitrate
+       AUDIO_BITRATE] [--pix-fmt PIX_FMT] [--threads THREADS] [--hwaccel HWACCEL]
 
 Convert a media file into a new format.
 
@@ -837,6 +837,9 @@ options:
   --input INPUT         Path to the input media file.
   --output OUTPUT       Path to the converted output file.
   --audio-only          Drop video and keep only the audio stream.
+  --preserve-all-streams
+                        Map and stream-copy every input track, attachment, and data stream without
+                        re-encoding; the output container must support them.
   --video-codec VIDEO_CODEC
                         Video codec to use, for example libx264.
   --audio-codec AUDIO_CODEC

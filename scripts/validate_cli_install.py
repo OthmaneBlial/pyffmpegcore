@@ -324,6 +324,23 @@ def main(argv: list[str] | None = None) -> int:
             if convert.returncode != 0 or not convert_output.exists():
                 return 1
 
+            preserved_output = outputs_dir / "preserved streams.mkv"
+            preserve_streams = run_command(
+                [
+                    str(cli_path),
+                    "convert",
+                    "--input",
+                    str(args.media_root / "sample_rich_streams.mkv"),
+                    "--output",
+                    str(preserved_output),
+                    "--preserve-all-streams",
+                ],
+                label="preserve-all-streams",
+            )
+            add_report_entry(commands, "preserve-all-streams", preserve_streams)
+            if preserve_streams.returncode != 0 or not preserved_output.exists():
+                return 1
+
             audio_output = outputs_dir / "audio clip.mp3"
             extract = run_command(
                 [

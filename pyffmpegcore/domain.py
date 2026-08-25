@@ -205,10 +205,26 @@ class ConvertOptions:
     threads: int | None = None
     audio_only: bool = False
     hardware_acceleration: str | None = None
+    preserve_all_streams: bool = False
 
     def __post_init__(self) -> None:
         if self.threads is not None and self.threads <= 0:
             raise ValidationError("threads must be positive when provided")
+        if self.preserve_all_streams and any(
+            (
+                self.video_codec,
+                self.audio_codec,
+                self.video_bitrate,
+                self.audio_bitrate,
+                self.threads,
+                self.audio_only,
+                self.hardware_acceleration,
+            )
+        ):
+            raise ValidationError(
+                "preserve_all_streams cannot be combined with audio-only, codec, "
+                "bitrate, threads, or hardware-acceleration options"
+            )
 
 
 @dataclass(frozen=True, slots=True)

@@ -44,6 +44,8 @@ def _build_cli_plan(args: argparse.Namespace):
             timeout_seconds=shared["timeout_seconds"],
         )
     if command == "convert":
+        if args.preserve_all_streams and args.pix_fmt is not None:
+            raise ValidationError("--preserve-all-streams cannot be combined with --pix-fmt")
         convert_options = ConvertOptions(
             video_codec=args.video_codec,
             audio_codec=args.audio_codec,
@@ -53,6 +55,7 @@ def _build_cli_plan(args: argparse.Namespace):
             threads=args.threads,
             audio_only=args.audio_only,
             hardware_acceleration=args.hwaccel,
+            preserve_all_streams=args.preserve_all_streams,
         )
         return planner.convert(args.input, args.output, convert_options, **shared)
     if command == "compress":

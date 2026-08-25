@@ -85,7 +85,7 @@ CompressOptions(target_size_bytes: 'int | None' = None, crf: 'int' = 23, two_pas
 
 ## `ConvertOptions`
 
-ConvertOptions(video_codec: 'str | None' = None, audio_codec: 'str | None' = None, video_bitrate: 'str | None' = None, audio_bitrate: 'str | None' = None, pixel_format: 'str' = 'yuv420p', threads: 'int | None' = None, audio_only: 'bool' = False, hardware_acceleration: 'str | None' = None)
+ConvertOptions(video_codec: 'str | None' = None, audio_codec: 'str | None' = None, video_bitrate: 'str | None' = None, audio_bitrate: 'str | None' = None, pixel_format: 'str' = 'yuv420p', threads: 'int | None' = None, audio_only: 'bool' = False, hardware_acceleration: 'str | None' = None, preserve_all_streams: 'bool' = False)
 
 ## `EnvironmentUnavailableError`
 
@@ -119,7 +119,7 @@ Plan, preflight, and execute typed video speed adjustment.
 
 Plan, preflight, and execute typed single- or two-pass compression.
 
-### `convert(self, input_file: 'str', output_file: 'str', *, video_codec: 'str | None' = None, audio_codec: 'str | None' = None, video_bitrate: 'str | None' = None, audio_bitrate: 'str | None' = None, pixel_format: 'str' = 'yuv420p', threads: 'int | None' = None, audio_only: 'bool' = False, hardware_acceleration: 'str | None' = None, force: 'bool' = False, progress_callback: 'Callable[[ProgressEvent], None] | None' = None) -> 'JobResult'`
+### `convert(self, input_file: 'str', output_file: 'str', *, video_codec: 'str | None' = None, audio_codec: 'str | None' = None, video_bitrate: 'str | None' = None, audio_bitrate: 'str | None' = None, pixel_format: 'str' = 'yuv420p', threads: 'int | None' = None, audio_only: 'bool' = False, hardware_acceleration: 'str | None' = None, preserve_all_streams: 'bool' = False, force: 'bool' = False, progress_callback: 'Callable[[ProgressEvent], None] | None' = None) -> 'JobResult'`
 
 Plan, preflight, and execute a typed conversion.
 

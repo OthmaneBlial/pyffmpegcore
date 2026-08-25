@@ -34,6 +34,45 @@ def test_convert_plan_is_deterministic_and_uses_an_argument_vector(tmp_path):
     assert "-map_chapters" in first.command
 
 
+def test_convert_plan_can_preserve_every_stream_without_reencoding(tmp_path):
+    source = tmp_path / "input rich.mkv"
+    output = tmp_path / "output rich.mkv"
+
+    plan = WorkflowPlanner().convert(
+        str(source),
+        str(output),
+        ConvertOptions(preserve_all_streams=True),
+    )
+
+    assert plan.command[plan.command.index("-map") + 1] == "0"
+    assert plan.command[plan.command.index("-c") + 1] == "copy"
+    assert "-c:v" not in plan.command
+    assert "-c:a" not in plan.command
+    assert plan.selected_streams == ("all input streams",)
+    assert plan.metadata["stream_policy"] == "preserve-all"
+    assert "output container" in plan.warnings[0]
+
+
+@pytest.mark.parametrize(
+    "options",
+    [
+        ConvertOptions(video_codec="copy"),
+        ConvertOptions(audio_codec="copy"),
+        ConvertOptions(audio_only=True),
+        ConvertOptions(threads=1),
+        ConvertOptions(hardware_acceleration="auto"),
+    ],
+)
+def test_preserve_all_streams_rejects_conflicting_conversion_options(options):
+    values = {
+        field: getattr(options, field)
+        for field in ConvertOptions.__dataclass_fields__
+        if field != "preserve_all_streams"
+    }
+    with pytest.raises(ValidationError, match="preserve_all_streams cannot be combined"):
+        ConvertOptions(**values, preserve_all_streams=True)
+
+
 @pytest.mark.parametrize(
     ("value", "expected"),
     [("25MB", 25_000_000), ("25MiB", 25 * 1024 * 1024), ("1.5GB", 1_500_000_000), ("42", 42)],

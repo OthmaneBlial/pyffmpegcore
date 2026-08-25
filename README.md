@@ -136,6 +136,16 @@ pyffmpegcore compress \
 
 [Feasibility, quality floor, and measured proof →](docs/recipes/exact-size.md)
 
+### Preserve every track while remuxing
+
+```bash
+pyffmpegcore convert \
+  --input multilingual.mkv --output preserved.mkv \
+  --preserve-all-streams --receipt preserved.receipt.json
+```
+
+[Stream-selection contract and verification →](docs/recipes/preserve-streams.md)
+
 ### Normalize spoken-word audio
 
 ```bash

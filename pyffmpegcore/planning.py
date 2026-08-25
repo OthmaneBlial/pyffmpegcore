@@ -180,43 +180,72 @@ class WorkflowPlanner:
         if options.hardware_acceleration:
             args.extend(["-hwaccel", options.hardware_acceleration])
         args.extend(["-i", source])
-        if options.audio_only:
+        if options.preserve_all_streams:
+            args.extend(["-map", "0"])
+        elif options.audio_only:
             args.extend(["-map", "0:a:0", "-vn"])
         else:
             args.extend(["-map", "0:v:0?", "-map", "0:a:0?"])
         args.extend(["-map_metadata", "0", "-map_chapters", "0"])
-        if options.video_codec and not options.audio_only:
-            args.extend(["-c:v", options.video_codec])
-        if options.audio_codec:
-            args.extend(["-c:a", options.audio_codec])
-        if options.video_bitrate and not options.audio_only:
-            args.extend(["-b:v", options.video_bitrate])
-        if options.audio_bitrate:
-            args.extend(["-b:a", options.audio_bitrate])
-        if not options.audio_only and options.video_codec != "copy":
-            args.extend(["-pix_fmt", options.pixel_format])
-        if options.threads is not None:
-            args.extend(["-threads", str(options.threads)])
+        if options.preserve_all_streams:
+            args.extend(["-c", "copy"])
+        else:
+            if options.video_codec and not options.audio_only:
+                args.extend(["-c:v", options.video_codec])
+            if options.audio_codec:
+                args.extend(["-c:a", options.audio_codec])
+            if options.video_bitrate and not options.audio_only:
+                args.extend(["-b:v", options.video_bitrate])
+            if options.audio_bitrate:
+                args.extend(["-b:a", options.audio_bitrate])
+            if not options.audio_only and options.video_codec != "copy":
+                args.extend(["-pix_fmt", options.pixel_format])
+            if options.threads is not None:
+                args.extend(["-threads", str(options.threads)])
         if Path(output).suffix.lower() in {".mp4", ".m4v"}:
             args.extend(["-movflags", "+faststart"])
         args.append(output)
-        required = _codec_requirements(
-            ("video", None if options.audio_only else options.video_codec),
-            ("audio", options.audio_codec),
+        required = (
+            ()
+            if options.preserve_all_streams
+            else _codec_requirements(
+                ("video", None if options.audio_only else options.video_codec),
+                ("audio", options.audio_codec),
+            )
         )
         if options.hardware_acceleration:
             required = (*required, f"hwaccel:{options.hardware_acceleration}")
-        streams = ("audio",) if options.audio_only else ("video", "audio")
+        streams = (
+            ("all input streams",)
+            if options.preserve_all_streams
+            else (("audio",) if options.audio_only else ("video", "audio"))
+        )
         operations = (
             (
-                "select the first audio stream and drop video"
-                if options.audio_only
-                else "select the first video and first audio streams when present"
+                "select every input stream explicitly"
+                if options.preserve_all_streams
+                else (
+                    "select the first audio stream and drop video"
+                    if options.audio_only
+                    else "select the first video and first audio streams when present"
+                )
             ),
             "preserve compatible container metadata and chapters",
-            f"video codec: {options.video_codec or 'container/FFmpeg default'}",
-            f"audio codec: {options.audio_codec or 'container/FFmpeg default'}",
-            f"pixel format: {'not applicable' if options.audio_only else options.pixel_format}",
+            (
+                "copy every mapped stream without re-encoding"
+                if options.preserve_all_streams
+                else f"video codec: {options.video_codec or 'container/FFmpeg default'}"
+            ),
+            (
+                "audio codec: copied from input"
+                if options.preserve_all_streams
+                else f"audio codec: {options.audio_codec or 'container/FFmpeg default'}"
+            ),
+            (
+                "pixel format: copied from input"
+                if options.preserve_all_streams
+                else f"pixel format: {'not applicable' if options.audio_only else options.pixel_format}"
+            ),
             (
                 f"hardware acceleration: {options.hardware_acceleration}; no silent fallback"
                 if options.hardware_acceleration
@@ -233,7 +262,22 @@ class WorkflowPlanner:
             capabilities=required,
             streams=streams,
             operations=operations,
-            metadata={"required_stream_types": ["audio"] if options.audio_only else []},
+            warnings=(
+                (
+                    "Every input stream codec must be supported by the output container; "
+                    "use a matching container such as Matroska when uncertain."
+                ),
+            )
+            if options.preserve_all_streams
+            else (),
+            metadata={
+                "required_stream_types": ["audio"] if options.audio_only else [],
+                "stream_policy": (
+                    "preserve-all"
+                    if options.preserve_all_streams
+                    else ("audio-only" if options.audio_only else "first-audio-video")
+                ),
+            },
         )
 
     def resize(

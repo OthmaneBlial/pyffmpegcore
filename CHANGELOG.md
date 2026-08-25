@@ -30,6 +30,11 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 - A versioned overhead benchmark for startup, exact-plan processing, package size, and pipeline-cache behavior, plus documented pipx and uv tool installs.
 - Dated, privacy-redacted before/after evidence for the web-video, exact-size, and podcast flagship recipes.
 - Technical notes on capability preflight, exact-size budgeting, deterministic plans, and privacy-safe receipts.
+- `convert --preserve-all-streams` for explicit lossless remuxing of every
+  video, audio, subtitle, attachment, and data stream, with conflicting
+  re-encoding options rejected before execution.
+- Source-backed recipe and troubleshooting paths for recurring web-video,
+  target-size, stream-selection, and subprocess-stall questions.
 
 ### Changed
 

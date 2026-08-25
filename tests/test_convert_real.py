@@ -104,3 +104,26 @@ def test_convert_selects_first_av_streams_and_preserves_unicode_metadata_and_cha
     assert next(stream for stream in metadata.streams if stream.codec_type == "audio").language == "eng"
     assert metadata.tags["title"] == "Résumé – 東京"
     assert [chapter["title"] for chapter in metadata.chapters] == ["Début", "Fin"]
+
+
+@pytest.mark.real_media
+def test_convert_preserves_all_stream_types_metadata_and_chapters(tmp_path):
+    media = ensure_downloaded_media()
+    output_file = tmp_path / "preserved.mkv"
+
+    result = FFmpegRunner().convert(
+        str(media["rich_streams_mkv"]),
+        str(output_file),
+        preserve_all_streams=True,
+    )
+
+    assert result.succeeded, result.stderr
+    metadata = FFprobeRunner().probe_media(str(output_file))
+    stream_types = [stream.codec_type for stream in metadata.streams]
+    assert stream_types.count("video") == 1
+    assert stream_types.count("audio") == 2
+    assert stream_types.count("subtitle") == 1
+    assert [stream.language for stream in metadata.streams if stream.codec_type == "audio"] == ["eng", "fra"]
+    assert [stream.language for stream in metadata.streams if stream.codec_type == "subtitle"] == ["fra"]
+    assert metadata.tags["title"] == "Résumé – 東京"
+    assert [chapter["title"] for chapter in metadata.chapters] == ["Début", "Fin"]

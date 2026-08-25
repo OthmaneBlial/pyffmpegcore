@@ -328,7 +328,7 @@ P0 Truth and reproducibility
 
 ### P5.1 Turn support into public knowledge
 
-- [ ] Convert repeated real user questions into tested recipes and troubleshooting pages.
+- [x] Convert repeated real user questions into tested recipes and troubleshooting pages.
 - [x] Publish before/after media evidence and receipts for each flagship recipe.
 - [x] Invite recipe proposals through a structured issue form; promote only validated recipes into the supported catalog.
 - [x] Enable Discussions for recipe requests/show-and-tell only when the maintainer can triage it consistently.
