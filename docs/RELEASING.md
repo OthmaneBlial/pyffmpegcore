@@ -29,6 +29,13 @@ Only a maintainer with repository and PyPI project control may publish a release
 
 5. Push the tag. The workflow builds once, tests the exact wheel on the supported OS/Python anchors, attests it, and publishes it through OIDC.
 6. The workflow waits for the exact wheel and source distribution to appear in the public PyPI JSON endpoint. It then performs a clean `pipx install`, `--version`, `doctor`, and `smoke-test` on Linux, macOS, and Windows before creating the matching GitHub Release with checksums. A failed public-install gate must be fixed forward; it must not be bypassed by creating the release manually.
+7. Record the public terminal proof only after those endpoints are healthy:
+
+   ```bash
+   scripts/record_terminal_demo.sh docs/assets/terminal-demo-v0.2.0.cast 0.2.0
+   ```
+
+   The recorder installs the exact public version in a fresh environment, captures a real PTY session, enforces a 60–90 second duration and required proof steps, rejects private home paths, and writes an accessible text transcript beside the cast. Never hand-edit the recording to invent output.
 
 Never rebuild or replace files for an existing version. A failed gate means fix forward with a new commit and, if any immutable artifact was already published, a new version.
 

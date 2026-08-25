@@ -28,5 +28,6 @@ This checklist is a gate, not a record of an older local run. The complete proce
 - [ ] The signed, protected version tag starts the release workflow.
 - [ ] PyPI files, SHA-256 checksums, provenance attestations, and the GitHub Release describe the same artifacts.
 - [ ] The automated public-endpoint wait and clean `pipx install`, `--version`, `doctor`, and `smoke-test` matrix pass after publication.
+- [ ] The 60–90 second terminal cast and accessible transcript validate against the exact public version without private paths or fabricated output.
 
 Record final links and exact check runs in the GitHub Release rather than placing a stale test count in this file.
