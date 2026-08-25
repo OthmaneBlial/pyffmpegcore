@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import inspect
 import sys
+import textwrap
 from pathlib import Path
 
 from pyffmpegcore import FFmpegRunner, FFprobeRunner, ProgressCallback, ProgressTracker
@@ -13,6 +14,35 @@ from pyffmpegcore.cli import build_parser
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CLI_OUTPUT = REPO_ROOT / "docs" / "reference" / "cli.md"
 API_OUTPUT = REPO_ROOT / "docs" / "reference" / "python-api.md"
+DOCS_HELP_WIDTH = 100
+RAW_HELP_WIDTH = 10_000
+
+
+def deterministic_formatter(prog: str) -> argparse.HelpFormatter:
+    """Build unwrapped help output before applying a stable cross-version wrap."""
+    return argparse.HelpFormatter(prog, width=RAW_HELP_WIDTH, max_help_position=24)
+
+
+def canonical_help(parser: argparse.ArgumentParser) -> str:
+    """Normalize argparse wrapping, which differs between supported Python releases."""
+    parser.formatter_class = deterministic_formatter
+    rendered: list[str] = []
+    for line in parser.format_help().rstrip().splitlines():
+        if len(line) <= DOCS_HELP_WIDTH:
+            rendered.append(line)
+            continue
+        indent = line[: len(line) - len(line.lstrip())]
+        subsequent_indent = " " * len("usage: ") if line.startswith("usage: ") else indent
+        rendered.extend(
+            textwrap.wrap(
+                line,
+                width=DOCS_HELP_WIDTH,
+                subsequent_indent=subsequent_indent,
+                break_long_words=False,
+                break_on_hyphens=False,
+            )
+        )
+    return "\n".join(rendered)
 
 
 def parser_children(parser: argparse.ArgumentParser) -> list[tuple[str, argparse.ArgumentParser]]:
@@ -38,7 +68,7 @@ def render_cli_reference() -> str:
 
     def visit(parser: argparse.ArgumentParser, path: tuple[str, ...]) -> None:
         command = " ".join(("pyffmpegcore", *path))
-        lines.extend([f"## `{command}`", "", "```text", parser.format_help().rstrip(), "```", ""])
+        lines.extend([f"## `{command}`", "", "```text", canonical_help(parser), "```", ""])
         for name, child in parser_children(parser):
             visit(child, (*path, name))
 

@@ -7,7 +7,10 @@ from __future__ import annotations
 import importlib.metadata
 from pathlib import Path
 
-import tomllib
+try:
+    import tomllib
+except ModuleNotFoundError:  # pragma: no cover - exercised by the Python 3.10 CI contract
+    import tomli as tomllib
 
 from pyffmpegcore import __version__
 from tests.cli_helpers import installed_cli_path, run_installed_cli
