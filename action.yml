@@ -58,7 +58,7 @@ runs:
       shell: bash
       run: '"$GITHUB_ACTION_PATH/scripts/run_pipeline_action.sh"'
       env:
-        PYFFMPEGCORE_ACTION_IMAGE: ghcr.io/othmaneblial/pyffmpegcore@sha256:d251ae8b20430cd671f64c4007998ce31d21e503ff06f9a309c7f33f6b8dbf3e
+        PYFFMPEGCORE_ACTION_IMAGE: ghcr.io/othmaneblial/pyffmpegcore@sha256:b2ec3d7ffc054ce65a5e3470e4ffb19d15708d30e613c01e3217bb9331251458
         PYFFMPEGCORE_ACTION_PIPELINE: ${{ inputs.pipeline }}
         PYFFMPEGCORE_ACTION_VARIABLES: ${{ inputs.environment }}
         PYFFMPEGCORE_ACTION_RECEIPT_DIR: ${{ inputs.receipt-dir }}

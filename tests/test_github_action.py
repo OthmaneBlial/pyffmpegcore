@@ -80,6 +80,6 @@ def test_action_metadata_uses_immutable_image_and_pinned_dependencies():
     digest_match = re.search(r"ghcr\.io/othmaneblial/pyffmpegcore@sha256:([0-9a-f]{64})", metadata)
     assert digest_match is not None
     assert set(digest_match.group(1)) != {"0"}
-    assert digest_match.group(1) == "d251ae8b20430cd671f64c4007998ce31d21e503ff06f9a309c7f33f6b8dbf3e"
+    assert digest_match.group(1) == "b2ec3d7ffc054ce65a5e3470e4ffb19d15708d30e613c01e3217bb9331251458"
     assert "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02" in metadata
     assert "include-hidden-files: true" in metadata

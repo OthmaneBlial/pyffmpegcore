@@ -6,17 +6,17 @@ build. It runs as UID/GID `10001`, uses no shell entrypoint, and supports
 
 ```bash
 docker run --rm \
-  ghcr.io/othmaneblial/pyffmpegcore@sha256:d251ae8b20430cd671f64c4007998ce31d21e503ff06f9a309c7f33f6b8dbf3e \
+  ghcr.io/othmaneblial/pyffmpegcore@sha256:b2ec3d7ffc054ce65a5e3470e4ffb19d15708d30e613c01e3217bb9331251458 \
   doctor
 docker run --rm \
   --volume "$PWD:/workspace" \
   --workdir /workspace \
-  ghcr.io/othmaneblial/pyffmpegcore@sha256:d251ae8b20430cd671f64c4007998ce31d21e503ff06f9a309c7f33f6b8dbf3e \
+  ghcr.io/othmaneblial/pyffmpegcore@sha256:b2ec3d7ffc054ce65a5e3470e4ffb19d15708d30e613c01e3217bb9331251458 \
   pipeline run pipeline.json --receipt-dir receipts
 ```
 
 Do not use a mutable tag for repeatable automation. The digest above is the
-public `linux/amd64` and `linux/arm64` index built from revision `f4f9ed8` after
+public `linux/amd64` and `linux/arm64` index built from revision `96654e3` after
 the runtime and vulnerability gates passed. The repository Action uses the same
 digest by default.
 
@@ -79,7 +79,7 @@ docker build --file Containerfile --tag pyffmpegcore:local .
 docker run --rm pyffmpegcore:local smoke-test --json
 
 gh attestation verify \
-  oci://ghcr.io/othmaneblial/pyffmpegcore@sha256:d251ae8b20430cd671f64c4007998ce31d21e503ff06f9a309c7f33f6b8dbf3e \
+  oci://ghcr.io/othmaneblial/pyffmpegcore@sha256:b2ec3d7ffc054ce65a5e3470e4ffb19d15708d30e613c01e3217bb9331251458 \
   --repo OthmaneBlial/pyffmpegcore
 ```
 
