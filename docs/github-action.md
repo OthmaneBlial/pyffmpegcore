@@ -43,6 +43,6 @@ supply-chain boundary.
   `false` when stricter fresh-workspace behavior is required.
 
 The default image is
-`ghcr.io/othmaneblial/pyffmpegcore@sha256:b2ec3d7ffc054ce65a5e3470e4ffb19d15708d30e613c01e3217bb9331251458`.
+`ghcr.io/othmaneblial/pyffmpegcore@sha256:a8eb557fcdc0edfe6ae1d517d70efd7817afa4c0b6ec81d08080f3de53be210c`.
 The verified Action commit is
 `671a041807cdd54f7a7fed6534e7a4d69f372fb1`.
