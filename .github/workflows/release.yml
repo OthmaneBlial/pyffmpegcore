@@ -45,16 +45,18 @@ jobs:
         run: python scripts/build_cli_artifacts.py --outdir dist --json > artifact-report.json
       - name: Validate distributions
         run: python -m twine check dist/*.whl dist/*.tar.gz && python -m check_wheel_contents dist/*.whl
+      - name: Assemble release bundle outside the PyPI upload directory
+        run: mkdir release && cp dist/*.whl dist/*.tar.gz release/
       - name: Record SHA-256 checksums
-        working-directory: dist
+        working-directory: release
         run: sha256sum pyffmpegcore-*.whl pyffmpegcore-*.tar.gz > SHA256SUMS
       - name: Include artifact report
-        run: cp artifact-report.json dist/artifact-report.json
+        run: cp artifact-report.json release/artifact-report.json
       - name: Upload immutable release bundle
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: release-bundle
-          path: dist/
+          path: release/
           if-no-files-found: error
           retention-days: 14
 
@@ -87,11 +89,11 @@ jobs:
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: release-bundle
-          path: dist
+          path: release
       - name: Generate deterministic fixtures
         run: python tests/media/download_fixtures.py --force
       - name: Validate exact release wheel
-        run: python scripts/validate_cli_install.py --artifact dist --json
+        run: python scripts/validate_cli_install.py --artifact release --json
 
   attest:
     name: Attest release provenance
@@ -107,15 +109,15 @@ jobs:
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: release-bundle
-          path: dist
+          path: release
       - name: Attest wheel provenance
         uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3.0.0
         with:
-          subject-path: dist/*.whl
+          subject-path: release/*.whl
       - name: Attest source distribution provenance
         uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3.0.0
         with:
-          subject-path: dist/*.tar.gz
+          subject-path: release/*.tar.gz
 
   publish-pypi:
     name: Publish to PyPI with Trusted Publishing
@@ -132,7 +134,9 @@ jobs:
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: release-bundle
-          path: dist
+          path: release
+      - name: Isolate distributions for PyPI
+        run: mkdir dist && cp release/*.whl release/*.tar.gz dist/
       - name: Publish immutable distributions
         uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # release/v1
         with:
@@ -153,13 +157,13 @@ jobs:
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: release-bundle
-          path: dist
+          path: release
       - name: Create release with compatibility statement
         env:
           GH_TOKEN: ${{ github.token }}
         run: >-
           gh release create "$GITHUB_REF_NAME"
-          dist/*.whl dist/*.tar.gz dist/SHA256SUMS dist/artifact-report.json
+          release/*.whl release/*.tar.gz release/SHA256SUMS release/artifact-report.json
           --verify-tag
           --title "pyffmpegcore $GITHUB_REF_NAME"
           --generate-notes
