@@ -20,6 +20,7 @@ from typing import Any
 
 from . import __version__
 from .probe import FFprobeRunner
+from .profiles import Profile, ProfileRegistry
 from .runner import FFmpegRunner, escape_path_for_concat, escape_path_for_filter
 
 EXIT_OK = 0
@@ -236,6 +237,40 @@ def build_parser() -> argparse.ArgumentParser:
         help="Shell name to generate completion for.",
     )
     completion_parser.set_defaults(handler=handle_completion)
+
+    profile_parser = subparsers.add_parser(
+        "profile",
+        parents=[common_parent],
+        help="List, explain, or validate versioned workflow profiles.",
+        description="Inspect built-in profiles or validate a strict local JSON/TOML profile.",
+    )
+    profile_subparsers = profile_parser.add_subparsers(dest="profile_command", metavar="COMMAND")
+
+    profile_list_parser = profile_subparsers.add_parser(
+        "list",
+        parents=[common_parent],
+        help="List built-in workflow profiles.",
+    )
+    profile_list_parser.add_argument("--json", action="store_true", help="Print profiles as JSON.")
+    profile_list_parser.set_defaults(handler=handle_profile_list)
+
+    profile_show_parser = profile_subparsers.add_parser(
+        "show",
+        parents=[common_parent],
+        help="Explain one built-in profile.",
+    )
+    profile_show_parser.add_argument("name", help="Profile name, for example web/mp4-compatible.")
+    profile_show_parser.add_argument("--json", action="store_true", help="Print the profile as JSON.")
+    profile_show_parser.set_defaults(handler=handle_profile_show)
+
+    profile_validate_parser = profile_subparsers.add_parser(
+        "validate",
+        parents=[common_parent],
+        help="Validate a local versioned JSON or TOML profile.",
+    )
+    profile_validate_parser.add_argument("path", type=Path, help="Path to a .json or .toml profile.")
+    profile_validate_parser.add_argument("--json", action="store_true", help="Print the validated profile as JSON.")
+    profile_validate_parser.set_defaults(handler=handle_profile_validate)
 
     probe_parser = subparsers.add_parser(
         "probe",
@@ -1042,6 +1077,57 @@ def handle_completion(args: argparse.Namespace) -> int:
     Print a shell completion script to stdout.
     """
     print(render_completion_script(args.shell), end="")
+    return EXIT_OK
+
+
+def render_profile(ctx: CLIContext, profile: Profile) -> None:
+    """Render a profile without hiding its output choices or requirements."""
+    echo(ctx, f"{profile.name} v{profile.profile_version}")
+    echo(ctx, profile.description)
+    echo(ctx, f"Workflow: {profile.workflow}")
+    echo(ctx, "Options:")
+    for name, value in sorted(profile.options.items()):
+        echo(ctx, f"  {name}: {value}")
+    echo(ctx, "Required capabilities:")
+    for capability in profile.required_capabilities:
+        echo(ctx, f"  {capability}")
+
+
+def handle_profile_list(args: argparse.Namespace) -> int:
+    """List every maintained built-in profile."""
+    profiles = ProfileRegistry().list()
+    if args.json:
+        print(json.dumps({"schema_version": "1.0", "profiles": [item.to_dict() for item in profiles]}, indent=2))
+        return EXIT_OK
+    ctx = build_context(args)
+    for profile in profiles:
+        echo(ctx, f"{profile.name} v{profile.profile_version} — {profile.description}")
+    return EXIT_OK
+
+
+def handle_profile_show(args: argparse.Namespace) -> int:
+    """Show the exact choices made by one built-in profile."""
+    try:
+        profile = ProfileRegistry().get(args.name)
+    except ValueError as exc:
+        raise CLIError(str(exc)) from exc
+    if args.json:
+        print(json.dumps(profile.to_dict(), indent=2))
+    else:
+        render_profile(build_context(args), profile)
+    return EXIT_OK
+
+
+def handle_profile_validate(args: argparse.Namespace) -> int:
+    """Validate a project or user profile without executing a media job."""
+    try:
+        profile = ProfileRegistry().load_file(args.path)
+    except ValueError as exc:
+        raise CLIError(str(exc)) from exc
+    if args.json:
+        print(json.dumps({"valid": True, "profile": profile.to_dict()}, indent=2))
+    else:
+        echo(build_context(args), f"Valid profile: {profile.name} v{profile.profile_version}")
     return EXIT_OK
 
 

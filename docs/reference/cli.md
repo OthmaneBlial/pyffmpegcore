@@ -17,6 +17,7 @@ positional arguments:
     doctor              Show FFmpeg, FFprobe, and environment diagnostics.
     smoke-test          Generate local synthetic media and verify a complete workflow.
     completion          Print a shell completion script for bash, zsh, or PowerShell.
+    profile             List, explain, or validate versioned workflow profiles.
     probe               Inspect a media file and print simplified metadata.
     convert             Convert a media file into a new format.
     compress            Compress a video file with CRF or target-size settings.
@@ -113,6 +114,91 @@ options:
                         Path to the ffmpeg executable. Defaults to ffmpeg.
   --ffprobe-path FFPROBE_PATH
                         Path to the ffprobe executable. Defaults to ffprobe.
+```
+
+## `pyffmpegcore profile`
+
+```text
+usage: pyffmpegcore profile [-h] [--verbose | --quiet] [--force] [--ffmpeg-path FFMPEG_PATH]
+       [--ffprobe-path FFPROBE_PATH] COMMAND ...
+
+Inspect built-in profiles or validate a strict local JSON/TOML profile.
+
+positional arguments:
+  COMMAND
+    list                List built-in workflow profiles.
+    show                Explain one built-in profile.
+    validate            Validate a local versioned JSON or TOML profile.
+
+options:
+  -h, --help            show this help message and exit
+  --verbose             Show more detailed command output.
+  --quiet               Reduce command output to essentials.
+  --force               Allow overwriting existing output files or directories.
+  --ffmpeg-path FFMPEG_PATH
+                        Path to the ffmpeg executable. Defaults to ffmpeg.
+  --ffprobe-path FFPROBE_PATH
+                        Path to the ffprobe executable. Defaults to ffprobe.
+```
+
+## `pyffmpegcore profile list`
+
+```text
+usage: pyffmpegcore profile list [-h] [--verbose | --quiet] [--force] [--ffmpeg-path FFMPEG_PATH]
+       [--ffprobe-path FFPROBE_PATH] [--json]
+
+options:
+  -h, --help            show this help message and exit
+  --verbose             Show more detailed command output.
+  --quiet               Reduce command output to essentials.
+  --force               Allow overwriting existing output files or directories.
+  --ffmpeg-path FFMPEG_PATH
+                        Path to the ffmpeg executable. Defaults to ffmpeg.
+  --ffprobe-path FFPROBE_PATH
+                        Path to the ffprobe executable. Defaults to ffprobe.
+  --json                Print profiles as JSON.
+```
+
+## `pyffmpegcore profile show`
+
+```text
+usage: pyffmpegcore profile show [-h] [--verbose | --quiet] [--force] [--ffmpeg-path FFMPEG_PATH]
+       [--ffprobe-path FFPROBE_PATH] [--json] name
+
+positional arguments:
+  name                  Profile name, for example web/mp4-compatible.
+
+options:
+  -h, --help            show this help message and exit
+  --verbose             Show more detailed command output.
+  --quiet               Reduce command output to essentials.
+  --force               Allow overwriting existing output files or directories.
+  --ffmpeg-path FFMPEG_PATH
+                        Path to the ffmpeg executable. Defaults to ffmpeg.
+  --ffprobe-path FFPROBE_PATH
+                        Path to the ffprobe executable. Defaults to ffprobe.
+  --json                Print the profile as JSON.
+```
+
+## `pyffmpegcore profile validate`
+
+```text
+usage: pyffmpegcore profile validate [-h] [--verbose | --quiet] [--force] [--ffmpeg-path
+       FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] [--json] path
+
+positional arguments:
+  path                  Path to a .json or .toml profile.
+
+options:
+  -h, --help            show this help message and exit
+  --verbose             Show more detailed command output.
+  --quiet               Reduce command output to essentials.
+  --force               Allow overwriting existing output files or directories.
+  --ffmpeg-path FFMPEG_PATH
+                        Path to the ffmpeg executable. Defaults to ffmpeg.
+  --ffprobe-path FFPROBE_PATH
+                        Path to the ffprobe executable. Defaults to ffprobe.
+  --json                Print the validated profile as JSON.
 ```
 
 ## `pyffmpegcore probe`

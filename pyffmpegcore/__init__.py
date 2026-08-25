@@ -32,6 +32,7 @@ from .errors import (
     ValidationError,
 )
 from .probe import FFprobeRunner
+from .profiles import Profile, ProfileRegistry
 from .progress import ProgressCallback, ProgressTracker
 from .runner import FFmpegRunner
 
@@ -53,6 +54,8 @@ __all__ = [
     "JobTimeoutError",
     "MediaInfo",
     "OverwritePolicy",
+    "Profile",
+    "ProfileRegistry",
     "ProgressCallback",
     "ProgressEvent",
     "ProgressTracker",

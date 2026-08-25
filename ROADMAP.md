@@ -261,11 +261,11 @@ P0 Truth and reproducibility
 
 ### P3.3 Curated workflow profiles
 
-- [ ] Ship a small profile registry instead of dozens of thin commands. Initial candidates: `web/mp4-compatible`, `web/small-upload`, `audio/podcast-speech`, `subtitles/accessibility`, and `archive/mezzanine`.
-- [ ] Add `profile list`, `profile show`, and `profile validate` commands explaining every choice and required capability.
-- [ ] Version profile behavior so upgrades never silently change an output contract.
-- [ ] Support project/user profiles only through a documented versioned schema with strict validation.
-- [ ] Keep service-specific presets out of the core unless their requirements are stable, sourced, and maintained.
+- [x] Ship a small profile registry instead of dozens of thin commands. Initial candidates: `web/mp4-compatible`, `web/small-upload`, `audio/podcast-speech`, `subtitles/accessibility`, and `archive/mezzanine`.
+- [x] Add `profile list`, `profile show`, and `profile validate` commands explaining every choice and required capability.
+- [x] Version profile behavior so upgrades never silently change an output contract.
+- [x] Support project/user profiles only through a documented versioned schema with strict validation.
+- [x] Keep service-specific presets out of the core unless their requirements are stable, sourced, and maintained.
 - [ ] Turn target-size compression into an excellent “fit this file under a limit” workflow with human size units, quality floors, honest feasibility errors, and before/after proof.
 
 ### P3.4 Privacy-aware run receipts

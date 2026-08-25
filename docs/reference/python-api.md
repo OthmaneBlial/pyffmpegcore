@@ -178,6 +178,30 @@ No public docstring is available.
 
 Python 3.10-compatible string enumeration.
 
+## `Profile`
+
+A named, versioned set of choices for one supported workflow.
+
+### `to_dict(self) -> 'dict[str, Any]'`
+
+No public docstring is available.
+
+## `ProfileRegistry`
+
+Resolve built-in profiles and strictly validate local profile files.
+
+### `get(self, name: 'str') -> 'Profile'`
+
+No public docstring is available.
+
+### `list(self) -> 'tuple[Profile, ...]'`
+
+No public docstring is available.
+
+### `load_file(self, path: 'str | Path') -> 'Profile'`
+
+Load one strict versioned profile from JSON or TOML.
+
 ## `ProgressCallback`
 
 A helper class for creating progress callbacks with context.
