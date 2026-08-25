@@ -10,6 +10,11 @@ Untrusted data can enter through file and directory paths, media bytes, containe
 
 Runtime process launches use argument arrays with `shell=False` behavior. User-controlled values are never interpolated into a shell command. This prevents normal shell metacharacters in paths from becoming shell syntax.
 
+Managed FFmpeg processes receive `-nostdin` and a null standard-input handle.
+They cannot enter FFmpeg's interactive command mode or suspend while checking a
+CI/background console. Plans expose `-nostdin` so this behavior is reviewable
+before execution.
+
 FFmpeg filter graphs and concat manifests have their own grammars. Values embedded in those grammars require context-specific escaping; shell avoidance alone is not sufficient. New features must prefer separate FFmpeg arguments, constrain values to typed choices or numbers, and test spaces, apostrophes, Unicode, colons, and Windows-style paths where applicable.
 
 ## Files, Temporary Data, and Overwrites
@@ -35,6 +40,7 @@ Small compressed inputs can require large amounts of CPU, memory, disk, or outpu
 ## Security Invariants
 
 - No runtime `shell=True`, `os.system`, or shell-string process launch.
+- No interactive standard input for managed FFmpeg jobs.
 - No silent overwrite.
 - Stable exit categories distinguish usage, environment, validation, processing, and partial success.
 - Generated fixtures and release artifacts contain no unknown third-party media.

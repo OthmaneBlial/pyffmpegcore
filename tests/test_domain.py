@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import subprocess
 import sys
 import threading
 from io import StringIO
@@ -272,7 +273,13 @@ def test_keyboard_interrupt_terminates_child_as_cancelled(monkeypatch):
     process.stderr = StringIO("")
     process.poll.return_value = None
     process.returncode = -15
-    monkeypatch.setattr("pyffmpegcore.executor.subprocess.Popen", lambda *_args, **_kwargs: process)
+    popen_kwargs = {}
+
+    def open_process(*_args, **kwargs):
+        popen_kwargs.update(kwargs)
+        return process
+
+    monkeypatch.setattr("pyffmpegcore.executor.subprocess.Popen", open_process)
 
     def interrupt(_seconds):
         raise KeyboardInterrupt
@@ -288,5 +295,6 @@ def test_keyboard_interrupt_terminates_child_as_cancelled(monkeypatch):
 
     assert outcome.status is JobStatus.CANCELLED
     assert outcome.category == "cancelled"
+    assert popen_kwargs["stdin"] is subprocess.DEVNULL
     assert "cancelled" in outcome.stderr
     process.terminate.assert_called_once()

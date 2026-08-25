@@ -141,6 +141,7 @@ class WorkflowPlanner:
     ) -> ExecutionPlan:
         global_options = (
             "-y" if force else "-n",
+            "-nostdin",
             "-progress",
             "pipe:1",
             "-nostats",
