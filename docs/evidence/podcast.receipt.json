@@ -1,0 +1,207 @@
+{
+  "schema_version": "1.0",
+  "privacy": {
+    "paths": "basename-only",
+    "url_credentials": "redacted",
+    "url_queries": "redacted",
+    "secret_assignments": "<redacted>",
+    "content_hashing": "disabled"
+  },
+  "plan": {
+    "workflow": "normalize-audio",
+    "command": [
+      "ffmpeg",
+      "-n",
+      "-progress",
+      "pipe:1",
+      "-nostats",
+      "-i",
+      "<path>/sample_audio_wav.wav",
+      "-af",
+      "loudnorm=I=-16.0:TP=-1.5:LRA=11.0",
+      "-c:a",
+      "libmp3lame",
+      "-b:a",
+      "192k",
+      "<path>/podcast.mp3"
+    ],
+    "inputs": [
+      "<path>/sample_audio_wav.wav"
+    ],
+    "outputs": [
+      "<path>/podcast.mp3"
+    ],
+    "policy": {
+      "overwrite": "refuse",
+      "timeout_seconds": null,
+      "stdout": "tail",
+      "stderr": "tail",
+      "capture_tail_chars": 16384,
+      "temporary_files": "clean"
+    },
+    "required_capabilities": [
+      "filter:loudnorm",
+      "encoder:libmp3lame"
+    ],
+    "selected_streams": [
+      "audio:0"
+    ],
+    "operations": [
+      "normalize to I=-16.0 LUFS, TP=-1.5 dBTP, LRA=11.0 LU"
+    ],
+    "steps": [],
+    "warnings": [],
+    "metadata": {
+      "structured_progress": true,
+      "required_stream_types": [
+        "audio"
+      ]
+    },
+    "schema_version": "1.0"
+  },
+  "tools": {
+    "pyffmpegcore": "0.2.0",
+    "python": "3.14.6",
+    "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+    "ffmpeg": "ffmpeg version 9.0.1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "ffprobe": "ffprobe version 9.0.1 Copyright (c) 2007-2026 the FFmpeg developers"
+  },
+  "summary": {
+    "total": 1,
+    "succeeded": 1,
+    "failed": 0
+  },
+  "items": [
+    {
+      "input_probe": {
+        "path": "<path>/sample_audio_wav.wav",
+        "format_name": "wav",
+        "duration": 4.2,
+        "size_bytes": 370518,
+        "bit_rate": 705748,
+        "streams": [
+          {
+            "index": 0,
+            "type": "audio",
+            "codec": "pcm_s16le",
+            "width": null,
+            "height": null,
+            "sample_rate": 44100,
+            "channels": 1,
+            "language": null,
+            "rotation": null
+          }
+        ],
+        "chapter_count": 0
+      },
+      "output_probe": {
+        "path": "<path>/podcast.mp3",
+        "format_name": "mp3",
+        "duration": 4.2,
+        "size_bytes": 101996,
+        "bit_rate": 194278,
+        "streams": [
+          {
+            "index": 0,
+            "type": "audio",
+            "codec": "mp3",
+            "width": null,
+            "height": null,
+            "sample_rate": 48000,
+            "channels": 1,
+            "language": null,
+            "rotation": null
+          }
+        ],
+        "chapter_count": 0
+      },
+      "proof": {
+        "input_size_bytes": 370518,
+        "output_size_bytes": 101996,
+        "size_change_bytes": -268522,
+        "reduction_percent": 72.47,
+        "target_size_bytes": null,
+        "target_met": null
+      },
+      "preflight": {
+        "schema_version": "1.0",
+        "workflow": "normalize-audio",
+        "ok": true,
+        "checks": [
+          {
+            "name": "ffmpeg",
+            "status": "pass",
+            "message": "Executable: /opt/homebrew/bin/ffmpeg",
+            "hint": null
+          },
+          {
+            "name": "capability/filter:loudnorm",
+            "status": "pass",
+            "message": "Available",
+            "hint": null
+          },
+          {
+            "name": "capability/encoder:libmp3lame",
+            "status": "pass",
+            "message": "Available",
+            "hint": null
+          },
+          {
+            "name": "input/<path>/sample_audio_wav.wav",
+            "status": "pass",
+            "message": "Input is readable",
+            "hint": null
+          },
+          {
+            "name": "streams/<path>/sample_audio_wav.wav",
+            "status": "pass",
+            "message": "Required streams available: audio",
+            "hint": null
+          },
+          {
+            "name": "output/<path>/podcast.mp3",
+            "status": "pass",
+            "message": "Output parent is writable: <path>",
+            "hint": null
+          },
+          {
+            "name": "collision/<path>/podcast.mp3",
+            "status": "pass",
+            "message": "No blocking output collision",
+            "hint": null
+          },
+          {
+            "name": "disk/<path>/podcast.mp3",
+            "status": "pass",
+            "message": "Free space 9541414912 bytes; estimate 370518",
+            "hint": null
+          },
+          {
+            "name": "container/<path>/podcast.mp3",
+            "status": "pass",
+            "message": "Muxer available: mp3",
+            "hint": null
+          }
+        ]
+      },
+      "result": {
+        "workflow": "normalize-audio",
+        "status": "succeeded",
+        "exit_category": "ok",
+        "returncode": 0,
+        "elapsed_seconds": 0.2249922079499811,
+        "progress": {
+          "schema_version": "1.0",
+          "sequence": 1,
+          "status": "end",
+          "frame": null,
+          "time_seconds": 4.2,
+          "speed": 31.4,
+          "item": "normalize-audio"
+        },
+        "warnings": []
+      }
+    }
+  ],
+  "content_hashes": []
+}

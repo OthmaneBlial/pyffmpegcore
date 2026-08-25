@@ -37,6 +37,7 @@ nav:
   - Container image: container.md
   - GitHub Action: github-action.md
   - Performance: performance.md
+  - Reproducible evidence: evidence.md
   - Recipes:
       - Overview: recipes/index.md
       - Web-compatible video: recipes/web-video.md

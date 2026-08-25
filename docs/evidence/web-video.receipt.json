@@ -1,0 +1,228 @@
+{
+  "schema_version": "1.0",
+  "privacy": {
+    "paths": "basename-only",
+    "url_credentials": "redacted",
+    "url_queries": "redacted",
+    "secret_assignments": "<redacted>",
+    "content_hashing": "disabled"
+  },
+  "plan": {
+    "workflow": "convert",
+    "command": [
+      "ffmpeg",
+      "-n",
+      "-progress",
+      "pipe:1",
+      "-nostats",
+      "-i",
+      "<path>/sample_video_mov.mov",
+      "-map",
+      "0:v:0?",
+      "-map",
+      "0:a:0?",
+      "-map_metadata",
+      "0",
+      "-map_chapters",
+      "0",
+      "-c:v",
+      "libx264",
+      "-c:a",
+      "aac",
+      "-pix_fmt",
+      "yuv420p",
+      "-movflags",
+      "+faststart",
+      "<path>/web.mp4"
+    ],
+    "inputs": [
+      "<path>/sample_video_mov.mov"
+    ],
+    "outputs": [
+      "<path>/web.mp4"
+    ],
+    "policy": {
+      "overwrite": "refuse",
+      "timeout_seconds": null,
+      "stdout": "tail",
+      "stderr": "tail",
+      "capture_tail_chars": 16384,
+      "temporary_files": "clean"
+    },
+    "required_capabilities": [
+      "encoder:libx264",
+      "encoder:aac",
+      "muxer:mp4"
+    ],
+    "selected_streams": [
+      "video",
+      "audio"
+    ],
+    "operations": [
+      "apply profile web/mp4-compatible v1",
+      "select the first video and first audio streams when present",
+      "preserve compatible container metadata and chapters",
+      "video codec: libx264",
+      "audio codec: aac",
+      "pixel format: yuv420p",
+      "hardware acceleration: none; use the software path"
+    ],
+    "steps": [],
+    "warnings": [],
+    "metadata": {
+      "structured_progress": true,
+      "required_stream_types": [],
+      "profile": {
+        "schema_version": "1.0",
+        "name": "web/mp4-compatible",
+        "profile_version": 1
+      }
+    },
+    "schema_version": "1.0"
+  },
+  "tools": {
+    "pyffmpegcore": "0.2.0",
+    "python": "3.14.6",
+    "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+    "ffmpeg": "ffmpeg version 9.0.1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "ffprobe": "ffprobe version 9.0.1 Copyright (c) 2007-2026 the FFmpeg developers"
+  },
+  "summary": {
+    "total": 1,
+    "succeeded": 1,
+    "failed": 0
+  },
+  "items": [
+    {
+      "input_probe": {
+        "path": "<path>/sample_video_mov.mov",
+        "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+        "duration": 6.0,
+        "size_bytes": 688662,
+        "bit_rate": 918216,
+        "streams": [
+          {
+            "index": 0,
+            "type": "video",
+            "codec": "h264",
+            "width": 640,
+            "height": 360,
+            "sample_rate": null,
+            "channels": null,
+            "language": null,
+            "rotation": null
+          }
+        ],
+        "chapter_count": 0
+      },
+      "output_probe": {
+        "path": "<path>/web.mp4",
+        "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+        "duration": 6.0,
+        "size_bytes": 555083,
+        "bit_rate": 740110,
+        "streams": [
+          {
+            "index": 0,
+            "type": "video",
+            "codec": "h264",
+            "width": 640,
+            "height": 360,
+            "sample_rate": null,
+            "channels": null,
+            "language": "und",
+            "rotation": null
+          }
+        ],
+        "chapter_count": 0
+      },
+      "proof": {
+        "input_size_bytes": 688662,
+        "output_size_bytes": 555083,
+        "size_change_bytes": -133579,
+        "reduction_percent": 19.4,
+        "target_size_bytes": null,
+        "target_met": null
+      },
+      "preflight": {
+        "schema_version": "1.0",
+        "workflow": "convert",
+        "ok": true,
+        "checks": [
+          {
+            "name": "ffmpeg",
+            "status": "pass",
+            "message": "Executable: /opt/homebrew/bin/ffmpeg",
+            "hint": null
+          },
+          {
+            "name": "capability/encoder:libx264",
+            "status": "pass",
+            "message": "Available",
+            "hint": null
+          },
+          {
+            "name": "capability/encoder:aac",
+            "status": "pass",
+            "message": "Available",
+            "hint": null
+          },
+          {
+            "name": "capability/muxer:mp4",
+            "status": "pass",
+            "message": "Available",
+            "hint": null
+          },
+          {
+            "name": "input/<path>/sample_video_mov.mov",
+            "status": "pass",
+            "message": "Input is readable",
+            "hint": null
+          },
+          {
+            "name": "output/<path>/web.mp4",
+            "status": "pass",
+            "message": "Output parent is writable: <path>",
+            "hint": null
+          },
+          {
+            "name": "collision/<path>/web.mp4",
+            "status": "pass",
+            "message": "No blocking output collision",
+            "hint": null
+          },
+          {
+            "name": "disk/<path>/web.mp4",
+            "status": "pass",
+            "message": "Free space 9544380416 bytes; estimate 688662",
+            "hint": null
+          },
+          {
+            "name": "container/<path>/web.mp4",
+            "status": "pass",
+            "message": "Muxer available: mp4",
+            "hint": null
+          }
+        ]
+      },
+      "result": {
+        "workflow": "convert",
+        "status": "succeeded",
+        "exit_category": "ok",
+        "returncode": 0,
+        "elapsed_seconds": 0.34755204198881984,
+        "progress": {
+          "schema_version": "1.0",
+          "sequence": 1,
+          "status": "end",
+          "frame": 144,
+          "time_seconds": 5.916667,
+          "speed": 20.7,
+          "item": "convert"
+        },
+        "warnings": []
+      }
+    }
+  ],
+  "content_hashes": []
+}

@@ -27,3 +27,5 @@ subjective quality.
 The default reserves a conservative 5% for muxing overhead. Advanced users can
 override it with `--container-overhead-percent`; lowering the reserve can move
 the result closer to the limit but increases the risk of a reported `MISS`.
+
+See the [dated target-size proof and redacted receipt](../evidence.md#reproducible-recipe-evidence).

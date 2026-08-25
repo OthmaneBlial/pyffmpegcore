@@ -28,6 +28,7 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 - A pinned non-root multi-architecture container supply chain with pre-publish smoke tests, blocking vulnerability scan, SBOM, provenance, and digest attestation.
 - A digest-pinned composite GitHub Action that runs typed pipelines and preserves receipts, events, resume state, results, and selected outputs.
 - A versioned overhead benchmark for startup, exact-plan processing, package size, and pipeline-cache behavior, plus documented pipx and uv tool installs.
+- Dated, privacy-redacted before/after evidence for the web-video, exact-size, and podcast flagship recipes.
 
 ### Changed
 

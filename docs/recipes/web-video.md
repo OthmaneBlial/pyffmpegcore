@@ -30,3 +30,5 @@ if result.returncode != 0:
 ## Verify
 
 The output should probe as an MP4-family container with H.264 video and AAC audio when the source has audio. The command re-encodes; it is not lossless. Existing outputs require explicit CLI `--force`.
+
+See the [dated before/after proof and redacted receipt](../evidence.md#reproducible-recipe-evidence).

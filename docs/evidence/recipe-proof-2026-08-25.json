@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-08-25",
+  "source": {
+    "kind": "deterministic-first-party-fixtures",
+    "generator": "tests/media/download_fixtures.py",
+    "manifest": "tests/media/manifest.json"
+  },
+  "measurements": [
+    {
+      "recipe": "web-compatible-video",
+      "input_fixture": "sample_video_mov.mov",
+      "input_bytes": 688662,
+      "output_bytes": 555083,
+      "reduction_percent": 19.4,
+      "output_container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "output_video_codec": "h264",
+      "receipt": "web-video.receipt.json",
+      "receipt_sha256": "ad3aed448cfb75b25ee628c0a6c0a01924836b85ea5845968c4d0da75cd3ba78"
+    },
+    {
+      "recipe": "exact-size-upload",
+      "input_fixture": "sample_mp4_h264.mp4",
+      "input_bytes": 4042503,
+      "output_bytes": 248417,
+      "target_bytes": 262144,
+      "target_met": true,
+      "output_video_codec": "h264",
+      "output_audio_codec": "aac",
+      "receipt": "exact-size.receipt.json",
+      "receipt_sha256": "d560a97e8450c4bfe9d2650f3e04e7e1c8f56369d76b7ff2c2ddcf94756d4410"
+    },
+    {
+      "recipe": "podcast-loudness",
+      "input_fixture": "sample_audio_wav.wav",
+      "input_lufs": -22.0,
+      "output_lufs": -16.2,
+      "target_lufs": -16.0,
+      "input_bytes": 370518,
+      "output_bytes": 101996,
+      "output_audio_codec": "mp3",
+      "receipt": "podcast.receipt.json",
+      "receipt_sha256": "8161ac5ad7892bbd2fa2550e4f2ce4c583126b668b3db9fad757d2e41601e481"
+    }
+  ]
+}

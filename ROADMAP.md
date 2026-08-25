@@ -170,19 +170,19 @@ P0 Truth and reproducibility
 
 - [x] Use one category statement across GitHub description, README, PyPI summary, docs, and release notes.
 - [x] Replace the generic “wrapper” framing with the safe, explainable task-runner promise.
-- [ ] State the primary user, supported environment, required external FFmpeg dependency, and explicit limits above the fold.
+- [x] State the primary user, supported environment, required external FFmpeg dependency, and explicit limits above the fold.
 - [x] Add a short “When to use PyFFmpegCore / when not to” comparison against raw FFmpeg, `ffmpeg-python`, `python-ffmpeg`, `ffmpegio`, and PyAV.
 - [x] Keep the comparison factual: PyFFmpegCore is for task safety and reproducibility, not arbitrary graph DSLs, async builders, NumPy frame I/O, or direct packet/frame access.
 - [x] Set the GitHub homepage to the documentation site and add Documentation/Changelog project URLs to package metadata.
 
 ### P1.2 Build a proof-led README
 
-- [ ] Put one working install command, one representative task, expected output, and the support matrix above the long command catalog.
+- [x] Put one working install command, one representative task, expected output, and the support matrix above the long command catalog.
 - [ ] Record a real 60–90 second terminal demo: public install, `doctor`, synthetic smoke test, explained plan, progress, output summary, and receipt. Do not fake terminal output.
-- [ ] Provide accessible text steps and alt text for every visual asset.
-- [ ] Show one measurable before/after result, such as file size, format, streams, or loudness—not decorative screenshots.
-- [ ] Move the complete command catalog to docs and keep three high-value recipes in the README.
-- [ ] Surface real proof: current CI, compatibility matrix, release provenance, security policy, and real-media methodology.
+- [x] Provide accessible text steps and alt text for every visual asset.
+- [x] Show one measurable before/after result, such as file size, format, streams, or loudness—not decorative screenshots.
+- [x] Move the complete command catalog to docs and keep three high-value recipes in the README.
+- [x] Surface real proof: current CI, compatibility matrix, release provenance, security policy, and real-media methodology.
 
 ### P1.3 Create task-first documentation
 
@@ -329,7 +329,7 @@ P0 Truth and reproducibility
 ### P5.1 Turn support into public knowledge
 
 - [ ] Convert repeated real user questions into tested recipes and troubleshooting pages.
-- [ ] Publish before/after media evidence and receipts for each flagship recipe.
+- [x] Publish before/after media evidence and receipts for each flagship recipe.
 - [ ] Invite recipe proposals through a structured issue form; promote only validated recipes into the supported catalog.
 - [ ] Enable Discussions for recipe requests/show-and-tell only when the maintainer can triage it consistently.
 - [ ] Link releases to the exact recipes, compatibility evidence, and user problems they improve.

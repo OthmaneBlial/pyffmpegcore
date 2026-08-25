@@ -1,297 +1,207 @@
 # PyFFmpegCore
 
-The safe, explainable FFmpeg task runner for the terminal, Python, and CI.
+**Preflight the media stack. Preview the exact FFmpeg plan. Run a maintained
+workflow. Keep a privacy-redacted receipt.**
 
-Use it when you want to:
-
-- inspect a video or audio file
-- convert video formats
-- compress large videos
-- extract audio from video
-- grab thumbnails
-- generate waveform images
-- join clips together
-- add, extract, or burn subtitles
-- mix or normalize audio
-- batch-convert images
+PyFFmpegCore is a safe, explainable FFmpeg task runner for developers and
+technical creators automating local or CI media jobs. It supports Python
+3.10–3.14 on Linux, macOS, and Windows and requires external `ffmpeg` and
+`ffprobe` executables. It does not bundle codecs, replace arbitrary FFmpeg
+filter graphs, expose packet/frame internals, or provide hosted transcoding.
 
 [![CI](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/ci.yml/badge.svg)](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/ci.yml)
+[![Action integration](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/action-integration.yml/badge.svg)](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/action-integration.yml)
 [![CodeQL](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/codeql.yml/badge.svg)](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/codeql.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/OthmaneBlial/pyffmpegcore/badge)](https://securityscorecards.dev/viewer/?uri=github.com/OthmaneBlial/pyffmpegcore)
-[![License](https://img.shields.io/github/license/OthmaneBlial/pyffmpegcore)](LICENSE)
+[![License: MIT](https://img.shields.io/github/license/OthmaneBlial/pyffmpegcore)](LICENSE)
 
-[Documentation](https://othmaneblial.github.io/pyffmpegcore/) · [Five-minute start](https://othmaneblial.github.io/pyffmpegcore/quickstart/) · [Recipes](https://othmaneblial.github.io/pyffmpegcore/recipes/) · [Security](SECURITY.md)
+[Documentation](https://othmaneblial.github.io/pyffmpegcore/) ·
+[Five-minute start](https://othmaneblial.github.io/pyffmpegcore/quickstart/) ·
+[Recipes](https://othmaneblial.github.io/pyffmpegcore/recipes/) ·
+[Reproducible evidence](https://othmaneblial.github.io/pyffmpegcore/evidence/) ·
+[Security](SECURITY.md)
 
-## What This Project Is
+## Install and prove one useful result
 
-PyFFmpegCore is now designed to be used first as a CLI:
-
-```bash
-pyffmpegcore ...
-```
-
-It also still exposes a Python API for developers, but the easiest way to use the project is now the terminal command.
-
-## What Is Verified
-
-The continuously verified repository baseline includes:
-
-- the Python versions declared in the CI compatibility matrix
-- `ffmpeg` and `ffprobe` available on `PATH`
-- unit, CLI, packaging, and real-media tests
-- locally generated video, audio, subtitle, and image fixtures
-- end-to-end CLI checks for the shipped commands
-- path handling for spaces and apostrophes in important workflows
-
-See the [compatibility policy and live evidence](docs/COMPATIBILITY.md) instead of relying on a dated test count.
-
-## Install
-
-You need:
-
-- Python `3.10+`
-- `ffmpeg`
-- `ffprobe`
-
-Until the first PyPI release is published, install the current public source with `pipx`:
+Until the first PyPI release is public, install the latest validated source
+revision in an isolated environment:
 
 ```bash
-pipx install git+https://github.com/OthmaneBlial/pyffmpegcore.git@main
-```
-
-Or with regular `pip`:
-
-```bash
-python -m pip install --user git+https://github.com/OthmaneBlial/pyffmpegcore.git@main
-```
-
-From a repo checkout you can also use the one-command installers:
-
-```bash
-./install.sh
-```
-
-Windows uses the PowerShell installer instead:
-
-```powershell
-.\install.ps1
-```
-
-Then confirm the install:
-
-```bash
-pyffmpegcore --version
+pipx install git+https://github.com/OthmaneBlial/pyffmpegcore.git@8c7e3a91833d7d0c4215bbe512176842588dc1fa
 pyffmpegcore doctor
 pyffmpegcore smoke-test
 ```
 
-More install details are in [CLI_INSTALL.md](CLI_INSTALL.md).
-
-## Five-Minute Start
-
-If you already have your own files, replace the sample names below with your own.
-
-### 1. Check your setup
+Turn an editor/camera MOV into a conservative web MP4. First inspect the plan
+without writing anything, then execute the same profile and keep its receipt:
 
 ```bash
-pyffmpegcore doctor
+pyffmpegcore profile run web/mp4-compatible \
+  --input input.mov \
+  --output web.mp4 \
+  --explain
+
+pyffmpegcore profile run web/mp4-compatible \
+  --input input.mov \
+  --output web.mp4 \
+  --receipt web.receipt.json
 ```
 
-### 2. Inspect a file before changing it
+The successful command reports the output container, duration, byte size,
+video/audio codecs, and receipt path. The receipt records the redacted plan,
+preflight facts, tool versions, probes, elapsed result, and stable exit category:
 
-```bash
-pyffmpegcore probe --input my-video.mp4
+```text
+Output: web.mp4
+Container: mov,mp4,m4a,3gp,3g2,mj2
+Duration: 6.00 seconds
+Size: 542.1 KB
+Video: h264 640x360
+Receipt: web.receipt.json
 ```
 
-### 3. Convert a WebM or MOV into MP4
+Those numbers come from the deterministic proof fixture. Your duration and size
+will reflect your input.
 
-```bash
-pyffmpegcore convert --input input.webm --output output.mp4 --video-codec libx264 --audio-codec aac
-```
+## Current support contract
 
-Preview the exact command and environment checks before writing, or keep a machine-readable execution result:
-
-```bash
-pyffmpegcore convert --input input.webm --output output.mp4 --video-codec libx264 --audio-codec aac --explain
-pyffmpegcore convert --input input.webm --output output.mp4 --video-codec libx264 --audio-codec aac --result-json > result.json
-```
-
-### 4. Make a large video smaller
-
-```bash
-pyffmpegcore compress --input large-video.mp4 --output smaller-video.mp4 --crf 28
-```
-
-### 5. Pull the audio out of a video
-
-```bash
-pyffmpegcore extract-audio --input interview.mp4 --output interview.mp3
-```
-
-## Practice With The Same Real Files Used In Tests
-
-If you want safe practice files instead of your own media, generate the same deterministic fixtures used in real validation:
-
-```bash
-python tests/media/download_fixtures.py
-```
-
-That creates files under `tests/media/downloads/` without downloading third-party media.
-
-Main practice files:
-
-| File | What it represents |
+| Environment | Continuously tested claim |
 | --- | --- |
-| `tests/media/downloads/sample_mp4_h264.mp4` | a normal MP4 clip with video and audio |
-| `tests/media/downloads/sample_webm_vp9.webm` | a WebM video you want to convert |
-| `tests/media/downloads/sample_video_mov.mov` | a camera or editor export |
-| `tests/media/downloads/sample_audio_mp3.mp3` | a song, podcast, or voice-over clip |
-| `tests/media/downloads/sample_audio_wav.wav` | an uncompressed audio recording |
-| `tests/media/downloads/sample_image_png.png` | a graphic or screenshot |
-| `tests/media/downloads/sample_image_jpg.jpg` | a photo |
-| `tests/media/downloads/sample_subtitles.srt` | a subtitle file you want to attach or burn |
+| Python | 3.10–3.14 package contract on Linux |
+| Ubuntu | Exact-wheel media smoke on Python 3.10 and 3.14 |
+| macOS | Exact-wheel media smoke on Python 3.10 and 3.14 |
+| Windows | Exact-wheel media smoke on Python 3.10 and 3.14 |
+| FFmpeg | Current runner packages; exact versions captured in CI evidence |
 
-## Copy-Paste Commands
+The [compatibility policy](docs/COMPATIBILITY.md) distinguishes tested cells
+from combinations expected to work. A workflow can still reject a missing
+encoder, filter, muxer, protocol, stream, writable destination, or disk-space
+requirement before mutation.
 
-### Inspect a file
+## Why this instead of another wrapper?
 
-```bash
-pyffmpegcore probe --input tests/media/downloads/sample_mp4_h264.mp4
-pyffmpegcore probe --input tests/media/downloads/sample_mp4_h264.mp4 --json
+Raw FFmpeg remains the right choice when you already own and review the full
+argument vector. Graph builders are better for arbitrary filter graphs; PyAV is
+better for packet/frame access; array-oriented libraries are better for NumPy
+or image-processing loops.
+
+PyFFmpegCore is for a different job:
+
+```text
+diagnose -> preflight -> deterministic plan -> typed workflow -> result -> receipt
 ```
 
-### Convert WebM to MP4
+- no shell interpolation of paths or untrusted values;
+- explicit overwrite, timeout, cancellation, cleanup, and exit-code policies;
+- maintained profiles with capability-aware failure and fallback guidance;
+- human explanations and versioned machine output from the same plan;
+- deterministic media fixtures and real FFmpeg execution in CI;
+- no default telemetry and no content hashing unless requested.
+
+See the [factual comparison](docs/comparison.md) with raw FFmpeg,
+`ffmpeg-python`, `python-ffmpeg`, `ffmpegio`, and PyAV.
+
+## Measured proof, not decorative screenshots
+
+These three jobs ran on 2026-08-25 against generated, first-party fixtures:
+
+| Workflow | Before | After |
+| --- | ---: | ---: |
+| Web-compatible video | 688,662-byte MOV | 555,083-byte H.264 MP4; 19.4% smaller |
+| Fit under 256 KiB | 4,042,503-byte MP4 | 248,417 bytes; target passed |
+| Podcast loudness | -22.0 LUFS WAV | -16.2 LUFS MP3 for a -16.0 LUFS target |
+
+Review the [full commands, probe facts, redacted receipts, and receipt
+checksums](docs/evidence.md). The [real-media methodology](docs/test-methodology.md)
+explains fixture generation, capability skips, failure contracts, and artifact
+validation.
+
+## Three high-value recipes
+
+### Make a portable web video
 
 ```bash
-pyffmpegcore convert \
-  --input tests/media/downloads/sample_webm_vp9.webm \
-  --output converted.mp4 \
-  --video-codec libx264 \
-  --audio-codec aac
+pyffmpegcore profile run web/mp4-compatible \
+  --input source.mov --output web.mp4 --receipt web.receipt.json
 ```
 
-### Compress a video
+[Input contract and verification](docs/recipes/web-video.md)
+
+### Fit an upload under a byte limit
 
 ```bash
 pyffmpegcore compress \
-  --input tests/media/downloads/sample_mp4_h264.mp4 \
-  --output compressed.mp4 \
-  --crf 28
+  --input upload.mp4 --output upload-small.mp4 \
+  --target-size 24MiB --two-pass --receipt upload.receipt.json
 ```
 
-### Extract audio
+[Feasibility, quality floor, and measured proof](docs/recipes/exact-size.md)
+
+### Normalize spoken-word audio
 
 ```bash
-pyffmpegcore extract-audio \
-  --input tests/media/downloads/sample_mp4_h264.mp4 \
-  --output audio-only.mp3
+pyffmpegcore normalize-audio \
+  --input episode.wav --output episode.mp3 \
+  --method loudnorm --receipt episode.receipt.json
 ```
 
-### Create a thumbnail
+[Loudness targets and listening checks](docs/recipes/podcast.md)
+
+The complete command catalog is generated into the [CLI
+reference](https://othmaneblial.github.io/pyffmpegcore/reference/cli/). More
+task-first recipes cover subtitles, thumbnails, audio extraction, and image
+batches.
+
+## Repeatable automation
+
+Compose existing typed workflows in strict JSON or TOML—never raw shell
+strings—then validate, visualize, dry-run, execute, resume, or cache the DAG:
 
 ```bash
-pyffmpegcore thumbnail \
-  --input tests/media/downloads/sample_mp4_h264.mp4 \
-  --output thumbnail.jpg \
-  --timestamp 00:00:01 \
-  --width 640
+pyffmpegcore pipeline validate pipelines/web-publish.json
+pyffmpegcore pipeline graph pipelines/web-publish.json --format mermaid
+pyffmpegcore pipeline run pipelines/web-publish.json \
+  --receipt-dir receipts --state pipeline-state.json --events events.jsonl
 ```
 
-### Generate a waveform image
-
-```bash
-pyffmpegcore waveform \
-  --input tests/media/downloads/sample_audio_mp3.mp3 \
-  --output waveform.png \
-  --width 1200 \
-  --height 300
-```
-
-### Burn subtitles into a video
-
-```bash
-pyffmpegcore subtitles burn \
-  --video tests/media/downloads/sample_mp4_h264.mp4 \
-  --subtitle tests/media/downloads/sample_subtitles.srt \
-  --output burned-subtitles.mp4
-```
-
-### Join matching clips together
-
-```bash
-pyffmpegcore concat \
-  --inputs tests/media/downloads/sample_mp4_h264.mp4 tests/media/downloads/sample_mp4_h264.mp4 \
-  --output joined.mp4 \
-  --mode copy
-```
-
-## Use Your Own Files
-
-Replace the sample paths with your own real filenames:
-
-- `tests/media/downloads/sample_webm_vp9.webm` -> `holiday-video.webm`
-- `tests/media/downloads/sample_mp4_h264.mp4` -> `screen-recording.mp4`
-- `tests/media/downloads/sample_audio_mp3.mp3` -> `podcast-intro.mp3`
-- `tests/media/downloads/sample_subtitles.srt` -> `captions/english.srt`
-
-Good habits:
-
-- put quotes around paths that contain spaces
-- choose the output extension you actually want, like `.mp4`, `.mp3`, `.wav`, `.jpg`, or `.webp`
-- use `pyffmpegcore probe --input your-file` first if you are not sure what kind of file you have
-- open the output file in your normal media player after each command
-
-## Help And Shell Completion
-
-Built-in help:
-
-```bash
-pyffmpegcore --help
-pyffmpegcore convert --help
-pyffmpegcore subtitles --help
-```
-
-Shell completion:
-
-```bash
-pyffmpegcore completion bash
-pyffmpegcore completion zsh
-pyffmpegcore completion powershell
-```
-
-The quick command guide is in [CLI_HELP.md](CLI_HELP.md). More task-based examples are in [EXAMPLES.md](EXAMPLES.md).
+CI can use the [digest-pinned GitHub Action](docs/github-action.md). Container
+users can pull the public `linux/amd64` and `linux/arm64` image by the verified
+digest documented in the [container guide](docs/container.md); its workflow
+blocks fixed high/critical vulnerabilities and publishes SBOM, provenance, and
+Sigstore attestation evidence.
 
 ## Python API
 
-If you want to call the project from Python code instead of the CLI:
-
-```bash
-python -m pip install "git+https://github.com/OthmaneBlial/pyffmpegcore.git@main"
-```
-
-Example:
+The CLI and Python layer use the same typed planner and workflow engine:
 
 ```python
 from pyffmpegcore import WorkflowEngine
 
 engine = WorkflowEngine()
 plan = engine.planner.extract_audio("video.mp4", "audio.mp3")
-batch = engine.run(plan)
-result = batch.items[0].result
+prepared = engine.prepare(plan)
+if not prepared.preflight.ok:
+    raise RuntimeError(prepared.preflight.render())
 
+result = engine.run(plan).items[0].result
 print(result.status, result.elapsed_seconds, result.outputs)
 ```
 
-The Python API remains useful, but the supported public path is now the `pyffmpegcore` terminal command first.
+Public types, exceptions, and stability rules are in the [Python API
+reference](https://othmaneblial.github.io/pyffmpegcore/reference/python-api/).
 
-## Trust and Participation
+## Trust, limits, and participation
 
+- [Current CI and exact-artifact evidence](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/ci.yml)
+- [Compatibility matrix](docs/COMPATIBILITY.md)
 - [Security policy and private reporting](SECURITY.md)
 - [Command-execution threat model](docs/SECURITY_MODEL.md)
-- [Compatibility policy](docs/COMPATIBILITY.md)
-- [Contributing guide](CONTRIBUTING.md)
-- [Support routes](SUPPORT.md)
+- [Release, provenance, and recovery procedure](docs/RELEASING.md)
+- [Contribution ladder and test tiers](CONTRIBUTING.md)
+- [Support and triage expectations](SUPPORT.md)
 - [Changelog](CHANGELOG.md)
-- [Release and recovery procedure](docs/RELEASING.md)
 
-The project is pre-PyPI until the public release workflow completes successfully. Source installs from `main` are convenient for evaluation but are not immutable release evidence.
+The project is pre-PyPI until Trusted Publishing succeeds. Source installation
+is useful for evaluation, but it is not a released artifact. No PyPI badge,
+download claim, or immutable release claim is shown before the public endpoints
+work.

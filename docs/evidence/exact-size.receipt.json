@@ -1,0 +1,305 @@
+{
+  "schema_version": "1.0",
+  "privacy": {
+    "paths": "basename-only",
+    "url_credentials": "redacted",
+    "url_queries": "redacted",
+    "secret_assignments": "<redacted>",
+    "content_hashing": "disabled"
+  },
+  "plan": {
+    "workflow": "compress",
+    "command": [
+      "ffmpeg",
+      "-n",
+      "-progress",
+      "pipe:1",
+      "-nostats",
+      "-i",
+      "<path>/sample_mp4_h264.mp4",
+      "-c:v",
+      "libx264",
+      "-b:v",
+      "204049",
+      "-preset",
+      "medium",
+      "-pass",
+      "1",
+      "-passlogfile",
+      "<pyffmpegcore-passlog>",
+      "-an",
+      "-f",
+      "null",
+      "<path>/null"
+    ],
+    "inputs": [
+      "<path>/sample_mp4_h264.mp4"
+    ],
+    "outputs": [
+      "<path>/under-limit.mp4"
+    ],
+    "policy": {
+      "overwrite": "refuse",
+      "timeout_seconds": null,
+      "stdout": "tail",
+      "stderr": "tail",
+      "capture_tail_chars": 16384,
+      "temporary_files": "clean"
+    },
+    "required_capabilities": [
+      "encoder:libx264",
+      "encoder:aac"
+    ],
+    "selected_streams": [
+      "video",
+      "audio"
+    ],
+    "operations": [
+      "fit output under 262144 bytes",
+      "reserve 128k audio and 5% container overhead",
+      "two-pass video bitrate: 204049 bps",
+      "quality floor: 100000 bps"
+    ],
+    "steps": [
+      {
+        "name": "analysis-pass",
+        "command": [
+          "ffmpeg",
+          "-n",
+          "-progress",
+          "pipe:1",
+          "-nostats",
+          "-i",
+          "<path>/sample_mp4_h264.mp4",
+          "-c:v",
+          "libx264",
+          "-b:v",
+          "204049",
+          "-preset",
+          "medium",
+          "-pass",
+          "1",
+          "-passlogfile",
+          "<pyffmpegcore-passlog>",
+          "-an",
+          "-f",
+          "null",
+          "<path>/null"
+        ]
+      },
+      {
+        "name": "encode-pass",
+        "command": [
+          "ffmpeg",
+          "-n",
+          "-progress",
+          "pipe:1",
+          "-nostats",
+          "-i",
+          "<path>/sample_mp4_h264.mp4",
+          "-c:v",
+          "libx264",
+          "-b:v",
+          "204049",
+          "-preset",
+          "medium",
+          "-pass",
+          "2",
+          "-passlogfile",
+          "<pyffmpegcore-passlog>",
+          "-pix_fmt",
+          "yuv420p",
+          "-c:a",
+          "aac",
+          "-b:a",
+          "128k",
+          "-movflags",
+          "+faststart",
+          "<path>/under-limit.mp4"
+        ]
+      }
+    ],
+    "warnings": [],
+    "metadata": {
+      "structured_progress": true,
+      "required_stream_types": [
+        "video"
+      ],
+      "estimated_output_bytes": 262144,
+      "target_size_bytes": 262144,
+      "minimum_feasible_bytes": 180001,
+      "duration_seconds": 6.0,
+      "temporary_placeholders": [
+        "<pyffmpegcore-passlog>"
+      ]
+    },
+    "schema_version": "1.0"
+  },
+  "tools": {
+    "pyffmpegcore": "0.2.0",
+    "python": "3.14.6",
+    "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+    "ffmpeg": "ffmpeg version 9.0.1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "ffprobe": "ffprobe version 9.0.1 Copyright (c) 2007-2026 the FFmpeg developers"
+  },
+  "summary": {
+    "total": 1,
+    "succeeded": 1,
+    "failed": 0
+  },
+  "items": [
+    {
+      "input_probe": {
+        "path": "<path>/sample_mp4_h264.mp4",
+        "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+        "duration": 6.0,
+        "size_bytes": 4042503,
+        "bit_rate": 5390004,
+        "streams": [
+          {
+            "index": 0,
+            "type": "video",
+            "codec": "h264",
+            "width": 1920,
+            "height": 1080,
+            "sample_rate": null,
+            "channels": null,
+            "language": "und",
+            "rotation": null
+          },
+          {
+            "index": 1,
+            "type": "audio",
+            "codec": "aac",
+            "width": null,
+            "height": null,
+            "sample_rate": 44100,
+            "channels": 1,
+            "language": "und",
+            "rotation": null
+          }
+        ],
+        "chapter_count": 0
+      },
+      "output_probe": {
+        "path": "<path>/under-limit.mp4",
+        "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+        "duration": 6.0,
+        "size_bytes": 248417,
+        "bit_rate": 331222,
+        "streams": [
+          {
+            "index": 0,
+            "type": "video",
+            "codec": "h264",
+            "width": 1920,
+            "height": 1080,
+            "sample_rate": null,
+            "channels": null,
+            "language": "und",
+            "rotation": null
+          },
+          {
+            "index": 1,
+            "type": "audio",
+            "codec": "aac",
+            "width": null,
+            "height": null,
+            "sample_rate": 44100,
+            "channels": 1,
+            "language": "und",
+            "rotation": null
+          }
+        ],
+        "chapter_count": 0
+      },
+      "proof": {
+        "input_size_bytes": 4042503,
+        "output_size_bytes": 248417,
+        "size_change_bytes": -3794086,
+        "reduction_percent": 93.85,
+        "target_size_bytes": 262144,
+        "target_met": true
+      },
+      "preflight": {
+        "schema_version": "1.0",
+        "workflow": "compress",
+        "ok": true,
+        "checks": [
+          {
+            "name": "ffmpeg",
+            "status": "pass",
+            "message": "Executable: /opt/homebrew/bin/ffmpeg",
+            "hint": null
+          },
+          {
+            "name": "capability/encoder:libx264",
+            "status": "pass",
+            "message": "Available",
+            "hint": null
+          },
+          {
+            "name": "capability/encoder:aac",
+            "status": "pass",
+            "message": "Available",
+            "hint": null
+          },
+          {
+            "name": "input/<path>/sample_mp4_h264.mp4",
+            "status": "pass",
+            "message": "Input is readable",
+            "hint": null
+          },
+          {
+            "name": "streams/<path>/sample_mp4_h264.mp4",
+            "status": "pass",
+            "message": "Required streams available: video",
+            "hint": null
+          },
+          {
+            "name": "output/<path>/under-limit.mp4",
+            "status": "pass",
+            "message": "Output parent is writable: <path>",
+            "hint": null
+          },
+          {
+            "name": "collision/<path>/under-limit.mp4",
+            "status": "pass",
+            "message": "No blocking output collision",
+            "hint": null
+          },
+          {
+            "name": "disk/<path>/under-limit.mp4",
+            "status": "pass",
+            "message": "Free space 9543811072 bytes; estimate 262144",
+            "hint": null
+          },
+          {
+            "name": "container/<path>/under-limit.mp4",
+            "status": "pass",
+            "message": "Muxer available: mp4",
+            "hint": null
+          }
+        ]
+      },
+      "result": {
+        "workflow": "compress",
+        "status": "succeeded",
+        "exit_category": "ok",
+        "returncode": 0,
+        "elapsed_seconds": 1.8550883340649307,
+        "progress": {
+          "schema_version": "1.0",
+          "sequence": 3,
+          "status": "end",
+          "frame": 144,
+          "time_seconds": 6.0,
+          "speed": 5.34,
+          "item": "encode-pass"
+        },
+        "warnings": []
+      }
+    }
+  ],
+  "content_hashes": []
+}
