@@ -49,7 +49,7 @@ jobs:
       - name: Save compatibility report
         run: python -m pyffmpegcore doctor --json > compatibility-report.json
       - name: Evaluate workflow capability catalog
-        run: python scripts/validate_capability_catalog.py --json > capability-catalog-report.json
+        run: python -m scripts.validate_capability_catalog --json > capability-catalog-report.json
       - name: Upload drift evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

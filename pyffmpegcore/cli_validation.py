@@ -19,12 +19,11 @@ def validate_global_contract(args: argparse.Namespace, writing_commands: Collect
     """Validate cross-command option combinations and return preview mode."""
     preview = bool(getattr(args, "dry_run", False) or getattr(args, "explain", False))
     command = getattr(args, "command", None)
-    is_writing = command in writing_commands or (
-        command == "profile" and getattr(args, "profile_command", None) == "run"
-    ) or (
-        command == "batch" and getattr(args, "batch_command", None) == "run"
-    ) or (
-        command == "pipeline" and getattr(args, "pipeline_command", None) == "run"
+    is_writing = (
+        command in writing_commands
+        or (command == "profile" and getattr(args, "profile_command", None) == "run")
+        or (command == "batch" and getattr(args, "batch_command", None) == "run")
+        or (command == "pipeline" and getattr(args, "pipeline_command", None) == "run")
     )
     if getattr(args, "plan_json", False) and not preview:
         raise CLIError("--plan-json requires --dry-run or --explain.", exit_code=2)

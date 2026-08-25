@@ -200,7 +200,9 @@ class PipelineSpec:
         unknown_cache = sorted(set(cache_payload) - _CACHE_FIELDS)
         if unknown_cache:
             raise ValidationError(f"unknown pipeline cache fields: {', '.join(unknown_cache)}")
-        if any(not isinstance(cache_payload.get(key), bool) for key in ("enabled", "content_aware") if key in cache_payload):
+        if any(
+            not isinstance(cache_payload.get(key), bool) for key in ("enabled", "content_aware") if key in cache_payload
+        ):
             raise ValidationError("pipeline cache enabled and content_aware must be booleans")
         directory = cache_payload.get("directory", ".pyffmpegcore/cache")
         if not isinstance(directory, str):
@@ -368,7 +370,9 @@ def _topological_order(steps: tuple[PipelineStepSpec, ...]) -> tuple[PipelineSte
     ordered: list[PipelineStepSpec] = []
     pending = dict(by_id)
     while pending:
-        ready = sorted(step_id for step_id in pending if all(dep in {item.id for item in ordered} for dep in inferred[step_id]))
+        ready = sorted(
+            step_id for step_id in pending if all(dep in {item.id for item in ordered} for dep in inferred[step_id])
+        )
         if not ready:
             raise ValidationError("pipeline dependency graph contains a cycle")
         for step_id in ready:
@@ -657,7 +661,9 @@ class PipelinePreflightEngine:
                     )
                 else:
                     checks.append(check)
-            prepared.append(PreparedPipelineStep(step.id, step.needs, step.plan, PreflightReport(report.workflow, tuple(checks))))
+            prepared.append(
+                PreparedPipelineStep(step.id, step.needs, step.plan, PreflightReport(report.workflow, tuple(checks)))
+            )
         return PreparedPipeline(pipeline, tuple(prepared))
 
 
@@ -777,7 +783,9 @@ def _load_pipeline_state(path: Path | None) -> dict[str, str]:
     if not isinstance(document, dict) or document.get("schema_version") != PIPELINE_STATE_SCHEMA_VERSION:
         raise ValidationError(f"pipeline state schema_version must be {PIPELINE_STATE_SCHEMA_VERSION!r}")
     completed = document.get("completed")
-    if not isinstance(completed, dict) or not all(isinstance(k, str) and isinstance(v, str) for k, v in completed.items()):
+    if not isinstance(completed, dict) or not all(
+        isinstance(k, str) and isinstance(v, str) for k, v in completed.items()
+    ):
         raise ValidationError("pipeline state completed must map step ids to cache keys")
     return dict(completed)
 
@@ -913,7 +921,9 @@ def variables_from_environment(names: list[str]) -> dict[str, str]:
     return result
 
 
-def migrate_pipeline_document(document: dict[str, Any], target_version: str = PIPELINE_SCHEMA_VERSION) -> dict[str, Any]:
+def migrate_pipeline_document(
+    document: dict[str, Any], target_version: str = PIPELINE_SCHEMA_VERSION
+) -> dict[str, Any]:
     """Validate and canonicalize a pipeline before future schema migrations are added."""
     source = document.get("schema_version") if isinstance(document, dict) else None
     if target_version != PIPELINE_SCHEMA_VERSION:

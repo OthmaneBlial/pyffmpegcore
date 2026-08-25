@@ -134,7 +134,7 @@ jobs:
       - name: Generate fixtures from an empty directory
         run: python tests/media/download_fixtures.py --force
       - name: Evaluate capability rules on this FFmpeg build
-        run: python scripts/validate_capability_catalog.py --json > capability-catalog-report.json
+        run: python -m scripts.validate_capability_catalog --json > capability-catalog-report.json
       - name: Install and exercise the exact wheel
         run: python scripts/validate_cli_install.py --artifact dist --json > compatibility-report.json
       - name: Upload compatibility evidence

@@ -270,7 +270,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="Skip jobs whose signature and completed output match --state.",
     )
     batch_run_parser.add_argument("--events", type=Path, help="Write privacy-redacted progress events as JSON Lines.")
-    batch_run_parser.add_argument("--receipt-dir", type=Path, help="Write one privacy-redacted receipt per executed job.")
+    batch_run_parser.add_argument(
+        "--receipt-dir", type=Path, help="Write one privacy-redacted receipt per executed job."
+    )
     batch_run_parser.add_argument("--max-workers", type=int, help="Override the manifest concurrency limit (1-32).")
     batch_run_parser.add_argument("--max-retries", type=int, help="Override classified transient retries (0-10).")
     batch_run_parser.add_argument(
@@ -349,11 +351,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     pipeline_run_parser.add_argument("--state", type=Path, help="Atomic pipeline resume-state JSON path.")
     pipeline_run_parser.add_argument("--resume", action="store_true", help="Resume steps matching state and outputs.")
-    pipeline_run_parser.add_argument("--events", type=Path, help="Write privacy-redacted pipeline events as JSON Lines.")
+    pipeline_run_parser.add_argument(
+        "--events", type=Path, help="Write privacy-redacted pipeline events as JSON Lines."
+    )
     pipeline_run_parser.add_argument("--receipt-dir", type=Path, help="Write one redacted receipt per executed step.")
     cache_group = pipeline_run_parser.add_mutually_exclusive_group()
     cache_group.add_argument("--cache", dest="cache_enabled", action="store_true", help="Enable completion caching.")
-    cache_group.add_argument("--no-cache", dest="cache_enabled", action="store_false", help="Disable completion caching.")
+    cache_group.add_argument(
+        "--no-cache", dest="cache_enabled", action="store_false", help="Disable completion caching."
+    )
     pipeline_run_parser.set_defaults(handler_name="handle_pipeline_run", cache_enabled=None)
 
     receipt_parser = subparsers.add_parser(

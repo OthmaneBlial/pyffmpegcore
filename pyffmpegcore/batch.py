@@ -235,7 +235,9 @@ def _load_state(path: Path | None) -> dict[str, str]:
     if not isinstance(document, dict) or document.get("schema_version") != BATCH_STATE_SCHEMA_VERSION:
         raise ValidationError(f"batch state schema_version must be {BATCH_STATE_SCHEMA_VERSION!r}")
     completed = document.get("completed")
-    if not isinstance(completed, dict) or not all(isinstance(k, str) and isinstance(v, str) for k, v in completed.items()):
+    if not isinstance(completed, dict) or not all(
+        isinstance(k, str) and isinstance(v, str) for k, v in completed.items()
+    ):
         raise ValidationError("batch state completed must be an object of job signatures")
     return dict(completed)
 
