@@ -1,22 +1,18 @@
-#!/usr/bin/env python3
-"""
-Example: Convert a video file to MP4 format.
-"""
+"""Convert a video through the public typed workflow engine."""
 
-from pyffmpegcore import FFmpegRunner
+from examples._shared import run_plan
+from pyffmpegcore import ConvertOptions, WorkflowEngine
 
 
-def main():
-    # Initialize FFmpeg runner
-    ffmpeg = FFmpegRunner()
-
-    # Convert video to MP4
-    result = ffmpeg.convert(input_file="input.avi", output_file="output.mp4", video_codec="libx264", audio_codec="aac")
-
-    if result.returncode == 0:
-        print("Conversion successful!")
-    else:
-        print(f"Conversion failed: {result.stderr}")
+def main() -> None:
+    engine = WorkflowEngine()
+    plan = engine.planner.convert(
+        "input.avi",
+        "output.mp4",
+        ConvertOptions(video_codec="libx264", audio_codec="aac"),
+    )
+    batch = run_plan(engine, plan)
+    print("Conversion successful!" if batch.succeeded else "Conversion failed!")
 
 
 if __name__ == "__main__":

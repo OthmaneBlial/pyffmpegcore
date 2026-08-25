@@ -1,35 +1,18 @@
-#!/usr/bin/env python3
-"""
-Example: Compress a video with progress tracking.
-"""
+"""Compress a video while consuming typed FFmpeg progress events."""
 
-from pyffmpegcore import FFmpegRunner, FFprobeRunner, ProgressCallback
+from examples._shared import print_progress, run_plan
+from pyffmpegcore import CompressOptions, WorkflowEngine
 
 
-def main():
-    # Initialize runners
-    ffmpeg = FFmpegRunner()
-    ffprobe = FFprobeRunner()
-
-    # Get input file duration for progress calculation
-    duration = ffprobe.get_duration("input.mp4")
-    print(f"Input duration: {duration:.2f} seconds")
-
-    # Create progress callback
-    progress_callback = ProgressCallback(total_duration=duration)
-
-    # Compress video with progress tracking
-    result = ffmpeg.compress(
-        input_file="input.mp4",
-        output_file="compressed.mp4",
-        crf=28,  # Higher CRF = more compression
-        progress_callback=progress_callback,
+def main() -> None:
+    engine = WorkflowEngine()
+    plan = engine.planner.compress(
+        "input.mp4",
+        "compressed.mp4",
+        CompressOptions(crf=28, two_pass=False),
     )
-
-    if result.returncode == 0:
-        print("Compression successful!")
-    else:
-        print(f"Compression failed: {result.stderr}")
+    batch = run_plan(engine, plan, progress_callback=print_progress)
+    print("Compression successful!" if batch.succeeded else "Compression failed!")
 
 
 if __name__ == "__main__":

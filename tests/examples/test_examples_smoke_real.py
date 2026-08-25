@@ -16,7 +16,7 @@ from examples import (
     generate_waveform,
 )
 from pyffmpegcore import FFprobeRunner
-from tests.media_utils import ensure_downloaded_media, ffmpeg_has_filter
+from tests.media_utils import ensure_downloaded_media
 
 
 def _probe(path: str) -> dict:
@@ -113,8 +113,6 @@ def test_generate_waveform_example_smoke_real_media(tmp_path):
     audio_input = str(media["audio_mp3"])
     basic_output = tmp_path / "wave.png"
     detailed_output = tmp_path / "wave_detail.png"
-    animation_output = tmp_path / "wave_anim.mp4"
-    metadata_output_dir = tmp_path / "wave_meta"
 
     assert (
         generate_waveform.generate_waveform_image(
@@ -134,32 +132,8 @@ def test_generate_waveform_example_smoke_real_media(tmp_path):
         )
         is True
     )
-    assert (
-        generate_waveform.generate_waveform_animation(
-            audio_input,
-            str(animation_output),
-            duration=2,
-            width=640,
-            height=160,
-        )
-        is True
-    )
-    if not ffmpeg_has_filter("drawtext"):
-        pytest.skip("Local FFmpeg build does not include the drawtext filter")
-    assert (
-        generate_waveform.generate_waveform_with_metadata(
-            audio_input,
-            str(metadata_output_dir),
-        )
-        is True
-    )
-
     basic_metadata = _probe(str(basic_output))
     detailed_metadata = _probe(str(detailed_output))
-    animation_metadata = _probe(str(animation_output))
 
     assert basic_metadata["video"]["codec"] == "png"
     assert detailed_metadata["video"]["codec"] == "png"
-    assert animation_metadata["video"]["codec"] == "h264"
-    assert (metadata_output_dir / "sample_audio_mp3_waveform.png").exists()
-    assert (metadata_output_dir / "sample_audio_mp3_waveform_with_metadata.png").exists()

@@ -1,78 +1,80 @@
-"""
-Tests for batch_convert_images example functionality.
-"""
+"""Image examples are thin consumers of shared single and batch plans."""
 
 from unittest.mock import MagicMock, patch
 
+from examples.batch_convert_images import (
+    batch_convert_images,
+    convert_image,
+    convert_to_webp_batch,
+    optimize_images_for_web,
+)
 
-class TestBatchImageConversion:
-    """Test batch image conversion functionality."""
 
-    @patch("pyffmpegcore.runner.FFmpegRunner.run")
-    def test_convert_image_basic(self, mock_run):
-        """Test basic image conversion."""
-        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+def _engine(*, succeeded: int = 2, failed: int = 0):
+    engine = MagicMock()
+    engine.run.return_value = MagicMock(
+        succeeded=failed == 0,
+        succeeded_count=succeeded,
+        failed_count=failed,
+        items=tuple(MagicMock(succeeded=True) for _ in range(succeeded + failed)),
+    )
+    return engine
 
-        from examples.batch_convert_images import convert_image
 
-        result = convert_image("input.png", "output.jpg", quality=85)
+@patch("examples.batch_convert_images.WorkflowEngine")
+def test_convert_image_uses_shared_single_image_plan(engine_type):
+    engine = _engine(succeeded=1)
+    engine_type.return_value = engine
 
-        assert result is True
-        mock_run.assert_called_once()
+    assert convert_image("input.png", "output.jpg", quality=85, resize=(200, 100)) is True
+    engine.planner.image.assert_called_once_with(
+        "input.png",
+        "output.jpg",
+        quality=85,
+        resize=(200, 100),
+    )
 
-    @patch("glob.glob")
-    @patch("pyffmpegcore.runner.FFmpegRunner.run")
-    @patch("os.makedirs")
-    def test_batch_convert_images(self, mock_makedirs, mock_run, mock_glob):
-        """Test batch image conversion."""
-        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
-        mock_glob.return_value = ["image1.png", "image2.png"]
 
-        from examples.batch_convert_images import batch_convert_images
+@patch("examples.batch_convert_images.WorkflowEngine")
+def test_batch_convert_images_returns_shared_batch_counts(engine_type):
+    engine = _engine(succeeded=2, failed=1)
+    engine_type.return_value = engine
 
-        results = batch_convert_images("input_dir/", "output_dir/", ["*.png"], "jpg")
+    results = batch_convert_images("input", "output", output_format="jpg", quality=80)
 
-        assert results["total"] == 2
-        assert results["successful"] == 2
-        assert results["failed"] == 0
-        assert mock_run.call_count == 2
+    assert results == {"total": 3, "successful": 2, "failed": 1}
+    engine.planner.images.assert_called_once_with(
+        "convert",
+        "input",
+        "output",
+        output_format="jpg",
+        quality=80,
+        resize=None,
+    )
 
-    @patch("pyffmpegcore.runner.FFmpegRunner.run")
-    @patch("glob.glob")
-    @patch("os.makedirs")
-    def test_optimize_images_for_web(self, mock_makedirs, mock_glob, mock_run):
-        """Test web optimization with resizing."""
-        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
-        # Mock glob to return just one file per pattern
-        mock_glob.return_value = ["large_image.jpg"]
 
-        from examples.batch_convert_images import optimize_images_for_web
+@patch("examples.batch_convert_images.WorkflowEngine")
+def test_optimize_images_for_web_uses_supported_profile(engine_type):
+    engine = _engine()
+    engine_type.return_value = engine
 
-        results = optimize_images_for_web("input_dir/", "output_dir/")
+    optimize_images_for_web("input", "output", max_width=640, max_height=360, quality=75)
 
-        # Since glob returns the same list for each pattern, we get 6 files (1 per pattern)
-        assert results["total"] == 6
-        assert mock_run.called  # Should resize and convert
+    engine.planner.images.assert_called_once_with(
+        "optimize",
+        "input",
+        "output",
+        max_width=640,
+        max_height=360,
+        quality=75,
+    )
 
-    @patch("pyffmpegcore.runner.FFmpegRunner.run")
-    @patch("glob.glob")
-    @patch("os.makedirs")
-    def test_convert_to_webp_batch(self, mock_makedirs, mock_glob, mock_run):
-        """Test WebP batch conversion."""
-        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
-        # Mock glob to return 2 files total (some patterns might return empty)
-        mock_glob.side_effect = [
-            ["image1.jpg"],
-            ["image2.png"],
-            [],
-            [],
-            [],
-        ]  # Different patterns return different results
 
-        from examples.batch_convert_images import convert_to_webp_batch
+@patch("examples.batch_convert_images.WorkflowEngine")
+def test_convert_to_webp_batch_uses_supported_profile(engine_type):
+    engine = _engine()
+    engine_type.return_value = engine
 
-        results = convert_to_webp_batch("input_dir/", "output_dir/", quality=80, lossless=False)
+    convert_to_webp_batch("input", "output", quality=70)
 
-        assert results["total"] == 2
-        # Should call convert_image for each file
-        assert mock_run.call_count == 2
+    engine.planner.images.assert_called_once_with("webp", "input", "output", quality=70)

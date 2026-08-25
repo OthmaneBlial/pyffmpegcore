@@ -20,6 +20,7 @@ The document uses `schema_version: "1.0"` and reports status, retention behavior
 - `JobResult` uses `schema_version: "1.0"` and categorizes success, runtime failure, timeout, cancellation, and validation refusal. It includes the final normalized `ProgressEvent`, capture-policy output, warnings, and output existence/size facts.
 - profiles use `schema_version: "1.0"` plus an independent positive `profile_version`.
 - `PreflightReport` uses `schema_version: "1.0"`; human output is rendered from the same check objects.
+- `WorkflowBatch` uses `schema_version: "1.0"` and is the shared CLI/Python envelope around a prepared plan and ordered item executions.
 
 Writing commands accept `--result-json`. Its version `1.0` envelope contains `plan`, `preflight`, ordered `items`, and a `summary`. Each item records its input/output identity, item-specific preflight, and stable `JobResult`. Batch image jobs therefore retain the same schema for total success, total failure, and partial success.
 

@@ -1,57 +1,48 @@
-"""
-Tests for mix_audio example functionality.
-"""
+"""Audio examples use the same curated workflow actions as the CLI."""
 
 from unittest.mock import MagicMock, patch
 
-from pyffmpegcore.runner import FFmpegRunner
+from examples.mix_audio import add_background_music, create_audio_mashup, merge_audio_sequentially, mix_audio_files
 
 
-class TestAudioProcessing:
-    """Test advanced audio processing functionality."""
+def _engine():
+    engine = MagicMock()
+    engine.run.return_value = MagicMock(succeeded=True, items=())
+    return engine
 
-    @patch("pyffmpegcore.runner.FFmpegRunner.run")
-    def test_audio_normalization(self, mock_run):
-        """Test audio normalization."""
-        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
 
-        runner = FFmpegRunner()
+@patch("examples.mix_audio.WorkflowEngine")
+def test_mix_and_concat_delegate_to_shared_planner(engine_type):
+    first, second = _engine(), _engine()
+    engine_type.side_effect = [first, second]
 
-        # Audio normalization using loudnorm filter
-        args = ["-i", "input.wav", "-af", "loudnorm=I=-16:TP=-1.5:LRA=11", "-ar", "44100", "-y", "normalized.wav"]
+    assert mix_audio_files(["voice.wav", "music.mp3"], "mix.mp3", volumes=[1.0, 0.2]) is True
+    assert merge_audio_sequentially(["one.mp3", "two.mp3"], "joined.mp3") is True
+    first.planner.mix_audio.assert_called_once_with(
+        "mix",
+        ["voice.wav", "music.mp3"],
+        "mix.mp3",
+        volumes=[1.0, 0.2],
+    )
+    second.planner.mix_audio.assert_called_once_with("concat", ["one.mp3", "two.mp3"], "joined.mp3")
 
-        result = runner.run(args)
 
-        assert result.returncode == 0
-        mock_run.assert_called_once()
-        call_args = mock_run.call_args[0][0]
-        assert "loudnorm" in " ".join(call_args)
+@patch("examples.mix_audio.WorkflowEngine")
+def test_mashup_and_background_delegate_to_shared_planner(engine_type):
+    first, second = _engine(), _engine()
+    engine_type.side_effect = [first, second]
 
-    @patch("pyffmpegcore.runner.FFmpegRunner.run")
-    def test_video_speed_adjustment(self, mock_run):
-        """Test video speed adjustment."""
-        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
-
-        runner = FFmpegRunner()
-
-        # Speed up video by 2x
-        args = [
-            "-i",
-            "input.mp4",
-            "-filter_complex",
-            "[0:v]setpts=0.5*PTS[v];[0:a]atempo=2.0[a]",
-            "-map",
-            "[v]",
-            "-map",
-            "[a]",
-            "-y",
-            "sped_up.mp4",
-        ]
-
-        result = runner.run(args)
-
-        assert result.returncode == 0
-        mock_run.assert_called_once()
-        call_args = mock_run.call_args[0][0]
-        assert "setpts" in " ".join(call_args)
-        assert "atempo" in " ".join(call_args)
+    assert create_audio_mashup(["one.mp3", "two.mp3"], "mashup.mp3", crossfade_duration=1.5) is True
+    assert add_background_music("voice.wav", "music.mp3", "episode.mp3", bg_volume=0.25) is True
+    first.planner.mix_audio.assert_called_once_with(
+        "mashup",
+        ["one.mp3", "two.mp3"],
+        "mashup.mp3",
+        crossfade_duration=1.5,
+    )
+    second.planner.mix_audio.assert_called_once_with(
+        "background",
+        ["voice.wav", "music.mp3"],
+        "episode.mp3",
+        background_volume=0.25,
+    )

@@ -272,10 +272,12 @@ python -m pip install "git+https://github.com/OthmaneBlial/pyffmpegcore.git@main
 Example:
 
 ```python
-from pyffmpegcore import FFmpegRunner, WorkflowPlanner
+from pyffmpegcore import WorkflowEngine
 
-plan = WorkflowPlanner().extract_audio("video.mp4", "audio.mp3")
-result = FFmpegRunner().execute_plan(plan)
+engine = WorkflowEngine()
+plan = engine.planner.extract_audio("video.mp4", "audio.mp3")
+batch = engine.run(plan)
+result = batch.items[0].result
 
 print(result.status, result.elapsed_seconds, result.outputs)
 ```

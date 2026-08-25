@@ -39,6 +39,7 @@ from .probe import FFprobeRunner
 from .profiles import Profile, ProfileRegistry
 from .progress import ProgressCallback, ProgressTracker
 from .runner import FFmpegRunner
+from .workflow import PreparedWorkflow, WorkflowBatch, WorkflowEngine, WorkflowExecution
 
 __version__ = "0.2.0"
 __all__ = [
@@ -62,6 +63,7 @@ __all__ = [
     "OverwritePolicy",
     "Profile",
     "ProfileRegistry",
+    "PreparedWorkflow",
     "PreflightCheck",
     "PreflightEngine",
     "PreflightReport",
@@ -74,5 +76,8 @@ __all__ = [
     "TemporaryFilePolicy",
     "ValidationError",
     "WorkflowPlanner",
+    "WorkflowBatch",
+    "WorkflowEngine",
+    "WorkflowExecution",
     "parse_size",
 ]

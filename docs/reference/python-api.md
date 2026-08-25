@@ -222,6 +222,10 @@ No public docstring is available.
 
 Load one strict versioned profile from JSON or TOML.
 
+## `PreparedWorkflow`
+
+An immutable plan paired with its non-mutating preflight facts.
+
 ## `PreflightCheck`
 
 One deterministic preflight fact.
@@ -319,6 +323,10 @@ No public docstring is available.
 
 No public docstring is available.
 
+### `image(self, input_file: 'str', output_file: 'str', *, quality: 'int' = 85, resize: 'tuple[int, int] | None' = None, force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
+
+Plan one still-image conversion without routing through a directory batch.
+
 ### `images(self, action: 'str', input_dir: 'str', output_dir: 'str', *, output_format: 'str' = 'jpg', quality: 'int' = 85, resize: 'tuple[int, int] | None' = None, max_width: 'int' = 1920, max_height: 'int' = 1080, force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
 
 No public docstring is available.
@@ -348,5 +356,33 @@ No public docstring is available.
 No public docstring is available.
 
 ### `waveform(self, input_file: 'str', output_file: 'str', *, width: 'int' = 800, height: 'int' = 200, colors: 'str' = 'white', force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
+
+No public docstring is available.
+
+## `WorkflowBatch`
+
+Versioned machine-readable outcome for a single or multi-item plan.
+
+### `to_dict(self) -> 'dict[str, object]'`
+
+No public docstring is available.
+
+## `WorkflowEngine`
+
+Compile, preflight, and execute every supported workflow through one public layer.
+
+### `prepare(self, plan: 'ExecutionPlan') -> 'PreparedWorkflow'`
+
+Preflight an already compiled plan without mutating media or output paths.
+
+### `run(self, plan: 'ExecutionPlan | PreparedWorkflow', *, cancellation: 'threading.Event | None' = None, progress_callback: 'Callable[[ProgressEvent], None] | None' = None) -> 'WorkflowBatch'`
+
+Execute a single workflow or an item-aware image batch with stable results.
+
+## `WorkflowExecution`
+
+Preflight and execution facts for one input/output item.
+
+### `to_dict(self) -> 'dict[str, object]'`
 
 No public docstring is available.

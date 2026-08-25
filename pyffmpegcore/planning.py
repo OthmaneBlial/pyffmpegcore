@@ -947,3 +947,53 @@ class WorkflowPlanner:
             },
             steps=tuple(steps),
         )
+
+    def image(
+        self,
+        input_file: str,
+        output_file: str,
+        *,
+        quality: int = 85,
+        resize: tuple[int, int] | None = None,
+        force: bool = False,
+        timeout_seconds: float | None = None,
+    ) -> ExecutionPlan:
+        """Plan one still-image conversion without routing through a directory batch."""
+        if not 1 <= quality <= 100:
+            raise ValidationError("image quality must be between 1 and 100")
+        source, output = normalized_path(input_file), normalized_path(output_file)
+        args = ["-i", source]
+        capabilities: tuple[str, ...] = ()
+        if resize is not None:
+            if resize[0] <= 0 or resize[1] <= 0:
+                raise ValidationError("image resize dimensions must be positive")
+            args.extend(["-vf", f"scale={resize[0]}:{resize[1]}"])
+            capabilities = ("filter:scale",)
+        suffix = Path(output).suffix.lower()
+        if suffix in {".jpg", ".jpeg"}:
+            args.extend(["-q:v", str(min(31, max(1, 31 - int(quality * 31 / 100))))])
+            capabilities = (*capabilities, "muxer:image2")
+        elif suffix == ".webp":
+            args.extend(["-quality", str(quality)])
+            capabilities = (*capabilities, "encoder:libwebp", "muxer:webp")
+        elif suffix == ".png":
+            args.extend(["-compression_level", str(min(9, max(0, 9 - int(quality * 9 / 100))))])
+            capabilities = (*capabilities, "muxer:image2")
+        else:
+            capabilities = (*capabilities, "muxer:image2")
+        args.extend(["-frames:v", "1"])
+        if suffix in {".bmp", ".jpg", ".jpeg", ".png", ".tif", ".tiff"}:
+            args.extend(["-update", "1"])
+        args.append(output)
+        return self._plan(
+            "image/convert",
+            args,
+            inputs=[source],
+            outputs=[output],
+            force=force,
+            timeout_seconds=timeout_seconds,
+            capabilities=capabilities,
+            streams=("video:image",),
+            operations=(f"convert one image to {suffix or 'the requested format'}", f"quality: {quality}"),
+            metadata={"required_stream_types": ["video"]},
+        )

@@ -44,7 +44,22 @@ Progress and human summaries are suppressed in this mode so stdout remains valid
 
 ## Execute the same plan from Python
 
-`FFmpegRunner.execute_plan()` executes the exact typed plan and returns a `JobResult` rather than a raw process object. FFmpeg's `-progress pipe:1` protocol is part of every workflow plan, and the final normalized `ProgressEvent` is stored in the result. A callback can receive the typed events while the job runs.
+`WorkflowEngine` exposes the same planner, preflight, item-aware execution, and stable result envelope used by the CLI:
+
+```python
+from pyffmpegcore import WorkflowEngine
+
+engine = WorkflowEngine()
+plan = engine.planner.thumbnail("talk.mov", "poster.jpg", timestamp="00:00:03")
+batch = engine.run(plan)
+
+if batch.succeeded:
+    print(batch.items[0].result.outputs)
+else:
+    print(batch.items[0].result.stderr)
+```
+
+The engine executes the exact typed plan and returns a `WorkflowBatch` containing item-level `JobResult` values rather than exposing only a raw process object. FFmpeg's `-progress pipe:1` protocol is part of every workflow plan, and the final normalized `ProgressEvent` is stored in the result. A callback can receive the typed events while the job runs.
 
 The execution policy controls overwrite refusal, timeout, cancellation, captured output, and temporary-file retention. Two-pass logs, concat manifests, and defensive subtitle copies are materialized in an isolated workspace only when execution begins. The default `clean` policy removes that workspace after success or failure; `keep-on-error` is available for explicit diagnostics.
 
