@@ -106,6 +106,30 @@ def resolve_artifact(candidate: Path) -> Path:
     return candidate
 
 
+def doctor_result_is_acceptable(
+    result: subprocess.CompletedProcess[str],
+    *,
+    require_binaries: bool,
+) -> bool:
+    """Validate doctor output while allowing an intentional no-FFmpeg contract."""
+    expected_codes = {0} if require_binaries else {0, 3}
+    if result.returncode not in expected_codes:
+        return False
+    try:
+        report = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return False
+    if report.get("cli_version") is None:
+        return False
+    for binary in ("ffmpeg", "ffprobe"):
+        details = report.get(binary)
+        if not isinstance(details, dict) or not isinstance(details.get("available"), bool):
+            return False
+        if require_binaries and not details["available"]:
+            return False
+    return True
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Validate a clean pyffmpegcore CLI install in an isolated virtual environment."
@@ -205,7 +229,7 @@ def main(argv: list[str] | None = None) -> int:
 
         doctor = run_command([str(cli_path), "doctor", "--json"])
         add_report_entry(report["commands"], "cli-doctor", doctor)
-        if doctor.returncode != 0:
+        if not doctor_result_is_acceptable(doctor, require_binaries=not args.skip_media):
             return 1
 
         if not args.skip_media:
