@@ -37,4 +37,4 @@ Announce a CLI/API deprecation in the changelog and user documentation before re
 
 ## Security Fixes
 
-Coordinate confirmed vulnerabilities in a private GitHub Security Advisory. Prepare tests and the fix on the advisory fork when needed, request a CVE when appropriate, and publish the patched release before or with disclosure. Do not expose reporter data or exploit details prematurely. Follow the response expectations in [SECURITY.md](../SECURITY.md).
+Coordinate confirmed vulnerabilities in a private GitHub Security Advisory. Prepare tests and the fix on the advisory fork when needed, request a CVE when appropriate, and publish the patched release before or with disclosure. Do not expose reporter data or exploit details prematurely. Follow the response expectations in the [security policy](https://github.com/OthmaneBlial/pyffmpegcore/blob/main/SECURITY.md).

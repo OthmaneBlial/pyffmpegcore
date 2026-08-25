@@ -40,4 +40,4 @@ Small compressed inputs can require large amounts of CPU, memory, disk, or outpu
 - Generated fixtures and release artifacts contain no unknown third-party media.
 - Releases use signed tags, exact-artifact tests, OIDC Trusted Publishing, checksums, and provenance attestations.
 
-Report a violation privately through [SECURITY.md](../SECURITY.md).
+Report a violation privately through the [security policy](https://github.com/OthmaneBlial/pyffmpegcore/blob/main/SECURITY.md).

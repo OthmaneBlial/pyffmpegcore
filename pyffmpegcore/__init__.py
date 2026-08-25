@@ -1,8 +1,8 @@
 """
-PyFFmpegCore - A lightweight Python wrapper around FFmpeg/FFprobe
+PyFFmpegCore - The safe, explainable FFmpeg task runner for the terminal, Python, and CI
 
-This package provides simple APIs for common video/audio processing tasks
-like conversion, compression, metadata extraction, and progress tracking.
+This package provides tested task workflows, environment diagnostics,
+metadata extraction, and progress tracking around local FFmpeg binaries.
 
 Copyright (c) 2025 Othmane BLIAL
 """

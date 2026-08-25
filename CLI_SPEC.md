@@ -10,7 +10,7 @@ The CLI is meant to make the repository's already-verified media workflows avail
 
 PyFFmpegCore CLI is:
 
-- a task-focused wrapper around `ffmpeg` and `ffprobe`
+- a safe, explainable task runner around `ffmpeg` and `ffprobe`
 - aimed at normal terminal users, not only Python developers
 - built around proven workflows already validated in this repository
 

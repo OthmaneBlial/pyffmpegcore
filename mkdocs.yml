@@ -1,0 +1,66 @@
+site_name: PyFFmpegCore
+site_description: The safe, explainable FFmpeg task runner for the terminal, Python, and CI
+site_url: https://othmaneblial.github.io/pyffmpegcore/
+repo_url: https://github.com/OthmaneBlial/pyffmpegcore
+repo_name: OthmaneBlial/pyffmpegcore
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.instant
+    - navigation.sections
+    - navigation.top
+    - search.highlight
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: cyan
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: cyan
+
+nav:
+  - Home: index.md
+  - Five-minute start: quickstart.md
+  - Installation: installation.md
+  - Recipes:
+      - Overview: recipes/index.md
+      - Web-compatible video: recipes/web-video.md
+      - Exact-size upload: recipes/exact-size.md
+      - Audio extraction: recipes/audio-extraction.md
+      - Podcast normalization: recipes/podcast.md
+      - Subtitles: recipes/subtitles.md
+      - Thumbnails: recipes/thumbnails.md
+      - Image batches: recipes/image-batches.md
+  - Reference:
+      - CLI: reference/cli.md
+      - Python API: reference/python-api.md
+      - Exit codes: exit-codes.md
+      - JSON schemas: schemas.md
+  - Operations:
+      - Troubleshooting: troubleshooting.md
+      - Compatibility: COMPATIBILITY.md
+      - Security model: SECURITY_MODEL.md
+      - Releasing: RELEASING.md
+  - Project:
+      - Comparison: comparison.md
+      - Test methodology: test-methodology.md
+      - Migration notes: migration.md
+      - Changelog: https://github.com/OthmaneBlial/pyffmpegcore/blob/main/CHANGELOG.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+
+strict: true
