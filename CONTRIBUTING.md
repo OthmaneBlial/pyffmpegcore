@@ -67,6 +67,10 @@ Changes to command construction, codecs, filters, paths, progress, packaging, or
 
 Keep each PR focused. Update tests and user-facing documentation with behavior changes. Do not commit generated media, build artifacts, caches, credentials, or personal media. Complete the pull-request template and state exactly what was and was not verified.
 
+One approving review is required, and changes matching `.github/CODEOWNERS`
+require the named maintainer's review. New commits dismiss stale approvals so
+the reviewed diff remains the diff that is merged.
+
 By participating, you agree to follow [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 ## Review and Credit

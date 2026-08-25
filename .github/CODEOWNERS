@@ -1,0 +1,8 @@
+# Default review ownership for every contribution.
+* @OthmaneBlial
+
+# Release, security, and supply-chain changes always require maintainer review.
+/.github/ @OthmaneBlial
+/Containerfile @OthmaneBlial
+/SECURITY.md @OthmaneBlial
+/scripts/ @OthmaneBlial
