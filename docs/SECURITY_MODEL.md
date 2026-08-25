@@ -15,6 +15,10 @@ They cannot enter FFmpeg's interactive command mode or suspend while checking a
 CI/background console. Plans expose `-nostdin` so this behavior is reviewable
 before execution.
 
+FFmpeg stdout and stderr are decoded explicitly as UTF-8 with replacement for
+malformed bytes. Locale-specific decoding cannot terminate a pipe-drain thread
+and leave the child process blocked on Unicode media metadata.
+
 FFmpeg filter graphs and concat manifests have their own grammars. Values embedded in those grammars require context-specific escaping; shell avoidance alone is not sufficient. New features must prefer separate FFmpeg arguments, constrain values to typed choices or numbers, and test spaces, apostrophes, Unicode, colons, and Windows-style paths where applicable.
 
 ## Files, Temporary Data, and Overwrites

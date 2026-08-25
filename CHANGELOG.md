@@ -44,7 +44,10 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 
 - Subtitle and waveform commands work with current FFmpeg filter syntax where the required capabilities are available.
 - Fixture validation no longer depends on mutable third-party downloads.
-- Managed FFmpeg jobs disable interactive standard input, preventing background
-  and Windows CI encodes from suspending while polling the console.
+- Managed FFmpeg jobs disable interactive standard input so background jobs do
+  not poll the console.
+- FFmpeg output decodes explicitly as UTF-8 with replacement, preventing
+  non-Latin metadata from killing Windows pipe-drain threads and stalling the
+  media process.
 
 [Unreleased]: https://github.com/OthmaneBlial/pyffmpegcore/commits/main
