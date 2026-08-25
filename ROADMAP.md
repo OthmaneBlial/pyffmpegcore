@@ -345,7 +345,7 @@ P0 Truth and reproducibility
 ### P5.3 Distribute proof, not hype
 
 - [ ] Share releases in relevant Python, FFmpeg, creator-tooling, and CI communities with a reproducible use case and clear project affiliation.
-- [ ] Publish short technical notes on capability preflight, exact-size compression, deterministic plans, and privacy-safe receipts.
+- [x] Publish short technical notes on capability preflight, exact-size compression, deterministic plans, and privacy-safe receipts.
 - [x] Maintain an honest comparison page and update it when competitor behavior changes.
 - [x] Ask users for the workflow they completed and friction encountered, not merely for a star.
 - [x] Never use star exchanges, mass unsolicited posting, fake benchmarks, or unverified “fastest/easiest/secure” claims.

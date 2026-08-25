@@ -39,6 +39,11 @@ nav:
   - Performance: performance.md
   - Reproducible evidence: evidence.md
   - Community: community.md
+  - Technical notes:
+      - Capability preflight: notes/capability-preflight.md
+      - Exact-size compression: notes/exact-size-compression.md
+      - Deterministic plans: notes/deterministic-plans.md
+      - Privacy-safe receipts: notes/privacy-safe-receipts.md
   - Recipes:
       - Overview: recipes/index.md
       - Web-compatible video: recipes/web-video.md
