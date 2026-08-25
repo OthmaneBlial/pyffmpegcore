@@ -272,16 +272,20 @@ class FFmpegRunner:
         container_overhead_kb = target_size_kb * (overhead_pct / 100.0)
         available_kb = target_size_kb - total_audio_kb - container_overhead_kb
 
-        if available_kb <= 0:
+        min_video_bitrate_bps = int(kwargs.get("min_video_bitrate_bps", 100 * 1024))
+        if min_video_bitrate_bps <= 0:
+            raise ValueError("min_video_bitrate_bps must be positive")
+        minimum_video_kb = min_video_bitrate_bps * duration / (8 * 1024)
+        if available_kb < minimum_video_kb:
+            overhead_fraction = overhead_pct / 100.0
+            minimum_target_kb = int((total_audio_kb + minimum_video_kb) / (1 - overhead_fraction)) + 1
             raise ValueError(
-                f"Target size {target_size_kb}KB too small for {duration:.1f}s video with {audio_bitrate} audio"
+                f"Target size {target_size_kb}KB is too small and not feasible at the "
+                f"{min_video_bitrate_bps} bps quality "
+                f"floor; use at least {minimum_target_kb}KB or lower the audio bitrate"
             )
 
-        min_video_bitrate_bps = 100 * 1024
-        video_bitrate_bps = max(
-            min_video_bitrate_bps,
-            int((available_kb * 8 * 1024) / duration),
-        )
+        video_bitrate_bps = int((available_kb * 8 * 1024) / duration)
         video_bitrate = f"{video_bitrate_bps // 1024}k"
 
         preset = kwargs.get("preset", "medium")

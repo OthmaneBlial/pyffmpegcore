@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 from pyffmpegcore import ExecutionPlan, ExecutionPolicy, MediaInfo, OverwritePolicy, StreamInfo
 from pyffmpegcore.capabilities import CapabilityInventory
-from pyffmpegcore.preflight import PreflightEngine
+from pyffmpegcore.preflight import PreflightEngine, _input_scheme
 
 
 def inventory(*, encoders=("aac", "libx264", "mpeg4"), filters=("scale",)):
@@ -95,3 +95,8 @@ def test_preflight_refuses_collision_and_corrupted_input(tmp_path):
     assert any(check.name.startswith("probe/") and check.status == "fail" for check in report.checks)
     assert any(check.name.startswith("collision/") and check.status == "fail" for check in report.checks)
     assert output.read_bytes() == b"keep"
+
+
+def test_windows_drive_path_is_not_treated_as_a_remote_protocol():
+    assert _input_scheme(r"C:\media\clip.mp4") is None
+    assert _input_scheme("https://example.test/clip.mp4") == "https"

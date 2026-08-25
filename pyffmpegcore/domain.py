@@ -117,6 +117,18 @@ class ProgressEvent:
 
 
 @dataclass(frozen=True, slots=True)
+class ExecutionStep:
+    """One named argument-vector step inside a multi-pass plan."""
+
+    name: str
+    command: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        if not self.name.strip() or not self.command or not self.command[0]:
+            raise ValidationError("execution step requires a name and executable command")
+
+
+@dataclass(frozen=True, slots=True)
 class ExecutionPlan:
     """Deterministic, non-shell execution plan for one media workflow."""
 
@@ -128,6 +140,7 @@ class ExecutionPlan:
     required_capabilities: tuple[str, ...] = ()
     selected_streams: tuple[str, ...] = ()
     operations: tuple[str, ...] = ()
+    steps: tuple[ExecutionStep, ...] = ()
     warnings: tuple[str, ...] = ()
     metadata: dict[str, Any] = field(default_factory=dict)
     schema_version: str = PLAN_SCHEMA_VERSION
@@ -145,6 +158,11 @@ class ExecutionPlan:
         data["policy"]["stderr"] = self.policy.stderr.value
         data["policy"]["temporary_files"] = self.policy.temporary_files.value
         return data
+
+    @property
+    def execution_steps(self) -> tuple[ExecutionStep, ...]:
+        """Return explicit steps or a single implicit primary step."""
+        return self.steps or (ExecutionStep(name=self.workflow, command=self.command),)
 
 
 @dataclass(frozen=True, slots=True)

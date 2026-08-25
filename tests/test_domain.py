@@ -11,6 +11,7 @@ from pyffmpegcore import (
     CompressOptions,
     ExecutionPlan,
     ExecutionPolicy,
+    ExecutionStep,
     FFmpegRunner,
     JobStatus,
     OverwritePolicy,
@@ -60,6 +61,27 @@ def test_execution_plan_returns_stable_result(tmp_path):
     assert result.elapsed_seconds >= 0
     assert result.outputs[0]["size_bytes"] == 4
     assert result.to_dict()["status"] == "succeeded"
+
+
+def test_execution_plan_runs_named_steps_in_order(tmp_path):
+    output = tmp_path / "steps.txt"
+    first = f"from pathlib import Path; Path({str(output)!r}).write_text('one')"
+    second = f"from pathlib import Path; p=Path({str(output)!r}); p.write_text(p.read_text() + '-two')"
+    plan = ExecutionPlan(
+        workflow="test/steps",
+        command=(sys.executable, "-c", first),
+        inputs=(),
+        outputs=(str(output),),
+        steps=(
+            ExecutionStep("first", (sys.executable, "-c", first)),
+            ExecutionStep("second", (sys.executable, "-c", second)),
+        ),
+    )
+
+    result = FFmpegRunner().execute_plan(plan)
+
+    assert result.succeeded
+    assert output.read_text(encoding="utf-8") == "one-two"
 
 
 def test_execution_policy_refuses_existing_outputs(tmp_path):

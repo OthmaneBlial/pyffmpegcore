@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import platform
+import re
 import shutil
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
@@ -85,6 +86,14 @@ def _nearest_existing_parent(path: Path) -> Path:
     return candidate
 
 
+def _input_scheme(value: str) -> str | None:
+    """Return a remote URI scheme without misclassifying Windows drive paths."""
+    if re.match(r"^[A-Za-z]:[\\/]", value):
+        return None
+    scheme = urlsplit(value).scheme
+    return scheme if scheme and scheme != "file" else None
+
+
 def capability_remedy(requirement: str, inventory: CapabilityInventory) -> str:
     """Return a concrete fallback or platform-specific installation remedy."""
     fallbacks = {
@@ -159,17 +168,18 @@ class PreflightEngine:
         required_stream_types = tuple(plan.metadata.get("required_stream_types", ()))
         probe = FFprobeRunner(self.ffprobe_path)
         for value in plan.inputs:
+            remote_scheme = _input_scheme(value)
             parsed = urlsplit(value)
-            if parsed.scheme and parsed.scheme != "file":
-                requirement = f"input-protocol:{parsed.scheme}"
+            if remote_scheme:
+                requirement = f"input-protocol:{remote_scheme}"
                 if inventory.supports(requirement):
-                    checks.append(PreflightCheck(f"input/{value}", "pass", f"Protocol {parsed.scheme} is available"))
+                    checks.append(PreflightCheck(f"input/{value}", "pass", f"Protocol {remote_scheme} is available"))
                 else:
                     checks.append(
                         PreflightCheck(
                             f"input/{value}",
                             "fail",
-                            f"Missing input protocol: {parsed.scheme}",
+                            f"Missing input protocol: {remote_scheme}",
                             capability_remedy(requirement, inventory),
                         )
                     )

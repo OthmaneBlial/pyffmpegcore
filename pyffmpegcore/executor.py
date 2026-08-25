@@ -54,75 +54,73 @@ class ExecutionEngine:
                 outputs=_output_facts(plan.outputs),
             )
 
-        command = list(plan.command)
-        if command and command[0].endswith(("ffmpeg", "ffmpeg.exe")):
-            overwrite_flag = "-y" if plan.policy.overwrite is OverwritePolicy.REPLACE else "-n"
-            command = [command[0], overwrite_flag, *command[1:]]
-
         started = time.monotonic()
-        try:
-            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        except FileNotFoundError:
-            elapsed = time.monotonic() - started
-            return JobResult(
-                workflow=plan.workflow,
-                command=tuple(command),
-                status=JobStatus.FAILED,
-                exit_category="environment",
-                returncode=None,
-                elapsed_seconds=elapsed,
-                stderr=f"Executable not found: {command[0]}",
-                warnings=plan.warnings,
-                outputs=_output_facts(plan.outputs),
-            )
-
         deadline = started + plan.policy.timeout_seconds if plan.policy.timeout_seconds is not None else None
-        status = JobStatus.FAILED
-        category = "runtime"
+        status = JobStatus.SUCCEEDED
+        category = "ok"
         returncode: int | None = None
-        stdout = ""
-        stderr = ""
-        while True:
-            if cancellation is not None and cancellation.is_set():
-                process.terminate()
-                try:
-                    stdout, stderr = process.communicate(timeout=2)
-                except subprocess.TimeoutExpired:
-                    process.kill()
-                    stdout, stderr = process.communicate()
-                status = JobStatus.CANCELLED
-                category = "cancelled"
-                returncode = process.returncode
-                break
-            if deadline is not None and time.monotonic() >= deadline:
-                process.terminate()
-                try:
-                    stdout, stderr = process.communicate(timeout=2)
-                except subprocess.TimeoutExpired:
-                    process.kill()
-                    stdout, stderr = process.communicate()
-                status = JobStatus.TIMED_OUT
-                category = "timeout"
-                returncode = process.returncode
-                break
+        stdout_parts: list[str] = []
+        stderr_parts: list[str] = []
+        last_command = plan.command
+        for step in plan.execution_steps:
+            command = list(step.command)
+            if command and command[0].endswith(("ffmpeg", "ffmpeg.exe")):
+                overwrite_flag = "-y" if plan.policy.overwrite is OverwritePolicy.REPLACE else "-n"
+                command = [command[0], overwrite_flag, *command[1:]]
+            last_command = tuple(command)
             try:
-                stdout, stderr = process.communicate(timeout=0.1)
-            except subprocess.TimeoutExpired:
-                continue
-            returncode = process.returncode
-            status = JobStatus.SUCCEEDED if returncode == 0 else JobStatus.FAILED
-            category = "ok" if returncode == 0 else "runtime"
-            break
+                process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            except FileNotFoundError:
+                status = JobStatus.FAILED
+                category = "environment"
+                returncode = None
+                stderr_parts.append(f"Executable not found: {command[0]}")
+                break
+            while True:
+                if cancellation is not None and cancellation.is_set():
+                    process.terminate()
+                    try:
+                        stdout, stderr = process.communicate(timeout=2)
+                    except subprocess.TimeoutExpired:
+                        process.kill()
+                        stdout, stderr = process.communicate()
+                    status = JobStatus.CANCELLED
+                    category = "cancelled"
+                    returncode = process.returncode
+                    break
+                if deadline is not None and time.monotonic() >= deadline:
+                    process.terminate()
+                    try:
+                        stdout, stderr = process.communicate(timeout=2)
+                    except subprocess.TimeoutExpired:
+                        process.kill()
+                        stdout, stderr = process.communicate()
+                    status = JobStatus.TIMED_OUT
+                    category = "timeout"
+                    returncode = process.returncode
+                    break
+                try:
+                    stdout, stderr = process.communicate(timeout=0.1)
+                except subprocess.TimeoutExpired:
+                    continue
+                returncode = process.returncode
+                status = JobStatus.SUCCEEDED if returncode == 0 else JobStatus.FAILED
+                category = "ok" if returncode == 0 else "runtime"
+                break
+            stdout_parts.append(stdout)
+            stderr_parts.append(stderr)
+            if status is not JobStatus.SUCCEEDED:
+                break
 
         return JobResult(
             workflow=plan.workflow,
-            command=tuple(command),
+            command=last_command,
             status=status,
             exit_category=category,
             returncode=returncode,
             elapsed_seconds=time.monotonic() - started,
-            stdout=_captured(stdout, plan.policy.stdout, plan.policy.capture_tail_chars),
-            stderr=_captured(stderr, plan.policy.stderr, plan.policy.capture_tail_chars),
+            stdout=_captured("\n".join(stdout_parts), plan.policy.stdout, plan.policy.capture_tail_chars),
+            stderr=_captured("\n".join(stderr_parts), plan.policy.stderr, plan.policy.capture_tail_chars),
             warnings=plan.warnings,
             outputs=_output_facts(plan.outputs),
         )

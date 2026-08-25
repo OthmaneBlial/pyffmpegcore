@@ -14,6 +14,7 @@ from .domain import (
     ConvertOptions,
     ExecutionPlan,
     ExecutionPolicy,
+    ExecutionStep,
     JobResult,
     JobStatus,
     MediaInfo,
@@ -32,6 +33,7 @@ from .errors import (
     PyFFmpegCoreError,
     ValidationError,
 )
+from .planning import WorkflowPlanner, parse_size
 from .preflight import PreflightCheck, PreflightEngine, PreflightReport
 from .probe import FFprobeRunner
 from .profiles import Profile, ProfileRegistry
@@ -48,6 +50,7 @@ __all__ = [
     "EnvironmentUnavailableError",
     "ExecutionPlan",
     "ExecutionPolicy",
+    "ExecutionStep",
     "FFmpegRunner",
     "FFprobeRunner",
     "JobCancelledError",
@@ -70,4 +73,6 @@ __all__ = [
     "StreamInfo",
     "TemporaryFilePolicy",
     "ValidationError",
+    "WorkflowPlanner",
+    "parse_size",
 ]

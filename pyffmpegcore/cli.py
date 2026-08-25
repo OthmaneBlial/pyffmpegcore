@@ -19,6 +19,11 @@ from typing import Any
 
 from . import __version__
 from .capabilities import CapabilityInventory
+from .cli_planning import build_cli_plan
+from .errors import ValidationError
+from .planning import parse_bitrate, parse_size
+from .preflight import PreflightEngine
+from .presentation import render_plan_json, render_plan_text
 from .probe import FFprobeRunner
 from .profiles import Profile, ProfileRegistry
 from .runner import FFmpegRunner, escape_path_for_concat, escape_path_for_filter
@@ -144,6 +149,25 @@ def add_global_arguments(
         action="store_true",
         default=bool_default,
         help="Allow overwriting existing output files or directories.",
+    )
+    preview = parser.add_mutually_exclusive_group()
+    preview.add_argument(
+        "--dry-run",
+        action="store_true",
+        default=bool_default,
+        help="Preflight and print the exact plan without writing files.",
+    )
+    preview.add_argument(
+        "--explain",
+        action="store_true",
+        default=bool_default,
+        help="Explain streams, operations, trade-offs, and the exact plan without writing files.",
+    )
+    parser.add_argument(
+        "--plan-json",
+        action="store_true",
+        default=bool_default,
+        help="Print --dry-run or --explain as versioned JSON.",
     )
     parser.add_argument(
         "--ffmpeg-path",
@@ -333,6 +357,10 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         help="Number of FFmpeg worker threads to use.",
     )
+    convert_parser.add_argument(
+        "--hwaccel",
+        help="Optional FFmpeg hardware-acceleration method; failures do not silently fall back.",
+    )
     convert_parser.set_defaults(handler=handle_convert)
 
     compress_parser = subparsers.add_parser(
@@ -357,10 +385,15 @@ def build_parser() -> argparse.ArgumentParser:
         default=23,
         help="CRF quality level for single-pass compression. Defaults to %(default)s.",
     )
-    compress_parser.add_argument(
+    target_size_group = compress_parser.add_mutually_exclusive_group()
+    target_size_group.add_argument(
         "--target-size-kb",
         type=int,
         help="Target output size in kilobytes for two-pass compression.",
+    )
+    target_size_group.add_argument(
+        "--target-size",
+        help="Target output size with an explicit unit, for example 25MB or 25MiB.",
     )
     pass_group = compress_parser.add_mutually_exclusive_group()
     pass_group.add_argument(
@@ -400,6 +433,17 @@ def build_parser() -> argparse.ArgumentParser:
         "--threads",
         type=int,
         help="Number of FFmpeg worker threads to use.",
+    )
+    compress_parser.add_argument(
+        "--min-video-bitrate",
+        default="100k",
+        help="Two-pass quality floor in bits/s, for example 100k. Defaults to %(default)s.",
+    )
+    compress_parser.add_argument(
+        "--container-overhead-percent",
+        type=float,
+        default=1.0,
+        help="Reserved target-size percentage for container overhead. Defaults to %(default)s.",
     )
     compress_parser.set_defaults(handler=handle_compress)
 
@@ -1649,6 +1693,7 @@ def handle_convert(args: argparse.Namespace) -> int:
             str(input_path),
             str(output_path),
             audio_only=args.audio_only,
+            hwaccel=args.hwaccel,
             **kwargs,
         )
     except RuntimeError as exc:
@@ -1693,9 +1738,18 @@ def handle_compress(args: argparse.Namespace) -> int:
             "audio_bitrate": args.audio_bitrate,
             "preset": args.preset,
             "threads": args.threads,
+            "overhead_pct": args.container_overhead_percent,
+            "min_video_bitrate_bps": parse_bitrate(args.min_video_bitrate),
         }.items()
         if value is not None
     }
+
+    target_size_kb = args.target_size_kb
+    if args.target_size is not None:
+        target_size_bytes = parse_size(args.target_size)
+        target_size_kb = target_size_bytes // 1024
+        if target_size_kb <= 0:
+            raise ValidationError("--target-size must be at least 1KiB")
 
     progress_callback = build_progress_printer(ctx, input_path)
 
@@ -1703,7 +1757,7 @@ def handle_compress(args: argparse.Namespace) -> int:
         result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path, ffprobe_path=ctx.ffprobe_path).compress(
             str(input_path),
             str(output_path),
-            target_size_kb=args.target_size_kb,
+            target_size_kb=target_size_kb,
             crf=args.crf,
             two_pass=args.two_pass,
             progress_callback=progress_callback,
@@ -2537,10 +2591,24 @@ def main(argv: Sequence[str] | None = None) -> int:
         echo_verbose(ctx, f"command={getattr(args, 'command', None)}")
         echo_verbose(ctx, f"ffmpeg={ctx.ffmpeg_path}")
         echo_verbose(ctx, f"ffprobe={ctx.ffprobe_path}")
+        preview = bool(getattr(args, "dry_run", False) or getattr(args, "explain", False))
+        if getattr(args, "plan_json", False) and not preview:
+            raise CLIError("--plan-json requires --dry-run or --explain.", exit_code=EXIT_USAGE_ERROR)
+        if preview:
+            plan = build_cli_plan(args)
+            preflight = PreflightEngine(ffmpeg_path=ctx.ffmpeg_path, ffprobe_path=ctx.ffprobe_path).check(plan)
+            if args.plan_json:
+                print(render_plan_json(plan, preflight))
+            else:
+                print(render_plan_text(plan, preflight, explain=bool(args.explain)))
+            return EXIT_OK if preflight.ok else EXIT_VALIDATION_ERROR
         return int(handler(args))
     except CLIError as exc:
         echo_error(str(exc))
         return exc.exit_code
+    except ValidationError as exc:
+        echo_error(str(exc))
+        return EXIT_VALIDATION_ERROR
     except RuntimeError as exc:
         cli_error = runtime_error_to_cli_error(exc)
         echo_error(str(cli_error))

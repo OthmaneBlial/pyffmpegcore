@@ -246,18 +246,18 @@ P0 Truth and reproducibility
 ### P3.1 Capability-aware preflight
 
 - [x] Expand `doctor` beyond executable presence to inventory required encoders, decoders, filters, muxers, protocols, subtitle support, and hardware accelerators.
-- [ ] Preflight each job against input streams, output/container compatibility, disk space, write permissions, collisions, and installed FFmpeg capabilities.
-- [ ] Explain the exact missing capability and provide a tested fallback or an OS-specific remedy when one exists.
-- [ ] Produce the same preflight facts as readable text and versioned JSON.
+- [x] Preflight each job against input streams, output/container compatibility, disk space, write permissions, collisions, and installed FFmpeg capabilities.
+- [x] Explain the exact missing capability and provide a tested fallback or an OS-specific remedy when one exists.
+- [x] Produce the same preflight facts as readable text and versioned JSON.
 - [ ] Maintain a capability-rules catalog keyed by workflow and test it across the supported FFmpeg matrix.
 
 ### P3.2 Deterministic plans and explanations
 
-- [ ] Add non-mutating `--dry-run` and `--explain` support to every writing command.
-- [ ] Represent the exact argument vector as a JSON array; show a safely escaped display form without executing through a shell.
-- [ ] Explain selected streams, copied/re-encoded/dropped data, codecs, filters, quality/size trade-offs, hardware fallback, overwrite policy, and expected outputs.
+- [x] Add non-mutating `--dry-run` and `--explain` support to every writing command.
+- [x] Represent the exact argument vector as a JSON array; show a safely escaped display form without executing through a shell.
+- [x] Explain selected streams, copied/re-encoded/dropped data, codecs, filters, quality/size trade-offs, hardware fallback, overwrite policy, and expected outputs.
 - [ ] Use FFmpeg structured interfaces such as progress and graph output when the installed version supports them, with tested fallbacks for older versions.
-- [ ] Make plans deterministic and snapshot-testable after normalizing paths and environment-specific values.
+- [x] Make plans deterministic and snapshot-testable after normalizing paths and environment-specific values.
 
 ### P3.3 Curated workflow profiles
 

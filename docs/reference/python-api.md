@@ -51,6 +51,10 @@ No public docstring is available.
 
 Explicit process, overwrite, capture, and cleanup behavior.
 
+## `ExecutionStep`
+
+One named argument-vector step inside a multi-pass plan.
+
 ## `FFmpegRunner`
 
 Execute FFmpeg commands and expose helper methods for common workflows.
@@ -290,3 +294,55 @@ Python 3.10-compatible string enumeration.
 ## `ValidationError`
 
 User input or policy is invalid before execution starts.
+
+## `WorkflowPlanner`
+
+Build deterministic plans used by CLI, Python, examples, and pipelines.
+
+### `compress(self, input_file: 'str', output_file: 'str', options: 'CompressOptions | None' = None, *, force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
+
+No public docstring is available.
+
+### `concat(self, input_files: 'list[str]', output_file: 'str', *, mode: 'str' = 'copy', video_codec: 'str' = 'libx264', audio_codec: 'str' = 'aac', force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
+
+No public docstring is available.
+
+### `convert(self, input_file: 'str', output_file: 'str', options: 'ConvertOptions | None' = None, *, force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
+
+No public docstring is available.
+
+### `extract_audio(self, input_file: 'str', output_file: 'str', *, audio_codec: 'str | None' = None, audio_bitrate: 'str' = '192k', sample_rate: 'int | None' = None, channels: 'int | None' = None, threads: 'int | None' = None, force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
+
+No public docstring is available.
+
+### `images(self, action: 'str', input_dir: 'str', output_dir: 'str', *, output_format: 'str' = 'jpg', quality: 'int' = 85, resize: 'tuple[int, int] | None' = None, max_width: 'int' = 1920, max_height: 'int' = 1080, force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
+
+No public docstring is available.
+
+### `mix_audio(self, action: 'str', input_files: 'list[str]', output_file: 'str', *, volumes: 'list[float] | None' = None, crossfade_duration: 'float' = 2.0, background_volume: 'float' = 0.3, force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
+
+No public docstring is available.
+
+### `normalize_audio(self, input_file: 'str', output_file: 'str', *, method: 'str' = 'loudnorm', target_i: 'float' = -16.0, target_tp: 'float' = -1.5, target_lra: 'float' = 11.0, force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
+
+No public docstring is available.
+
+### `resize(self, input_file: 'str', output_file: 'str', options: 'ResizeOptions', *, force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
+
+No public docstring is available.
+
+### `speed(self, kind: 'str', input_file: 'str', output_file: 'str', *, factor: 'float', preserve_pitch: 'bool' = True, force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
+
+No public docstring is available.
+
+### `subtitles(self, action: 'str', video_file: 'str', output_file: 'str', *, subtitle_file: 'str | None' = None, language: 'str' = 'eng', stream_index: 'int' = 0, font_size: 'int' = 24, font_color: 'str' = '&HFFFFFF', force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
+
+No public docstring is available.
+
+### `thumbnail(self, input_file: 'str', output_file: 'str', *, timestamp: 'str' = '00:00:01', width: 'int' = 320, height: 'int | None' = None, quality: 'int' = 2, force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
+
+No public docstring is available.
+
+### `waveform(self, input_file: 'str', output_file: 'str', *, width: 'int' = 800, height: 'int' = 200, colors: 'str' = 'white', force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
+
+No public docstring is available.

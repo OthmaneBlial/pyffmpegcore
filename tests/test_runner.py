@@ -297,6 +297,18 @@ class TestFFmpegRunner:
 
         assert "video_codec='copy' is not supported" in str(exc_info.value)
 
+    @patch("pyffmpegcore.probe.FFprobeRunner.probe", return_value={"duration": 60.0})
+    def test_compress_two_pass_rejects_target_below_quality_floor(self, _mock_probe):
+        runner = FFmpegRunner()
+
+        with pytest.raises(ValueError, match="not feasible.*quality floor.*use at least"):
+            runner.compress(
+                "input.mp4",
+                "output.mp4",
+                target_size_kb=100,
+                min_video_bitrate_bps=100_000,
+            )
+
     @patch("subprocess.run")
     def test_compress_copy_codec_single_pass(self, mock_run):
         """Test compress method with video_codec='copy' in single-pass."""
