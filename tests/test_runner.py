@@ -18,9 +18,11 @@ class TestFFmpegRunner:
         """Test FFmpegRunner initialization."""
         runner = FFmpegRunner()
         assert runner.ffmpeg_path == "ffmpeg"
+        assert runner.ffprobe_path == "ffprobe"
 
-        runner = FFmpegRunner("/custom/path/ffmpeg")
+        runner = FFmpegRunner("/custom/path/ffmpeg", "/custom/path/ffprobe")
         assert runner.ffmpeg_path == "/custom/path/ffmpeg"
+        assert runner.ffprobe_path == "/custom/path/ffprobe"
 
     @patch("subprocess.run")
     def test_run(self, mock_run):
@@ -332,7 +334,7 @@ class TestFFmpegRunner:
             MagicMock(returncode=0, stdout="", stderr=""),  # Pass 2
         ]
 
-        runner = FFmpegRunner()
+        runner = FFmpegRunner(ffprobe_path="/custom/ffprobe")
         runner.compress("input.mp4", "output.mp4", target_size_kb=10240)
 
         # Verify two subprocess calls were made
@@ -340,6 +342,7 @@ class TestFFmpegRunner:
 
         # Verify cleanup was called
         mock_cleanup.assert_called_once_with("output.mp4")
+        mock_ffprobe_class.assert_called_once_with("/custom/ffprobe")
 
         # Verify pass 1 had -an (no audio) flag
         pass1_args = mock_run.call_args_list[0][0][0]

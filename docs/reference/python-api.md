@@ -3,6 +3,38 @@
 
 The Python API is synchronous and currently marked beta. Prefer explicit keyword arguments and inspect nonzero results.
 
+## `CapabilityUnavailableError`
+
+The installed FFmpeg build cannot satisfy the requested workflow.
+
+## `CapturePolicy`
+
+Python 3.10-compatible string enumeration.
+
+## `CompressOptions`
+
+CompressOptions(target_size_bytes: 'int | None' = None, crf: 'int' = 23, two_pass: 'bool' = True, video_codec: 'str' = 'libx264', audio_codec: 'str' = 'aac', video_bitrate: 'str | None' = None, audio_bitrate: 'str' = '128k', preset: 'str' = 'medium', pixel_format: 'str' = 'yuv420p', threads: 'int | None' = None, container_overhead_percent: 'float' = 1.0, minimum_video_bitrate: 'int' = 102400)
+
+## `ConvertOptions`
+
+ConvertOptions(video_codec: 'str | None' = None, audio_codec: 'str | None' = None, video_bitrate: 'str | None' = None, audio_bitrate: 'str | None' = None, pixel_format: 'str' = 'yuv420p', threads: 'int | None' = None, audio_only: 'bool' = False, hardware_acceleration: 'str | None' = None)
+
+## `EnvironmentUnavailableError`
+
+A required executable or host resource is unavailable.
+
+## `ExecutionPlan`
+
+Deterministic, non-shell execution plan for one media workflow.
+
+### `to_dict(self) -> 'dict[str, Any]'`
+
+No public docstring is available.
+
+## `ExecutionPolicy`
+
+Explicit process, overwrite, capture, and cleanup behavior.
+
 ## `FFmpegRunner`
 
 Execute FFmpeg commands and expose helper methods for common workflows.
@@ -18,6 +50,10 @@ Compress a video file.
 ### `convert(self, input_file: 'str', output_file: 'str', progress_callback=None, audio_only: 'bool' = False, hwaccel=None, **kwargs) -> 'subprocess.CompletedProcess'`
 
 Convert a video or audio file to another format.
+
+### `execute_plan(self, plan: 'ExecutionPlan', *, cancellation: 'threading.Event | None' = None) -> 'JobResult'`
+
+Execute a typed plan and return a stable structured result.
 
 ### `extract_audio(self, input_file: 'str', output_file: 'str', progress_callback=None, **kwargs) -> 'subprocess.CompletedProcess'`
 
@@ -51,7 +87,7 @@ Run FFmpeg and print lightweight progress updates.
 
 A runner for extracting metadata from media files using FFprobe.
 
-### `get_bitrate(self, input_file: str) -> int | None`
+### `get_bitrate(self, input_file: 'str') -> 'int | None'`
 
 Get the bitrate of a media file.
 
@@ -61,7 +97,7 @@ Args:
 Returns:
     Bitrate in bits per second
 
-### `get_duration(self, input_file: str) -> float`
+### `get_duration(self, input_file: 'str') -> 'float'`
 
 Get the duration of a media file in seconds.
 
@@ -71,7 +107,7 @@ Args:
 Returns:
     Duration in seconds
 
-### `get_resolution(self, input_file: str) -> tuple | None`
+### `get_resolution(self, input_file: 'str') -> 'tuple | None'`
 
 Get the resolution of a video file.
 
@@ -81,14 +117,14 @@ Args:
 Returns:
     Tuple of (width, height) or None if not a video
 
-### `get_version(self) -> str`
+### `get_version(self) -> 'str'`
 
 Get the FFprobe version.
 
 Returns:
     Version string
 
-### `probe(self, input_file: str) -> dict[str, typing.Any]`
+### `probe(self, input_file: 'str', *, raw: 'bool' = False) -> 'dict[str, Any]'`
 
 Extract simplified metadata from a media file.
 
@@ -97,6 +133,58 @@ Args:
 
 Returns:
     Simplified metadata dictionary derived from FFprobe JSON
+
+### `probe_media(self, input_file: 'str') -> 'MediaInfo'`
+
+Return typed metadata while retaining decision-relevant stream details.
+
+### `probe_raw(self, input_file: 'str') -> 'dict[str, Any]'`
+
+Return the complete FFprobe JSON document without dropping fields.
+
+## `JobCancelledError`
+
+A caller explicitly cancelled a running job.
+
+## `JobExecutionError`
+
+FFmpeg or FFprobe started but the media job failed.
+
+## `JobResult`
+
+Stable execution result with diagnostics and output evidence.
+
+### `to_dict(self) -> 'dict[str, Any]'`
+
+No public docstring is available.
+
+## `JobStatus`
+
+Python 3.10-compatible string enumeration.
+
+## `JobTimeoutError`
+
+A job exceeded its explicit timeout.
+
+## `MediaInfo`
+
+Typed container, stream, and chapter information from FFprobe.
+
+### `to_dict(self) -> 'dict[str, Any]'`
+
+No public docstring is available.
+
+## `OverwritePolicy`
+
+Python 3.10-compatible string enumeration.
+
+## `ProgressCallback`
+
+A helper class for creating progress callbacks with context.
+
+## `ProgressEvent`
+
+Versioned progress fact suitable for callbacks or JSON Lines output.
 
 ## `ProgressTracker`
 
@@ -119,6 +207,22 @@ A simple progress callback that prints progress to console.
 Args:
     progress: Progress dictionary
 
-## `ProgressCallback`
+## `PyFFmpegCoreError`
 
-A helper class for creating progress callbacks with context.
+Base error carrying a stable machine-readable category.
+
+## `ResizeOptions`
+
+ResizeOptions(width: 'int', height: 'int', video_codec: 'str | None' = None, audio_codec: 'str | None' = None, pixel_format: 'str' = 'yuv420p', threads: 'int | None' = None)
+
+## `StreamInfo`
+
+Typed stream facts while preserving metadata needed for safe decisions.
+
+## `TemporaryFilePolicy`
+
+Python 3.10-compatible string enumeration.
+
+## `ValidationError`
+
+User input or policy is invalid before execution starts.

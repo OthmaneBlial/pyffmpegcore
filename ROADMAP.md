@@ -215,12 +215,12 @@ P0 Truth and reproducibility
 ### P2.2 Replace weak public contracts
 
 - [ ] Replace public `**kwargs` bags with typed option models whose unsupported fields fail immediately.
-- [ ] Introduce stable domain types such as `MediaInfo`, `StreamInfo`, `ExecutionPlan`, `JobResult`, `ProgressEvent`, and categorized exceptions.
+- [x] Introduce stable domain types such as `MediaInfo`, `StreamInfo`, `ExecutionPlan`, `JobResult`, `ProgressEvent`, and categorized exceptions.
 - [ ] Return a stable result containing command, status, elapsed time, stdout/stderr policy, warnings, and output metadata instead of exposing only `CompletedProcess`.
 - [ ] Use explicit overwrite, timeout, cancellation, temporary-file, and cleanup policies in both CLI and Python.
-- [ ] Add raw and simplified FFprobe modes; preserve tags, dispositions, chapters, stream language, rotation, color/HDR metadata, and attachments where relevant.
-- [ ] Ensure custom FFmpeg and FFprobe paths propagate through every workflow, including target-size compression.
-- [ ] Define a deprecation policy before declaring the Python layer stable.
+- [x] Add raw and simplified FFprobe modes; preserve tags, dispositions, chapters, stream language, rotation, color/HDR metadata, and attachments where relevant.
+- [x] Ensure custom FFmpeg and FFprobe paths propagate through every workflow, including target-size compression.
+- [x] Define a deprecation policy before declaring the Python layer stable.
 
 ### P2.3 Make quality evidence continuous
 

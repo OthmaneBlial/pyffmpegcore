@@ -2,9 +2,13 @@
 FFprobe metadata extraction.
 """
 
+from __future__ import annotations
+
 import json
 import subprocess
 from typing import Any
+
+from .domain import MediaInfo, StreamInfo
 
 
 class FFprobeRunner:
@@ -21,7 +25,7 @@ class FFprobeRunner:
         """
         self.ffprobe_path = ffprobe_path
 
-    def probe(self, input_file: str) -> dict[str, Any]:
+    def probe(self, input_file: str, *, raw: bool = False) -> dict[str, Any]:
         """
         Extract simplified metadata from a media file.
 
@@ -31,6 +35,11 @@ class FFprobeRunner:
         Returns:
             Simplified metadata dictionary derived from FFprobe JSON
         """
+        data = self.probe_raw(input_file)
+        return data if raw else self._simplify_metadata(data)
+
+    def probe_raw(self, input_file: str) -> dict[str, Any]:
+        """Return the complete FFprobe JSON document without dropping fields."""
         cmd = [
             self.ffprobe_path,
             "-v",
@@ -55,7 +64,46 @@ class FFprobeRunner:
             raise RuntimeError(f"FFprobe failed for '{input_file}': {stderr}")
 
         data = json.loads(result.stdout)
-        return self._simplify_metadata(data)
+        if not isinstance(data, dict):
+            raise RuntimeError(f"FFprobe returned an invalid JSON document for '{input_file}'")
+        return data
+
+    def probe_media(self, input_file: str) -> MediaInfo:
+        """Return typed metadata while retaining decision-relevant stream details."""
+        simplified = self.probe(input_file)
+        streams = tuple(
+            StreamInfo(
+                index=int(stream.get("index", 0)),
+                codec_type=str(stream.get("codec_type", "unknown")),
+                codec_name=stream.get("codec_name"),
+                profile=stream.get("profile"),
+                width=stream.get("width"),
+                height=stream.get("height"),
+                sample_rate=stream.get("sample_rate"),
+                channels=stream.get("channels"),
+                bit_rate=stream.get("bit_rate"),
+                duration=stream.get("duration"),
+                language=stream.get("language"),
+                rotation=stream.get("rotation"),
+                tags=stream.get("tags", {}),
+                disposition=stream.get("disposition", {}),
+                color=stream.get("color", {}),
+                side_data=tuple(stream.get("side_data_list", [])),
+                details=stream.get("details", {}),
+            )
+            for stream in simplified.get("streams", [])
+        )
+        return MediaInfo(
+            path=simplified.get("filename") or input_file,
+            format_name=simplified.get("format_name"),
+            format_long_name=simplified.get("format_long_name"),
+            duration=simplified.get("duration"),
+            size=simplified.get("size"),
+            bit_rate=simplified.get("bit_rate"),
+            tags=simplified.get("tags", {}),
+            streams=streams,
+            chapters=tuple(simplified.get("chapters", [])),
+        )
 
     def _simplify_metadata(self, data: dict[str, Any]) -> dict[str, Any]:
         """
@@ -67,7 +115,7 @@ class FFprobeRunner:
         Returns:
             Simplified metadata dictionary
         """
-        metadata = {}
+        metadata: dict[str, Any] = {}
 
         # Format information
         if "format" in data:
@@ -78,6 +126,7 @@ class FFprobeRunner:
             metadata["duration"] = float(fmt.get("duration", 0))
             metadata["size"] = int(fmt.get("size", 0))
             metadata["bit_rate"] = int(fmt.get("bit_rate", 0)) if fmt.get("bit_rate") else None
+            metadata["tags"] = dict(fmt.get("tags", {}))
 
         # Stream information
         if "streams" in data:
@@ -95,7 +144,49 @@ class FFprobeRunner:
                     "channels": stream.get("channels"),
                     "bit_rate": int(stream.get("bit_rate")) if stream.get("bit_rate") else None,
                     "duration": float(stream.get("duration", 0)) if stream.get("duration") else None,
+                    "tags": dict(stream.get("tags", {})),
+                    "disposition": dict(stream.get("disposition", {})),
+                    "side_data_list": list(stream.get("side_data_list", [])),
                 }
+                color = {
+                    name: stream[name]
+                    for name in ("color_range", "color_space", "color_transfer", "color_primaries")
+                    if stream.get(name) is not None
+                }
+                if color:
+                    stream_info["color"] = color
+                language = stream.get("tags", {}).get("language")
+                if language:
+                    stream_info["language"] = language
+                rotation = stream.get("tags", {}).get("rotate")
+                if rotation is None:
+                    rotation = next(
+                        (
+                            item.get("rotation")
+                            for item in stream.get("side_data_list", [])
+                            if item.get("rotation") is not None
+                        ),
+                        None,
+                    )
+                if rotation is not None:
+                    stream_info["rotation"] = float(rotation)
+                preserved_details = {
+                    name: stream[name]
+                    for name in (
+                        "codec_tag_string",
+                        "codec_tag",
+                        "codec_time_base",
+                        "time_base",
+                        "start_time",
+                        "avg_frame_rate",
+                        "r_frame_rate",
+                        "field_order",
+                        "extradata_size",
+                    )
+                    if stream.get(name) is not None
+                }
+                if preserved_details:
+                    stream_info["details"] = preserved_details
                 # Remove None values
                 stream_info = {k: v for k, v in stream_info.items() if v is not None}
                 streams.append(stream_info)
@@ -135,6 +226,8 @@ class FFprobeRunner:
                     "start": float(chapter.get("start_time", 0)),
                     "end": float(chapter.get("end_time", 0)),
                     "title": chapter.get("tags", {}).get("title"),
+                    "tags": dict(chapter.get("tags", {})),
+                    "time_base": chapter.get("time_base"),
                 }
                 chapters.append(chapter_info)
             metadata["chapters"] = chapters

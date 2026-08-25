@@ -40,6 +40,7 @@ nav:
   - Reference:
       - CLI: reference/cli.md
       - Python API: reference/python-api.md
+      - API stability: api-stability.md
       - Exit codes: exit-codes.md
       - JSON schemas: schemas.md
   - Operations:

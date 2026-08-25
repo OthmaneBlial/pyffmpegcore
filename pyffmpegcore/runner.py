@@ -7,8 +7,11 @@ from __future__ import annotations
 import glob
 import os
 import subprocess
+import threading
 from collections.abc import Callable
 
+from .domain import ExecutionPlan, JobResult
+from .executor import ExecutionEngine
 from .progress import ProgressTracker
 
 
@@ -35,8 +38,18 @@ class FFmpegRunner:
     Execute FFmpeg commands and expose helper methods for common workflows.
     """
 
-    def __init__(self, ffmpeg_path: str = "ffmpeg"):
+    def __init__(self, ffmpeg_path: str = "ffmpeg", ffprobe_path: str = "ffprobe"):
         self.ffmpeg_path = ffmpeg_path
+        self.ffprobe_path = ffprobe_path
+
+    def execute_plan(
+        self,
+        plan: ExecutionPlan,
+        *,
+        cancellation: threading.Event | None = None,
+    ) -> JobResult:
+        """Execute a typed plan and return a stable structured result."""
+        return ExecutionEngine().execute(plan, cancellation=cancellation)
 
     def run(
         self,
@@ -248,7 +261,7 @@ class FFmpegRunner:
 
         from .probe import FFprobeRunner
 
-        metadata = FFprobeRunner().probe(input_file)
+        metadata = FFprobeRunner(self.ffprobe_path).probe(input_file)
         duration = metadata.get("duration", 60) or 60
         audio_bitrate = kwargs.get("audio_bitrate", "128k")
 

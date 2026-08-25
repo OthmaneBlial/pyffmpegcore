@@ -8,7 +8,7 @@ import sys
 import textwrap
 from pathlib import Path
 
-from pyffmpegcore import FFmpegRunner, FFprobeRunner, ProgressCallback, ProgressTracker
+import pyffmpegcore
 from pyffmpegcore.cli import build_parser
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -94,7 +94,12 @@ def render_api_reference() -> str:
         "The Python API is synchronous and currently marked beta. Prefer explicit keyword arguments and inspect nonzero results.",
         "",
     ]
-    for cls in (FFmpegRunner, FFprobeRunner, ProgressTracker, ProgressCallback):
+    public_classes = [
+        member
+        for name in pyffmpegcore.__all__
+        if inspect.isclass(member := getattr(pyffmpegcore, name)) and member.__module__.startswith("pyffmpegcore")
+    ]
+    for cls in public_classes:
         lines.extend([f"## `{cls.__name__}`", "", inspect.getdoc(cls) or "", ""])
         for name, member in public_methods(cls):
             signature = inspect.signature(member)

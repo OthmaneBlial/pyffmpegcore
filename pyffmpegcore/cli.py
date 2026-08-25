@@ -1644,7 +1644,7 @@ def handle_compress(args: argparse.Namespace) -> int:
     progress_callback = build_progress_printer(ctx, input_path)
 
     try:
-        result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).compress(
+        result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path, ffprobe_path=ctx.ffprobe_path).compress(
             str(input_path),
             str(output_path),
             target_size_kb=args.target_size_kb,
