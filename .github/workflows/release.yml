@@ -164,9 +164,6 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ["3.10", "3.14"]
-    env:
-      PIPX_HOME: ${{ runner.temp }}/pipx-home
-      PIPX_BIN_DIR: ${{ runner.temp }}/pipx-bin
     steps:
       - name: Check out repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
@@ -186,6 +183,9 @@ jobs:
       - name: Install pipx
         run: python -m pip install --upgrade pip pipx
       - name: Install and validate the public artifact
+        env:
+          PIPX_HOME: ${{ runner.temp }}/pipx-home
+          PIPX_BIN_DIR: ${{ runner.temp }}/pipx-bin
         run: >-
           python scripts/validate_public_pypi_install.py
           --version "${{ github.ref_name }}"
