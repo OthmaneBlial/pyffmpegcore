@@ -66,6 +66,45 @@
       "kind": "subtitle",
       "container": "srt",
       "generator": {"type": "text", "content": "1\n00:00:00,000 --> 00:00:02,500\nWelcome to PyFFmpegCore's generated subtitle fixture.\n\n2\n00:00:03,000 --> 00:00:05,500\nThis reproducible file never depends on a remote server.\n"}
+    },
+    {
+      "id": "chapters_ffmetadata",
+      "filename": "sample_chapters.ffmeta",
+      "kind": "metadata",
+      "container": "ffmetadata",
+      "generator": {"type": "text", "content": ";FFMETADATA1\ntitle=Résumé – 東京\ncomment=PyFFmpegCore fixture\n[CHAPTER]\nTIMEBASE=1/1000\nSTART=0\nEND=900\ntitle=Début\n[CHAPTER]\nTIMEBASE=1/1000\nSTART=900\nEND=1800\ntitle=Fin\n"}
+    },
+    {
+      "id": "rich_streams_mkv",
+      "filename": "sample_rich_streams.mkv",
+      "kind": "video",
+      "container": "matroska",
+      "generator": {"type": "ffmpeg", "args": ["-f", "lavfi", "-i", "testsrc2=size=320x180:rate=12", "-f", "lavfi", "-i", "sine=frequency=440:sample_rate=44100", "-f", "lavfi", "-i", "sine=frequency=660:sample_rate=44100", "-i", "{fixture:sample_subtitles.srt}", "-f", "ffmetadata", "-i", "{fixture:sample_chapters.ffmeta}", "-map", "0:v:0", "-map", "1:a:0", "-map", "2:a:0", "-map", "3:s:0", "-map_metadata", "4", "-map_chapters", "4", "-t", "2", "-c:v", "libx264", "-preset", "ultrafast", "-crf", "35", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "64k", "-c:s", "srt", "-metadata:s:a:0", "language=eng", "-metadata:s:a:0", "title=Primary", "-metadata:s:a:1", "language=fra", "-metadata:s:a:1", "title=Français", "-metadata:s:s:0", "language=fra", "-metadata:s:s:0", "title=Sous-titres", "{output}"]},
+      "validation": {"format_contains": "matroska", "video_codec": "h264", "audio_codec": "aac", "stream_counts": {"video": 1, "audio": 2, "subtitle": 1}, "format_tags": {"title": "Résumé – 東京"}, "stream_languages": {"audio": ["eng", "fra"], "subtitle": ["fra"]}, "chapter_titles": ["Début", "Fin"], "minimum_duration": 1.8}
+    },
+    {
+      "id": "audio_cover_art_mp3",
+      "filename": "sample_audio_cover_art.mp3",
+      "kind": "audio",
+      "container": "mp3",
+      "generator": {"type": "ffmpeg", "args": ["-i", "{fixture:sample_audio_wav.wav}", "-i", "{fixture:sample_image_jpg.jpg}", "-map", "0:a:0", "-map", "1:v:0", "-t", "2", "-c:a", "libmp3lame", "-b:a", "96k", "-c:v", "copy", "-id3v2_version", "3", "-metadata", "title=Cover demo", "-metadata:s:v", "title=Album cover", "-metadata:s:v", "comment=Cover (front)", "-disposition:v", "attached_pic", "{output}"]},
+      "validation": {"format_contains": "mp3", "audio_codec": "mp3", "stream_counts": {"audio": 1, "video": 1}, "format_tags": {"title": "Cover demo"}, "attached_picture": true, "minimum_duration": 1.8}
+    },
+    {
+      "id": "rotated_video_mp4",
+      "filename": "sample_rotated_video.mp4",
+      "kind": "video",
+      "container": "mp4",
+      "generator": {"type": "ffmpeg", "args": ["-display_rotation", "90", "-i", "{fixture:sample_video_mov.mov}", "-t", "1", "-c", "copy", "{output}"]},
+      "validation": {"format_contains": "mp4", "video_codec": "h264", "stream_counts": {"video": 1, "audio": 0}, "rotation": 90, "minimum_duration": 0.9}
+    },
+    {
+      "id": "variable_frame_rate_mp4",
+      "filename": "sample_variable_frame_rate.mp4",
+      "kind": "video",
+      "container": "mp4",
+      "generator": {"type": "ffmpeg", "args": ["-f", "lavfi", "-i", "testsrc2=size=160x120:rate=12:duration=2", "-vf", "select='not(mod(n,3))'", "-fps_mode", "vfr", "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "{output}"]},
+      "validation": {"format_contains": "mp4", "video_codec": "h264", "stream_counts": {"video": 1, "audio": 0}, "variable_frame_rate": true, "minimum_duration": 1.7}
     }
   ]
 }

@@ -169,7 +169,10 @@ class WorkflowPlanner:
             args.extend(["-hwaccel", options.hardware_acceleration])
         args.extend(["-i", source])
         if options.audio_only:
-            args.append("-vn")
+            args.extend(["-map", "0:a:0", "-vn"])
+        else:
+            args.extend(["-map", "0:v:0?", "-map", "0:a:0?"])
+        args.extend(["-map_metadata", "0", "-map_chapters", "0"])
         if options.video_codec and not options.audio_only:
             args.extend(["-c:v", options.video_codec])
         if options.audio_codec:
@@ -193,7 +196,12 @@ class WorkflowPlanner:
             required = (*required, f"hwaccel:{options.hardware_acceleration}")
         streams = ("audio",) if options.audio_only else ("video", "audio")
         operations = (
-            "drop video stream" if options.audio_only else "preserve video and audio streams when present",
+            (
+                "select the first audio stream and drop video"
+                if options.audio_only
+                else "select the first video and first audio streams when present"
+            ),
+            "preserve compatible container metadata and chapters",
             f"video codec: {options.video_codec or 'container/FFmpeg default'}",
             f"audio codec: {options.audio_codec or 'container/FFmpeg default'}",
             f"pixel format: {'not applicable' if options.audio_only else options.pixel_format}",

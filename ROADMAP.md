@@ -226,9 +226,9 @@ P0 Truth and reproducibility
 
 - [x] Add formatting/linting, static typing, coverage measurement, package metadata validation, and artifact-content checks.
 - [x] Define a meaningful coverage threshold by risk area; do not optimize only for a headline percentage.
-- [ ] Test stream selection, metadata preservation, corrupted inputs, missing codecs/filters, full disks, interruption, timeouts, and cleanup.
-- [ ] Generate tiny media permutations for video-only, audio-only, multi-audio, subtitles, chapters, cover art, rotation, variable frame rate, and Unicode metadata.
-- [ ] Decide whether the sdist is a runtime source artifact or a self-contained testable source artifact, then enforce its exact contents.
+- [x] Test stream selection, metadata preservation, corrupted inputs, missing codecs/filters, full disks, interruption, timeouts, and cleanup.
+- [x] Generate tiny media permutations for video-only, audio-only, multi-audio, subtitles, chapters, cover art, rotation, variable frame rate, and Unicode metadata.
+- [x] Decide whether the sdist is a runtime source artifact or a self-contained testable source artifact, then enforce its exact contents.
 
 **P2 acceptance gate**
 

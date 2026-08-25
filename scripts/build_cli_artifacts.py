@@ -9,9 +9,59 @@ import hashlib
 import json
 import subprocess
 import sys
+import tarfile
 from pathlib import Path
 
+from pyffmpegcore import __version__
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+SDIST_ALLOWED_ROOT_ENTRIES = frozenset(
+    {
+        "CHANGELOG.md",
+        "CLI_BETA_CHECKLIST.md",
+        "CLI_DISTRIBUTION.md",
+        "CLI_HELP.md",
+        "CLI_INSTALL.md",
+        "CLI_PLATFORM_NOTES.md",
+        "CLI_SPEC.md",
+        "CODE_OF_CONDUCT.md",
+        "CONTRIBUTING.md",
+        "DEVELOPMENT.md",
+        "EXAMPLES.md",
+        "LICENSE",
+        "MANIFEST.in",
+        "PKG-INFO",
+        "README.md",
+        "RELEASE_CHECKLIST.md",
+        "ROADMAP.md",
+        "SECURITY.md",
+        "SUPPORT.md",
+        "docs",
+        "examples",
+        "install.ps1",
+        "install.sh",
+        "pyffmpegcore",
+        "pyffmpegcore.egg-info",
+        "pyproject.toml",
+        "scripts",
+        "setup.cfg",
+        "tests",
+    }
+)
+SDIST_REQUIRED_PATHS = frozenset(
+    {
+        "LICENSE",
+        "README.md",
+        "pyproject.toml",
+        "pyffmpegcore/__init__.py",
+        "pyffmpegcore/cli.py",
+        "scripts/build_cli_artifacts.py",
+        "tests/media/download_fixtures.py",
+        "tests/media/manifest.json",
+    }
+)
+SDIST_FORBIDDEN_PARTS = frozenset({".git", ".venv", "dist", "downloads", "site", "__pycache__"})
 
 
 def sha256_for_file(path: Path) -> str:
@@ -72,6 +122,46 @@ def collect_artifact_report(outdir: Path) -> dict[str, object]:
     }
 
 
+def validate_sdist_contents(path: Path) -> dict[str, object]:
+    """Enforce the self-contained, testable source-artifact contract."""
+    with tarfile.open(path, "r:gz") as archive:
+        member_paths = [Path(member.name) for member in archive.getmembers()]
+
+    roots = {parts[0] for member in member_paths if (parts := member.parts)}
+    if len(roots) != 1:
+        raise RuntimeError(f"sdist must contain exactly one root directory, got {sorted(roots)!r}")
+
+    root = next(iter(roots))
+    relative_paths = [Path(*member.parts[1:]) for member in member_paths if len(member.parts) > 1]
+    unsafe = [str(path) for path in relative_paths if path.is_absolute() or ".." in path.parts]
+    if unsafe:
+        raise RuntimeError(f"sdist contains unsafe paths: {unsafe!r}")
+
+    forbidden = sorted(str(path) for path in relative_paths if SDIST_FORBIDDEN_PARTS.intersection(path.parts))
+    if forbidden:
+        raise RuntimeError(f"sdist contains generated or private paths: {forbidden!r}")
+
+    actual_top_entries = {path.parts[0] for path in relative_paths if path.parts}
+    unexpected = sorted(actual_top_entries - SDIST_ALLOWED_ROOT_ENTRIES)
+    missing_top = sorted(SDIST_ALLOWED_ROOT_ENTRIES - actual_top_entries)
+    if unexpected or missing_top:
+        raise RuntimeError(f"sdist top-level contract mismatch: unexpected={unexpected!r}, missing={missing_top!r}")
+
+    names = {path.as_posix() for path in relative_paths}
+    missing_required = sorted(SDIST_REQUIRED_PATHS - names)
+    if missing_required:
+        raise RuntimeError(f"sdist is missing required source/test paths: {missing_required!r}")
+
+    return {
+        "schema_version": "1.0",
+        "strategy": "self-contained-testable-source",
+        "root": root,
+        "file_count": len(names),
+        "required_paths": sorted(SDIST_REQUIRED_PATHS),
+        "forbidden_parts": sorted(SDIST_FORBIDDEN_PARTS),
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build the supported pyffmpegcore CLI distribution artifacts.")
     parser.add_argument(
@@ -99,6 +189,12 @@ def main(argv: list[str] | None = None) -> int:
         return build_result.returncode
 
     report = collect_artifact_report(args.outdir)
+    sdist_path = args.outdir / f"pyffmpegcore-{__version__}.tar.gz"
+    try:
+        report["sdist_contract"] = validate_sdist_contents(sdist_path)
+    except (OSError, RuntimeError, tarfile.TarError) as exc:
+        print(f"Source distribution contract failed: {exc}", file=sys.stderr)
+        return 1
     if args.json:
         print(json.dumps(report, indent=2))
     else:

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import namedtuple
 from unittest.mock import patch
 
 from pyffmpegcore import ExecutionPlan, ExecutionPolicy, MediaInfo, OverwritePolicy, StreamInfo
@@ -69,6 +70,54 @@ def test_preflight_explains_missing_capability_with_available_fallback(tmp_path)
     assert not report.ok
     assert missing.message == "Missing required capability: encoder:libx264"
     assert "tested fallback encoder:mpeg4" in (missing.hint or "")
+
+
+def test_preflight_rejects_missing_filter_before_mutation(tmp_path):
+    source = tmp_path / "source.mp4"
+    source.write_bytes(b"media")
+    output = tmp_path / "output.mp4"
+    plan = ExecutionPlan(
+        workflow="resize",
+        command=("ffmpeg", "-i", str(source), "-vf", "scale=10:10", str(output)),
+        inputs=(str(source),),
+        outputs=(str(output),),
+        required_capabilities=("filter:scale",),
+    )
+
+    report = PreflightEngine(
+        inventory=inventory(filters=()),
+        executable_resolver=lambda _binary: "/usr/bin/ffmpeg",
+    ).check(plan)
+
+    assert not report.ok
+    assert any(check.name == "capability/filter:scale" and check.status == "fail" for check in report.checks)
+    assert not output.exists()
+
+
+def test_preflight_rejects_full_disk_before_creating_output(tmp_path):
+    source = tmp_path / "source.mp4"
+    source.write_bytes(b"media")
+    output = tmp_path / "nested" / "output.mp4"
+    plan = ExecutionPlan(
+        workflow="convert",
+        command=("ffmpeg", "-i", str(source), str(output)),
+        inputs=(str(source),),
+        outputs=(str(output),),
+        metadata={"estimated_output_bytes": 10_000},
+    )
+    DiskUsage = namedtuple("DiskUsage", "total used free")
+
+    with patch("pyffmpegcore.preflight.shutil.disk_usage", return_value=DiskUsage(10_000, 9_999, 1)):
+        report = PreflightEngine(
+            inventory=inventory(),
+            executable_resolver=lambda _binary: "/usr/bin/ffmpeg",
+        ).check(plan)
+
+    disk = next(check for check in report.checks if check.name.startswith("disk/"))
+    assert not report.ok
+    assert disk.status == "fail"
+    assert "need about 10000 bytes, have 1" in disk.message
+    assert not output.parent.exists()
 
 
 def test_preflight_refuses_collision_and_corrupted_input(tmp_path):

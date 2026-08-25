@@ -141,6 +141,7 @@ def test_cli_timeout_returns_runtime_category_without_completed_output(tmp_path,
     assert returncode == 5
     assert payload["items"][0]["result"]["status"] == "timed-out"
     assert payload["items"][0]["result"]["exit_category"] == "timeout"
+    assert not output.exists()
 
 
 def test_process_policies_reject_non_writing_commands(capsys):

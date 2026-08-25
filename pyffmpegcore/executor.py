@@ -312,6 +312,8 @@ class ExecutionEngine:
                 outputs=_output_facts(plan.outputs),
             )
 
+        preexisting_outputs = {value for value in plan.outputs if Path(value).exists()}
+
         started = time.monotonic()
         deadline = started + plan.policy.timeout_seconds if plan.policy.timeout_seconds is not None else None
         status = JobStatus.SUCCEEDED
@@ -379,6 +381,20 @@ class ExecutionEngine:
                     warnings.append(f"Temporary workspace retained: {workspace}")
                 else:
                     shutil.rmtree(workspace, ignore_errors=True)
+
+        if status is not JobStatus.SUCCEEDED:
+            removed_outputs = []
+            for value in plan.outputs:
+                path = Path(value)
+                if value not in preexisting_outputs and path.is_file():
+                    try:
+                        path.unlink()
+                    except OSError as exc:
+                        warnings.append(f"Unable to remove incomplete output {path}: {exc}")
+                    else:
+                        removed_outputs.append(str(path))
+            if removed_outputs:
+                warnings.append(f"Removed incomplete outputs: {', '.join(removed_outputs)}")
 
         return JobResult(
             workflow=plan.workflow,

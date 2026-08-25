@@ -222,6 +222,24 @@ def test_execution_emits_typed_structured_progress(tmp_path):
     assert events == [result.progress]
 
 
+def test_execution_removes_new_incomplete_output_after_runtime_failure(tmp_path):
+    output = tmp_path / "partial.bin"
+    code = "from pathlib import Path; import sys; Path(sys.argv[1]).write_bytes(b'partial'); raise SystemExit(7)"
+    plan = ExecutionPlan(
+        workflow="test/partial-output",
+        command=(sys.executable, "-c", code, str(output)),
+        inputs=(),
+        outputs=(str(output),),
+    )
+
+    result = FFmpegRunner().execute_plan(plan)
+
+    assert result.status is JobStatus.FAILED
+    assert not output.exists()
+    assert result.outputs[0]["exists"] is False
+    assert any("Removed incomplete outputs" in warning for warning in result.warnings)
+
+
 def test_keyboard_interrupt_terminates_child_as_cancelled(monkeypatch):
     process = MagicMock()
     process.stdout = StringIO("")

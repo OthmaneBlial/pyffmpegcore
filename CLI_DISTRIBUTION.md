@@ -9,6 +9,14 @@ The CLI is currently distributed through standard Python packaging only:
 - wheel
 - source distribution
 
+The source distribution is deliberately a **self-contained testable source
+artifact**, not a minimal runtime-only archive. It includes the package,
+documentation, examples, build/validation scripts, tests, and deterministic
+fixture manifest/generator. It excludes generated media, caches, coverage,
+the built documentation site, repository research notes, and VCS data. The
+artifact builder rejects any unreviewed top-level addition or missing required
+path, so this boundary cannot drift silently.
+
 The install paths built on top of that are:
 
 - `pipx install git+https://github.com/OthmaneBlial/pyffmpegcore.git@main` until PyPI publication
@@ -58,6 +66,7 @@ And reports:
 - artifact type
 - size in bytes
 - SHA256 digest
+- the versioned source-distribution content-contract result
 
 ## Release Rule
 

@@ -26,7 +26,11 @@ def test_convert_plan_is_deterministic_and_uses_an_argument_vector(tmp_path):
     assert first.outputs == (str(output.resolve()),)
     payload = json.loads(json.dumps(first.to_dict()))
     assert isinstance(payload["command"], list)
-    assert payload["operations"][1] == "video codec: libx264"
+    assert payload["operations"][2] == "video codec: libx264"
+    assert first.command[first.command.index("-map") + 1] == "0:v:0?"
+    assert first.command.count("-map") == 2
+    assert "-map_metadata" in first.command
+    assert "-map_chapters" in first.command
 
 
 @pytest.mark.parametrize(
