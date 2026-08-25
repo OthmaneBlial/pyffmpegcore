@@ -292,11 +292,11 @@ P0 Truth and reproducibility
 
 ### P4.1 A common job and batch model
 
-- [ ] Generalize image batches into a common job model for mixed media with bounded concurrency and explicit resource limits.
-- [ ] Emit JSON Lines progress events and per-item receipts with stable partial-success semantics.
-- [ ] Add retry policies for classified transient failures, interruption handling, and resume from a manifest.
-- [ ] Prevent accidental output collisions and duplicate work across spaces, apostrophes, Unicode, corrupt inputs, and mixed extensions.
-- [ ] Never retry deterministic validation or unsupported-capability failures blindly.
+- [x] Generalize image batches into a common job model for mixed media with bounded concurrency and explicit resource limits.
+- [x] Emit JSON Lines progress events and per-item receipts with stable partial-success semantics.
+- [x] Add retry policies for classified transient failures, interruption handling, and resume from a manifest.
+- [x] Prevent accidental output collisions and duplicate work across spaces, apostrophes, Unicode, corrupt inputs, and mixed extensions.
+- [x] Never retry deterministic validation or unsupported-capability failures blindly.
 
 ### P4.2 Declarative pipelines
 

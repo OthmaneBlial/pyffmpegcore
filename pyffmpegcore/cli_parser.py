@@ -240,6 +240,45 @@ def build_parser() -> argparse.ArgumentParser:
     )
     profile_run_parser.set_defaults(handler_name="handle_planned_command")
 
+    batch_parser = subparsers.add_parser(
+        "batch",
+        parents=[common_parent],
+        help="Validate, preview, or run a bounded resumable mixed-media batch.",
+        description="Run versioned JSON manifests whose jobs use maintained workflow profiles.",
+    )
+    batch_subparsers = batch_parser.add_subparsers(dest="batch_command", metavar="COMMAND")
+
+    batch_validate_parser = batch_subparsers.add_parser(
+        "validate",
+        parents=[common_parent],
+        help="Strictly validate and compile a batch manifest without writing media.",
+    )
+    batch_validate_parser.add_argument("manifest", type=Path, help="Versioned batch JSON manifest.")
+    batch_validate_parser.add_argument("--json", action="store_true", help="Print compiled validation facts as JSON.")
+    batch_validate_parser.set_defaults(handler_name="handle_batch_validate")
+
+    batch_run_parser = batch_subparsers.add_parser(
+        "run",
+        parents=[common_parent],
+        help="Execute a batch with bounded concurrency, JSONL events, receipts, and optional resume.",
+    )
+    batch_run_parser.add_argument("manifest", type=Path, help="Versioned batch JSON manifest.")
+    batch_run_parser.add_argument("--state", type=Path, help="Atomic resume-state JSON path.")
+    batch_run_parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Skip jobs whose signature and completed output match --state.",
+    )
+    batch_run_parser.add_argument("--events", type=Path, help="Write privacy-redacted progress events as JSON Lines.")
+    batch_run_parser.add_argument("--receipt-dir", type=Path, help="Write one privacy-redacted receipt per executed job.")
+    batch_run_parser.add_argument("--max-workers", type=int, help="Override the manifest concurrency limit (1-32).")
+    batch_run_parser.add_argument("--max-retries", type=int, help="Override classified transient retries (0-10).")
+    batch_run_parser.add_argument(
+        "--max-input-size",
+        help="Override the largest permitted local input, for example 2GiB.",
+    )
+    batch_run_parser.set_defaults(handler_name="handle_batch_run")
+
     receipt_parser = subparsers.add_parser(
         "receipt",
         parents=[common_parent],

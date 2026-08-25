@@ -12,12 +12,14 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
 from . import __version__
+from .batch import BatchEvent, BatchJob, BatchManifest, BatchPolicy, BatchRun, BatchRunner, validate_batch_jobs
 from .capabilities import CapabilityInventory
 from .cli_execution import CLIExecutionBundle, execute_prepared_cli_job, prepare_cli_job
 from .cli_parser import build_parser
@@ -30,14 +32,16 @@ from .cli_validation import (
     runtime_error_to_cli_error,
     validate_global_contract,
 )
-from .domain import JobResult, ProgressEvent
+from .domain import JobResult, ProgressEvent, TemporaryFilePolicy
 from .errors import ValidationError
+from .planning import parse_size
 from .preflight import PreflightEngine
 from .presentation import render_plan_json, render_plan_text
 from .probe import FFprobeRunner
 from .profiles import Profile, ProfileRegistry
 from .receipt import ReceiptBuilder, RunReceipt, build_bug_report, migrate_receipt
 from .runner import FFmpegRunner
+from .workflow import WorkflowEngine
 
 EXIT_OK = 0
 EXIT_ENVIRONMENT_ERROR = 3
@@ -374,6 +378,168 @@ def handle_profile_validate(args: argparse.Namespace) -> int:
     else:
         echo(build_context(args), f"Valid profile: {profile.name} v{profile.profile_version}")
     return EXIT_OK
+
+
+def _load_cli_batch(args: argparse.Namespace) -> BatchManifest:
+    """Compile a manifest and apply explicit CLI policy overrides to every typed plan."""
+    ctx = build_context(args)
+    manifest = BatchManifest.read(
+        args.manifest,
+        planner=WorkflowEngine(ffmpeg_path=ctx.ffmpeg_path, ffprobe_path=ctx.ffprobe_path).planner,
+        force=ctx.force,
+    )
+    max_input_bytes = manifest.policy.max_input_bytes
+    if getattr(args, "max_input_size", None) is not None:
+        max_input_bytes = parse_size(args.max_input_size)
+    timeout = getattr(args, "timeout", None)
+    if timeout is None:
+        timeout = manifest.policy.per_job_timeout_seconds
+    policy = BatchPolicy(
+        max_workers=args.max_workers if getattr(args, "max_workers", None) is not None else manifest.policy.max_workers,
+        max_retries=args.max_retries if getattr(args, "max_retries", None) is not None else manifest.policy.max_retries,
+        max_input_bytes=max_input_bytes,
+        per_job_timeout_seconds=timeout,
+    )
+    temporary_files = TemporaryFilePolicy(getattr(args, "temp_files", "clean"))
+    jobs = tuple(
+        BatchJob(
+            job.id,
+            replace(
+                job.plan,
+                policy=replace(
+                    job.plan.policy,
+                    timeout_seconds=timeout,
+                    temporary_files=temporary_files,
+                ),
+            ),
+        )
+        for job in manifest.jobs
+    )
+    return BatchManifest(validate_batch_jobs(jobs, policy), policy)
+
+
+def handle_batch_validate(args: argparse.Namespace) -> int:
+    """Strictly compile a batch manifest without probing or mutating media."""
+    manifest = _load_cli_batch(args)
+    if args.json:
+        print(json.dumps({"valid": True, "manifest": manifest.to_dict()}, indent=2))
+    else:
+        echo(build_context(args), f"Valid batch: {len(manifest.jobs)} jobs; max_workers={manifest.policy.max_workers}")
+    return EXIT_OK
+
+
+def _render_batch_preview(args: argparse.Namespace, manifest: BatchManifest) -> int:
+    """Preflight every batch item and render a non-mutating combined preview."""
+    ctx = build_context(args)
+    engine = WorkflowEngine(ffmpeg_path=ctx.ffmpeg_path, ffprobe_path=ctx.ffprobe_path)
+    prepared = [(job, engine.prepare(job.plan)) for job in manifest.jobs]
+    if args.plan_json:
+        print(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "policy": manifest.policy.to_dict(),
+                    "jobs": [
+                        {
+                            "id": job.id,
+                            "signature": job.signature,
+                            "plan": item.plan.to_dict(),
+                            "preflight": item.preflight.to_dict(),
+                        }
+                        for job, item in prepared
+                    ],
+                },
+                indent=2,
+            )
+        )
+    else:
+        for index, (job, item) in enumerate(prepared):
+            if index:
+                print()
+            echo(ctx, f"Batch job: {job.id}")
+            echo(ctx, render_plan_text(item.plan, item.preflight, explain=bool(args.explain)))
+    return EXIT_OK if all(item.preflight.ok for _, item in prepared) else EXIT_VALIDATION_ERROR
+
+
+def _batch_exit_code(result: BatchRun) -> int:
+    if result.succeeded:
+        return EXIT_OK
+    if result.succeeded_count:
+        return EXIT_PARTIAL_SUCCESS
+    categories = {
+        item.execution.result.exit_category
+        for item in result.items
+        if item.execution is not None and item.status == "failed"
+    }
+    if categories == {"environment"}:
+        return EXIT_ENVIRONMENT_ERROR
+    if categories and categories <= {"validation"}:
+        return EXIT_VALIDATION_ERROR
+    return EXIT_RUNTIME_ERROR
+
+
+def handle_batch_run(args: argparse.Namespace) -> int:
+    """Run a bounded batch and preserve machine-readable partial outcomes."""
+    ctx = build_context(args)
+    if getattr(args, "receipt", None) is not None:
+        raise CLIError("Batch jobs require --receipt-dir so every item keeps its own receipt.", exit_code=2)
+    if args.resume and args.state is None:
+        raise CLIError("--resume requires --state FILE.", exit_code=2)
+    manifest = _load_cli_batch(args)
+    if args.dry_run or args.explain:
+        return _render_batch_preview(args, manifest)
+
+    outputs = {Path(value).resolve() for job in manifest.jobs for value in job.plan.outputs}
+    for option, destination in (("--state", args.state), ("--events", args.events)):
+        if destination is not None and destination.resolve() in outputs:
+            raise CLIError(f"{option} must not overwrite a media output.")
+    if args.events is not None and args.events.exists() and not (ctx.force or args.resume):
+        raise CLIError(f"Events file already exists: {args.events}. Use --resume or --force.")
+    if args.state is not None and args.state.exists() and not (ctx.force or args.resume):
+        raise CLIError(f"State file already exists: {args.state}. Use --resume or --force.")
+    if args.receipt_dir is not None and args.receipt_dir.exists() and any(args.receipt_dir.iterdir()):
+        if not (ctx.force or args.resume):
+            raise CLIError(f"Receipt directory is not empty: {args.receipt_dir}. Use --resume or --force.")
+
+    event_handle = None
+    event_lock = threading.Lock()
+    try:
+        if args.events is not None:
+            args.events.parent.mkdir(parents=True, exist_ok=True)
+            event_handle = args.events.open("w", encoding="utf-8")
+
+        def write_event(event: BatchEvent) -> None:
+            if event_handle is not None:
+                with event_lock:
+                    event_handle.write(json.dumps(event.to_dict(), ensure_ascii=False) + "\n")
+                    event_handle.flush()
+
+        result = BatchRunner(ffmpeg_path=ctx.ffmpeg_path, ffprobe_path=ctx.ffprobe_path).run(
+            manifest.jobs,
+            policy=manifest.policy,
+            event_callback=write_event if event_handle is not None else None,
+            state_path=args.state,
+            resume=args.resume,
+            receipt_dir=args.receipt_dir,
+            hash_content=bool(args.hash_content),
+        )
+    finally:
+        if event_handle is not None:
+            event_handle.close()
+
+    if args.result_json:
+        print(json.dumps(result.to_dict(), indent=2))
+    else:
+        for item in result.items:
+            if item.status == "failed":
+                echo_error(f"{item.job_id}: {(item.detail or 'batch job failed').strip()}")
+        echo(
+            ctx,
+            "Batch: "
+            f"{result.succeeded_count} succeeded, {result.failed_count} failed, "
+            f"{result.cancelled_count} cancelled, {result.resumed_count} resumed",
+        )
+    return _batch_exit_code(result)
 
 
 def build_context(args: argparse.Namespace) -> CLIContext:
@@ -1008,6 +1174,8 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     handler_name = getattr(args, "handler_name", "")
     handlers = {
+        "handle_batch_run": handle_batch_run,
+        "handle_batch_validate": handle_batch_validate,
         "handle_completion": handle_completion,
         "handle_doctor": handle_doctor,
         "handle_planned_command": handle_planned_command,
@@ -1032,6 +1200,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         echo_verbose(ctx, f"ffmpeg={ctx.ffmpeg_path}")
         echo_verbose(ctx, f"ffprobe={ctx.ffprobe_path}")
         preview = validate_global_contract(args, WRITING_COMMANDS)
+        if getattr(args, "command", None) == "batch":
+            return int(handler(args))
         if preview:
             plan = build_cli_plan(args)
             preflight = PreflightEngine(ffmpeg_path=ctx.ffmpeg_path, ffprobe_path=ctx.ffprobe_path).check(plan)

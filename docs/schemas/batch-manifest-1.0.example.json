@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "policy": {
+    "max_workers": 2,
+    "max_retries": 1,
+    "max_input_bytes": "2GiB",
+    "per_job_timeout_seconds": 900
+  },
+  "jobs": [
+    {
+      "id": "web-video",
+      "profile": "web/mp4-compatible",
+      "input": "media/source.mov",
+      "output": "build/source.mp4"
+    },
+    {
+      "id": "podcast-audio",
+      "profile": "audio/podcast-speech",
+      "input": "media/episode.wav",
+      "output": "build/episode.m4a"
+    }
+  ]
+}

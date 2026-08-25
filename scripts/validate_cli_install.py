@@ -337,6 +337,61 @@ def main(argv: list[str] | None = None) -> int:
                 if profile_run.returncode != 0 or not profile_output.exists():
                     return 1
 
+            batch_manifest = outputs_dir / "installed-batch.json"
+            batch_state = outputs_dir / "installed-batch-state.json"
+            batch_events = outputs_dir / "installed-batch-events.jsonl"
+            batch_receipts = outputs_dir / "installed-batch-receipts"
+            batch_outputs = (outputs_dir / "batch-web.mp4", outputs_dir / "batch-podcast.m4a")
+            batch_manifest.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "1.0",
+                        "policy": {"max_workers": 2, "max_retries": 1},
+                        "jobs": [
+                            {
+                                "id": "web",
+                                "profile": "web/mp4-compatible",
+                                "input": str(args.media_root / "sample_video_mov.mov"),
+                                "output": str(batch_outputs[0]),
+                            },
+                            {
+                                "id": "podcast",
+                                "profile": "audio/podcast-speech",
+                                "input": str(args.media_root / "sample_audio_wav.wav"),
+                                "output": str(batch_outputs[1]),
+                            },
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            batch_run = run_command(
+                [
+                    str(cli_path),
+                    "batch",
+                    "run",
+                    str(batch_manifest),
+                    "--state",
+                    str(batch_state),
+                    "--events",
+                    str(batch_events),
+                    "--receipt-dir",
+                    str(batch_receipts),
+                    "--result-json",
+                ]
+            )
+            add_report_entry(report["commands"], "batch-mixed-media", batch_run)
+            try:
+                batch_payload = json.loads(batch_run.stdout)
+            except json.JSONDecodeError:
+                return 1
+            if (
+                batch_run.returncode != 0
+                or not all(path.exists() for path in batch_outputs)
+                or batch_payload.get("summary", {}).get("succeeded") != 2
+            ):
+                return 1
+
         if args.json:
             print(json.dumps(report, indent=2))
         else:

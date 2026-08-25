@@ -20,6 +20,7 @@ positional arguments:
     smoke-test          Generate local synthetic media and verify a complete workflow.
     completion          Print a shell completion script for bash, zsh, or PowerShell.
     profile             List, explain, or validate versioned workflow profiles.
+    batch               Validate, preview, or run a bounded resumable mixed-media batch.
     receipt             Validate a run receipt or build a private bug-report bundle.
     probe               Inspect a media file and print simplified metadata.
     convert             Convert a media file into a new format.
@@ -332,6 +333,119 @@ options:
   --input INPUT         Input media path.
   --output OUTPUT       Output media path.
   --subtitle SUBTITLE   External subtitle path required by subtitles/accessibility.
+```
+
+## `pyffmpegcore batch`
+
+```text
+usage: pyffmpegcore batch [-h] [--verbose | --quiet] [--force] [--dry-run | --explain] [--plan-json]
+       [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}] [--receipt
+       FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH] COMMAND ...
+
+Run versioned JSON manifests whose jobs use maintained workflow profiles.
+
+positional arguments:
+  COMMAND
+    validate            Strictly validate and compile a batch manifest without writing media.
+    run                 Execute a batch with bounded concurrency, JSONL events, receipts, and
+    optional resume.
+
+options:
+  -h, --help            show this help message and exit
+  --verbose             Show more detailed command output.
+  --quiet               Reduce command output to essentials.
+  --force               Allow overwriting existing output files or directories.
+  --dry-run             Preflight and print the exact plan without writing files.
+  --explain             Explain streams, operations, trade-offs, and the exact plan without writing
+  files.
+  --plan-json           Print --dry-run or --explain as versioned JSON.
+  --result-json         Print the writing command's versioned plan, preflight, and result as JSON.
+  --timeout SECONDS     Stop a writing command after this positive number of seconds.
+  --temp-files {clean,keep-on-error,keep}
+                        Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
+  --ffmpeg-path FFMPEG_PATH
+                        Path to the ffmpeg executable. Defaults to ffmpeg.
+  --ffprobe-path FFPROBE_PATH
+                        Path to the ffprobe executable. Defaults to ffprobe.
+```
+
+## `pyffmpegcore batch validate`
+
+```text
+usage: pyffmpegcore batch validate [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
+       [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       [--json] manifest
+
+positional arguments:
+  manifest              Versioned batch JSON manifest.
+
+options:
+  -h, --help            show this help message and exit
+  --verbose             Show more detailed command output.
+  --quiet               Reduce command output to essentials.
+  --force               Allow overwriting existing output files or directories.
+  --dry-run             Preflight and print the exact plan without writing files.
+  --explain             Explain streams, operations, trade-offs, and the exact plan without writing
+  files.
+  --plan-json           Print --dry-run or --explain as versioned JSON.
+  --result-json         Print the writing command's versioned plan, preflight, and result as JSON.
+  --timeout SECONDS     Stop a writing command after this positive number of seconds.
+  --temp-files {clean,keep-on-error,keep}
+                        Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
+  --ffmpeg-path FFMPEG_PATH
+                        Path to the ffmpeg executable. Defaults to ffmpeg.
+  --ffprobe-path FFPROBE_PATH
+                        Path to the ffprobe executable. Defaults to ffprobe.
+  --json                Print compiled validation facts as JSON.
+```
+
+## `pyffmpegcore batch run`
+
+```text
+usage: pyffmpegcore batch run [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
+       [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
+       [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
+       [--state STATE] [--resume] [--events EVENTS] [--receipt-dir RECEIPT_DIR] [--max-workers
+       MAX_WORKERS] [--max-retries MAX_RETRIES] [--max-input-size MAX_INPUT_SIZE] manifest
+
+positional arguments:
+  manifest              Versioned batch JSON manifest.
+
+options:
+  -h, --help            show this help message and exit
+  --verbose             Show more detailed command output.
+  --quiet               Reduce command output to essentials.
+  --force               Allow overwriting existing output files or directories.
+  --dry-run             Preflight and print the exact plan without writing files.
+  --explain             Explain streams, operations, trade-offs, and the exact plan without writing
+  files.
+  --plan-json           Print --dry-run or --explain as versioned JSON.
+  --result-json         Print the writing command's versioned plan, preflight, and result as JSON.
+  --timeout SECONDS     Stop a writing command after this positive number of seconds.
+  --temp-files {clean,keep-on-error,keep}
+                        Clean temporary files, retain them on error, or always retain them.
+  --receipt FILE        Write a privacy-redacted versioned receipt for an executed media job.
+  --hash-content        Opt in to SHA-256 input/output hashes in --receipt.
+  --ffmpeg-path FFMPEG_PATH
+                        Path to the ffmpeg executable. Defaults to ffmpeg.
+  --ffprobe-path FFPROBE_PATH
+                        Path to the ffprobe executable. Defaults to ffprobe.
+  --state STATE         Atomic resume-state JSON path.
+  --resume              Skip jobs whose signature and completed output match --state.
+  --events EVENTS       Write privacy-redacted progress events as JSON Lines.
+  --receipt-dir RECEIPT_DIR
+                        Write one privacy-redacted receipt per executed job.
+  --max-workers MAX_WORKERS
+                        Override the manifest concurrency limit (1-32).
+  --max-retries MAX_RETRIES
+                        Override classified transient retries (0-10).
+  --max-input-size MAX_INPUT_SIZE
+                        Override the largest permitted local input, for example 2GiB.
 ```
 
 ## `pyffmpegcore receipt`

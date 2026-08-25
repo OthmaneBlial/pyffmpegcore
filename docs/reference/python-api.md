@@ -3,6 +3,58 @@
 
 The Python API is synchronous and currently marked beta. Prefer explicit keyword arguments and inspect nonzero results.
 
+## `BatchEvent`
+
+One privacy-redacted JSON Lines event emitted by a batch run.
+
+### `to_dict(self) -> 'dict[str, object]'`
+
+No public docstring is available.
+
+## `BatchItemOutcome`
+
+Stable per-item result, including resumed and cancelled jobs.
+
+### `to_dict(self) -> 'dict[str, object]'`
+
+No public docstring is available.
+
+## `BatchJob`
+
+One stable job identity paired with an immutable typed plan.
+
+## `BatchManifest`
+
+Strict versioned profile-job manifest compiled through the typed planner.
+
+### `to_dict(self) -> 'dict[str, object]'`
+
+No public docstring is available.
+
+## `BatchPolicy`
+
+Explicit concurrency, retry, input-size, and timeout limits.
+
+### `to_dict(self) -> 'dict[str, object]'`
+
+No public docstring is available.
+
+## `BatchRun`
+
+Versioned ordered outcome for one bounded batch execution.
+
+### `to_dict(self) -> 'dict[str, object]'`
+
+No public docstring is available.
+
+## `BatchRunner`
+
+Execute validated jobs concurrently with receipts, events, retry, and resume.
+
+### `run(self, jobs: 'Iterable[BatchJob]', *, policy: 'BatchPolicy | None' = None, cancellation: 'threading.Event | None' = None, event_callback: 'Callable[[BatchEvent], None] | None' = None, state_path: 'str | Path | None' = None, resume: 'bool' = False, receipt_dir: 'str | Path | None' = None, hash_content: 'bool' = False) -> 'BatchRun'`
+
+Run jobs once, retry transient failures, and persist successful signatures atomically.
+
 ## `CapabilityUnavailableError`
 
 The installed FFmpeg build cannot satisfy the requested workflow.

@@ -32,6 +32,7 @@ nav:
   - Capability preflight: preflight.md
   - Dry runs and plans: plans.md
   - Run receipts: receipts.md
+  - Resumable batches: batches.md
   - Recipes:
       - Overview: recipes/index.md
       - Web-compatible video: recipes/web-video.md

@@ -9,6 +9,17 @@ Copyright (c) 2025 Othmane BLIAL
 
 __version__ = "0.2.0"
 
+from .batch import (
+    BatchEvent,
+    BatchItemOutcome,
+    BatchJob,
+    BatchManifest,
+    BatchPolicy,
+    BatchRun,
+    BatchRunner,
+    is_transient_failure,
+    validate_batch_jobs,
+)
 from .capabilities import CapabilityInventory
 from .domain import (
     CapturePolicy,
@@ -45,6 +56,13 @@ from .runner import FFmpegRunner
 from .workflow import PreparedWorkflow, WorkflowBatch, WorkflowEngine, WorkflowExecution
 
 __all__ = [
+    "BatchEvent",
+    "BatchItemOutcome",
+    "BatchJob",
+    "BatchManifest",
+    "BatchPolicy",
+    "BatchRun",
+    "BatchRunner",
     "CapabilityUnavailableError",
     "CapabilityInventory",
     "CapturePolicy",
@@ -84,7 +102,9 @@ __all__ = [
     "WorkflowEngine",
     "WorkflowExecution",
     "build_bug_report",
+    "is_transient_failure",
     "migrate_receipt",
     "parse_size",
     "validate_receipt",
+    "validate_batch_jobs",
 ]

@@ -21,6 +21,8 @@ def validate_global_contract(args: argparse.Namespace, writing_commands: Collect
     command = getattr(args, "command", None)
     is_writing = command in writing_commands or (
         command == "profile" and getattr(args, "profile_command", None) == "run"
+    ) or (
+        command == "batch" and getattr(args, "batch_command", None) == "run"
     )
     if getattr(args, "plan_json", False) and not preview:
         raise CLIError("--plan-json requires --dry-run or --explain.", exit_code=2)
@@ -37,8 +39,8 @@ def validate_global_contract(args: argparse.Namespace, writing_commands: Collect
         raise CLIError("--receipt requires a media-writing command.", exit_code=2)
     if receipt is not None and preview:
         raise CLIError("--receipt requires execution and cannot be combined with --dry-run or --explain.", exit_code=2)
-    if getattr(args, "hash_content", False) and receipt is None:
-        raise CLIError("--hash-content requires --receipt FILE.", exit_code=2)
+    if getattr(args, "hash_content", False) and receipt is None and getattr(args, "receipt_dir", None) is None:
+        raise CLIError("--hash-content requires --receipt FILE or --receipt-dir DIR.", exit_code=2)
     return preview
 
 

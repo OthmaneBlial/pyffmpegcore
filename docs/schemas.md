@@ -21,6 +21,7 @@ The document uses `schema_version: "1.0"` and reports status, retention behavior
 - profiles use `schema_version: "1.0"` plus an independent positive `profile_version`.
 - `PreflightReport` uses `schema_version: "1.0"`; human output is rendered from the same check objects.
 - `WorkflowBatch` uses `schema_version: "1.0"` and is the shared CLI/Python envelope around a prepared plan and ordered item executions.
+- Batch manifests, state files, JSONL events, and ordered outcomes use independent `1.0` contracts. See the [batch manifest schema](schemas/batch-manifest-1.0.schema.json), [example](schemas/batch-manifest-1.0.example.json), and [batch guide](batches.md).
 
 Writing commands accept `--result-json`. Its version `1.0` envelope contains `plan`, `preflight`, ordered `items`, and a `summary`. Each item records its input/output identity, item-specific preflight, and stable `JobResult`. Batch image jobs therefore retain the same schema for total success, total failure, and partial success.
 
