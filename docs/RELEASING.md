@@ -27,8 +27,8 @@ Only a maintainer with repository and PyPI project control may publish a release
      tag --verify v0.2.0
    ```
 
-5. Push the tag. The workflow builds once, tests the exact wheel on the supported OS/Python anchors, attests it, publishes it through OIDC, and creates a matching GitHub Release with checksums.
-6. Verify the PyPI JSON/Simple endpoints, clean `pipx install`, `--version`, `doctor`, and `smoke-test` from the public artifact.
+5. Push the tag. The workflow builds once, tests the exact wheel on the supported OS/Python anchors, attests it, and publishes it through OIDC.
+6. The workflow waits for the exact wheel and source distribution to appear in the public PyPI JSON endpoint. It then performs a clean `pipx install`, `--version`, `doctor`, and `smoke-test` on Linux, macOS, and Windows before creating the matching GitHub Release with checksums. A failed public-install gate must be fixed forward; it must not be bypassed by creating the release manually.
 
 Never rebuild or replace files for an existing version. A failed gate means fix forward with a new commit and, if any immutable artifact was already published, a new version.
 

@@ -143,10 +143,58 @@ jobs:
           packages-dir: dist/
           print-hash: true
 
+  wait-pypi:
+    name: Confirm public PyPI files
+    if: github.event_name == 'push'
+    needs: publish-pypi
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+      - name: Wait for the exact public release
+        run: python3 scripts/wait_for_pypi.py --version "$GITHUB_REF_NAME"
+
+  verify-public:
+    name: Verify public install (${{ matrix.os }}, Python ${{ matrix.python-version }})
+    if: github.event_name == 'push'
+    needs: wait-pypi
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.10", "3.14"]
+    env:
+      PIPX_HOME: ${{ runner.temp }}/pipx-home
+      PIPX_BIN_DIR: ${{ runner.temp }}/pipx-bin
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install FFmpeg on Ubuntu
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Install FFmpeg on macOS
+        if: runner.os == 'macOS'
+        run: brew list ffmpeg >/dev/null 2>&1 || brew install ffmpeg
+      - name: Install FFmpeg on Windows
+        if: runner.os == 'Windows'
+        run: choco install ffmpeg -y --no-progress
+      - name: Install pipx
+        run: python -m pip install --upgrade pip pipx
+      - name: Install and validate the public artifact
+        run: >-
+          python scripts/validate_public_pypi_install.py
+          --version "${{ github.ref_name }}"
+          --bin-dir "${{ runner.temp }}/pipx-bin"
+
   github-release:
     name: Create matching GitHub Release
     if: github.event_name == 'push'
-    needs: [build, test-artifact, attest, publish-pypi]
+    needs: [build, test-artifact, attest, publish-pypi, verify-public]
     runs-on: ubuntu-latest
     permissions:
       contents: write
