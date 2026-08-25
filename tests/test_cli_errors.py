@@ -54,9 +54,9 @@ def test_cli_missing_binary_returns_environment_error(tmp_path):
     assert result.returncode == 3
 
 
-def test_cli_processing_failure_returns_runtime_error(tmp_path):
+def test_cli_missing_required_stream_returns_validation_error(tmp_path):
     """
-    FFmpeg processing failures should return the runtime exit code.
+    Capability-aware preflight should reject a missing required stream before execution.
     """
     input_file = tmp_path / "plain.mp4"
     subprocess.run(
@@ -103,27 +103,24 @@ def test_cli_processing_failure_returns_runtime_error(tmp_path):
         check=False,
     )
 
-    assert result.returncode == 5
+    assert result.returncode == 4
+    assert "Missing required streams: subtitle" in result.stderr
 
 
 @pytest.mark.parametrize(
-    ("method", "arguments"),
+    "arguments",
     [
-        ("compress", ["compress", "--crf", "28"]),
-        ("extract_thumbnail", ["thumbnail"]),
-        ("generate_waveform", ["waveform"]),
+        ["compress", "--crf", "99"],
+        ["thumbnail", "--width", "0"],
+        ["waveform", "--width", "0"],
     ],
 )
-def test_handler_value_errors_return_validation_category(tmp_path, monkeypatch, method, arguments):
+def test_planner_value_errors_return_validation_category(tmp_path, arguments):
     """Typed option validation failures must remain category 4, not processing failures."""
     input_file = tmp_path / "input.mp4"
     output_file = tmp_path / "output.mp4"
     input_file.write_bytes(b"fixture")
 
-    def reject_options(*_args, **_kwargs):
-        raise ValueError("invalid typed option")
-
-    monkeypatch.setattr(f"pyffmpegcore.cli.FFmpegRunner.{method}", reject_options)
     argv = [*arguments, "--input", str(input_file), "--output", str(output_file)]
 
     assert main(argv) == 4

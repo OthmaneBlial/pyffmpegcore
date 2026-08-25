@@ -29,6 +29,19 @@ The `command` and each multi-pass `steps[].command` value are JSON arrays, never
 
 Plans normalize paths so the same request is snapshot-testable. Environment-specific capability and free-space facts live in the separate preflight object and do not change the plan.
 
+## Execute and keep a machine result
+
+Every writing command compiles through the same planner, preflight engine, and executor as its preview. Add `--result-json` to execute the job and emit one parseable document containing the exact plan, preflight checks, per-item `JobResult`, and success/failure counts:
+
+```bash
+pyffmpegcore thumbnail \
+  --input talk.mov \
+  --output poster.jpg \
+  --result-json > result.json
+```
+
+Progress and human summaries are suppressed in this mode so stdout remains valid JSON. The normal stable exit categories still apply: `0` success, `3` environment, `4` validation/preflight, `5` execution, and `6` partial batch success. `--result-json` executes media and therefore cannot be combined with the non-mutating `--dry-run` or `--explain` modes.
+
 ## Execute the same plan from Python
 
 `FFmpegRunner.execute_plan()` executes the exact typed plan and returns a `JobResult` rather than a raw process object. FFmpeg's `-progress pipe:1` protocol is part of every workflow plan, and the final normalized `ProgressEvent` is stored in the result. A callback can receive the typed events while the job runs.

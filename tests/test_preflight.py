@@ -100,3 +100,29 @@ def test_preflight_refuses_collision_and_corrupted_input(tmp_path):
 def test_windows_drive_path_is_not_treated_as_a_remote_protocol():
     assert _input_scheme(r"C:\media\clip.mp4") is None
     assert _input_scheme("https://example.test/clip.mp4") == "https"
+
+
+def test_preflight_applies_stream_requirements_per_input(tmp_path):
+    video = tmp_path / "video.mp4"
+    subtitle = tmp_path / "captions.srt"
+    video.write_bytes(b"video")
+    subtitle.write_text("captions", encoding="utf-8")
+    plan = ExecutionPlan(
+        workflow="subtitles/add",
+        command=("ffmpeg", "-i", str(video), "-i", str(subtitle)),
+        inputs=(str(video), str(subtitle)),
+        outputs=(str(tmp_path / "output.mp4"),),
+        metadata={"input_stream_requirements": {str(video): ["video"], str(subtitle): ["subtitle"]}},
+    )
+
+    def probe_media(path):
+        kind = "subtitle" if path.endswith(".srt") else "video"
+        return MediaInfo(path=path, streams=(StreamInfo(index=0, codec_type=kind),))
+
+    with patch("pyffmpegcore.preflight.FFprobeRunner.probe_media", side_effect=probe_media):
+        report = PreflightEngine(
+            inventory=inventory(encoders=("mov_text",), filters=()),
+            executable_resolver=lambda _binary: "/usr/bin/ffmpeg",
+        ).check(plan)
+
+    assert report.ok

@@ -21,4 +21,6 @@ The document uses `schema_version: "1.0"` and reports status, retention behavior
 - profiles use `schema_version: "1.0"` plus an independent positive `profile_version`.
 - `PreflightReport` uses `schema_version: "1.0"`; human output is rendered from the same check objects.
 
+Writing commands accept `--result-json`. Its version `1.0` envelope contains `plan`, `preflight`, ordered `items`, and a `summary`. Each item records its input/output identity, item-specific preflight, and stable `JobResult`. Batch image jobs therefore retain the same schema for total success, total failure, and partial success.
+
 Receipts and pipelines will use separate schema files and migration rules. Human terminal output is allowed to evolve; versioned JSON fields follow the documented compatibility and deprecation policy.

@@ -21,6 +21,7 @@ def test_convert_plan_is_deterministic_and_uses_an_argument_vector(tmp_path):
 
     assert first == second
     assert first.command[0] == "/tools/ffmpeg"
+    assert first.command[1] == "-n"
     assert "-y" not in first.command
     assert first.outputs == (str(output.resolve()),)
     payload = json.loads(json.dumps(first.to_dict()))

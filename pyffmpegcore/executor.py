@@ -336,7 +336,12 @@ class ExecutionEngine:
         try:
             for step in steps:
                 command = list(step.command)
-                if command and command[0].endswith(("ffmpeg", "ffmpeg.exe")):
+                if (
+                    command
+                    and command[0].endswith(("ffmpeg", "ffmpeg.exe"))
+                    and "-n" not in command
+                    and "-y" not in command
+                ):
                     overwrite_flag = "-y" if plan.policy.overwrite is OverwritePolicy.REPLACE else "-n"
                     command = [command[0], overwrite_flag, *command[1:]]
                 last_command = tuple(command)

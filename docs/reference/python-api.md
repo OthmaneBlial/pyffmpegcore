@@ -254,6 +254,10 @@ A helper class for creating progress callbacks with context.
 
 Versioned progress fact suitable for callbacks or JSON Lines output.
 
+### `to_dict(self) -> 'dict[str, Any]'`
+
+No public docstring is available.
+
 ## `ProgressTracker`
 
 Tracks FFmpeg progress by parsing progress output.

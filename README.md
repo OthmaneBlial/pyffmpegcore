@@ -109,6 +109,13 @@ pyffmpegcore probe --input my-video.mp4
 pyffmpegcore convert --input input.webm --output output.mp4 --video-codec libx264 --audio-codec aac
 ```
 
+Preview the exact command and environment checks before writing, or keep a machine-readable execution result:
+
+```bash
+pyffmpegcore convert --input input.webm --output output.mp4 --video-codec libx264 --audio-codec aac --explain
+pyffmpegcore convert --input input.webm --output output.mp4 --video-codec libx264 --audio-codec aac --result-json > result.json
+```
+
 ### 4. Make a large video smaller
 
 ```bash
@@ -265,12 +272,12 @@ python -m pip install "git+https://github.com/OthmaneBlial/pyffmpegcore.git@main
 Example:
 
 ```python
-from pyffmpegcore import FFmpegRunner
+from pyffmpegcore import FFmpegRunner, WorkflowPlanner
 
-ffmpeg = FFmpegRunner()
-result = ffmpeg.extract_audio("video.mp4", "audio.mp3")
+plan = WorkflowPlanner().extract_audio("video.mp4", "audio.mp3")
+result = FFmpegRunner().execute_plan(plan)
 
-print(result.returncode)
+print(result.status, result.elapsed_seconds, result.outputs)
 ```
 
 The Python API remains useful, but the supported public path is now the `pyffmpegcore` terminal command first.

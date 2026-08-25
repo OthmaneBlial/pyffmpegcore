@@ -17,7 +17,7 @@ from .domain import (
     ResizeOptions,
     normalized_path,
 )
-from .errors import ValidationError
+from .errors import EnvironmentUnavailableError, ValidationError
 from .probe import FFprobeRunner
 
 _AUDIO_CODEC_BY_EXTENSION = {
@@ -31,6 +31,13 @@ _AUDIO_CODEC_BY_EXTENSION = {
 }
 _BITRATELESS_CODECS = {"flac", "pcm_s16le"}
 _SIZE_PATTERN = re.compile(r"^\s*(\d+(?:\.\d+)?)\s*([kmgt]?i?b)?\s*$", re.IGNORECASE)
+
+
+def _planning_probe_failure(exc: RuntimeError) -> RuntimeError:
+    """Categorize the rare workflows that need media facts while planning."""
+    if "was not found" in str(exc):
+        return EnvironmentUnavailableError(str(exc))
+    return ValidationError(f"input cannot be inspected for planning: {exc}")
 
 
 def parse_size(value: str) -> int:
@@ -121,10 +128,15 @@ class WorkflowPlanner:
         metadata: dict[str, object] | None = None,
         steps: tuple[ExecutionStep, ...] = (),
     ) -> ExecutionPlan:
-        progress_options = ("-progress", "pipe:1", "-nostats")
-        command = (self.ffmpeg_path, *progress_options, *args)
+        global_options = (
+            "-y" if force else "-n",
+            "-progress",
+            "pipe:1",
+            "-nostats",
+        )
+        command = (self.ffmpeg_path, *global_options, *args)
         structured_steps = tuple(
-            ExecutionStep(step.name, (step.command[0], *progress_options, *step.command[1:])) for step in steps
+            ExecutionStep(step.name, (step.command[0], *global_options, *step.command[1:])) for step in steps
         )
         plan_metadata = {"structured_progress": True, **dict(metadata or {})}
         return ExecutionPlan(
@@ -259,7 +271,10 @@ class WorkflowPlanner:
         if options.target_size_bytes is not None and options.two_pass:
             if options.video_codec == "copy":
                 raise ValidationError("video codec copy cannot satisfy a two-pass target-size contract")
-            duration = FFprobeRunner(self.ffprobe_path).get_duration(source)
+            try:
+                duration = FFprobeRunner(self.ffprobe_path).get_duration(source)
+            except RuntimeError as exc:
+                raise _planning_probe_failure(exc) from exc
             if duration <= 0:
                 raise ValidationError("target-size compression requires a positive probed duration")
             audio_bps = parse_bitrate(options.audio_bitrate)
@@ -509,7 +524,10 @@ class WorkflowPlanner:
         if factor <= 0:
             raise ValidationError("speed factor must be positive")
         source, output = normalized_path(input_file), normalized_path(output_file)
-        media = FFprobeRunner(self.ffprobe_path).probe(source)
+        try:
+            media = FFprobeRunner(self.ffprobe_path).probe(source)
+        except RuntimeError as exc:
+            raise _planning_probe_failure(exc) from exc
         has_audio = bool(media.get("audio"))
         sample_rate = media.get("audio", {}).get("sample_rate", 44100)
         audio_filter = (
@@ -675,8 +693,10 @@ class WorkflowPlanner:
             capabilities = ("encoder:mov_text",)
             streams = ("video:0", "audio:all", "subtitle:external")
             operations = (f"add selectable subtitle track labelled {language}", "copy existing video and audio")
-            required = ["video"]
-            metadata: dict[str, object] = {}
+            required = []
+            metadata: dict[str, object] = {
+                "input_stream_requirements": {video: ["video"], subtitle: ["subtitle"]},
+            }
         elif action == "extract":
             if stream_index < 0:
                 raise ValidationError("subtitle stream index must not be negative")
@@ -703,7 +723,8 @@ class WorkflowPlanner:
             capabilities = ("filter:subtitles",)
             streams = ("video:0", "audio:all", "subtitle:external")
             operations = (f"burn subtitle text at font size {font_size}", "copy audio")
-            required = ["video"]
+            required = []
+            metadata["input_stream_requirements"] = {video: ["video"], subtitle: ["subtitle"]}
         metadata["required_stream_types"] = required
         return self._plan(
             f"subtitles/{action}",
@@ -871,17 +892,22 @@ class WorkflowPlanner:
         extension = "webp" if action == "webp" else "jpg" if action == "optimize" else output_format.lstrip(".")
         steps = []
         outputs = []
+        planning_warnings: list[str] = []
         for index, source in enumerate(inputs):
             output = target_dir / f"{source.stem}.{extension}"
             outputs.append(str(output))
             image_resize = resize
             if action == "optimize":
-                media = FFprobeRunner(self.ffprobe_path).probe(str(source))
-                video = media.get("video", {})
-                width, height = video.get("width", 0), video.get("height", 0)
-                if width and height and (width > max_width or height > max_height):
-                    ratio = min(max_width / width, max_height / height)
-                    image_resize = (int(width * ratio), int(height * ratio))
+                try:
+                    media = FFprobeRunner(self.ffprobe_path).probe(str(source))
+                except RuntimeError:
+                    planning_warnings.append(f"probe deferred for unreadable image: {source}")
+                else:
+                    video = media.get("video", {})
+                    width, height = video.get("width", 0), video.get("height", 0)
+                    if width and height and (width > max_width or height > max_height):
+                        ratio = min(max_width / width, max_height / height)
+                        image_resize = (int(width * ratio), int(height * ratio))
             args = ["-i", str(source)]
             if image_resize:
                 if image_resize[0] <= 0 or image_resize[1] <= 0:
@@ -913,6 +939,7 @@ class WorkflowPlanner:
             capabilities=capabilities,
             streams=("video:image",),
             operations=(f"{action} {len(inputs)} images as {extension}", f"quality: {quality}"),
+            warnings=tuple(planning_warnings),
             metadata={
                 "required_stream_types": ["video"],
                 "item_count": len(inputs),

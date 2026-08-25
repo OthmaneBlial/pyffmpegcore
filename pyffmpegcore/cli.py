@@ -19,14 +19,15 @@ from typing import Any
 
 from . import __version__
 from .capabilities import CapabilityInventory
+from .cli_execution import CLIExecutionBundle, execute_prepared_cli_job, prepare_cli_job
 from .cli_planning import build_cli_plan
+from .domain import ProgressEvent
 from .errors import ValidationError
-from .planning import parse_bitrate, parse_size
 from .preflight import PreflightEngine
 from .presentation import render_plan_json, render_plan_text
 from .probe import FFprobeRunner
 from .profiles import Profile, ProfileRegistry
-from .runner import FFmpegRunner, escape_path_for_concat, escape_path_for_filter
+from .runner import FFmpegRunner
 
 EXIT_OK = 0
 EXIT_ENVIRONMENT_ERROR = 3
@@ -35,16 +36,22 @@ EXIT_VALIDATION_ERROR = 4
 EXIT_RUNTIME_ERROR = 5
 EXIT_PARTIAL_SUCCESS = 6
 
-_AUDIO_CODEC_BY_EXTENSION = {
-    ".aac": "aac",
-    ".flac": "flac",
-    ".m4a": "aac",
-    ".mp3": "libmp3lame",
-    ".ogg": "libvorbis",
-    ".opus": "libopus",
-    ".wav": "pcm_s16le",
-}
-_BITRATELESS_AUDIO_CODECS = {"flac", "pcm_s16le"}
+WRITING_COMMANDS = frozenset(
+    {
+        "convert",
+        "compress",
+        "extract-audio",
+        "thumbnail",
+        "waveform",
+        "speed",
+        "concat",
+        "subtitles",
+        "mix-audio",
+        "normalize-audio",
+        "images",
+    }
+)
+
 ROOT_HELP_EPILOG = """Examples:
   pyffmpegcore doctor
   pyffmpegcore probe --input sample.mp4 --json
@@ -168,6 +175,12 @@ def add_global_arguments(
         action="store_true",
         default=bool_default,
         help="Print --dry-run or --explain as versioned JSON.",
+    )
+    parser.add_argument(
+        "--result-json",
+        action="store_true",
+        default=bool_default,
+        help="Print the writing command's versioned plan, preflight, and result as JSON.",
     )
     parser.add_argument(
         "--ffmpeg-path",
@@ -361,7 +374,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--hwaccel",
         help="Optional FFmpeg hardware-acceleration method; failures do not silently fall back.",
     )
-    convert_parser.set_defaults(handler=handle_convert)
+    convert_parser.set_defaults(handler=handle_planned_command)
 
     compress_parser = subparsers.add_parser(
         "compress",
@@ -445,7 +458,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=1.0,
         help="Reserved target-size percentage for container overhead. Defaults to %(default)s.",
     )
-    compress_parser.set_defaults(handler=handle_compress)
+    compress_parser.set_defaults(handler=handle_planned_command)
 
     extract_audio_parser = subparsers.add_parser(
         "extract-audio",
@@ -486,7 +499,7 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         help="Number of FFmpeg worker threads to use.",
     )
-    extract_audio_parser.set_defaults(handler=handle_extract_audio)
+    extract_audio_parser.set_defaults(handler=handle_planned_command)
 
     thumbnail_parser = subparsers.add_parser(
         "thumbnail",
@@ -526,7 +539,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=2,
         help="JPEG quality from 1 to 31. Lower is better quality. Defaults to %(default)s.",
     )
-    thumbnail_parser.set_defaults(handler=handle_thumbnail)
+    thumbnail_parser.set_defaults(handler=handle_planned_command)
 
     waveform_parser = subparsers.add_parser(
         "waveform",
@@ -561,7 +574,7 @@ def build_parser() -> argparse.ArgumentParser:
         default="white",
         help="Waveform color definition. Defaults to %(default)s.",
     )
-    waveform_parser.set_defaults(handler=handle_waveform)
+    waveform_parser.set_defaults(handler=handle_planned_command)
 
     speed_parser = subparsers.add_parser(
         "speed",
@@ -594,7 +607,7 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Do not preserve audio pitch when changing playback speed.",
     )
-    speed_video_parser.set_defaults(handler=handle_speed_video)
+    speed_video_parser.set_defaults(handler=handle_planned_command)
 
     speed_audio_parser = speed_subparsers.add_parser(
         "audio",
@@ -615,7 +628,7 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Do not preserve pitch when changing playback speed.",
     )
-    speed_audio_parser.set_defaults(handler=handle_speed_audio)
+    speed_audio_parser.set_defaults(handler=handle_planned_command)
 
     concat_parser = subparsers.add_parser(
         "concat",
@@ -650,7 +663,7 @@ def build_parser() -> argparse.ArgumentParser:
         default="aac",
         help="Audio codec for re-encode mode. Defaults to %(default)s.",
     )
-    concat_parser.set_defaults(handler=handle_concat)
+    concat_parser.set_defaults(handler=handle_planned_command)
 
     subtitles_parser = subparsers.add_parser(
         "subtitles",
@@ -678,7 +691,7 @@ def build_parser() -> argparse.ArgumentParser:
         default="eng",
         help="Subtitle language code. Defaults to %(default)s.",
     )
-    subtitles_add_parser.set_defaults(handler=handle_subtitles_add)
+    subtitles_add_parser.set_defaults(handler=handle_planned_command)
 
     subtitles_extract_parser = subtitles_subparsers.add_parser(
         "extract",
@@ -694,7 +707,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=0,
         help="Zero-based subtitle stream index. Defaults to %(default)s.",
     )
-    subtitles_extract_parser.set_defaults(handler=handle_subtitles_extract)
+    subtitles_extract_parser.set_defaults(handler=handle_planned_command)
 
     subtitles_burn_parser = subtitles_subparsers.add_parser(
         "burn",
@@ -716,7 +729,7 @@ def build_parser() -> argparse.ArgumentParser:
         default="&HFFFFFF",
         help="ASS/FFmpeg subtitle color value. Defaults to %(default)s.",
     )
-    subtitles_burn_parser.set_defaults(handler=handle_subtitles_burn)
+    subtitles_burn_parser.set_defaults(handler=handle_planned_command)
 
     mix_audio_parser = subparsers.add_parser(
         "mix-audio",
@@ -744,7 +757,7 @@ def build_parser() -> argparse.ArgumentParser:
         type=float,
         help="Optional per-input volume multipliers.",
     )
-    mix_audio_mix_parser.set_defaults(handler=handle_mix_audio_mix)
+    mix_audio_mix_parser.set_defaults(handler=handle_planned_command)
 
     mix_audio_concat_parser = mix_audio_subparsers.add_parser(
         "concat",
@@ -754,7 +767,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     mix_audio_concat_parser.add_argument("--inputs", nargs="+", required=True, help="Audio input paths.")
     mix_audio_concat_parser.add_argument("--output", required=True, help="Merged audio output path.")
-    mix_audio_concat_parser.set_defaults(handler=handle_mix_audio_concat)
+    mix_audio_concat_parser.set_defaults(handler=handle_planned_command)
 
     mix_audio_mashup_parser = mix_audio_subparsers.add_parser(
         "mashup",
@@ -770,7 +783,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=2.0,
         help="Crossfade duration in seconds. Defaults to %(default)s.",
     )
-    mix_audio_mashup_parser.set_defaults(handler=handle_mix_audio_mashup)
+    mix_audio_mashup_parser.set_defaults(handler=handle_planned_command)
 
     mix_audio_background_parser = mix_audio_subparsers.add_parser(
         "background",
@@ -787,7 +800,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=0.3,
         help="Background volume multiplier. Defaults to %(default)s.",
     )
-    mix_audio_background_parser.set_defaults(handler=handle_mix_audio_background)
+    mix_audio_background_parser.set_defaults(handler=handle_planned_command)
 
     normalize_audio_parser = subparsers.add_parser(
         "normalize-audio",
@@ -821,7 +834,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=11.0,
         help="Target loudness range in LU for loudnorm mode.",
     )
-    normalize_audio_parser.set_defaults(handler=handle_normalize_audio)
+    normalize_audio_parser.set_defaults(handler=handle_planned_command)
 
     images_parser = subparsers.add_parser(
         "images",
@@ -861,7 +874,7 @@ def build_parser() -> argparse.ArgumentParser:
         metavar=("WIDTH", "HEIGHT"),
         help="Optional resize dimensions applied to every output image.",
     )
-    images_convert_parser.set_defaults(handler=handle_images_convert)
+    images_convert_parser.set_defaults(handler=handle_planned_command)
 
     images_optimize_parser = images_subparsers.add_parser(
         "optimize",
@@ -889,7 +902,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=85,
         help="JPEG quality from 1 to 100. Defaults to %(default)s.",
     )
-    images_optimize_parser.set_defaults(handler=handle_images_optimize)
+    images_optimize_parser.set_defaults(handler=handle_planned_command)
 
     images_webp_parser = images_subparsers.add_parser(
         "webp",
@@ -905,7 +918,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=80,
         help="WebP quality from 1 to 100. Defaults to %(default)s.",
     )
-    images_webp_parser.set_defaults(handler=handle_images_webp)
+    images_webp_parser.set_defaults(handler=handle_planned_command)
 
     return parser
 
@@ -1667,45 +1680,6 @@ def summarize_output_file(ctx: CLIContext, output_path: Path) -> None:
         echo(ctx, f"Audio: {audio.get('codec', 'unknown')}")
 
 
-def handle_convert(args: argparse.Namespace) -> int:
-    """
-    Run the convert command.
-    """
-    ctx = build_context(args)
-    input_path = require_existing_input(args.input)
-    output_path = prepare_output_path(args.output, force=ctx.force)
-
-    kwargs = {
-        key: value
-        for key, value in {
-            "video_codec": args.video_codec,
-            "audio_codec": args.audio_codec,
-            "video_bitrate": args.video_bitrate,
-            "audio_bitrate": args.audio_bitrate,
-            "pix_fmt": args.pix_fmt,
-            "threads": args.threads,
-        }.items()
-        if value is not None
-    }
-
-    try:
-        result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).convert(
-            str(input_path),
-            str(output_path),
-            audio_only=args.audio_only,
-            hwaccel=args.hwaccel,
-            **kwargs,
-        )
-    except RuntimeError as exc:
-        message = str(exc)
-        exit_code = EXIT_ENVIRONMENT_ERROR if "was not found" in message else EXIT_RUNTIME_ERROR
-        raise CLIError(message, exit_code=exit_code) from exc
-
-    raise_for_completed_process_error(result)
-    summarize_output_file(ctx, output_path)
-    return EXIT_OK
-
-
 def build_progress_printer(ctx: CLIContext, input_path: Path) -> CLIProgressPrinter | None:
     """
     Create a progress printer when command output is not quiet.
@@ -1721,754 +1695,6 @@ def build_progress_printer(ctx: CLIContext, input_path: Path) -> CLIProgressPrin
     return CLIProgressPrinter(total_duration=duration or None)
 
 
-def handle_compress(args: argparse.Namespace) -> int:
-    """
-    Run the compress command.
-    """
-    ctx = build_context(args)
-    input_path = require_existing_input(args.input)
-    output_path = prepare_output_path(args.output, force=ctx.force)
-
-    kwargs = {
-        key: value
-        for key, value in {
-            "video_codec": args.video_codec,
-            "audio_codec": args.audio_codec,
-            "video_bitrate": args.video_bitrate,
-            "audio_bitrate": args.audio_bitrate,
-            "preset": args.preset,
-            "threads": args.threads,
-            "overhead_pct": args.container_overhead_percent,
-            "min_video_bitrate_bps": parse_bitrate(args.min_video_bitrate),
-        }.items()
-        if value is not None
-    }
-
-    target_size_kb = args.target_size_kb
-    if args.target_size is not None:
-        target_size_bytes = parse_size(args.target_size)
-        target_size_kb = target_size_bytes // 1024
-        if target_size_kb <= 0:
-            raise ValidationError("--target-size must be at least 1KiB")
-
-    progress_callback = build_progress_printer(ctx, input_path)
-
-    try:
-        result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path, ffprobe_path=ctx.ffprobe_path).compress(
-            str(input_path),
-            str(output_path),
-            target_size_kb=target_size_kb,
-            crf=args.crf,
-            two_pass=args.two_pass,
-            progress_callback=progress_callback,
-            **kwargs,
-        )
-    except ValueError as exc:
-        raise CLIError(str(exc), exit_code=EXIT_VALIDATION_ERROR) from exc
-    except RuntimeError as exc:
-        raise runtime_error_to_cli_error(exc) from exc
-
-    raise_for_completed_process_error(result)
-    summarize_output_file(ctx, output_path)
-    return EXIT_OK
-
-
-def handle_extract_audio(args: argparse.Namespace) -> int:
-    """
-    Run the extract-audio command.
-    """
-    ctx = build_context(args)
-    input_path = require_existing_input(args.input)
-    output_path = prepare_output_path(args.output, force=ctx.force)
-
-    kwargs = {
-        key: value
-        for key, value in {
-            "audio_codec": args.audio_codec,
-            "audio_bitrate": args.audio_bitrate,
-            "sample_rate": args.sample_rate,
-            "channels": args.channels,
-            "threads": args.threads,
-        }.items()
-        if value is not None
-    }
-
-    progress_callback = build_progress_printer(ctx, input_path)
-
-    try:
-        result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).extract_audio(
-            str(input_path),
-            str(output_path),
-            progress_callback=progress_callback,
-            **kwargs,
-        )
-    except RuntimeError as exc:
-        message = str(exc)
-        exit_code = EXIT_ENVIRONMENT_ERROR if "was not found" in message else EXIT_RUNTIME_ERROR
-        raise CLIError(message, exit_code=exit_code) from exc
-
-    raise_for_completed_process_error(result)
-    summarize_output_file(ctx, output_path)
-    return EXIT_OK
-
-
-def handle_thumbnail(args: argparse.Namespace) -> int:
-    """
-    Run the thumbnail command.
-    """
-    ctx = build_context(args)
-    input_path = require_existing_input(args.input)
-    output_path = prepare_output_path(args.output, force=ctx.force)
-
-    try:
-        result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).extract_thumbnail(
-            str(input_path),
-            str(output_path),
-            timestamp=args.timestamp,
-            width=args.width,
-            height=args.height,
-            quality=args.quality,
-        )
-    except ValueError as exc:
-        raise CLIError(str(exc), exit_code=EXIT_VALIDATION_ERROR) from exc
-    except RuntimeError as exc:
-        raise runtime_error_to_cli_error(exc) from exc
-
-    raise_for_completed_process_error(result)
-    summarize_output_file(ctx, output_path)
-    return EXIT_OK
-
-
-def handle_waveform(args: argparse.Namespace) -> int:
-    """
-    Run the waveform command.
-    """
-    ctx = build_context(args)
-    input_path = require_existing_input(args.input)
-    output_path = prepare_output_path(args.output, force=ctx.force)
-
-    try:
-        result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).generate_waveform(
-            str(input_path),
-            str(output_path),
-            width=args.width,
-            height=args.height,
-            colors=args.colors,
-        )
-    except ValueError as exc:
-        raise CLIError(str(exc), exit_code=EXIT_VALIDATION_ERROR) from exc
-    except RuntimeError as exc:
-        raise runtime_error_to_cli_error(exc) from exc
-
-    raise_for_completed_process_error(result)
-    summarize_output_file(ctx, output_path)
-    return EXIT_OK
-
-
-def build_atempo_chain(speed_factor: float) -> str:
-    """
-    Build an atempo filter chain for arbitrary positive speed values.
-    """
-    if speed_factor <= 0:
-        raise CLIError("Speed factor must be positive.")
-
-    if 0.5 <= speed_factor <= 2.0:
-        return f"atempo={speed_factor}"
-
-    factors = []
-    current = speed_factor
-    while current > 2.0:
-        factors.append(2.0)
-        current /= 2.0
-    while current < 0.5:
-        factors.append(0.5)
-        current /= 0.5
-    if current != 1.0:
-        factors.append(current)
-    return ",".join(f"atempo={factor}" for factor in factors)
-
-
-def run_video_speed(
-    ctx: CLIContext,
-    input_path: Path,
-    output_path: Path,
-    factor: float,
-    preserve_pitch: bool,
-) -> None:
-    """
-    Change playback speed for a video file, preserving audio when present.
-    """
-    if factor <= 0:
-        raise CLIError("Speed factor must be positive.")
-
-    try:
-        metadata = FFprobeRunner(ffprobe_path=ctx.ffprobe_path).probe(str(input_path))
-    except RuntimeError as exc:
-        message = str(exc)
-        exit_code = EXIT_ENVIRONMENT_ERROR if "was not found" in message else EXIT_RUNTIME_ERROR
-        raise CLIError(message, exit_code=exit_code) from exc
-
-    has_audio = bool(metadata.get("audio"))
-    args = ["-i", str(input_path)]
-
-    if has_audio:
-        if preserve_pitch:
-            audio_filter = build_atempo_chain(factor)
-        else:
-            sample_rate = metadata.get("audio", {}).get("sample_rate", 44100)
-            audio_filter = f"asetrate={sample_rate}*{factor},aresample={sample_rate}"
-
-        filter_complex = f"[0:v]setpts=(PTS-STARTPTS)/{factor}[v];[0:a]{audio_filter}[a]"
-        args.extend(["-filter_complex", filter_complex, "-map", "[v]", "-map", "[a]"])
-    else:
-        args.extend(["-vf", f"setpts=(PTS-STARTPTS)/{factor}"])
-
-    args.extend(["-c:v", "libx264"])
-    if has_audio:
-        args.extend(["-c:a", "aac"])
-    args.extend(["-y", str(output_path)])
-
-    result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).run(args)
-    raise_for_completed_process_error(result)
-
-
-def run_audio_speed(
-    ctx: CLIContext,
-    input_path: Path,
-    output_path: Path,
-    factor: float,
-    preserve_pitch: bool,
-) -> None:
-    """
-    Change playback speed for an audio file.
-    """
-    if factor <= 0:
-        raise CLIError("Speed factor must be positive.")
-
-    try:
-        metadata = FFprobeRunner(ffprobe_path=ctx.ffprobe_path).probe(str(input_path))
-    except RuntimeError as exc:
-        message = str(exc)
-        exit_code = EXIT_ENVIRONMENT_ERROR if "was not found" in message else EXIT_RUNTIME_ERROR
-        raise CLIError(message, exit_code=exit_code) from exc
-
-    sample_rate = metadata.get("audio", {}).get("sample_rate", 44100)
-    if preserve_pitch:
-        audio_filter = build_atempo_chain(factor)
-    else:
-        audio_filter = f"asetrate={sample_rate}*{factor},aresample={sample_rate}"
-
-    args = [
-        "-i",
-        str(input_path),
-        "-filter:a",
-        audio_filter,
-    ]
-    append_audio_output_options(args, output_path, bitrate="192k")
-    args.extend(["-y", str(output_path)])
-    result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).run(args)
-    raise_for_completed_process_error(result)
-
-
-def handle_speed_video(args: argparse.Namespace) -> int:
-    """
-    Run the speed video subcommand.
-    """
-    ctx = build_context(args)
-    input_path = require_existing_input(args.input)
-    output_path = prepare_output_path(args.output, force=ctx.force)
-
-    run_video_speed(
-        ctx,
-        input_path,
-        output_path,
-        args.factor,
-        preserve_pitch=not args.no_pitch_preserve,
-    )
-    summarize_output_file(ctx, output_path)
-    return EXIT_OK
-
-
-def handle_speed_audio(args: argparse.Namespace) -> int:
-    """
-    Run the speed audio subcommand.
-    """
-    ctx = build_context(args)
-    input_path = require_existing_input(args.input)
-    output_path = prepare_output_path(args.output, force=ctx.force)
-
-    run_audio_speed(
-        ctx,
-        input_path,
-        output_path,
-        args.factor,
-        preserve_pitch=not args.no_pitch_preserve,
-    )
-    summarize_output_file(ctx, output_path)
-    return EXIT_OK
-
-
-def run_concat_copy(ctx: CLIContext, input_paths: list[Path], output_path: Path) -> None:
-    """
-    Concatenate matching clips using FFmpeg's concat demuxer.
-    """
-    with tempfile.NamedTemporaryFile(
-        mode="w",
-        suffix=".txt",
-        delete=False,
-        encoding="utf-8",
-    ) as handle:
-        concat_file = Path(handle.name)
-        for input_path in input_paths:
-            handle.write(f"file {escape_path_for_concat(str(input_path))}\n")
-
-    try:
-        result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).run(
-            [
-                "-f",
-                "concat",
-                "-safe",
-                "0",
-                "-i",
-                str(concat_file),
-                "-c",
-                "copy",
-                "-y",
-                str(output_path),
-            ]
-        )
-    finally:
-        if concat_file.exists():
-            concat_file.unlink()
-
-    raise_for_completed_process_error(result)
-
-
-def run_concat_reencode(
-    ctx: CLIContext,
-    input_paths: list[Path],
-    output_path: Path,
-    video_codec: str,
-    audio_codec: str,
-) -> None:
-    """
-    Concatenate clips by re-encoding them into a shared output format.
-    """
-    args: list[str] = []
-    for input_path in input_paths:
-        args.extend(["-i", str(input_path)])
-
-    video_inputs = "".join(f"[{index}:v]" for index in range(len(input_paths)))
-    audio_inputs = "".join(f"[{index}:a]" for index in range(len(input_paths)))
-    filter_complex = (
-        f"{video_inputs}concat=n={len(input_paths)}:v=1:a=0[vout];"
-        f"{audio_inputs}concat=n={len(input_paths)}:v=0:a=1[aout]"
-    )
-
-    args.extend(
-        [
-            "-filter_complex",
-            filter_complex,
-            "-map",
-            "[vout]",
-            "-map",
-            "[aout]",
-            "-c:v",
-            video_codec,
-            "-c:a",
-            audio_codec,
-            "-y",
-            str(output_path),
-        ]
-    )
-    result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).run(args)
-    raise_for_completed_process_error(result)
-
-
-def handle_concat(args: argparse.Namespace) -> int:
-    """
-    Run the concat command.
-    """
-    ctx = build_context(args)
-    if len(args.inputs) < 2:
-        raise CLIError("--inputs requires at least two clips.")
-
-    input_paths = [require_existing_input(path, option_name="--inputs") for path in args.inputs]
-    output_path = prepare_output_path(args.output, force=ctx.force)
-
-    try:
-        if args.mode == "copy":
-            run_concat_copy(ctx, input_paths, output_path)
-        else:
-            run_concat_reencode(
-                ctx,
-                input_paths,
-                output_path,
-                video_codec=args.video_codec,
-                audio_codec=args.audio_codec,
-            )
-    except RuntimeError as exc:
-        message = str(exc)
-        exit_code = EXIT_ENVIRONMENT_ERROR if "was not found" in message else EXIT_RUNTIME_ERROR
-        raise CLIError(message, exit_code=exit_code) from exc
-
-    summarize_output_file(ctx, output_path)
-    return EXIT_OK
-
-
-def handle_subtitles_add(args: argparse.Namespace) -> int:
-    """
-    Add an external subtitle track to a video file.
-    """
-    ctx = build_context(args)
-    video_path = require_existing_input(args.video, option_name="--video")
-    subtitle_path = require_existing_input(args.subtitle, option_name="--subtitle")
-    output_path = prepare_output_path(args.output, force=ctx.force)
-
-    result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).run(
-        [
-            "-i",
-            str(video_path),
-            "-i",
-            str(subtitle_path),
-            "-map",
-            "0:v:0",
-            "-map",
-            "0:a?",
-            "-map",
-            "1:0",
-            "-c:v",
-            "copy",
-            "-c:a",
-            "copy",
-            "-c:s",
-            "mov_text",
-            "-metadata:s:s:0",
-            f"language={args.language}",
-            "-y",
-            str(output_path),
-        ]
-    )
-    raise_for_completed_process_error(result)
-    summarize_output_file(ctx, output_path)
-    return EXIT_OK
-
-
-def handle_subtitles_extract(args: argparse.Namespace) -> int:
-    """
-    Extract subtitles from a video file.
-    """
-    ctx = build_context(args)
-    video_path = require_existing_input(args.video, option_name="--video")
-    output_path = prepare_output_path(args.output, force=ctx.force)
-
-    result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).run(
-        [
-            "-i",
-            str(video_path),
-            "-map",
-            f"0:s:{args.stream_index}",
-            "-c:s",
-            "srt",
-            "-y",
-            str(output_path),
-        ]
-    )
-    raise_for_completed_process_error(result)
-    echo(ctx, f"Created: {output_path}")
-    return EXIT_OK
-
-
-def handle_subtitles_burn(args: argparse.Namespace) -> int:
-    """
-    Burn subtitles into the video image.
-    """
-    ctx = build_context(args)
-    video_path = require_existing_input(args.video, option_name="--video")
-    subtitle_path = require_existing_input(args.subtitle, option_name="--subtitle")
-    output_path = prepare_output_path(args.output, force=ctx.force)
-
-    temporary_subtitle_file: Path | None = None
-    subtitle_source = subtitle_path
-
-    if "'" in str(subtitle_path):
-        with tempfile.NamedTemporaryFile(
-            suffix=subtitle_path.suffix,
-            delete=False,
-        ) as temp_file:
-            temporary_subtitle_file = Path(temp_file.name)
-        shutil.copyfile(subtitle_path, temporary_subtitle_file)
-        subtitle_source = temporary_subtitle_file
-
-    subtitle_filter = (
-        f"subtitles=filename='{escape_path_for_filter(str(subtitle_source))}':"
-        f"force_style='FontSize={args.font_size},PrimaryColour={args.font_color}'"
-    )
-
-    try:
-        result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).run(
-            [
-                "-i",
-                str(video_path),
-                "-vf",
-                subtitle_filter,
-                "-c:a",
-                "copy",
-                "-y",
-                str(output_path),
-            ]
-        )
-    finally:
-        if temporary_subtitle_file and temporary_subtitle_file.exists():
-            temporary_subtitle_file.unlink()
-
-    raise_for_completed_process_error(result)
-    summarize_output_file(ctx, output_path)
-    return EXIT_OK
-
-
-def select_audio_codec(output_path: Path) -> str:
-    """
-    Pick a sensible audio codec based on the output extension.
-    """
-    return _AUDIO_CODEC_BY_EXTENSION.get(output_path.suffix.lower(), "aac")
-
-
-def append_audio_output_options(args: list[str], output_path: Path, bitrate: str) -> None:
-    """
-    Add audio codec and bitrate options based on the chosen output extension.
-    """
-    codec = select_audio_codec(output_path)
-    args.extend(["-c:a", codec])
-    if bitrate and codec not in _BITRATELESS_AUDIO_CODECS:
-        args.extend(["-b:a", bitrate])
-
-
-def collect_audio_inputs(ctx: CLIContext, input_values: list[str]) -> list[Path]:
-    """
-    Validate that the provided input files exist and contain audio.
-    """
-    if len(input_values) < 2:
-        raise CLIError("At least two audio inputs are required.")
-
-    valid_inputs: list[Path] = []
-    for value in input_values:
-        path = require_existing_input(value, option_name="--inputs")
-        metadata = FFprobeRunner(ffprobe_path=ctx.ffprobe_path).probe(str(path))
-        if not metadata.get("audio"):
-            raise CLIError(f"Input does not contain audio: {path}")
-        valid_inputs.append(path)
-
-    return valid_inputs
-
-
-def handle_mix_audio_mix(args: argparse.Namespace) -> int:
-    """
-    Mix multiple audio sources together.
-    """
-    ctx = build_context(args)
-    input_paths = collect_audio_inputs(ctx, args.inputs)
-    output_path = prepare_output_path(args.output, force=ctx.force)
-
-    if args.volumes is not None and len(args.volumes) not in (0, len(input_paths)):
-        raise CLIError("--volumes must match the number of --inputs.")
-
-    volumes = args.volumes or [1.0] * len(input_paths)
-    filter_parts = []
-    ffmpeg_args: list[str] = []
-    for input_path in input_paths:
-        ffmpeg_args.extend(["-i", str(input_path)])
-
-    for index, volume in enumerate(volumes):
-        if volume <= 0:
-            raise CLIError("Volume values must be positive.")
-        if volume != 1.0:
-            filter_parts.append(f"[{index}:a]volume={volume}[a{index}]")
-        else:
-            filter_parts.append(f"[{index}:a]anull[a{index}]")
-
-    mix_inputs = "".join(f"[a{index}]" for index in range(len(input_paths)))
-    filter_parts.append(f"{mix_inputs}amix=inputs={len(input_paths)}:duration=longest:normalize=0[aout]")
-    ffmpeg_args.extend(["-filter_complex", ";".join(filter_parts), "-map", "[aout]"])
-    append_audio_output_options(ffmpeg_args, output_path, bitrate="192k")
-    ffmpeg_args.extend(["-y", str(output_path)])
-
-    result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).run(ffmpeg_args)
-    raise_for_completed_process_error(result)
-    summarize_output_file(ctx, output_path)
-    return EXIT_OK
-
-
-def handle_mix_audio_concat(args: argparse.Namespace) -> int:
-    """
-    Concatenate audio sources sequentially.
-    """
-    ctx = build_context(args)
-    input_paths = collect_audio_inputs(ctx, args.inputs)
-    output_path = prepare_output_path(args.output, force=ctx.force)
-
-    ffmpeg_args: list[str] = []
-    for input_path in input_paths:
-        ffmpeg_args.extend(["-i", str(input_path)])
-    concat_inputs = "".join(f"[{index}:a]" for index in range(len(input_paths)))
-    ffmpeg_args.extend(
-        [
-            "-filter_complex",
-            f"{concat_inputs}concat=n={len(input_paths)}:v=0:a=1[aout]",
-            "-map",
-            "[aout]",
-        ]
-    )
-    append_audio_output_options(ffmpeg_args, output_path, bitrate="192k")
-    ffmpeg_args.extend(["-y", str(output_path)])
-
-    result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).run(ffmpeg_args)
-    raise_for_completed_process_error(result)
-    summarize_output_file(ctx, output_path)
-    return EXIT_OK
-
-
-def handle_mix_audio_mashup(args: argparse.Namespace) -> int:
-    """
-    Create a crossfaded mashup from multiple audio sources.
-    """
-    ctx = build_context(args)
-    input_paths = collect_audio_inputs(ctx, args.inputs)
-    output_path = prepare_output_path(args.output, force=ctx.force)
-
-    if args.crossfade_duration <= 0:
-        raise CLIError("--crossfade-duration must be positive.")
-
-    ffmpeg_args: list[str] = []
-    for input_path in input_paths:
-        ffmpeg_args.extend(["-i", str(input_path)])
-
-    filter_parts = []
-    current_label = "[0:a]"
-    for index in range(1, len(input_paths)):
-        next_label = f"[a{index}]"
-        filter_parts.append(
-            f"{current_label}[{index}:a]acrossfade=d={args.crossfade_duration}:c1=tri:c2=tri{next_label}"
-        )
-        current_label = next_label
-    ffmpeg_args.extend(["-filter_complex", ";".join(filter_parts), "-map", current_label])
-    append_audio_output_options(ffmpeg_args, output_path, bitrate="256k")
-    ffmpeg_args.extend(["-y", str(output_path)])
-
-    result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).run(ffmpeg_args)
-    raise_for_completed_process_error(result)
-    summarize_output_file(ctx, output_path)
-    return EXIT_OK
-
-
-def handle_mix_audio_background(args: argparse.Namespace) -> int:
-    """
-    Layer background audio under a main audio source.
-    """
-    ctx = build_context(args)
-    main_input = require_existing_input(args.main_input, option_name="--main-input")
-    background_input = require_existing_input(args.background_input, option_name="--background-input")
-    output_path = prepare_output_path(args.output, force=ctx.force)
-
-    for label, path in (("main", main_input), ("background", background_input)):
-        metadata = FFprobeRunner(ffprobe_path=ctx.ffprobe_path).probe(str(path))
-        if not metadata.get("audio"):
-            raise CLIError(f"{label.capitalize()} input does not contain audio: {path}")
-
-    if args.bg_volume <= 0:
-        raise CLIError("--bg-volume must be positive.")
-
-    ffmpeg_args = [
-        "-i",
-        str(main_input),
-        "-i",
-        str(background_input),
-        "-filter_complex",
-        f"[1:a]volume={args.bg_volume}[bg];[0:a][bg]amix=inputs=2:duration=first:dropout_transition=0[aout]",
-        "-map",
-        "[aout]",
-    ]
-    append_audio_output_options(ffmpeg_args, output_path, bitrate="192k")
-    ffmpeg_args.extend(["-y", str(output_path)])
-
-    result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).run(ffmpeg_args)
-    raise_for_completed_process_error(result)
-    summarize_output_file(ctx, output_path)
-    return EXIT_OK
-
-
-def handle_normalize_audio(args: argparse.Namespace) -> int:
-    """
-    Normalize or master an audio track.
-    """
-    ctx = build_context(args)
-    input_path = require_existing_input(args.input)
-    output_path = prepare_output_path(args.output, force=ctx.force)
-
-    if args.method == "loudnorm":
-        filter_chain = f"loudnorm=I={args.target_i}:TP={args.target_tp}:LRA={args.target_lra}"
-        bitrate = "192k"
-    else:
-        filter_chain = (
-            "loudnorm=I=-16:TP=-1.5:LRA=11,"
-            "compand=attacks=0.0001:decays=0.2:points=-70/-70|-60/-20|-20/-20|20/20,"
-            "alimiter=limit=-1dB:level=disabled"
-        )
-        bitrate = "256k"
-
-    ffmpeg_args = ["-i", str(input_path), "-af", filter_chain]
-    append_audio_output_options(ffmpeg_args, output_path, bitrate=bitrate)
-    ffmpeg_args.extend(["-y", str(output_path)])
-
-    result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).run(ffmpeg_args)
-    raise_for_completed_process_error(result)
-    summarize_output_file(ctx, output_path)
-    return EXIT_OK
-
-
-def collect_image_files(input_dir: Path) -> list[Path]:
-    """
-    Collect supported image files from a directory.
-    """
-    patterns = ["*.png", "*.jpg", "*.jpeg", "*.tiff", "*.bmp", "*.gif"]
-    files: list[Path] = []
-    for pattern in patterns:
-        files.extend(sorted(input_dir.glob(pattern)))
-    return files
-
-
-def convert_single_image(
-    ctx: CLIContext,
-    input_path: Path,
-    output_path: Path,
-    quality: int,
-    resize: tuple[int, int] | None = None,
-) -> bool:
-    """
-    Convert a single image using FFmpeg.
-    """
-    ffmpeg_args = ["-i", str(input_path)]
-
-    if resize is not None:
-        ffmpeg_args.extend(["-vf", f"scale={resize[0]}:{resize[1]}"])
-
-    output_ext = output_path.suffix.lower()
-    if output_ext in {".jpg", ".jpeg"}:
-        ffmpeg_args.extend(["-q:v", str(min(31, max(1, 31 - int(quality * 31 / 100))))])
-    elif output_ext == ".webp":
-        ffmpeg_args.extend(["-quality", str(quality)])
-    elif output_ext == ".png":
-        ffmpeg_args.extend(["-compression_level", str(min(9, max(0, 9 - int(quality * 9 / 100))))])
-
-    ffmpeg_args.extend(["-frames:v", "1"])
-    if output_ext in {".bmp", ".jpg", ".jpeg", ".png", ".tif", ".tiff"}:
-        ffmpeg_args.extend(["-update", "1"])
-    ffmpeg_args.extend(["-y", str(output_path)])
-
-    result = FFmpegRunner(ffmpeg_path=ctx.ffmpeg_path).run(ffmpeg_args)
-    return result.returncode == 0
-
-
 def report_batch_results(ctx: CLIContext, label: str, results: dict[str, int]) -> None:
     """
     Print a concise batch summary.
@@ -2479,89 +1705,80 @@ def report_batch_results(ctx: CLIContext, label: str, results: dict[str, int]) -
     )
 
 
-def finalize_batch_results(results: dict[str, int]) -> int:
-    """
-    Translate batch results into a stable CLI exit code.
-    """
-    return EXIT_PARTIAL_SUCCESS if results["failed"] else EXIT_OK
+def _execution_exit_code(bundle: CLIExecutionBundle) -> int:
+    """Map stable item outcomes to the documented CLI exit categories."""
+    if bundle.failed_count == 0:
+        return EXIT_OK
+    if bundle.succeeded_count:
+        return EXIT_PARTIAL_SUCCESS
+    categories = {item.result.exit_category for item in bundle.items}
+    if categories == {"environment"}:
+        return EXIT_ENVIRONMENT_ERROR
+    if categories <= {"validation"}:
+        return EXIT_VALIDATION_ERROR
+    return EXIT_RUNTIME_ERROR
 
 
-def handle_images_convert(args: argparse.Namespace) -> int:
-    """
-    Convert a directory of images into another format.
-    """
-    ctx = build_context(args)
-    input_dir = require_existing_input(args.input_dir, option_name="--input-dir")
-    output_dir = prepare_output_dir(args.output_dir, force=ctx.force)
-    resize = tuple(args.resize) if args.resize is not None else None
-
-    image_files = collect_image_files(input_dir)
-    results = {"total": len(image_files), "successful": 0, "failed": 0}
-    for image_file in image_files:
-        output_path = output_dir / f"{image_file.stem}.{args.format.lstrip('.')}"
-        if convert_single_image(ctx, image_file, output_path, quality=args.quality, resize=resize):
-            results["successful"] += 1
-        else:
-            results["failed"] += 1
-
-    report_batch_results(ctx, "Image conversion", results)
-    return finalize_batch_results(results)
-
-
-def handle_images_optimize(args: argparse.Namespace) -> int:
-    """
-    Optimize a directory of images for web-friendly output.
-    """
-    ctx = build_context(args)
-    input_dir = require_existing_input(args.input_dir, option_name="--input-dir")
-    output_dir = prepare_output_dir(args.output_dir, force=ctx.force)
-    image_files = collect_image_files(input_dir)
-    results = {"total": len(image_files), "successful": 0, "failed": 0}
-    prober = FFprobeRunner(ffprobe_path=ctx.ffprobe_path)
-
-    for image_file in image_files:
-        resize = None
-        try:
-            metadata = prober.probe(str(image_file))
-            if metadata.get("video"):
-                width = metadata["video"].get("width", 0)
-                height = metadata["video"].get("height", 0)
-                if width > args.max_width or height > args.max_height:
-                    ratio = min(args.max_width / width, args.max_height / height)
-                    resize = (int(width * ratio), int(height * ratio))
-        except RuntimeError:
-            results["failed"] += 1
+def _render_execution_failures(bundle: CLIExecutionBundle) -> None:
+    """Write actionable item failures to stderr without corrupting JSON stdout."""
+    for item in bundle.items:
+        if item.result.succeeded:
             continue
-
-        output_path = output_dir / f"{image_file.stem}.jpg"
-        if convert_single_image(ctx, image_file, output_path, quality=args.quality, resize=resize):
-            results["successful"] += 1
-        else:
-            results["failed"] += 1
-
-    report_batch_results(ctx, "Image optimization", results)
-    return finalize_batch_results(results)
+        label = item.input or item.output or item.result.workflow
+        diagnostic = (item.result.stderr or "FFmpeg command failed.").strip()
+        echo_error(f"{label}: {diagnostic}")
 
 
-def handle_images_webp(args: argparse.Namespace) -> int:
-    """
-    Convert a directory of images into WebP outputs.
-    """
-    ctx = build_context(args)
-    input_dir = require_existing_input(args.input_dir, option_name="--input-dir")
-    output_dir = prepare_output_dir(args.output_dir, force=ctx.force)
-    image_files = collect_image_files(input_dir)
-    results = {"total": len(image_files), "successful": 0, "failed": 0}
+def _render_execution_successes(ctx: CLIContext, bundle: CLIExecutionBundle) -> None:
+    """Keep the established human summaries on top of typed results."""
+    if bundle.prepared.plan.workflow.startswith("images/"):
+        labels = {
+            "images/convert": "Image conversion",
+            "images/optimize": "Image optimization",
+            "images/webp": "Image WebP conversion",
+        }
+        report_batch_results(
+            ctx,
+            labels[bundle.prepared.plan.workflow],
+            {
+                "total": len(bundle.items),
+                "successful": bundle.succeeded_count,
+                "failed": bundle.failed_count,
+            },
+        )
+        return
+    for item in bundle.items:
+        if item.result.succeeded and item.output is not None:
+            summarize_output_file(ctx, Path(item.output))
 
-    for image_file in image_files:
-        output_path = output_dir / f"{image_file.stem}.webp"
-        if convert_single_image(ctx, image_file, output_path, quality=args.quality):
-            results["successful"] += 1
-        else:
-            results["failed"] += 1
 
-    report_batch_results(ctx, "Image WebP conversion", results)
-    return finalize_batch_results(results)
+def handle_planned_execution(args: argparse.Namespace, ctx: CLIContext) -> int:
+    """Plan, preflight, execute, and render every media-writing CLI command."""
+    prepared = prepare_cli_job(args)
+    result_json = bool(getattr(args, "result_json", False))
+    progress_printer: CLIProgressPrinter | None = None
+    if not ctx.quiet and not result_json and prepared.plan.inputs:
+        progress_printer = build_progress_printer(ctx, Path(prepared.plan.inputs[0]))
+
+    def report_progress(event: ProgressEvent) -> None:
+        if progress_printer is not None:
+            progress_printer(event.to_dict())
+
+    bundle = execute_prepared_cli_job(
+        prepared,
+        progress_callback=report_progress if progress_printer is not None else None,
+    )
+    if result_json:
+        print(json.dumps(bundle.to_dict(), indent=2))
+    else:
+        _render_execution_failures(bundle)
+        _render_execution_successes(ctx, bundle)
+    return _execution_exit_code(bundle)
+
+
+def handle_planned_command(args: argparse.Namespace) -> int:
+    """Argparse target shared by every media-writing command."""
+    return handle_planned_execution(args, build_context(args))
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -2594,6 +1811,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         preview = bool(getattr(args, "dry_run", False) or getattr(args, "explain", False))
         if getattr(args, "plan_json", False) and not preview:
             raise CLIError("--plan-json requires --dry-run or --explain.", exit_code=EXIT_USAGE_ERROR)
+        if getattr(args, "result_json", False) and preview:
+            raise CLIError("--result-json cannot be combined with --dry-run or --explain.", exit_code=EXIT_USAGE_ERROR)
+        if getattr(args, "result_json", False) and getattr(args, "command", None) not in WRITING_COMMANDS:
+            raise CLIError("--result-json requires a media-writing command.", exit_code=EXIT_USAGE_ERROR)
         if preview:
             plan = build_cli_plan(args)
             preflight = PreflightEngine(ffmpeg_path=ctx.ffmpeg_path, ffprobe_path=ctx.ffprobe_path).check(plan)

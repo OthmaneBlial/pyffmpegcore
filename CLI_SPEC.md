@@ -125,6 +125,7 @@ Higher-level frameworks can be reconsidered later only if they solve a real user
 ## Parser Conventions
 
 - Global options should include `--verbose`, `--quiet`, `--ffmpeg-path`, and `--ffprobe-path`.
+- Every writing command should accept non-mutating `--dry-run`/`--explain` previews and an executing `--result-json` machine-result mode.
 - Required file paths should use explicit names rather than positional guessing where readability matters.
 - Commands that write files should require an explicit output target unless a later phase defines a safe default.
 - Help text should show at least one short example for user-facing commands.
@@ -140,6 +141,8 @@ The CLI should keep these exit codes stable:
 - `4`: validation error, such as missing input paths or refused overwrite
 - `5`: processing failure after a valid command started
 - `6`: partial success for batch-style commands where some items succeeded and some failed
+
+Writing commands must compile one immutable argument-vector plan, preflight it before mutation, and execute that same plan without a shell. `--result-json` keeps stdout parseable and includes the plan, preflight, per-item results, and summary counts. A missing required stream is a validation/preflight error (`4`); a command that passes preflight and then fails in FFmpeg is a processing error (`5`).
 
 ## Example Command Shapes
 

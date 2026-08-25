@@ -151,6 +151,7 @@ class PreflightEngine:
         checks.append(PreflightCheck("ffmpeg", "pass", f"Executable: {resolved}"))
 
         inventory = self._inventory or CapabilityInventory.inspect(self.ffmpeg_path)
+        self._inventory = inventory
         requirements = requirements_for(plan.workflow, plan.required_capabilities)
         for requirement in requirements:
             if inventory.supports(requirement):
@@ -166,6 +167,9 @@ class PreflightEngine:
                 )
 
         required_stream_types = tuple(plan.metadata.get("required_stream_types", ()))
+        input_stream_requirements = plan.metadata.get("input_stream_requirements", {})
+        if not isinstance(input_stream_requirements, dict):
+            input_stream_requirements = {}
         probe = FFprobeRunner(self.ffprobe_path)
         for value in plan.inputs:
             remote_scheme = _input_scheme(value)
@@ -189,14 +193,15 @@ class PreflightEngine:
                 checks.append(PreflightCheck(f"input/{value}", "fail", "Input is missing or unreadable"))
                 continue
             checks.append(PreflightCheck(f"input/{value}", "pass", "Input is readable"))
-            if required_stream_types:
+            per_input_streams = input_stream_requirements.get(value, required_stream_types)
+            if per_input_streams:
                 try:
                     media = probe.probe_media(str(path))
                 except RuntimeError as exc:
                     checks.append(PreflightCheck(f"probe/{value}", "fail", f"Input probe failed: {exc}"))
                     continue
                 available = {stream.codec_type for stream in media.streams}
-                missing_streams = [kind for kind in required_stream_types if kind not in available]
+                missing_streams = [kind for kind in per_input_streams if kind not in available]
                 if missing_streams:
                     checks.append(
                         PreflightCheck(
@@ -210,7 +215,7 @@ class PreflightEngine:
                         PreflightCheck(
                             f"streams/{value}",
                             "pass",
-                            f"Required streams available: {', '.join(required_stream_types)}",
+                            f"Required streams available: {', '.join(per_input_streams)}",
                         )
                     )
 

@@ -115,6 +115,9 @@ class ProgressEvent:
     speed: float | None = None
     item: str | None = None
 
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
 
 @dataclass(frozen=True, slots=True)
 class ExecutionStep:
