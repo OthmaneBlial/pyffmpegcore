@@ -70,4 +70,5 @@ gh attestation verify \
 ```
 
 The workflow's `container-evidence-*` artifact contains the doctor report,
-smoke report, FFmpeg version, and SARIF vulnerability scan for every build.
+smoke report, FFmpeg version, a complete SARIF vulnerability report, and the
+filtered HIGH/CRITICAL JSON publication gate for every build.

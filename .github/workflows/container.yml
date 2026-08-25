@@ -76,14 +76,25 @@ jobs:
           docker run --rm pyffmpegcore:scan smoke-test --json > container-smoke.json
           docker run --rm --entrypoint ffmpeg pyffmpegcore:scan -version | head -n 1 > container-ffmpeg.txt
 
-      - name: Scan before publication
+      - name: Generate complete vulnerability report
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: pyffmpegcore:scan
           format: sarif
           output: trivy-results.sarif
+          scanners: vuln
+          exit-code: "0"
+
+      - name: Block fixed high and critical vulnerabilities
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: pyffmpegcore:scan
+          format: json
+          output: trivy-blocking.json
           severity: HIGH,CRITICAL
           ignore-unfixed: true
+          scanners: vuln
+          skip-setup-trivy: true
           exit-code: "1"
 
       - name: Upload scan and runtime evidence
@@ -96,6 +107,7 @@ jobs:
             container-smoke.json
             container-ffmpeg.txt
             trivy-results.sarif
+            trivy-blocking.json
           if-no-files-found: warn
           retention-days: 30
 
