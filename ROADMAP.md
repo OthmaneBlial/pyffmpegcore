@@ -145,11 +145,11 @@ P0 Truth and reproducibility
 
 ### P0.5 Establish the minimum trust surface
 
-- [ ] Add `SECURITY.md` with supported versions, a private reporting route, scope, and realistic response/disclosure expectations; enable private vulnerability reporting.
+- [x] Add `SECURITY.md` with supported versions, a private reporting route, scope, and realistic response/disclosure expectations; enable private vulnerability reporting.
 - [x] Add `CONTRIBUTING.md`, link it to `DEVELOPMENT.md`, and document fast versus real-media test tiers.
 - [x] Add a code of conduct, bug/recipe issue forms, a pull-request template, and support routing.
-- [ ] Protect `main` against deletion and force pushes; require stable CI checks before merge.
-- [ ] Enable Dependabot alerts, security updates, and weekly updates for Python and GitHub Actions.
+- [x] Protect `main` against deletion and force pushes; require stable CI checks before merge.
+- [x] Enable Dependabot alerts, security updates, and weekly updates for Python and GitHub Actions.
 - [x] Pin external Actions to full commit SHAs with readable version comments.
 - [x] Enable CodeQL and OpenSSF Scorecard reporting; triage the controls, not merely the score.
 - [x] Document the command-execution threat model: shell avoidance, filter/path escaping, URL credentials, malicious metadata, temporary files, resource exhaustion, and overwrite policy.
