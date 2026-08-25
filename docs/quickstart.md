@@ -2,11 +2,15 @@
 
 This flow needs no repository checkout and no personal media.
 
-## 1. Install the current evaluation build
+## 1. Install the immutable evaluation build
 
 ```bash
-pipx install git+https://github.com/OthmaneBlial/pyffmpegcore.git@main
+pipx install git+https://github.com/OthmaneBlial/pyffmpegcore.git@2c1405a5a3f96b5fa30e713e51bfa61b5aa84834
 ```
+
+That full commit SHA identifies the exact source revision. It will be replaced
+by `pipx install pyffmpegcore` only after the first public PyPI artifact passes
+the project's cross-platform install gate.
 
 ## 2. Diagnose the media stack
 

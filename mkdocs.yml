@@ -1,28 +1,57 @@
 site_name: PyFFmpegCore
 site_description: The safe, explainable FFmpeg task runner for the terminal, Python, and CI
 site_url: https://othmaneblial.github.io/pyffmpegcore/
-repo_url: https://github.com/OthmaneBlial/pyffmpegcore
+# The doubled path separator keeps Material from requesting releases/latest
+# before the first release exists; GitHub serves the canonical repository.
+repo_url: https://github.com//OthmaneBlial/pyffmpegcore
 repo_name: OthmaneBlial/pyffmpegcore
 edit_uri: edit/main/docs/
 
 theme:
   name: material
   language: en
+  logo: assets/mark.svg
+  favicon: assets/mark.svg
   features:
     - navigation.instant
+    - navigation.indexes
+    - navigation.footer
     - navigation.sections
     - navigation.top
+    - toc.follow
     - search.highlight
+    - search.suggest
     - content.code.copy
+    - content.tabs.link
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: deep purple
-      accent: cyan
+      primary: black
+      accent: lime
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark signal mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: deep purple
-      accent: cyan
+      primary: black
+      accent: lime
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light signal mode
+
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - javascripts/site.js
+
+copyright: Built in public. Tested against real FFmpeg. No telemetry by default.
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/OthmaneBlial/pyffmpegcore
+      name: PyFFmpegCore on GitHub
 
 nav:
   - Home: index.md
@@ -73,6 +102,7 @@ nav:
 markdown_extensions:
   - admonition
   - attr_list
+  - md_in_html
   - tables
   - toc:
       permalink: true
