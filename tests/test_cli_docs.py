@@ -4,6 +4,7 @@ Tests for CLI-first public documentation.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -14,10 +15,16 @@ def test_readme_is_cli_first():
     The README should lead with the CLI install and command flow.
     """
     readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
-    assert "PyFFmpegCore is now designed to be used first as a CLI" in readme
-    assert "pipx install git+https://github.com/OthmaneBlial/pyffmpegcore.git@main" in readme
+    assert "safe, explainable FFmpeg task runner" in readme
+    assert readme.index("## Install and prove one useful result") < readme.index("## Python API")
+    assert re.search(
+        r"pipx install (?:pyffmpegcore|git\+https://github\.com/OthmaneBlial/pyffmpegcore\.git@[0-9a-f]{40})",
+        readme,
+    )
+    assert "pyffmpegcore.git@main" not in readme
     assert "pyffmpegcore smoke-test" in readme
     assert "pyffmpegcore doctor" in readme
+    assert "pyffmpegcore profile run web/mp4-compatible" in readme
     assert "## Python API" in readme
 
 
