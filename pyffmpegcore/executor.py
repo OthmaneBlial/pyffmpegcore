@@ -172,24 +172,33 @@ def _run_step(
 
     status = JobStatus.FAILED
     category = "runtime"
-    while process.poll() is None:
-        if cancellation is not None and cancellation.is_set():
-            _terminate(process)
-            status = JobStatus.CANCELLED
-            category = "cancelled"
-            break
-        if deadline is not None and time.monotonic() >= deadline:
-            _terminate(process)
-            status = JobStatus.TIMED_OUT
-            category = "timeout"
-            break
-        time.sleep(0.05)
-    else:
-        status = JobStatus.SUCCEEDED if process.returncode == 0 else JobStatus.FAILED
-        category = "ok" if process.returncode == 0 else "runtime"
+    try:
+        while process.poll() is None:
+            if cancellation is not None and cancellation.is_set():
+                _terminate(process)
+                status = JobStatus.CANCELLED
+                category = "cancelled"
+                break
+            if deadline is not None and time.monotonic() >= deadline:
+                _terminate(process)
+                status = JobStatus.TIMED_OUT
+                category = "timeout"
+                break
+            time.sleep(0.05)
+        else:
+            status = JobStatus.SUCCEEDED if process.returncode == 0 else JobStatus.FAILED
+            category = "ok" if process.returncode == 0 else "runtime"
+    except KeyboardInterrupt:
+        _terminate(process)
+        status = JobStatus.CANCELLED
+        category = "cancelled"
 
     stdout_thread.join(timeout=2)
     stderr_thread.join(timeout=2)
+    if category == "cancelled" and not stderr_lines:
+        stderr_lines.append("Job cancelled by caller.\n")
+    elif category == "timeout" and not stderr_lines:
+        stderr_lines.append("Job exceeded its configured timeout.\n")
     if callback_errors:
         stderr_lines.extend(f"{message}{os.linesep}" for message in callback_errors)
     return _StepOutcome(

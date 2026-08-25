@@ -13,6 +13,7 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 - Security, support, contribution, compatibility, and release documentation.
 - Versioned `ExecutionPlan`, `PreflightReport`, `ProgressEvent`, and `JobResult` contracts.
 - `--dry-run`, `--explain`, `--plan-json`, and executing `--result-json` modes for every writing command.
+- Explicit CLI timeout and temporary-file retention policies with child-process-safe keyboard cancellation.
 
 ### Changed
 

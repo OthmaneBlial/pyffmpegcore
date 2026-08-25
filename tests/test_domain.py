@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import sys
 import threading
+from io import StringIO
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -18,6 +20,7 @@ from pyffmpegcore import (
     TemporaryFilePolicy,
     ValidationError,
 )
+from pyffmpegcore.executor import _run_step
 
 
 def test_plan_serialization_uses_stable_string_policies(tmp_path):
@@ -217,3 +220,29 @@ def test_execution_emits_typed_structured_progress(tmp_path):
     assert result.progress.time_seconds == 1.5
     assert result.progress.speed == 1.25
     assert events == [result.progress]
+
+
+def test_keyboard_interrupt_terminates_child_as_cancelled(monkeypatch):
+    process = MagicMock()
+    process.stdout = StringIO("")
+    process.stderr = StringIO("")
+    process.poll.return_value = None
+    process.returncode = -15
+    monkeypatch.setattr("pyffmpegcore.executor.subprocess.Popen", lambda *_args, **_kwargs: process)
+
+    def interrupt(_seconds):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr("pyffmpegcore.executor.time.sleep", interrupt)
+    outcome = _run_step(
+        ["ffmpeg", "-version"],
+        name="interrupt-test",
+        deadline=None,
+        cancellation=None,
+        progress_callback=None,
+    )
+
+    assert outcome.status is JobStatus.CANCELLED
+    assert outcome.category == "cancelled"
+    assert "cancelled" in outcome.stderr
+    process.terminate.assert_called_once()

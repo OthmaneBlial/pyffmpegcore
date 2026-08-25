@@ -124,7 +124,7 @@ Higher-level frameworks can be reconsidered later only if they solve a real user
 
 ## Parser Conventions
 
-- Global options should include `--verbose`, `--quiet`, `--ffmpeg-path`, and `--ffprobe-path`.
+- Global options should include `--verbose`, `--quiet`, `--ffmpeg-path`, `--ffprobe-path`, `--timeout`, and `--temp-files`.
 - Every writing command should accept non-mutating `--dry-run`/`--explain` previews and an executing `--result-json` machine-result mode.
 - Required file paths should use explicit names rather than positional guessing where readability matters.
 - Commands that write files should require an explicit output target unless a later phase defines a safe default.
@@ -176,6 +176,7 @@ The first CLI release should not try to do all of the following:
 - Required input files should be explicit.
 - Output files should never be overwritten silently.
 - Errors should tell the user what went wrong and what to fix next.
+- Timeouts and keyboard cancellation must terminate the FFmpeg child, retain temporary state only under explicit policy, and return the processing category instead of a traceback.
 
 ## Release Bar
 

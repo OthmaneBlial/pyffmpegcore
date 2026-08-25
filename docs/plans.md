@@ -61,7 +61,7 @@ else:
 
 The engine executes the exact typed plan and returns a `WorkflowBatch` containing item-level `JobResult` values rather than exposing only a raw process object. FFmpeg's `-progress pipe:1` protocol is part of every workflow plan, and the final normalized `ProgressEvent` is stored in the result. A callback can receive the typed events while the job runs.
 
-The execution policy controls overwrite refusal, timeout, cancellation, captured output, and temporary-file retention. Two-pass logs, concat manifests, and defensive subtitle copies are materialized in an isolated workspace only when execution begins. The default `clean` policy removes that workspace after success or failure; `keep-on-error` is available for explicit diagnostics.
+The execution policy controls overwrite refusal, timeout, cancellation, captured output, and temporary-file retention. CLI jobs expose `--timeout SECONDS` and `--temp-files clean|keep-on-error|keep`; `Ctrl-C` terminates the active FFmpeg child and records a cancelled result. Two-pass logs, concat manifests, and defensive subtitle copies are materialized in an isolated workspace only when execution begins. The default `clean` policy removes that workspace after success or failure; retention is always explicit.
 
 ## Target-size feasibility
 

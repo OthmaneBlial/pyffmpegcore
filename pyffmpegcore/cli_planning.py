@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import replace
 from typing import TypedDict
 
-from .domain import CompressOptions, ConvertOptions
+from .domain import CompressOptions, ConvertOptions, TemporaryFilePolicy
 from .errors import ValidationError
 from .planning import WorkflowPlanner, parse_bitrate, parse_size
 
@@ -26,7 +27,7 @@ def _shared(args: argparse.Namespace) -> SharedPlanOptions:
     }
 
 
-def build_cli_plan(args: argparse.Namespace):
+def _build_cli_plan(args: argparse.Namespace):
     """Build a plan for every CLI command that may write media output."""
     planner = _planner(args)
     shared = _shared(args)
@@ -161,3 +162,10 @@ def build_cli_plan(args: argparse.Namespace):
             **shared,
         )
     raise ValidationError(f"--dry-run and --explain are not supported for the non-writing command {command!r}")
+
+
+def build_cli_plan(args: argparse.Namespace):
+    """Build a CLI plan and apply the shared process/temporary-file policy."""
+    plan = _build_cli_plan(args)
+    temporary_files = TemporaryFilePolicy(getattr(args, "temp_files", TemporaryFilePolicy.CLEAN.value))
+    return replace(plan, policy=replace(plan.policy, temporary_files=temporary_files))

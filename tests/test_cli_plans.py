@@ -173,3 +173,30 @@ def test_preview_reports_invalid_bitrate_without_a_traceback(tmp_path, capsys):
     assert returncode == 4
     assert "bitrate must be" in captured.err
     assert "Traceback" not in captured.err
+
+
+def test_preview_serializes_timeout_and_temporary_file_policy(tmp_path, capsys):
+    output = tmp_path / "joined.mp4"
+
+    returncode = main(
+        [
+            "concat",
+            "--inputs",
+            str(VIDEO),
+            str(VIDEO),
+            "--output",
+            str(output),
+            "--timeout",
+            "30",
+            "--temp-files",
+            "keep-on-error",
+            "--dry-run",
+            "--plan-json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert returncode == 0
+    assert payload["plan"]["policy"]["timeout_seconds"] == 30.0
+    assert payload["plan"]["policy"]["temporary_files"] == "keep-on-error"
+    assert not output.exists()

@@ -117,3 +117,35 @@ def test_result_json_missing_ffmpeg_is_an_environment_error(tmp_path, capsys):
     assert returncode == 3
     assert captured.err == ""
     assert payload["items"][0]["result"]["exit_category"] == "environment"
+
+
+@pytest.mark.real_media
+def test_cli_timeout_returns_runtime_category_without_completed_output(tmp_path, capsys):
+    video = ensure_downloaded_media()["video_mp4_h264_1080p"]
+    output = tmp_path / "timed-out.mp4"
+
+    returncode = main(
+        [
+            "compress",
+            "--input",
+            str(video),
+            "--output",
+            str(output),
+            "--timeout",
+            "0.001",
+            "--result-json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert returncode == 5
+    assert payload["items"][0]["result"]["status"] == "timed-out"
+    assert payload["items"][0]["result"]["exit_category"] == "timeout"
+
+
+def test_process_policies_reject_non_writing_commands(capsys):
+    assert main(["doctor", "--timeout", "1"]) == 2
+    assert "requires a media-writing command" in capsys.readouterr().err
+
+    assert main(["probe", "--input", "missing.mp4", "--temp-files", "keep"]) == 2
+    assert "requires a media-writing command" in capsys.readouterr().err

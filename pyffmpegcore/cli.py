@@ -183,6 +183,19 @@ def add_global_arguments(
         help="Print the writing command's versioned plan, preflight, and result as JSON.",
     )
     parser.add_argument(
+        "--timeout",
+        type=float,
+        default=argparse.SUPPRESS if suppress_defaults else None,
+        metavar="SECONDS",
+        help="Stop a writing command after this positive number of seconds.",
+    )
+    parser.add_argument(
+        "--temp-files",
+        choices=("clean", "keep-on-error", "keep"),
+        default=argparse.SUPPRESS if suppress_defaults else "clean",
+        help="Clean temporary files, retain them on error, or always retain them.",
+    )
+    parser.add_argument(
         "--ffmpeg-path",
         default=ffmpeg_default,
         help="Path to the ffmpeg executable. Defaults to ffmpeg.",
@@ -1815,6 +1828,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             raise CLIError("--result-json cannot be combined with --dry-run or --explain.", exit_code=EXIT_USAGE_ERROR)
         if getattr(args, "result_json", False) and getattr(args, "command", None) not in WRITING_COMMANDS:
             raise CLIError("--result-json requires a media-writing command.", exit_code=EXIT_USAGE_ERROR)
+        if getattr(args, "timeout", None) is not None and getattr(args, "command", None) not in WRITING_COMMANDS:
+            raise CLIError("--timeout requires a media-writing command.", exit_code=EXIT_USAGE_ERROR)
+        if getattr(args, "temp_files", "clean") != "clean" and getattr(args, "command", None) not in WRITING_COMMANDS:
+            raise CLIError("--temp-files requires a media-writing command.", exit_code=EXIT_USAGE_ERROR)
         if preview:
             plan = build_cli_plan(args)
             preflight = PreflightEngine(ffmpeg_path=ctx.ffmpeg_path, ffprobe_path=ctx.ffprobe_path).check(plan)
