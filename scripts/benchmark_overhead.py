@@ -44,13 +44,16 @@ def _version_line(command: list[str]) -> str:
     return (result.stdout or result.stderr).splitlines()[0]
 
 
+def _resolve_command(value: str) -> str:
+    candidate = Path(value)
+    if candidate.is_file():
+        return str(candidate.resolve())
+    return shutil.which(value) or value
+
+
 def benchmark(args: argparse.Namespace) -> dict[str, Any]:
-    cli_candidate = Path(args.cli)
-    ffmpeg_candidate = Path(args.ffmpeg)
-    cli_path = str(cli_candidate.resolve()) if cli_candidate.exists() else shutil.which(args.cli) or args.cli
-    ffmpeg_path = (
-        str(ffmpeg_candidate.resolve()) if ffmpeg_candidate.exists() else shutil.which(args.ffmpeg) or args.ffmpeg
-    )
+    cli_path = _resolve_command(args.cli)
+    ffmpeg_path = _resolve_command(args.ffmpeg)
     with tempfile.TemporaryDirectory(prefix="pyffmpegcore-benchmark-") as temp_dir:
         workspace = Path(temp_dir)
         source = workspace / "source.mp4"
