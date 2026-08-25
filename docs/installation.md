@@ -13,7 +13,7 @@ Install FFmpeg using the package source you already trust for your operating sys
 Until PyPI publication is verified, install the exact validated revision:
 
 ```bash
-pipx install git+https://github.com/OthmaneBlial/pyffmpegcore.git@2c1405a5a3f96b5fa30e713e51bfa61b5aa84834
+pipx install git+https://github.com/OthmaneBlial/pyffmpegcore.git@04d1e7051295bbcc4fa137c1214bbf340bf5c4c0
 pyffmpegcore --version
 pyffmpegcore doctor
 pyffmpegcore smoke-test
@@ -24,14 +24,14 @@ A repository checkout also provides `./install.sh`.
 `uv` users can install the same source revision as an isolated tool:
 
 ```bash
-uv tool install "pyffmpegcore @ git+https://github.com/OthmaneBlial/pyffmpegcore.git@2c1405a5a3f96b5fa30e713e51bfa61b5aa84834"
+uv tool install "pyffmpegcore @ git+https://github.com/OthmaneBlial/pyffmpegcore.git@04d1e7051295bbcc4fa137c1214bbf340bf5c4c0"
 pyffmpegcore smoke-test
 ```
 
 ## PowerShell
 
 ```powershell
-pipx install git+https://github.com/OthmaneBlial/pyffmpegcore.git@2c1405a5a3f96b5fa30e713e51bfa61b5aa84834
+pipx install git+https://github.com/OthmaneBlial/pyffmpegcore.git@04d1e7051295bbcc4fa137c1214bbf340bf5c4c0
 pyffmpegcore --version
 pyffmpegcore doctor
 pyffmpegcore smoke-test
@@ -44,7 +44,7 @@ From a checkout, use `./install.ps1`; do not run the POSIX shell installer on Wi
 For evaluation before the first public package release:
 
 ```bash
-python -m pip install "git+https://github.com/OthmaneBlial/pyffmpegcore.git@2c1405a5a3f96b5fa30e713e51bfa61b5aa84834"
+python -m pip install "git+https://github.com/OthmaneBlial/pyffmpegcore.git@04d1e7051295bbcc4fa137c1214bbf340bf5c4c0"
 ```
 
 The full commit SHA is deliberate: it makes the evaluation build reproducible.

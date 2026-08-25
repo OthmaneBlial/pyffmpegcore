@@ -6,12 +6,12 @@ build. It runs as UID/GID `10001`, uses no shell entrypoint, and supports
 
 ```bash
 docker run --rm \
-  ghcr.io/othmaneblial/pyffmpegcore@sha256:a8eb557fcdc0edfe6ae1d517d70efd7817afa4c0b6ec81d08080f3de53be210c \
+  ghcr.io/othmaneblial/pyffmpegcore@sha256:c51cffe123e254650337e8973db4ab01587dbaa8ad08df77fee3c1ca3c08e5ca \
   doctor
 docker run --rm \
   --volume "$PWD:/workspace" \
   --workdir /workspace \
-  ghcr.io/othmaneblial/pyffmpegcore@sha256:a8eb557fcdc0edfe6ae1d517d70efd7817afa4c0b6ec81d08080f3de53be210c \
+  ghcr.io/othmaneblial/pyffmpegcore@sha256:c51cffe123e254650337e8973db4ab01587dbaa8ad08df77fee3c1ca3c08e5ca \
   pipeline run pipeline.json --receipt-dir receipts
 ```
 
@@ -79,7 +79,7 @@ docker build --file Containerfile --tag pyffmpegcore:local .
 docker run --rm pyffmpegcore:local smoke-test --json
 
 gh attestation verify \
-  oci://ghcr.io/othmaneblial/pyffmpegcore@sha256:a8eb557fcdc0edfe6ae1d517d70efd7817afa4c0b6ec81d08080f3de53be210c \
+  oci://ghcr.io/othmaneblial/pyffmpegcore@sha256:c51cffe123e254650337e8973db4ab01587dbaa8ad08df77fee3c1ca3c08e5ca \
   --repo OthmaneBlial/pyffmpegcore
 ```
 

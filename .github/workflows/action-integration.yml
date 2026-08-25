@@ -57,7 +57,7 @@ jobs:
       - name: Run the same pipeline directly in the container
         env:
           OUTPUT: ../../container-output/poster.jpg
-          IMAGE: ghcr.io/othmaneblial/pyffmpegcore@sha256:a8eb557fcdc0edfe6ae1d517d70efd7817afa4c0b6ec81d08080f3de53be210c
+          IMAGE: ghcr.io/othmaneblial/pyffmpegcore@sha256:c51cffe123e254650337e8973db4ab01587dbaa8ad08df77fee3c1ca3c08e5ca
         run: |
           docker run --rm \
             --user "$(id -u):$(id -g)" \

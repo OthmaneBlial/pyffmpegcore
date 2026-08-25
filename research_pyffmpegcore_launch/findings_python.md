@@ -37,7 +37,7 @@ gate, use the immutable source install already documented by the project and
 call it a **source beta**, not a PyPI release:
 
 ```bash
-pipx install git+https://github.com/OthmaneBlial/pyffmpegcore.git@2c1405a5a3f96b5fa30e713e51bfa61b5aa84834
+pipx install git+https://github.com/OthmaneBlial/pyffmpegcore.git@04d1e7051295bbcc4fa137c1214bbf340bf5c4c0
 pyffmpegcore doctor
 pyffmpegcore smoke-test
 ```
