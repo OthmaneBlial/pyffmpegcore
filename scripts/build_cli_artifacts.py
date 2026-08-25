@@ -19,6 +19,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 SDIST_ALLOWED_ROOT_ENTRIES = frozenset(
     {
         "CHANGELOG.md",
+        "action.yml",
         "benchmarks",
         "CLI_BETA_CHECKLIST.md",
         "CLI_DISTRIBUTION.md",
@@ -55,6 +56,7 @@ SDIST_REQUIRED_PATHS = frozenset(
     {
         "LICENSE",
         "README.md",
+        "action.yml",
         "docs/schemas/run-receipt-1.0.example.json",
         "docs/schemas/run-receipt-1.0.schema.json",
         "docs/schemas/batch-manifest-1.0.example.json",
@@ -70,6 +72,7 @@ SDIST_REQUIRED_PATHS = frozenset(
         "benchmarks/baseline-macos-arm64-2026-08-25.json",
         "pyffmpegcore/cli.py",
         "scripts/build_cli_artifacts.py",
+        "scripts/run_pipeline_action.sh",
         "scripts/validate_capability_catalog.py",
         "tests/media/download_fixtures.py",
         "tests/media/manifest.json",

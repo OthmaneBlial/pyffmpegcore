@@ -1,0 +1,85 @@
+name: PyFFmpegCore Pipeline
+description: Run a typed PyFFmpegCore media pipeline and preserve its outputs and execution evidence.
+author: Othmane BLIAL
+
+branding:
+  icon: film
+  color: purple
+
+inputs:
+  pipeline:
+    description: Versioned JSON or TOML pipeline path relative to the workspace.
+    required: true
+  environment:
+    description: Newline-separated environment variable names declared by the pipeline. Values are never action inputs.
+    required: false
+    default: ""
+  receipt-dir:
+    description: Directory for one privacy-redacted receipt per pipeline step.
+    required: false
+    default: .pyffmpegcore/receipts
+  state:
+    description: Atomic resume-state JSON path.
+    required: false
+    default: .pyffmpegcore/pipeline-state.json
+  events:
+    description: JSON Lines progress-event path.
+    required: false
+    default: .pyffmpegcore/pipeline-events.jsonl
+  result:
+    description: Machine-readable pipeline result path.
+    required: false
+    default: .pyffmpegcore/pipeline-result.json
+  resume:
+    description: Resume completed steps when their signatures and outputs still match.
+    required: false
+    default: "true"
+  force:
+    description: Permit CI reruns to replace existing outputs and evidence.
+    required: false
+    default: "true"
+  network:
+    description: Container network mode; keep none for local media or opt in to bridge for declared remote inputs.
+    required: false
+    default: none
+  artifacts:
+    description: Additional output paths or globs to upload with the execution evidence.
+    required: false
+    default: ""
+  artifact-name:
+    description: Name of the uploaded artifact bundle.
+    required: false
+    default: pyffmpegcore-results
+
+runs:
+  using: composite
+  steps:
+    - name: Run the versioned pipeline
+      shell: bash
+      run: '"$GITHUB_ACTION_PATH/scripts/run_pipeline_action.sh"'
+      env:
+        PYFFMPEGCORE_ACTION_IMAGE: ghcr.io/othmaneblial/pyffmpegcore@sha256:d251ae8b20430cd671f64c4007998ce31d21e503ff06f9a309c7f33f6b8dbf3e
+        PYFFMPEGCORE_ACTION_PIPELINE: ${{ inputs.pipeline }}
+        PYFFMPEGCORE_ACTION_VARIABLES: ${{ inputs.environment }}
+        PYFFMPEGCORE_ACTION_RECEIPT_DIR: ${{ inputs.receipt-dir }}
+        PYFFMPEGCORE_ACTION_STATE: ${{ inputs.state }}
+        PYFFMPEGCORE_ACTION_EVENTS: ${{ inputs.events }}
+        PYFFMPEGCORE_ACTION_RESULT: ${{ inputs.result }}
+        PYFFMPEGCORE_ACTION_RESUME: ${{ inputs.resume }}
+        PYFFMPEGCORE_ACTION_FORCE: ${{ inputs.force }}
+        PYFFMPEGCORE_ACTION_NETWORK: ${{ inputs.network }}
+
+    - name: Upload outputs and execution evidence
+      if: ${{ always() }}
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: |
+          ${{ inputs.receipt-dir }}
+          ${{ inputs.state }}
+          ${{ inputs.events }}
+          ${{ inputs.result }}
+          ${{ inputs.artifacts }}
+        if-no-files-found: warn
+        include-hidden-files: true
+        retention-days: 14

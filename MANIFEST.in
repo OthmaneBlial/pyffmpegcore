@@ -1,9 +1,11 @@
 include LICENSE
 include *.md
+include action.yml
 include install.sh
 include install.ps1
 recursive-include examples *.py
 recursive-include scripts *.py
+recursive-include scripts *.sh
 recursive-include tests *.py *.json
 recursive-include docs *.md *.json
 recursive-include pipelines *.json *.toml

@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "name": "action_equivalence",
+  "description": "One deterministic thumbnail used to prove local, container, and Action parity.",
+  "variables": {
+    "INPUT": "../../action-fixture/source.mp4",
+    "OUTPUT": "../../action-output/poster.jpg"
+  },
+  "steps": [
+    {
+      "id": "poster",
+      "workflow": "thumbnail",
+      "input": "${INPUT}",
+      "output": "${OUTPUT}",
+      "options": {
+        "timestamp": "00:00:00.100",
+        "width": 320,
+        "quality": 2
+      }
+    }
+  ]
+}
