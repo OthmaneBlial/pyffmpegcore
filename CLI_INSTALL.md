@@ -46,6 +46,18 @@ python -m pip install --user git+https://github.com/OthmaneBlial/pyffmpegcore.gi
 pyffmpegcore --version
 ```
 
+## Install With `uv`
+
+```bash
+uv tool install "pyffmpegcore @ git+https://github.com/OthmaneBlial/pyffmpegcore.git@main"
+pyffmpegcore doctor
+pyffmpegcore smoke-test
+```
+
+Use a commit SHA instead of `main` for a reproducible pre-release install. A
+Homebrew tap is intentionally deferred until public demand supports its ongoing
+maintenance.
+
 ## Install From A Local Checkout
 
 If you cloned the repository and want the local CLI:

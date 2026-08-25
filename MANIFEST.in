@@ -7,6 +7,7 @@ recursive-include scripts *.py
 recursive-include tests *.py *.json
 recursive-include docs *.md *.json
 recursive-include pipelines *.json *.toml
+recursive-include benchmarks *.json
 prune examples/__pycache__
 prune tests/media/downloads
 global-exclude __pycache__

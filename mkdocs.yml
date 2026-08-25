@@ -35,6 +35,7 @@ nav:
   - Resumable batches: batches.md
   - Declarative pipelines: pipelines.md
   - Container image: container.md
+  - Performance: performance.md
   - Recipes:
       - Overview: recipes/index.md
       - Web-compatible video: recipes/web-video.md

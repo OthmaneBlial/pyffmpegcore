@@ -19,6 +19,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 SDIST_ALLOWED_ROOT_ENTRIES = frozenset(
     {
         "CHANGELOG.md",
+        "benchmarks",
         "CLI_BETA_CHECKLIST.md",
         "CLI_DISTRIBUTION.md",
         "CLI_HELP.md",
@@ -66,6 +67,7 @@ SDIST_REQUIRED_PATHS = frozenset(
         "pipelines/podcast-package.toml",
         "pipelines/video-thumbnails-subtitles.json",
         "pipelines/web-publish.json",
+        "benchmarks/baseline-macos-arm64-2026-08-25.json",
         "pyffmpegcore/cli.py",
         "scripts/build_cli_artifacts.py",
         "scripts/validate_capability_catalog.py",

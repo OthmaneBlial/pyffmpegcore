@@ -21,6 +21,13 @@ pyffmpegcore smoke-test
 
 A repository checkout also provides `./install.sh`.
 
+`uv` users can install the same source revision as an isolated tool:
+
+```bash
+uv tool install "pyffmpegcore @ git+https://github.com/OthmaneBlial/pyffmpegcore.git@main"
+pyffmpegcore smoke-test
+```
+
 ## PowerShell
 
 ```powershell
@@ -41,6 +48,10 @@ python -m pip install "git+https://github.com/OthmaneBlial/pyffmpegcore.git@main
 ```
 
 Pin a commit SHA instead of `main` when reproducibility matters. Switch to a released version constraint only after the PyPI endpoint is healthy.
+
+There is no Homebrew tap today. The project will add and maintain one only after
+public demand justifies another release channel; Homebrew can still install the
+external FFmpeg dependency.
 
 ## Verify the selected binaries
 

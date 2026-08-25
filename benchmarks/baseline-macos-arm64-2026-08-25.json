@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0",
+  "environment": {
+    "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+    "python": "3.14.6",
+    "ffmpeg": "ffmpeg version 9.0.1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "cli": "pyffmpegcore 0.2.0",
+    "repeats": 5
+  },
+  "startup": {
+    "raw_ffmpeg_median_seconds": 0.038886,
+    "pyffmpegcore_median_seconds": 0.128165,
+    "orchestration_overhead_seconds": 0.089279
+  },
+  "processing": {
+    "workflow": "thumbnail",
+    "raw_exact_plan_median_seconds": 0.046324,
+    "pyffmpegcore_median_seconds": 0.546884,
+    "orchestration_overhead_seconds": 0.50056,
+    "raw_output_bytes": 9118,
+    "pyffmpegcore_output_bytes": 9118
+  },
+  "cache": {
+    "cold_seconds": 0.871084,
+    "warm_seconds": 0.423855,
+    "cold_status": "succeeded",
+    "warm_status": "cached",
+    "speedup": 2.055
+  },
+  "artifacts": {
+    "wheel_bytes": 84661,
+    "package_source_bytes": 321303
+  },
+  "thresholds": {
+    "startup_overhead_max_seconds": 0.5,
+    "processing_overhead_max_seconds": 1.0,
+    "startup_pass": true,
+    "processing_pass": true,
+    "cache_pass": true
+  },
+  "passed": true
+}

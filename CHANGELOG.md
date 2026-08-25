@@ -26,6 +26,7 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 - Bounded mixed-media batches with strict manifests, JSONL events, per-item receipts, classified retries, and signature-based resume.
 - Typed JSON/TOML pipelines with DAG preflight, graph output, cancellation/resume, optional content-aware caching, secret masking, schema migration, and three golden templates.
 - A pinned non-root multi-architecture container supply chain with pre-publish smoke tests, blocking vulnerability scan, SBOM, provenance, and digest attestation.
+- A versioned overhead benchmark for startup, exact-plan processing, package size, and pipeline-cache behavior, plus documented pipx and uv tool installs.
 
 ### Changed
 
