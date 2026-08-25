@@ -72,6 +72,11 @@ jobs:
       - name: Prove non-root runtime and installed media stack
         run: |
           test "$(docker run --rm --entrypoint id pyffmpegcore:scan -u)" = "10001"
+          if docker run --rm --entrypoint python pyffmpegcore:scan -m pip --version; then
+            echo "Runtime image must not retain pip" >&2
+            exit 1
+          fi
+          test "$(docker run --rm --entrypoint python pyffmpegcore:scan -c 'from pathlib import Path; print(Path("/opt/pyffmpegcore").exists())')" = "False"
           docker run --rm pyffmpegcore:scan doctor --json > container-doctor.json
           docker run --rm pyffmpegcore:scan smoke-test --json > container-smoke.json
           docker run --rm --entrypoint ffmpeg pyffmpegcore:scan -version | head -n 1 > container-ffmpeg.txt

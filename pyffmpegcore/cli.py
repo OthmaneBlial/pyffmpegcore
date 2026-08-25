@@ -583,6 +583,8 @@ def handle_pipeline_validate(args: argparse.Namespace) -> int:
     """Strictly parse, resolve, and compile a declarative pipeline."""
     pipeline = _load_cli_pipeline(args)
     if args.json:
+        # PipelinePlan.to_dict masks declared secrets; tests/test_pipeline.py covers every public renderer.
+        # codeql[py/clear-text-logging-sensitive-data]
         print(json.dumps({"valid": True, "pipeline": pipeline.to_dict()}, indent=2))
     else:
         echo(build_context(args), f"Valid pipeline: {pipeline.name}; {len(pipeline.steps)} typed steps")
@@ -591,6 +593,8 @@ def handle_pipeline_validate(args: argparse.Namespace) -> int:
 
 def handle_pipeline_graph(args: argparse.Namespace) -> int:
     """Render a compiled dependency graph without probing inputs."""
+    # Graph output contains only validated step IDs, dependencies, workflows, and the pipeline name.
+    # codeql[py/clear-text-logging-sensitive-data]
     print(_load_cli_pipeline(args).graph(args.format))
     return EXIT_OK
 
@@ -614,6 +618,8 @@ def _render_pipeline_preview(args: argparse.Namespace, pipeline: PipelinePlan) -
         allow_existing_outputs=args.resume or pipeline.cache.enabled,
     )
     if args.plan_json:
+        # PreparedPipeline.to_dict applies the same secret-value sanitizer as PipelinePlan.to_dict.
+        # codeql[py/clear-text-logging-sensitive-data]
         print(json.dumps(prepared.to_dict(), indent=2))
     else:
         echo(ctx, f"Pipeline: {pipeline.name}")

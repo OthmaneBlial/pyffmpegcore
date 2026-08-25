@@ -23,7 +23,9 @@ RUN apt-get update \
     && chown pyffmpegcore:pyffmpegcore /workspace
 
 COPY . /opt/pyffmpegcore
-RUN python -m pip install /opt/pyffmpegcore \
+RUN python -m pip install --no-deps /opt/pyffmpegcore \
+    && rm -rf /opt/pyffmpegcore \
+    && python -m pip uninstall --yes pip setuptools wheel \
     && pyffmpegcore --version \
     && ffmpeg -version | head -n 1
 

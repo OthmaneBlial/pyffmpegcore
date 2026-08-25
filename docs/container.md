@@ -32,21 +32,32 @@ The base digest is immutable. Debian dependency resolution can still change
 when a security update is published, so the pushed image digest, SBOM, and
 provenance—not a local rebuild—are the release identity.
 
+The final runtime removes the checked-out source tree and Python packaging
+tools (`pip`, `setuptools`, and `wheel`) after installing PyFFmpegCore. Those
+tools are build inputs, not runtime features. CI proves their absence before
+publishing an image.
+
 ## Publication gate
 
 The container workflow:
 
 1. builds an amd64 candidate;
 2. proves the non-root user, `doctor`, and synthetic smoke test;
-3. blocks on fixed HIGH or CRITICAL Trivy findings;
+3. blocks on HIGH or CRITICAL Trivy findings for which an upstream fix exists;
 4. publishes an amd64/arm64 OCI image only after those gates;
 5. attaches BuildKit SBOM and maximum provenance;
 6. creates a GitHub artifact attestation for the pushed digest.
 
 A weekly scheduled run rebuilds and scans without publishing. Dependency or
 base updates require a reviewed pull request and a new immutable digest.
-Container maintenance is owned by the repository maintainer; unresolved
-HIGH/CRITICAL findings block a new image rather than being silently waived.
+Container maintenance is owned by the repository maintainer.
+
+The complete SARIF intentionally also reports Debian/CPython advisories whose
+`Fixed Version` is empty. Those findings cannot be patched inside this image
+without replacing the supported upstream package source. They are explicitly
+triaged as accepted upstream risk in GitHub code scanning, not silently
+discarded. When Trivy starts reporting a fixed version, the separate blocking
+scan fails until the base or package is upgraded and a new digest is published.
 
 ## Licensing and codecs
 

@@ -9,8 +9,12 @@ import pytest
 
 from pyffmpegcore import (
     PipelineCompiler,
+    PipelineEvent,
+    PipelineRun,
     PipelineRunner,
     PipelineSpec,
+    PipelineStepOutcome,
+    PreparedPipeline,
     ValidationError,
     migrate_pipeline_document,
 )
@@ -106,6 +110,39 @@ def test_pipeline_secret_values_live_outside_the_file_and_are_masked(tmp_path):
     inline["variables"] = {"SOURCE_URL": secret}
     with pytest.raises(ValidationError, match="must not have values"):
         PipelineSpec.from_dict(inline, base_dir=tmp_path)
+
+
+def test_pipeline_secret_is_masked_from_every_public_renderer(tmp_path):
+    document = {
+        "schema_version": "1.0",
+        "name": "private_source",
+        "secret_variables": ["SOURCE_URL"],
+        "steps": [
+            {
+                "id": "web",
+                "profile": "web/mp4-compatible",
+                "input": "${SOURCE_URL}",
+                "output": "publish.mp4",
+            }
+        ],
+    }
+    secret = "https://user:do-not-log@example.invalid/video.mp4?token=do-not-log"
+    pipeline = PipelineCompiler().compile(
+        PipelineSpec.from_dict(document, base_dir=tmp_path),
+        variables={"SOURCE_URL": secret},
+    )
+    rendered = [
+        json.dumps(pipeline.to_dict()),
+        pipeline.graph("text"),
+        pipeline.graph("mermaid"),
+        pipeline.graph("dot"),
+        json.dumps(PreparedPipeline(pipeline, ()).to_dict()),
+        json.dumps(PipelineEvent(1, "failed", "web", secret).to_dict(pipeline.secret_values)),
+        json.dumps(PipelineRun(pipeline, (PipelineStepOutcome("web", "failed", "key", detail=secret),)).to_dict()),
+    ]
+
+    assert all("do-not-log" not in value for value in rendered)
+    assert sum("<redacted>" in value for value in rendered) >= 3
 
 
 def test_pipeline_schema_migration_is_explicit_and_canonical(tmp_path):
