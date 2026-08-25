@@ -6,7 +6,9 @@ import argparse
 import inspect
 import sys
 import textwrap
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 import pyffmpegcore
 from pyffmpegcore.cli import build_parser
@@ -76,7 +78,7 @@ def render_cli_reference() -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-def public_methods(cls: type) -> list[tuple[str, object]]:
+def public_methods(cls: type) -> list[tuple[str, Callable[..., Any]]]:
     """Return documented public methods defined directly by a class."""
     return [
         (name, member)

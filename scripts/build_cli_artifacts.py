@@ -11,6 +11,7 @@ import subprocess
 import sys
 import tarfile
 from pathlib import Path
+from typing import cast
 
 from pyffmpegcore import __version__
 
@@ -217,7 +218,7 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print("Distribution strategy: python-packaging-only")
         print("Standalone binaries: no")
-        for artifact in report["artifacts"]:
+        for artifact in cast(list[dict[str, object]], report["artifacts"]):
             print(
                 f"{artifact['type']}: {artifact['filename']} "
                 f"({artifact['size_bytes']} bytes, sha256={artifact['sha256']})"

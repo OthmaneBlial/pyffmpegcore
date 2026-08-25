@@ -33,7 +33,7 @@ Run these commands before and after meaningful changes:
 ```bash
 python -m ruff check pyffmpegcore scripts examples tests
 python -m ruff format --check pyffmpegcore scripts examples tests
-python -m mypy pyffmpegcore
+python -m mypy pyffmpegcore scripts
 python -m compileall pyffmpegcore tests examples
 python -m pytest -m "not real_media"
 python tests/media/download_fixtures.py --force

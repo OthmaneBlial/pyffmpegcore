@@ -173,7 +173,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     workspace = Path(tempfile.mkdtemp(prefix="pyffmpegcore-clean-install-"))
-    report: dict[str, object] = {"workspace": str(workspace), "commands": []}
+    commands: list[dict[str, object]] = []
+    report: dict[str, object] = {"workspace": str(workspace), "commands": commands}
 
     try:
         build_dir = workspace / "dist"
@@ -194,7 +195,7 @@ def main(argv: list[str] | None = None) -> int:
                 [sys.executable, "-m", "build", "--wheel", "--outdir", str(build_dir)],
                 cwd=args.project_root,
             )
-            add_report_entry(report["commands"], "build-wheel", build)
+            add_report_entry(commands, "build-wheel", build)
             if build.returncode != 0:
                 return 1
 
@@ -209,7 +210,7 @@ def main(argv: list[str] | None = None) -> int:
             }
 
         create_venv = run_command([sys.executable, "-m", "venv", str(venv_dir)])
-        add_report_entry(report["commands"], "create-venv", create_venv)
+        add_report_entry(commands, "create-venv", create_venv)
         if create_venv.returncode != 0:
             return 1
 
@@ -217,22 +218,22 @@ def main(argv: list[str] | None = None) -> int:
         cli_path = venv_cli(venv_dir)
 
         upgrade_pip = run_command([str(python_path), "-m", "pip", "install", "--upgrade", "pip"])
-        add_report_entry(report["commands"], "upgrade-pip", upgrade_pip)
+        add_report_entry(commands, "upgrade-pip", upgrade_pip)
         if upgrade_pip.returncode != 0:
             return 1
 
         install = run_command([str(python_path), "-m", "pip", "install", str(wheel_path)])
-        add_report_entry(report["commands"], "install-wheel", install)
+        add_report_entry(commands, "install-wheel", install)
         if install.returncode != 0:
             return 1
 
         version = run_command([str(cli_path), "--version"])
-        add_report_entry(report["commands"], "cli-version", version)
+        add_report_entry(commands, "cli-version", version)
         if version.returncode != 0:
             return 1
 
         doctor = run_command([str(cli_path), "doctor", "--json"])
-        add_report_entry(report["commands"], "cli-doctor", doctor)
+        add_report_entry(commands, "cli-doctor", doctor)
         if not doctor_result_is_acceptable(doctor, require_binaries=not args.skip_media):
             return 1
 
@@ -248,7 +249,7 @@ def main(argv: list[str] | None = None) -> int:
                     "--json",
                 ]
             )
-            add_report_entry(report["commands"], "probe-json", probe)
+            add_report_entry(commands, "probe-json", probe)
             if probe.returncode != 0:
                 return 1
 
@@ -267,7 +268,7 @@ def main(argv: list[str] | None = None) -> int:
                     "aac",
                 ]
             )
-            add_report_entry(report["commands"], "convert", convert)
+            add_report_entry(commands, "convert", convert)
             if convert.returncode != 0 or not convert_output.exists():
                 return 1
 
@@ -282,7 +283,7 @@ def main(argv: list[str] | None = None) -> int:
                     str(audio_output),
                 ]
             )
-            add_report_entry(report["commands"], "extract-audio", extract)
+            add_report_entry(commands, "extract-audio", extract)
             if extract.returncode != 0 or not audio_output.exists():
                 return 1
 
@@ -301,7 +302,7 @@ def main(argv: list[str] | None = None) -> int:
                     "640",
                 ]
             )
-            add_report_entry(report["commands"], "thumbnail", thumbnail)
+            add_report_entry(commands, "thumbnail", thumbnail)
             if thumbnail.returncode != 0 or not thumb_output.exists():
                 return 1
 
@@ -333,7 +334,7 @@ def main(argv: list[str] | None = None) -> int:
                 if subtitle_name is not None:
                     profile_command.extend(["--subtitle", str(args.media_root / subtitle_name)])
                 profile_run = run_command(profile_command)
-                add_report_entry(report["commands"], f"profile-{profile_name}", profile_run)
+                add_report_entry(commands, f"profile-{profile_name}", profile_run)
                 if profile_run.returncode != 0 or not profile_output.exists():
                     return 1
 
@@ -380,7 +381,7 @@ def main(argv: list[str] | None = None) -> int:
                     "--result-json",
                 ]
             )
-            add_report_entry(report["commands"], "batch-mixed-media", batch_run)
+            add_report_entry(commands, "batch-mixed-media", batch_run)
             try:
                 batch_payload = json.loads(batch_run.stdout)
             except json.JSONDecodeError:
@@ -437,7 +438,7 @@ def main(argv: list[str] | None = None) -> int:
                     "--result-json",
                 ]
             )
-            add_report_entry(report["commands"], "pipeline-typed-dag", pipeline_run)
+            add_report_entry(commands, "pipeline-typed-dag", pipeline_run)
             try:
                 pipeline_payload = json.loads(pipeline_run.stdout)
             except json.JSONDecodeError:
@@ -454,7 +455,7 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps(report, indent=2))
         else:
             print(f"Clean install validation workspace: {workspace}")
-            for entry in report["commands"]:
+            for entry in commands:
                 print(f"{entry['name']}: rc={entry['returncode']}")
 
         return 0

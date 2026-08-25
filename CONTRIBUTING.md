@@ -50,7 +50,7 @@ Fast checks do not intentionally execute the full real-media matrix:
 ```bash
 python -m ruff check pyffmpegcore scripts examples tests
 python -m ruff format --check pyffmpegcore scripts examples tests
-python -m mypy pyffmpegcore
+python -m mypy pyffmpegcore scripts
 python -m pytest -m "not real_media"
 ```
 
