@@ -18,6 +18,7 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 - Deterministic rich-media fixtures now cover stream selection, chapters, cover art, rotation, VFR, and Unicode metadata.
 - Failed jobs remove newly created incomplete outputs, and the sdist enforces a self-contained testable-source contract.
 - Privacy-redacted run receipts with opt-in hashes, offline validation, canonical migration, and doctor-backed bug reports.
+- Explicit UTF-8 subprocess decoding for Unicode FFprobe facts on Windows.
 
 ### Changed
 

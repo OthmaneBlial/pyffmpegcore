@@ -53,7 +53,13 @@ class FFprobeRunner:
         ]
 
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+            )
         except FileNotFoundError as exc:
             raise RuntimeError(
                 f"FFprobe executable '{self.ffprobe_path}' was not found. Install FFmpeg or pass a valid ffprobe_path."
@@ -283,7 +289,13 @@ class FFprobeRunner:
         Returns:
             Version string
         """
-        result = subprocess.run([self.ffprobe_path, "-version"], capture_output=True, text=True)
+        result = subprocess.run(
+            [self.ffprobe_path, "-version"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
         if result.returncode == 0:
             return result.stdout.split("\n")[0]
         raise RuntimeError(f"Failed to get FFprobe version: {result.stderr}")

@@ -32,6 +32,8 @@ def probe_media(path: Path, ffprobe_path: str) -> dict:
         ],
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         check=False,
     )
     if result.returncode != 0:
@@ -216,7 +218,14 @@ def generate_fixture(
                 *expand_generator_args(generator["args"], output_dir, temp_path),
             ]
             print(f"[generate] {destination.name}")
-            result = subprocess.run(command, capture_output=True, text=True, check=False)
+            result = subprocess.run(
+                command,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=False,
+            )
             if result.returncode != 0:
                 raise RuntimeError(result.stderr.strip() or f"FFmpeg failed to generate {destination.name}")
         else:
