@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
-      - uses: OthmaneBlial/pyffmpegcore@9f27576eef892ed73398dd99e0f90d5e60d16b43
+      - uses: OthmaneBlial/pyffmpegcore@671a041807cdd54f7a7fed6534e7a4d69f372fb1
         env:
           OUTPUT_DIR: build/release
         with:
@@ -19,8 +19,11 @@ jobs:
           artifacts: build/**
 ```
 
-The Action reference above is the immutable revision that passed the
-[local/container/Action receipt-parity run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/32893610275).
+The Action reference above is the immutable revision that introduced the
+hardened runtime digest. The [Action integration
+workflow](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/action-integration.yml)
+proves local/container/Action receipt parity whenever the Action or image
+contract changes.
 A moving branch or tag is convenient for exploration but is not a reproducible
 supply-chain boundary.
 
@@ -40,6 +43,6 @@ supply-chain boundary.
   `false` when stricter fresh-workspace behavior is required.
 
 The default image is
-`ghcr.io/othmaneblial/pyffmpegcore@sha256:d251ae8b20430cd671f64c4007998ce31d21e503ff06f9a309c7f33f6b8dbf3e`.
+`ghcr.io/othmaneblial/pyffmpegcore@sha256:b2ec3d7ffc054ce65a5e3470e4ffb19d15708d30e613c01e3217bb9331251458`.
 The verified Action commit is
-`9f27576eef892ed73398dd99e0f90d5e60d16b43`.
+`671a041807cdd54f7a7fed6534e7a4d69f372fb1`.
