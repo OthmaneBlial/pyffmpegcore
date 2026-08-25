@@ -29,7 +29,7 @@ Python 3.10-compatible string enumeration.
 
 ## `CompressOptions`
 
-CompressOptions(target_size_bytes: 'int | None' = None, crf: 'int' = 23, two_pass: 'bool' = True, video_codec: 'str' = 'libx264', audio_codec: 'str' = 'aac', video_bitrate: 'str | None' = None, audio_bitrate: 'str' = '128k', preset: 'str' = 'medium', pixel_format: 'str' = 'yuv420p', threads: 'int | None' = None, container_overhead_percent: 'float' = 1.0, minimum_video_bitrate: 'int' = 102400)
+CompressOptions(target_size_bytes: 'int | None' = None, crf: 'int' = 23, two_pass: 'bool' = True, video_codec: 'str' = 'libx264', audio_codec: 'str' = 'aac', video_bitrate: 'str | None' = None, audio_bitrate: 'str' = '128k', preset: 'str' = 'medium', pixel_format: 'str' = 'yuv420p', threads: 'int | None' = None, container_overhead_percent: 'float' = 5.0, minimum_video_bitrate: 'int' = 102400)
 
 ## `ConvertOptions`
 
@@ -63,7 +63,7 @@ Execute typed workflows or an explicit non-shell argument vector.
 
 Plan, preflight, and execute typed video speed adjustment.
 
-### `compress(self, input_file: 'str', output_file: 'str', *, target_size_kb: 'int | None' = None, crf: 'int' = 23, two_pass: 'bool' = True, video_codec: 'str' = 'libx264', audio_codec: 'str' = 'aac', video_bitrate: 'str | None' = None, audio_bitrate: 'str' = '128k', preset: 'str' = 'medium', pixel_format: 'str' = 'yuv420p', threads: 'int | None' = None, container_overhead_percent: 'float' = 1.0, minimum_video_bitrate: 'int' = 102400, force: 'bool' = False, progress_callback: 'Callable[[ProgressEvent], None] | None' = None) -> 'JobResult'`
+### `compress(self, input_file: 'str', output_file: 'str', *, target_size_kb: 'int | None' = None, crf: 'int' = 23, two_pass: 'bool' = True, video_codec: 'str' = 'libx264', audio_codec: 'str' = 'aac', video_bitrate: 'str | None' = None, audio_bitrate: 'str' = '128k', preset: 'str' = 'medium', pixel_format: 'str' = 'yuv420p', threads: 'int | None' = None, container_overhead_percent: 'float' = 5.0, minimum_video_bitrate: 'int' = 102400, force: 'bool' = False, progress_callback: 'Callable[[ProgressEvent], None] | None' = None) -> 'JobResult'`
 
 Plan, preflight, and execute typed single- or two-pass compression.
 

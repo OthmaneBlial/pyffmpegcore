@@ -78,6 +78,8 @@ def test_receipt_redacts_credentials_private_paths_and_secrets_by_default(tmp_pa
     assert "<path>/source.bin" in rendered
     assert receipt.document["privacy"]["content_hashing"] == "disabled"
     assert receipt.document["content_hashes"] == []
+    assert receipt.document["items"][0]["proof"]["input_size_bytes"] is None
+    assert receipt.document["items"][0]["proof"]["output_size_bytes"] == len(b"receipt output")
 
 
 def test_receipt_hashing_is_opt_in_and_records_algorithm(tmp_path):

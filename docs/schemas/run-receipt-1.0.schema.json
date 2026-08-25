@@ -23,10 +23,11 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["input_probe", "output_probe", "preflight", "result"],
+        "required": ["input_probe", "output_probe", "proof", "preflight", "result"],
         "properties": {
           "input_probe": {"type": ["object", "null"]},
           "output_probe": {"type": ["object", "null"]},
+          "proof": {"type": "object"},
           "preflight": {"type": "object"},
           "result": {
             "type": "object",

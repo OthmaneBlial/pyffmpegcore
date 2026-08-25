@@ -572,7 +572,7 @@ options:
   --min-video-bitrate MIN_VIDEO_BITRATE
                         Two-pass quality floor in bits/s, for example 100k. Defaults to 100k.
   --container-overhead-percent CONTAINER_OVERHEAD_PERCENT
-                        Reserved target-size percentage for container overhead. Defaults to 1.0.
+                        Reserved target-size percentage for container overhead. Defaults to 5.0.
 ```
 
 ## `pyffmpegcore extract-audio`

@@ -413,7 +413,7 @@ def build_parser() -> argparse.ArgumentParser:
     compress_parser.add_argument(
         "--container-overhead-percent",
         type=float,
-        default=1.0,
+        default=5.0,
         help="Reserved target-size percentage for container overhead. Defaults to %(default)s.",
     )
     compress_parser.set_defaults(handler_name="handle_planned_command")

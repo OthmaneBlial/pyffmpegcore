@@ -159,8 +159,13 @@ def validate_receipt(document: Any) -> tuple[str, ...]:
     items = document.get("items")
     if not isinstance(items, list) or not items:
         errors.append("items must be a non-empty array")
-    elif any(not isinstance(item, dict) or not isinstance(item.get("result"), dict) for item in items):
-        errors.append("each item must contain a result object")
+    elif any(
+        not isinstance(item, dict)
+        or not isinstance(item.get("result"), dict)
+        or not isinstance(item.get("proof"), dict)
+        for item in items
+    ):
+        errors.append("each item must contain result and proof objects")
     hashes = document.get("content_hashes", [])
     if not isinstance(hashes, list) or any(
         not isinstance(item, dict) or item.get("algorithm") not in hashlib.algorithms_available for item in hashes
@@ -217,6 +222,7 @@ class ReceiptBuilder:
                 {
                     "input_probe": _probe_summary(item.input, probe),
                     "output_probe": _probe_summary(item.output, probe),
+                    "proof": item.proof,
                     "preflight": item.preflight.to_dict(),
                     "result": {
                         "workflow": item.result.workflow,

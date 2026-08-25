@@ -256,7 +256,7 @@ P0 Truth and reproducibility
 - [x] Add non-mutating `--dry-run` and `--explain` support to every writing command.
 - [x] Represent the exact argument vector as a JSON array; show a safely escaped display form without executing through a shell.
 - [x] Explain selected streams, copied/re-encoded/dropped data, codecs, filters, quality/size trade-offs, hardware fallback, overwrite policy, and expected outputs.
-- [ ] Use FFmpeg structured interfaces such as progress and graph output when the installed version supports them, with tested fallbacks for older versions.
+- [x] Use FFmpeg structured interfaces such as progress and graph output when the installed version supports them, with tested fallbacks for older versions.
 - [x] Make plans deterministic and snapshot-testable after normalizing paths and environment-specific values.
 
 ### P3.3 Curated workflow profiles
@@ -266,7 +266,7 @@ P0 Truth and reproducibility
 - [x] Version profile behavior so upgrades never silently change an output contract.
 - [x] Support project/user profiles only through a documented versioned schema with strict validation.
 - [x] Keep service-specific presets out of the core unless their requirements are stable, sourced, and maintained.
-- [ ] Turn target-size compression into an excellent “fit this file under a limit” workflow with human size units, quality floors, honest feasibility errors, and before/after proof.
+- [x] Turn target-size compression into an excellent “fit this file under a limit” workflow with human size units, quality floors, honest feasibility errors, and before/after proof.
 
 ### P3.4 Privacy-aware run receipts
 

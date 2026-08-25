@@ -26,6 +26,14 @@
     {
       "input_probe": {"path": "<path>/talk.mp4", "format_name": "mov,mp4", "streams": []},
       "output_probe": {"path": "<path>/poster.jpg", "format_name": "image2", "streams": []},
+      "proof": {
+        "input_size_bytes": 10485760,
+        "output_size_bytes": 524288,
+        "size_change_bytes": -9961472,
+        "reduction_percent": 95.0,
+        "target_size_bytes": null,
+        "target_met": null
+      },
       "preflight": {"schema_version": "1.0", "workflow": "thumbnail", "ok": true, "checks": []},
       "result": {
         "workflow": "thumbnail",

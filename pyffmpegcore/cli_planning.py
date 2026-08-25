@@ -61,7 +61,7 @@ def _build_cli_plan(args: argparse.Namespace):
             audio_bitrate=args.audio_bitrate or "128k",
             preset=args.preset or "medium",
             threads=args.threads,
-            container_overhead_percent=getattr(args, "container_overhead_percent", 1.0),
+            container_overhead_percent=getattr(args, "container_overhead_percent", 5.0),
             minimum_video_bitrate=minimum_bitrate,
         )
         return planner.compress(args.input, args.output, compress_options, **shared)

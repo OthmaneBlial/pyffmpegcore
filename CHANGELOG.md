@@ -20,6 +20,8 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 - Privacy-redacted run receipts with opt-in hashes, offline validation, canonical migration, and doctor-backed bug reports.
 - Explicit UTF-8 subprocess decoding for Unicode FFprobe facts on Windows.
 - Versioned workflow capability-catalog reports across Linux, macOS, and Windows compatibility jobs.
+- Structured FFmpeg progress with an explicit unsupported-option-only legacy stderr fallback.
+- Measured target-size before/after proof in human, machine-result, and receipt output.
 
 ### Changed
 

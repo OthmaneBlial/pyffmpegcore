@@ -239,7 +239,7 @@ class CompressOptions:
     preset: str = "medium"
     pixel_format: str = "yuv420p"
     threads: int | None = None
-    container_overhead_percent: float = 1.0
+    container_overhead_percent: float = 5.0
     minimum_video_bitrate: int = 100 * 1024
 
     def __post_init__(self) -> None:

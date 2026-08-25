@@ -191,7 +191,7 @@ class FFmpegRunner:
         preset: str = "medium",
         pixel_format: str = "yuv420p",
         threads: int | None = None,
-        container_overhead_percent: float = 1.0,
+        container_overhead_percent: float = 5.0,
         minimum_video_bitrate: int = 100 * 1024,
         force: bool = False,
         progress_callback: Callable[[ProgressEvent], None] | None = None,

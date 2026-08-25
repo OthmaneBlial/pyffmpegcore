@@ -83,5 +83,7 @@ def test_compress_two_pass_real_media(tmp_path):
 
     assert result.returncode == 0
     assert output_file.exists()
+    assert "Target-size proof:" in result.stdout
+    assert "PASS" in result.stdout
     actual_size_kb = output_file.stat().st_size / 1024
     assert abs(actual_size_kb - target_size_kb) <= target_size_kb * 0.15

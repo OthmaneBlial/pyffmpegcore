@@ -63,6 +63,14 @@ The engine executes the exact typed plan and returns a `WorkflowBatch` containin
 
 The execution policy controls overwrite refusal, timeout, cancellation, captured output, and temporary-file retention. CLI jobs expose `--timeout SECONDS` and `--temp-files clean|keep-on-error|keep`; `Ctrl-C` terminates the active FFmpeg child and records a cancelled result. Two-pass logs, concat manifests, and defensive subtitle copies are materialized in an isolated workspace only when execution begins. The default `clean` policy removes that workspace after success or failure; retention is always explicit.
 
+Every generated FFmpeg plan prefers the structured `-progress pipe:1`
+protocol. If—and only if—the installed binary explicitly rejects that option,
+the executor removes the structured flags, retries once, parses legacy stderr
+stats, and records a fallback warning plus the actual retry argument vector.
+Timeouts, cancellations, and ordinary processing errors are never retried as a
+capability fallback. Graph output is not yet consumed because current supported
+runner builds do not expose one portable stable graph schema.
+
 ## Target-size feasibility
 
 `--target-size` accepts explicit decimal (`MB`, `GB`) or binary (`MiB`, `GiB`) units. The plan reserves audio and container overhead, calculates the two-pass video bitrate, and enforces `--min-video-bitrate`. An impossible target fails before FFmpeg starts and states the minimum feasible byte count.

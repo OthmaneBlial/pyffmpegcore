@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -93,14 +94,61 @@ def _uses_structured_progress(command: list[str]) -> bool:
     return any(command[index : index + 2] == ["-progress", "pipe:1"] for index in range(max(0, len(command) - 1)))
 
 
+def _legacy_progress_event(line: str, sequence: int, item: str) -> ProgressEvent | None:
+    """Parse stable fields from legacy FFmpeg stderr stats without depending on column order."""
+    frame_match = re.search(r"\bframe=\s*(\d+)", line)
+    time_match = re.search(r"\btime=\s*([\d:.]+)", line)
+    speed_match = re.search(r"\bspeed=\s*([\d.]+)x", line)
+    if frame_match is None and time_match is None:
+        return None
+    return ProgressEvent(
+        sequence=sequence,
+        status="running",
+        frame=int(frame_match.group(1)) if frame_match else None,
+        time_seconds=_time_seconds(time_match.group(1)) if time_match else None,
+        speed=float(speed_match.group(1)) if speed_match else None,
+        item=item,
+    )
+
+
+def _without_structured_progress(command: list[str]) -> list[str]:
+    fallback = []
+    index = 0
+    while index < len(command):
+        if command[index : index + 2] == ["-progress", "pipe:1"]:
+            index += 2
+            continue
+        if command[index] == "-nostats":
+            index += 1
+            continue
+        fallback.append(command[index])
+        index += 1
+    return fallback
+
+
+def _progress_protocol_unavailable(stderr: str) -> bool:
+    lowered = stderr.casefold()
+    return any(
+        marker in lowered
+        for marker in (
+            "unrecognized option 'progress'",
+            'unrecognized option "progress"',
+            "option progress not found",
+            "unknown option 'progress'",
+        )
+    )
+
+
 @dataclass(slots=True)
 class _StepOutcome:
+    command: tuple[str, ...]
     returncode: int | None
     status: JobStatus
     category: str
     stdout: str
     stderr: str
     progress: ProgressEvent | None
+    fallback_used: bool = False
 
 
 def _terminate(process: subprocess.Popen[str]) -> None:
@@ -112,7 +160,7 @@ def _terminate(process: subprocess.Popen[str]) -> None:
         process.wait()
 
 
-def _run_step(
+def _run_step_once(
     command: list[str],
     *,
     name: str,
@@ -129,7 +177,7 @@ def _run_step(
             bufsize=1,
         )
     except OSError as exc:
-        return _StepOutcome(None, JobStatus.FAILED, "environment", "", str(exc), None)
+        return _StepOutcome(tuple(command), None, JobStatus.FAILED, "environment", "", str(exc), None)
 
     structured = _uses_structured_progress(command)
     stdout_lines: list[str] = []
@@ -161,7 +209,19 @@ def _run_step(
             progress_state.clear()
 
     def read_stderr(stream: TextIO) -> None:
-        stderr_lines.extend(stream)
+        for line in stream:
+            stderr_lines.append(line)
+            if structured:
+                continue
+            event = _legacy_progress_event(line, len(progress_events) + 1, name)
+            if event is None:
+                continue
+            progress_events.append(event)
+            if progress_callback is not None:
+                try:
+                    progress_callback(event)
+                except Exception as exc:  # callbacks must not corrupt the media job
+                    callback_errors.append(f"progress callback failed: {exc}")
 
     assert process.stdout is not None
     assert process.stderr is not None
@@ -195,6 +255,22 @@ def _run_step(
 
     stdout_thread.join(timeout=2)
     stderr_thread.join(timeout=2)
+    if status is JobStatus.SUCCEEDED and not structured and progress_events:
+        last = progress_events[-1]
+        end = ProgressEvent(
+            sequence=last.sequence + 1,
+            status="end",
+            frame=last.frame,
+            time_seconds=last.time_seconds,
+            speed=last.speed,
+            item=name,
+        )
+        progress_events.append(end)
+        if progress_callback is not None:
+            try:
+                progress_callback(end)
+            except Exception as exc:  # callbacks must not corrupt the media job
+                callback_errors.append(f"progress callback failed: {exc}")
     if category == "cancelled" and not stderr_lines:
         stderr_lines.append("Job cancelled by caller.\n")
     elif category == "timeout" and not stderr_lines:
@@ -202,6 +278,7 @@ def _run_step(
     if callback_errors:
         stderr_lines.extend(f"{message}{os.linesep}" for message in callback_errors)
     return _StepOutcome(
+        tuple(command),
         process.returncode,
         status,
         category,
@@ -209,6 +286,48 @@ def _run_step(
         "".join(stderr_lines),
         progress_events[-1] if progress_events else None,
     )
+
+
+def _run_step(
+    command: list[str],
+    *,
+    name: str,
+    deadline: float | None,
+    cancellation: threading.Event | None,
+    progress_callback: Callable[[ProgressEvent], None] | None,
+) -> _StepOutcome:
+    """Prefer FFmpeg's structured protocol and retry only an explicit unsupported-option failure."""
+    outcome = _run_step_once(
+        command,
+        name=name,
+        deadline=deadline,
+        cancellation=cancellation,
+        progress_callback=progress_callback,
+    )
+    if not (
+        _uses_structured_progress(command)
+        and outcome.status is JobStatus.FAILED
+        and outcome.category == "runtime"
+        and _progress_protocol_unavailable(outcome.stderr)
+    ):
+        return outcome
+
+    fallback = _run_step_once(
+        _without_structured_progress(command),
+        name=name,
+        deadline=deadline,
+        cancellation=cancellation,
+        progress_callback=progress_callback,
+    )
+    fallback.stderr = (
+        outcome.stderr
+        + os.linesep
+        + "Structured FFmpeg progress is unavailable; retried with legacy stderr progress."
+        + os.linesep
+        + fallback.stderr
+    )
+    fallback.fallback_used = True
+    return fallback
 
 
 def _materialize_steps(plan: ExecutionPlan) -> tuple[tuple[ExecutionStep, ...], Path | None]:
@@ -363,12 +482,15 @@ class ExecutionEngine:
                     cancellation=cancellation,
                     progress_callback=progress_callback,
                 )
+                last_command = outcome.command
                 returncode = outcome.returncode
                 status = outcome.status
                 category = outcome.category
                 stdout_parts.append(outcome.stdout)
                 stderr_parts.append(outcome.stderr)
                 last_progress = outcome.progress or last_progress
+                if outcome.fallback_used:
+                    warnings.append("Structured FFmpeg progress unavailable; used legacy stderr fallback.")
                 if status is not JobStatus.SUCCEEDED:
                     break
         finally:

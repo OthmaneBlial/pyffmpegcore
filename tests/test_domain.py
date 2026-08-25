@@ -222,6 +222,32 @@ def test_execution_emits_typed_structured_progress(tmp_path):
     assert events == [result.progress]
 
 
+def test_execution_falls_back_only_when_structured_progress_is_unsupported():
+    code = (
+        "import sys; "
+        "has_progress = '-progress' in sys.argv; "
+        "print(\"Unrecognized option 'progress'\" if has_progress else "
+        "'frame= 12 fps=25.0 size= 1kB time=00:00:01.50 bitrate=10.0kbits/s speed=1.25x', file=sys.stderr); "
+        "raise SystemExit(1 if has_progress else 0)"
+    )
+    plan = ExecutionPlan(
+        workflow="test/progress-fallback",
+        command=(sys.executable, "-c", code, "-progress", "pipe:1", "-nostats"),
+        inputs=(),
+        outputs=(),
+    )
+    events = []
+
+    result = FFmpegRunner().execute_plan(plan, progress_callback=events.append)
+
+    assert result.succeeded
+    assert "-progress" not in result.command
+    assert result.progress is not None and result.progress.status == "end"
+    assert result.progress.time_seconds == 1.5
+    assert [event.status for event in events] == ["running", "end"]
+    assert any("legacy stderr fallback" in warning for warning in result.warnings)
+
+
 def test_execution_removes_new_incomplete_output_after_runtime_failure(tmp_path):
     output = tmp_path / "partial.bin"
     code = "from pathlib import Path; import sys; Path(sys.argv[1]).write_bytes(b'partial'); raise SystemExit(7)"

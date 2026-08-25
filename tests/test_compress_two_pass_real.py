@@ -20,7 +20,6 @@ def test_two_pass_compress_real_fixture_hits_target_tolerance(tmp_path):
         str(media["video_mp4_h264_1080p"]),
         str(output_file),
         target_size_kb=target_size_kb,
-        container_overhead_percent=2.0,
         threads=1,
     )
 
@@ -28,7 +27,7 @@ def test_two_pass_compress_real_fixture_hits_target_tolerance(tmp_path):
     assert output_file.exists()
 
     actual_size_kb = output_file.stat().st_size / 1024
-    assert abs(actual_size_kb - target_size_kb) <= target_size_kb * 0.15
+    assert actual_size_kb <= target_size_kb
 
     metadata = FFprobeRunner().probe(str(output_file))
     assert metadata["video"]["codec"] == "h264"

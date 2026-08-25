@@ -925,6 +925,15 @@ def _render_execution_successes(ctx: CLIContext, bundle: CLIExecutionBundle) -> 
     for item in bundle.items:
         if item.result.succeeded and item.output is not None:
             summarize_output_file(ctx, Path(item.output))
+            proof = item.proof
+            if proof["target_size_bytes"] is not None:
+                status = "PASS" if proof["target_met"] else "MISS"
+                echo(
+                    ctx,
+                    "Target-size proof: "
+                    f"{format_bytes(proof['input_size_bytes'])} -> {format_bytes(proof['output_size_bytes'])}; "
+                    f"limit {format_bytes(proof['target_size_bytes'])}; {status}",
+                )
 
 
 def handle_planned_execution(args: argparse.Namespace, ctx: CLIContext) -> int:

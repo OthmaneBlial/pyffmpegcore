@@ -67,6 +67,17 @@ def parse_bitrate(value: str) -> int:
     return result
 
 
+def _human_bytes(value: int) -> str:
+    units = ("B", "KiB", "MiB", "GiB", "TiB")
+    amount = float(value)
+    for unit in units:
+        if amount < 1024 or unit == units[-1]:
+            rendered = f"{amount:.0f}" if unit == "B" else f"{amount:.1f}"
+            return f"{rendered} {unit} ({value} bytes)"
+        amount /= 1024
+    return f"{value} bytes"
+
+
 def _codec_requirements(*values: tuple[str, str | None]) -> tuple[str, ...]:
     return tuple(f"encoder:{codec}" for _kind, codec in values if codec and codec != "copy")
 
@@ -296,7 +307,7 @@ class WorkflowPlanner:
             if available < minimum_video_bytes:
                 raise ValidationError(
                     f"target is not feasible at the {options.minimum_video_bitrate} bps quality floor; "
-                    f"use at least {minimum_target} bytes or shorten/lower the audio bitrate"
+                    f"use at least {_human_bytes(minimum_target)} or shorten/lower the audio bitrate"
                 )
             video_bps = int(available * 8 / duration)
             video_bitrate = f"{video_bps}"

@@ -4,13 +4,23 @@ from __future__ import annotations
 
 import threading
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import TypedDict
 
 from .domain import ExecutionPlan, JobResult, JobStatus, ProgressEvent
 from .planning import WorkflowPlanner
 from .preflight import PreflightEngine, PreflightReport
 from .runner import FFmpegRunner
+
+
+class WorkflowProof(TypedDict):
+    input_size_bytes: int | None
+    output_size_bytes: int | None
+    size_change_bytes: int | None
+    reduction_percent: float | None
+    target_size_bytes: int | None
+    target_met: bool | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -29,10 +39,32 @@ class WorkflowExecution:
     output: str | None
     preflight: PreflightReport
     result: JobResult
+    plan_metadata: dict[str, object] = field(default_factory=dict)
 
     @property
     def succeeded(self) -> bool:
         return self.result.succeeded
+
+    @property
+    def proof(self) -> WorkflowProof:
+        """Return measurable before/after and optional target-size facts."""
+        input_size = Path(self.input).stat().st_size if self.input and Path(self.input).is_file() else None
+        output_size = Path(self.output).stat().st_size if self.output and Path(self.output).is_file() else None
+        target_value = self.plan_metadata.get("target_size_bytes")
+        target_size = target_value if isinstance(target_value, int) and target_value > 0 else None
+        reduction = None
+        if input_size and output_size is not None:
+            reduction = round(((input_size - output_size) / input_size) * 100, 2)
+        return {
+            "input_size_bytes": input_size,
+            "output_size_bytes": output_size,
+            "size_change_bytes": output_size - input_size
+            if input_size is not None and output_size is not None
+            else None,
+            "reduction_percent": reduction,
+            "target_size_bytes": target_size,
+            "target_met": output_size <= target_size if output_size is not None and target_size is not None else None,
+        }
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -40,6 +72,7 @@ class WorkflowExecution:
             "output": self.output,
             "preflight": self.preflight.to_dict(),
             "result": self.result.to_dict(),
+            "proof": self.proof,
         }
 
 
@@ -156,6 +189,7 @@ class WorkflowEngine:
                 output=execution_plan.outputs[0] if execution_plan.outputs else None,
                 preflight=prepared.preflight,
                 result=result,
+                plan_metadata=execution_plan.metadata,
             )
             return WorkflowBatch(prepared=prepared, items=(item,))
 
@@ -180,6 +214,7 @@ class WorkflowEngine:
                     output=item_plan.outputs[0],
                     preflight=preflight,
                     result=result,
+                    plan_metadata=item_plan.metadata,
                 )
             )
         return WorkflowBatch(prepared=prepared, items=tuple(items))
