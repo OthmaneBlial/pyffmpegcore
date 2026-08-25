@@ -158,13 +158,20 @@ jobs:
         with:
           name: release-bundle
           path: release
+      - name: Render versioned release notes
+        run: >-
+          python3 scripts/render_release_notes.py
+          --template ".github/release-notes/$GITHUB_REF_NAME.md"
+          --output release/release-notes.md
+          --tag "$GITHUB_REF_NAME"
+          --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
       - name: Create release with compatibility statement
         env:
           GH_TOKEN: ${{ github.token }}
-        run: >-
-          gh release create "$GITHUB_REF_NAME"
-          release/*.whl release/*.tar.gz release/SHA256SUMS release/artifact-report.json
-          --verify-tag
-          --title "pyffmpegcore $GITHUB_REF_NAME"
-          --generate-notes
-          --notes "Validated from the exact uploaded wheel on Ubuntu, macOS, and Windows with Python 3.10 and 3.14. Reproduce the flagship workflows from https://othmaneblial.github.io/pyffmpegcore/evidence/ and inspect the current compatibility policy at https://othmaneblial.github.io/pyffmpegcore/compatibility/. See the CI artifacts and PyPI provenance attestations for immutable evidence."
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            release/*.whl release/*.tar.gz release/SHA256SUMS release/artifact-report.json \
+            --verify-tag \
+            --title "pyffmpegcore $GITHUB_REF_NAME" \
+            --generate-notes \
+            --notes "$(cat release/release-notes.md)"
