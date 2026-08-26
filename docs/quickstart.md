@@ -2,15 +2,14 @@
 
 This flow needs no repository checkout and no personal media.
 
-## 1. Install the immutable evaluation build
+## 1. Install the public beta
 
 ```bash
-pipx install git+https://github.com/OthmaneBlial/pyffmpegcore.git@04d1e7051295bbcc4fa137c1214bbf340bf5c4c0
+pipx install "pyffmpegcore==0.2.2"
 ```
 
-That full commit SHA identifies the exact source revision. It will be replaced
-by `pipx install pyffmpegcore` only after the first public PyPI artifact passes
-the project's cross-platform install gate.
+Version `0.2.2` is the signed public artifact that passed the project's
+cross-platform install gate. Pinning it keeps this proof reproducible.
 
 ## 2. Diagnose the media stack
 

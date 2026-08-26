@@ -14,6 +14,8 @@
   <a href="https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/action-integration.yml"><img alt="Action integration" src="https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/action-integration.yml/badge.svg"></a>
   <a href="https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/codeql.yml/badge.svg"></a>
   <a href="https://securityscorecards.dev/viewer/?uri=github.com/OthmaneBlial/pyffmpegcore"><img alt="OpenSSF Scorecard" src="https://api.securityscorecards.dev/projects/github.com/OthmaneBlial/pyffmpegcore/badge"></a>
+  <a href="https://pypi.org/project/pyffmpegcore/"><img alt="PyPI version" src="https://img.shields.io/pypi/v/pyffmpegcore"></a>
+  <a href="https://pypi.org/project/pyffmpegcore/"><img alt="Supported Python versions" src="https://img.shields.io/pypi/pyversions/pyffmpegcore"></a>
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/github/license/OthmaneBlial/pyffmpegcore"></a>
   <a href="https://github.com/OthmaneBlial/pyffmpegcore/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/OthmaneBlial/pyffmpegcore?style=flat"></a>
 </p>
@@ -21,6 +23,7 @@
 <p align="center">
   <a href="https://othmaneblial.github.io/pyffmpegcore/"><strong>Explore the docs</strong></a> ·
   <a href="https://othmaneblial.github.io/pyffmpegcore/quickstart/">Five-minute proof</a> ·
+  <a href="https://othmaneblial.github.io/pyffmpegcore/terminal-demo/">63-second terminal proof</a> ·
   <a href="https://othmaneblial.github.io/pyffmpegcore/recipes/">Task-first recipes</a> ·
   <a href="https://othmaneblial.github.io/pyffmpegcore/evidence/">Measured evidence</a> ·
   <a href="SECURITY.md">Security</a>
@@ -41,12 +44,10 @@ input ──> preflight ──> deterministic plan ──> run ──> receipt �
 
 ## Install and prove one useful result
 
-Until the first PyPI release is public, install the latest validated source
-revision in an isolated environment. The full SHA is intentional—no mutable
-`main` install is presented as a release:
+Install the exact public beta from PyPI in an isolated environment:
 
 ```bash
-pipx install git+https://github.com/OthmaneBlial/pyffmpegcore.git@04d1e7051295bbcc4fa137c1214bbf340bf5c4c0
+pipx install "pyffmpegcore==0.2.2"
 pyffmpegcore doctor
 pyffmpegcore smoke-test
 ```
@@ -54,6 +55,17 @@ pyffmpegcore smoke-test
 `doctor` identifies the real binaries and indexed capabilities. `smoke-test`
 generates synthetic media, performs a complete transform, probes the result,
 and cleans up—no checkout and no personal media required.
+
+## Watch the real 63-second proof
+
+This is a validated terminal recording, not edited sample output. It installs
+`0.2.1` from public PyPI, runs `doctor`, creates synthetic media, explains the
+exact plan, shows structured progress, probes the output, and validates the
+privacy-redacted receipt.
+
+- [Download the asciicast](docs/assets/terminal-demo-v0.2.1.cast)
+- [Read the accessible transcript](docs/assets/terminal-demo-v0.2.1.txt)
+- [Open the annotated proof page](https://othmaneblial.github.io/pyffmpegcore/terminal-demo/)
 
 Now turn a camera/editor MOV into a conservative web MP4. Inspect first; write
 only when the plan is acceptable:
@@ -236,10 +248,16 @@ requirements before mutation.
 - [Support and triage expectations](SUPPORT.md)
 - [Changelog](CHANGELOG.md)
 
-The project is pre-PyPI until Trusted Publishing succeeds. Source installation
-is useful for evaluation, but it is not a released artifact. No PyPI badge,
-download claim, or immutable release claim appears before the public endpoints
-and cross-platform install gate pass.
+The public `0.2.2` beta was built once from a protected SSH-signed tag, tested
+as the exact wheel on Linux, macOS, and Windows, published without a long-lived
+PyPI token, and reinstalled from the public index before the matching GitHub
+Release was created.
+
+- [PyPI package and files](https://pypi.org/project/pyffmpegcore/0.2.2/)
+- [Signed GitHub Release, checksums, and artifact report](https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.2.2)
+- [Exact release workflow evidence](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/release.yml)
+- [Wheel Trusted Publisher attestation](https://pypi.org/integrity/pyffmpegcore/0.2.2/pyffmpegcore-0.2.2-py3-none-any.whl/provenance)
+- [Source distribution Trusted Publisher attestation](https://pypi.org/integrity/pyffmpegcore/0.2.2/pyffmpegcore-0.2.2.tar.gz/provenance)
 
 ## Help make media automation less fragile
 

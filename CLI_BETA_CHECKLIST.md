@@ -24,7 +24,7 @@ The beta is accepted from immutable CI and release evidence, not a copied local 
 After publication, a clean machine must pass:
 
 ```bash
-pipx install pyffmpegcore
+pipx install "pyffmpegcore==0.2.2"
 pyffmpegcore --version
 pyffmpegcore doctor
 pyffmpegcore smoke-test

@@ -19,8 +19,8 @@ path, so this boundary cannot drift silently.
 
 The install paths built on top of that are:
 
-- `pipx install git+https://github.com/OthmaneBlial/pyffmpegcore.git@main` until PyPI publication
-- `python -m pip install --user git+https://github.com/OthmaneBlial/pyffmpegcore.git@main` until PyPI publication
+- `pipx install "pyffmpegcore==0.2.2"`
+- `python -m pip install --user "pyffmpegcore==0.2.2"`
 - `./install.sh`
 - `.\install.ps1`
 

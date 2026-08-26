@@ -10,10 +10,10 @@ Install FFmpeg using the package source you already trust for your operating sys
 
 ## Bash or zsh
 
-Until PyPI publication is verified, install the exact validated revision:
+Install the exact validated public release:
 
 ```bash
-pipx install git+https://github.com/OthmaneBlial/pyffmpegcore.git@04d1e7051295bbcc4fa137c1214bbf340bf5c4c0
+pipx install "pyffmpegcore==0.2.2"
 pyffmpegcore --version
 pyffmpegcore doctor
 pyffmpegcore smoke-test
@@ -21,17 +21,17 @@ pyffmpegcore smoke-test
 
 A repository checkout also provides `./install.sh`.
 
-`uv` users can install the same source revision as an isolated tool:
+`uv` users can install the same release as an isolated tool:
 
 ```bash
-uv tool install "pyffmpegcore @ git+https://github.com/OthmaneBlial/pyffmpegcore.git@04d1e7051295bbcc4fa137c1214bbf340bf5c4c0"
+uv tool install "pyffmpegcore==0.2.2"
 pyffmpegcore smoke-test
 ```
 
 ## PowerShell
 
 ```powershell
-pipx install git+https://github.com/OthmaneBlial/pyffmpegcore.git@04d1e7051295bbcc4fa137c1214bbf340bf5c4c0
+pipx install "pyffmpegcore==0.2.2"
 pyffmpegcore --version
 pyffmpegcore doctor
 pyffmpegcore smoke-test
@@ -41,14 +41,14 @@ From a checkout, use `./install.ps1`; do not run the POSIX shell installer on Wi
 
 ## Python project dependency
 
-For evaluation before the first public package release:
+For a Python project dependency:
 
 ```bash
-python -m pip install "git+https://github.com/OthmaneBlial/pyffmpegcore.git@04d1e7051295bbcc4fa137c1214bbf340bf5c4c0"
+python -m pip install "pyffmpegcore==0.2.2"
 ```
 
-The full commit SHA is deliberate: it makes the evaluation build reproducible.
-Switch to a released version constraint only after the PyPI endpoint is healthy.
+Use an appropriate compatible-release constraint after validating future
+versions against your own media workflows.
 
 There is no Homebrew tap today. The project will add and maintain one only after
 public demand justifies another release channel; Homebrew can still install the

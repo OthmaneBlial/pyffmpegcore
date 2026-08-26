@@ -13,15 +13,15 @@ posting; community policies change. The supporting research is in
 
 Do not announce a PyPI release until every item below is true:
 
-- [ ] `https://pypi.org/project/pyffmpegcore/` resolves publicly.
-- [ ] `pipx install "pyffmpegcore==0.2.1"` succeeds in a clean environment.
-- [ ] `pyffmpegcore doctor` and `pyffmpegcore smoke-test` pass after that install.
-- [ ] The signed `v0.2.1` tag and matching GitHub Release are public.
-- [ ] The release page exposes checksums, compatibility evidence, and PyPI
+- [x] `https://pypi.org/project/pyffmpegcore/` resolves publicly.
+- [x] `pipx install "pyffmpegcore==0.2.2"` succeeds in a clean environment.
+- [x] `pyffmpegcore doctor` and `pyffmpegcore smoke-test` pass after that install.
+- [x] The signed `v0.2.2` tag and matching GitHub Release are public.
+- [x] The release page exposes checksums, compatibility evidence, and PyPI
   attestations.
-- [ ] Linux, macOS, and Windows exact-artifact release jobs are green.
-- [ ] The real terminal demo uses the public artifact rather than the checkout.
-- [ ] Every link and command in the selected announcement copy is rechecked.
+- [x] Linux, macOS, and Windows exact-artifact release jobs are green.
+- [x] The real terminal demo uses the public artifact rather than the checkout.
+- [x] Every link and command in the selected announcement copy is rechecked.
 
 Until then, the repository may be described only as a **source beta**, using
 the immutable source-install command already published in the README.
@@ -37,7 +37,7 @@ Lead with the operational problem, not a feature inventory:
 Then let readers challenge that statement without personal media:
 
 ```bash
-pipx install "pyffmpegcore==0.2.1"
+pipx install "pyffmpegcore==0.2.2"
 pyffmpegcore doctor
 pyffmpegcore smoke-test
 ```
@@ -52,8 +52,8 @@ Use these source-of-truth links in every announcement:
 - five-minute proof: <https://othmaneblial.github.io/pyffmpegcore/quickstart/>
 - measured fixture evidence: <https://othmaneblial.github.io/pyffmpegcore/evidence/>
 - compatibility: <https://othmaneblial.github.io/pyffmpegcore/COMPATIBILITY/>
-- release: `https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.2.1`
-- package: `https://pypi.org/project/pyffmpegcore/0.2.1/`
+- release: `https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.2.2`
+- package: `https://pypi.org/project/pyffmpegcore/0.2.2/`
 
 ## Release-day order
 
@@ -79,13 +79,13 @@ exists for Python-related announcements. Posting requires a python.org account.
 **Subject**
 
 ```text
-[ANN] PyFFmpegCore 0.2.1 beta - preflight, plans, and receipts for FFmpeg
+[ANN] PyFFmpegCore 0.2.2 beta - preflight, plans, and receipts for FFmpeg
 ```
 
 **Body draft — maintainer must verify and personalize before sending**
 
 ```text
-I maintain PyFFmpegCore, and version 0.2.1 is its first public beta.
+I maintain PyFFmpegCore, and version 0.2.2 is its public beta.
 
 PyFFmpegCore is an MIT-licensed Python library and CLI for maintained FFmpeg
 workflows. It checks the installed FFmpeg capabilities before mutation, exposes
@@ -94,7 +94,7 @@ and can emit a privacy-redacted run receipt.
 
 Try the no-personal-media proof:
 
-    pipx install "pyffmpegcore==0.2.1"
+    pipx install "pyffmpegcore==0.2.2"
     pyffmpegcore doctor
     pyffmpegcore smoke-test
 
@@ -104,7 +104,7 @@ or packet/frame API.
 
 Source: https://github.com/OthmaneBlial/pyffmpegcore
 Quickstart: https://othmaneblial.github.io/pyffmpegcore/quickstart/
-Release: https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.2.1
+Release: https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.2.2
 Compatibility: https://othmaneblial.github.io/pyffmpegcore/COMPATIBILITY/
 
 Feedback on clean installation, capability diagnostics, and receipt fields is
@@ -119,7 +119,7 @@ thread. Do not create a separate promotional post.
 
 ```text
 Title: PyFFmpegCore
-First release: <actual YYYY-MM-DD>
+First release: 2026-08-26
 URL: https://github.com/OthmaneBlial/pyffmpegcore
 Type: Open-source Python library and CLI
 Description: PyFFmpegCore is a local FFmpeg task runner that checks the actual
@@ -143,7 +143,7 @@ Current r/Python rules route showcases into the monthly Showcase Thread rather
 than standalone submissions. Locate the current thread on posting day.
 
 ```text
-PyFFmpegCore 0.2.1 beta - inspect an FFmpeg plan before it writes, then keep a receipt
+PyFFmpegCore 0.2.2 beta - inspect an FFmpeg plan before it writes, then keep a receipt
 
 I built and maintain PyFFmpegCore.
 
@@ -158,7 +158,7 @@ synthetic media.
 Target Audience
 
 Python developers maintaining media scripts, repeatable local jobs, or CI
-pipelines. Version 0.2.1 is a beta; FFmpeg and FFprobe must be installed
+pipelines. Version 0.2.2 is a beta; FFmpeg and FFprobe must be installed
 separately.
 
 Comparison

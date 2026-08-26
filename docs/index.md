@@ -17,6 +17,7 @@ hide:
       </p>
       <div class="pfc-actions">
         <a class="pfc-button" href="quickstart/">Prove it in five minutes</a>
+        <a class="pfc-button pfc-button--ghost" href="terminal-demo/">Watch the 63-second proof</a>
         <a class="pfc-button pfc-button--ghost" href="recipes/">Pick a real recipe</a>
       </div>
     </div>
@@ -37,7 +38,7 @@ hide:
           <p class="pfc-output--muted">Verified thumbnail: 160x90</p>
           <br>
           <p class="pfc-output--cyan">No personal media. Artifacts cleaned.</p>
-          <button class="pfc-copy" type="button" data-pfc-copy aria-label="Copy the immutable evaluation install command" aria-live="polite">Copy immutable install</button>
+          <button class="pfc-copy" type="button" data-pfc-copy aria-label="Copy the public PyPI install command" aria-live="polite">Copy public install</button>
         </div>
       </div>
     </div>
@@ -49,7 +50,20 @@ hide:
     <div class="pfc-metric"><strong>3</strong><span class="pfc-metric__label">operating systems</span></div>
     <div class="pfc-metric"><strong>5</strong><span class="pfc-metric__label">Python versions</span></div>
     <div class="pfc-metric"><strong>0</strong><span class="pfc-metric__label">default telemetry</span></div>
-    <div class="pfc-metric"><strong>1</strong><span class="pfc-metric__label">shared typed engine</span></div>
+    <div class="pfc-metric"><strong>0.2.2</strong><span class="pfc-metric__label">signed public beta</span></div>
+  </section>
+
+  <section class="pfc-live-proof" aria-labelledby="live-proof-title">
+    <div class="pfc-live-proof__signal" aria-hidden="true"><span>63.0</span><small>seconds</small></div>
+    <div class="pfc-live-proof__copy">
+      <p class="pfc-kicker">Captured from public PyPI / no staged output</p>
+      <h2 id="live-proof-title">Watch the whole trust chain run.</h2>
+      <p>Fresh install. Real capability scan. Synthetic smoke test. Explained FFmpeg plan. Structured progress. Probed output. Validated receipt.</p>
+      <div class="pfc-actions">
+        <a class="pfc-button" href="terminal-demo/">Open the terminal proof</a>
+        <a class="pfc-button pfc-button--ghost" href="https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.2.2">Inspect the signed release</a>
+      </div>
+    </div>
   </section>
 
   <section class="pfc-section" aria-labelledby="flow-title">

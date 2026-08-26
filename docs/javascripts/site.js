@@ -1,8 +1,7 @@
 (function () {
   "use strict";
 
-  const installCommand =
-    "pipx install git+https://github.com/OthmaneBlial/pyffmpegcore.git@04d1e7051295bbcc4fa137c1214bbf340bf5c4c0";
+  const installCommand = 'pipx install "pyffmpegcore==0.2.2"';
 
   async function copyText(value) {
     if (window.navigator?.clipboard?.writeText) {

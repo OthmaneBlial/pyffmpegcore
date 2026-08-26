@@ -15,7 +15,7 @@ show_command() {
 
 printf '\033[1;35mPyFFmpegCore %s — public artifact to privacy-safe proof\033[0m\n' "$demo_version"
 printf 'Everything below runs now in this terminal; the media is synthetic and stays local.\n'
-pause_after 3
+pause_after 6
 
 show_command "python3 -m venv demo-env"
 python3 -m venv demo-env
@@ -64,3 +64,4 @@ pause_after 4
 printf '\n\033[1;32mPASS\033[0m — public install, preflight, plan, progress, output, and receipt all verified.\n'
 printf 'No upload. No telemetry. Content hashing stayed off.\n'
 pause_after 4
+printf 'Recording complete — replay the commands against any local media file.\n'
