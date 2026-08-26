@@ -7,7 +7,7 @@ metadata extraction, and progress tracking around local FFmpeg binaries.
 Copyright (c) 2025 Othmane BLIAL
 """
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 from .batch import (
     BatchEvent,

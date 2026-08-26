@@ -21,10 +21,10 @@ Only a maintainer with repository and PyPI project control may publish a release
    ```bash
    git -c gpg.format=ssh \
      -c user.signingkey="$HOME/.ssh/id_ed25519" \
-     tag -s v0.2.0 -m "pyffmpegcore 0.2.0"
+     tag -s v0.2.1 -m "pyffmpegcore 0.2.1"
    git -c gpg.format=ssh \
      -c gpg.ssh.allowedSignersFile=.github/allowed_signers \
-     tag --verify v0.2.0
+     tag --verify v0.2.1
    ```
 
 5. Push the tag. The workflow builds once, tests the exact wheel on the supported OS/Python anchors, attests it, and publishes it through OIDC.
@@ -32,7 +32,7 @@ Only a maintainer with repository and PyPI project control may publish a release
 7. Record the public terminal proof only after those endpoints are healthy:
 
    ```bash
-   scripts/record_terminal_demo.sh docs/assets/terminal-demo-v0.2.0.cast 0.2.0
+   scripts/record_terminal_demo.sh docs/assets/terminal-demo-v0.2.1.cast 0.2.1
    ```
 
    The recorder installs the exact public version in a fresh environment, captures a real PTY session, enforces a 60–90 second duration and required proof steps, rejects private home paths, and writes an accessible text transcript beside the cast. Never hand-edit the recording to invent output.

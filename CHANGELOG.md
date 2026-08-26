@@ -4,6 +4,8 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-08-26
+
 ### Added
 
 - Deterministic, locally generated audio, video, image, and subtitle fixtures.
@@ -47,6 +49,8 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- Release verification now restores the annotated tag object after checkout
+  and proves that the verified tag resolves to the exact workflow commit.
 - Subtitle and waveform commands work with current FFmpeg filter syntax where the required capabilities are available.
 - Fixture validation no longer depends on mutable third-party downloads.
 - Managed FFmpeg jobs disable interactive standard input so background jobs do
@@ -55,4 +59,5 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
   non-Latin metadata from killing Windows pipe-drain threads and stalling the
   media process.
 
-[Unreleased]: https://github.com/OthmaneBlial/pyffmpegcore/commits/main
+[Unreleased]: https://github.com/OthmaneBlial/pyffmpegcore/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.2.1

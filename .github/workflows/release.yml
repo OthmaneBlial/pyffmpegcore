@@ -29,13 +29,19 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-      - name: Require a signed tag for publication
+      - name: Restore the remote annotated tag object
         if: github.event_name == 'push'
         run: >-
-          git
-          -c gpg.format=ssh
-          -c gpg.ssh.allowedSignersFile=.github/allowed_signers
-          tag --verify "$GITHUB_REF_NAME"
+          git fetch --force --no-tags origin
+          "refs/tags/$GITHUB_REF_NAME:refs/tags/$GITHUB_REF_NAME"
+      - name: Require a signed tag for publication
+        if: github.event_name == 'push'
+        run: |
+          git \
+            -c gpg.format=ssh \
+            -c gpg.ssh.allowedSignersFile=.github/allowed_signers \
+            tag --verify "$GITHUB_REF_NAME"
+          test "$(git rev-list -n 1 "$GITHUB_REF_NAME")" = "$GITHUB_SHA"
       - name: Verify tag and runtime versions agree
         if: github.event_name == 'push'
         run: python -c "import pyffmpegcore,os; expected='v'+pyffmpegcore.__version__; actual=os.environ['GITHUB_REF_NAME']; assert actual == expected, f'{actual} != {expected}'"
