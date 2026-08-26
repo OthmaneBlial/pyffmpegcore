@@ -36,5 +36,11 @@ def test_recipe_evidence_matches_receipts_and_contains_no_private_paths():
 
 def test_flagship_recipe_commands_match_the_cli_contract():
     podcast = (REPO_ROOT / "docs" / "recipes" / "podcast.md").read_text(encoding="utf-8")
+    preserve = (REPO_ROOT / "docs" / "recipes" / "preserve-streams.md").read_text(encoding="utf-8")
+    recipe_index = (REPO_ROOT / "docs" / "recipes" / "index.md").read_text(encoding="utf-8")
     assert "--bitrate" not in podcast
     assert "--method loudnorm" in podcast
+    assert "--preserve-all-streams" in preserve
+    assert "--video-codec" not in preserve
+    assert "superuser.com/questions/1513289" in preserve
+    assert "stackoverflow.com/questions/29082422" in recipe_index

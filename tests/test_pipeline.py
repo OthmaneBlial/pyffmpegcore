@@ -60,6 +60,31 @@ def test_pipeline_compiles_topologically_and_renders_three_graph_formats(tmp_pat
     assert '"web" -> "thumbnail"' in pipeline.graph("dot")
 
 
+def test_pipeline_convert_step_can_preserve_every_stream(tmp_path):
+    source = tmp_path / "source.mkv"
+    source.write_bytes(b"media")
+    document = {
+        "schema_version": "1.0",
+        "name": "preserve_tracks",
+        "steps": [
+            {
+                "id": "remux",
+                "workflow": "convert",
+                "input": str(source),
+                "output": "preserved.mkv",
+                "options": {"preserve_all_streams": True},
+            }
+        ],
+    }
+
+    pipeline = PipelineCompiler().compile(PipelineSpec.from_dict(document, base_dir=tmp_path))
+    command = pipeline.steps[0].plan.command
+
+    assert command[command.index("-map") + 1] == "0"
+    assert command[command.index("-c") + 1] == "copy"
+    assert pipeline.steps[0].plan.metadata["stream_policy"] == "preserve-all"
+
+
 def test_pipeline_rejects_raw_commands_cycles_collisions_and_unknown_options(tmp_path):
     document = _document("source.mkv")
     document["steps"][0]["command"] = "ffmpeg -i input output"

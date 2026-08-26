@@ -440,6 +440,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="Drop video and keep only the audio stream.",
     )
     convert_parser.add_argument(
+        "--preserve-all-streams",
+        action="store_true",
+        help=(
+            "Map and stream-copy every input track, attachment, and data stream without re-encoding; "
+            "the output container must support them."
+        ),
+    )
+    convert_parser.add_argument(
         "--video-codec",
         help="Video codec to use, for example libx264.",
     )

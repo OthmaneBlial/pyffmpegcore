@@ -38,7 +38,7 @@ function Resolve-PackageSpec {
         return $env:PYFFMPEGCORE_PACKAGE_SPEC
     }
 
-    return "git+https://github.com/OthmaneBlial/pyffmpegcore.git@main"
+    return "pyffmpegcore==0.2.2"
 }
 
 function Invoke-PipxInstall {

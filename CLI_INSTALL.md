@@ -15,7 +15,7 @@ Install FFmpeg first using your normal OS package manager or binary installer.
 `pipx` is the cleanest option for most CLI users because it installs the app in an isolated environment but still exposes the command globally.
 
 ```bash
-pipx install git+https://github.com/OthmaneBlial/pyffmpegcore.git@main
+pipx install "pyffmpegcore==0.2.2"
 pyffmpegcore --version
 pyffmpegcore doctor
 pyffmpegcore smoke-test
@@ -42,21 +42,20 @@ PYFFMPEGCORE_PACKAGE_SPEC=. ./install.sh --method pip
 If you prefer a user-level Python install:
 
 ```bash
-python -m pip install --user git+https://github.com/OthmaneBlial/pyffmpegcore.git@main
+python -m pip install --user "pyffmpegcore==0.2.2"
 pyffmpegcore --version
 ```
 
 ## Install With `uv`
 
 ```bash
-uv tool install "pyffmpegcore @ git+https://github.com/OthmaneBlial/pyffmpegcore.git@main"
+uv tool install "pyffmpegcore==0.2.2"
 pyffmpegcore doctor
 pyffmpegcore smoke-test
 ```
 
-Use a commit SHA instead of `main` for a reproducible pre-release install. A
-Homebrew tap is intentionally deferred until public demand supports its ongoing
-maintenance.
+Pin the public version for reproducible installation. A Homebrew tap is
+intentionally deferred until public demand supports its ongoing maintenance.
 
 ## Install From A Local Checkout
 

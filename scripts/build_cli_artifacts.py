@@ -44,6 +44,7 @@ SDIST_ALLOWED_ROOT_ENTRIES = frozenset(
         "examples",
         "install.ps1",
         "install.sh",
+        "LAUNCH.md",
         "pipelines",
         "pyffmpegcore",
         "pyffmpegcore.egg-info",

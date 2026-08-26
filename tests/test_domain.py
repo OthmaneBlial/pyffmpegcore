@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import subprocess
 import sys
 import threading
 from io import StringIO
@@ -222,6 +223,27 @@ def test_execution_emits_typed_structured_progress(tmp_path):
     assert events == [result.progress]
 
 
+def test_execution_replaces_invalid_utf8_without_stalling_pipe_drains(tmp_path):
+    output = tmp_path / "unicode-output.txt"
+    code = (
+        "from pathlib import Path; import sys; "
+        "sys.stderr.buffer.write(b'bad-byte: \\x9d\\n'); sys.stderr.flush(); "
+        f"Path({str(output)!r}).write_text('done')"
+    )
+    plan = ExecutionPlan(
+        workflow="test/unicode-stderr",
+        command=(sys.executable, "-c", code),
+        inputs=(),
+        outputs=(str(output),),
+    )
+
+    result = FFmpegRunner().execute_plan(plan)
+
+    assert result.succeeded
+    assert result.stderr is not None
+    assert "bad-byte: �" in result.stderr
+
+
 def test_execution_falls_back_only_when_structured_progress_is_unsupported():
     code = (
         "import sys; "
@@ -272,7 +294,13 @@ def test_keyboard_interrupt_terminates_child_as_cancelled(monkeypatch):
     process.stderr = StringIO("")
     process.poll.return_value = None
     process.returncode = -15
-    monkeypatch.setattr("pyffmpegcore.executor.subprocess.Popen", lambda *_args, **_kwargs: process)
+    popen_kwargs = {}
+
+    def open_process(*_args, **kwargs):
+        popen_kwargs.update(kwargs)
+        return process
+
+    monkeypatch.setattr("pyffmpegcore.executor.subprocess.Popen", open_process)
 
     def interrupt(_seconds):
         raise KeyboardInterrupt
@@ -288,5 +316,8 @@ def test_keyboard_interrupt_terminates_child_as_cancelled(monkeypatch):
 
     assert outcome.status is JobStatus.CANCELLED
     assert outcome.category == "cancelled"
+    assert popen_kwargs["stdin"] is subprocess.DEVNULL
+    assert popen_kwargs["encoding"] == "utf-8"
+    assert popen_kwargs["errors"] == "replace"
     assert "cancelled" in outcome.stderr
     process.terminate.assert_called_once()

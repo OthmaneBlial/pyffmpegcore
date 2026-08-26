@@ -2,11 +2,14 @@
 
 This flow needs no repository checkout and no personal media.
 
-## 1. Install the current evaluation build
+## 1. Install the public beta
 
 ```bash
-pipx install git+https://github.com/OthmaneBlial/pyffmpegcore.git@main
+pipx install "pyffmpegcore==0.2.2"
 ```
+
+Version `0.2.2` is the signed public artifact that passed the project's
+cross-platform install gate. Pinning it keeps this proof reproducible.
 
 ## 2. Diagnose the media stack
 

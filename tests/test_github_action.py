@@ -80,6 +80,8 @@ def test_action_metadata_uses_immutable_image_and_pinned_dependencies():
     digest_match = re.search(r"ghcr\.io/othmaneblial/pyffmpegcore@sha256:([0-9a-f]{64})", metadata)
     assert digest_match is not None
     assert set(digest_match.group(1)) != {"0"}
-    assert digest_match.group(1) == "d251ae8b20430cd671f64c4007998ce31d21e503ff06f9a309c7f33f6b8dbf3e"
+    assert digest_match.group(1) == "c51cffe123e254650337e8973db4ab01587dbaa8ad08df77fee3c1ca3c08e5ca"
+    integration_workflow = (REPO_ROOT / ".github" / "workflows" / "action-integration.yml").read_text(encoding="utf-8")
+    assert f"ghcr.io/othmaneblial/pyffmpegcore@sha256:{digest_match.group(1)}" in integration_workflow
     assert "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02" in metadata
     assert "include-hidden-files: true" in metadata

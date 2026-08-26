@@ -4,6 +4,30 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-08-26
+
+### Added
+
+- A validated 63-second terminal recording and accessible transcript captured
+  from the first public PyPI artifact.
+- Direct PyPI Integrity API links for the wheel and source-distribution
+  Trusted Publisher attestations.
+
+### Changed
+
+- Public installation guidance now uses the exact PyPI release instead of a
+  source-repository revision.
+- The README and documentation site now lead with the signed public release
+  and its cross-platform installation evidence.
+
+### Fixed
+
+- The terminal recorder now emits a final timestamped line so fast machines
+  still satisfy the documented 60–90 second evidence window.
+- The packaged long description no longer describes the project as pre-PyPI.
+
+## [0.2.1] - 2026-08-26
+
 ### Added
 
 - Deterministic, locally generated audio, video, image, and subtitle fixtures.
@@ -30,6 +54,11 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 - A versioned overhead benchmark for startup, exact-plan processing, package size, and pipeline-cache behavior, plus documented pipx and uv tool installs.
 - Dated, privacy-redacted before/after evidence for the web-video, exact-size, and podcast flagship recipes.
 - Technical notes on capability preflight, exact-size budgeting, deterministic plans, and privacy-safe receipts.
+- `convert --preserve-all-streams` for explicit lossless remuxing of every
+  video, audio, subtitle, attachment, and data stream, with conflicting
+  re-encoding options rejected before execution.
+- Source-backed recipe and troubleshooting paths for recurring web-video,
+  target-size, stream-selection, and subprocess-stall questions.
 
 ### Changed
 
@@ -42,7 +71,16 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- Release verification now restores the annotated tag object after checkout
+  and proves that the verified tag resolves to the exact workflow commit.
 - Subtitle and waveform commands work with current FFmpeg filter syntax where the required capabilities are available.
 - Fixture validation no longer depends on mutable third-party downloads.
+- Managed FFmpeg jobs disable interactive standard input so background jobs do
+  not poll the console.
+- FFmpeg output decodes explicitly as UTF-8 with replacement, preventing
+  non-Latin metadata from killing Windows pipe-drain threads and stalling the
+  media process.
 
-[Unreleased]: https://github.com/OthmaneBlial/pyffmpegcore/commits/main
+[Unreleased]: https://github.com/OthmaneBlial/pyffmpegcore/compare/v0.2.2...HEAD
+[0.2.2]: https://github.com/OthmaneBlial/pyffmpegcore/compare/v0.2.1...v0.2.2
+[0.2.1]: https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.2.1

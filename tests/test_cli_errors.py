@@ -126,6 +126,27 @@ def test_planner_value_errors_return_validation_category(tmp_path, arguments):
     assert main(argv) == 4
 
 
+def test_preserve_all_streams_rejects_explicit_pixel_format(tmp_path, capsys):
+    input_file = tmp_path / "input.mkv"
+    input_file.write_bytes(b"fixture")
+
+    returncode = main(
+        [
+            "convert",
+            "--input",
+            str(input_file),
+            "--output",
+            str(tmp_path / "output.mkv"),
+            "--preserve-all-streams",
+            "--pix-fmt",
+            "yuv420p",
+        ]
+    )
+
+    assert returncode == 4
+    assert "cannot be combined with --pix-fmt" in capsys.readouterr().err
+
+
 @pytest.mark.real_media
 def test_cli_partial_success_exit_code_for_images(tmp_path):
     """

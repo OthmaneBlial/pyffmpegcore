@@ -1,0 +1,188 @@
+PyFFmpegCore 0.2.1 — public artifact to privacy-safe proof
+
+Everything below runs now in this terminal; the media is synthetic and stays local.
+
+
+
+$ python3 -m venv demo-env
+
+
+
+$ demo-env/bin/python -m pip install pyffmpegcore==0.2.1
+
+Collecting pyffmpegcore==0.2.1
+
+  Using cached pyffmpegcore-0.2.1-py3-none-any.whl.metadata (12 kB)
+
+Using cached pyffmpegcore-0.2.1-py3-none-any.whl (86 kB)
+
+Installing collected packages: pyffmpegcore
+
+Successfully installed pyffmpegcore-0.2.1
+
+
+
+$ demo-env/bin/pyffmpegcore --version
+
+pyffmpegcore 0.2.1
+
+
+
+$ demo-env/bin/pyffmpegcore doctor
+
+PyFFmpegCore CLI 0.2.1
+
+Platform: Darwin 25.6.0 (arm64)
+
+Python: 3.14.6 (/private/tmp/pyffmpegcore-terminal-demo.ZFhIZF/demo-env/bin/python)
+
+ffmpeg: OK (/opt/homebrew/bin/ffmpeg)
+
+  ffmpeg version 9.0.1 Copyright (c) 2000-2026 the FFmpeg developers
+
+ffprobe: OK (/opt/homebrew/bin/ffprobe)
+
+  ffprobe version 9.0.1 Copyright (c) 2007-2026 the FFmpeg developers
+
+Capabilities: 190 encoders, 527 decoders, 481 filters, 184 muxers, 365 demuxers
+
+Protocols: 37 input, 30 output
+
+Subtitles: encoders=ass,mov_text,srt,webvtt, burn-filter=no
+
+Hardware acceleration: videotoolbox
+
+Optional core filters missing: drawtext, subtitles
+
+
+
+$ demo-env/bin/pyffmpegcore smoke-test --keep-dir media
+
+Smoke test: PASS
+
+Synthetic input: mpeg4 320x180 (64.8 KB)
+
+Verified thumbnail: 160x90 (3.6 KB)
+
+Artifacts: /private/tmp/pyffmpegcore-terminal-demo.ZFhIZF/media
+
+
+
+Make the one-second synthetic input longer so structured progress is visible.
+
+
+
+$ ffmpeg -stream_loop 59 -i media/synthetic-input.mp4 -t 60 -c copy media/demo-input.mp4
+
+
+
+$ demo-env/bin/pyffmpegcore profile run web/mp4-compatible --input media/demo-input.mp4 --output media/web.mp4 --explain
+
+Plan 1.0 — convert
+
+Overwrite policy: refuse
+
+Timeout: none
+
+Inputs:
+
+  /private/tmp/pyffmpegcore-terminal-demo.ZFhIZF/media/demo-input.mp4
+
+Expected outputs:
+
+  /private/tmp/pyffmpegcore-terminal-demo.ZFhIZF/media/web.mp4
+
+Argument vectors (display only; no shell is used):
+
+  1. convert: ffmpeg -n -nostdin -progress pipe:1 -nostats -i /private/tmp/pyffmpegcore-terminal-demo.ZFhIZF/media/demo-input.mp4 -map '0:v:0?' -map '0:a:0?' -map_metadata 0 -map_chapters 0 -c:v libx264 -c:a aac -pix_fmt yuv420p -movflags +faststart /private/tmp/pyffmpegcore-terminal-demo.ZFhIZF/media/web.mp4
+
+Selected streams:
+
+  video
+
+  audio
+
+Operations and trade-offs:
+
+  apply profile web/mp4-compatible v1
+
+  select the first video and first audio streams when present
+
+  preserve compatible container metadata and chapters
+
+  video codec: libx264
+
+  audio codec: aac
+
+  pixel format: yuv420p
+
+  hardware acceleration: none; use the software path
+
+Required capabilities:
+
+  encoder:libx264
+
+  encoder:aac
+
+  muxer:mp4
+
+
+
+Preflight PASS — convert
+
+[OK] ffmpeg: Executable: /opt/homebrew/bin/ffmpeg
+
+[OK] capability/encoder:libx264: Available
+
+[OK] capability/encoder:aac: Available
+
+[OK] capability/muxer:mp4: Available
+
+[OK] input//private/tmp/pyffmpegcore-terminal-demo.ZFhIZF/media/demo-input.mp4: Input is readable
+
+[OK] output//private/tmp/pyffmpegcore-terminal-demo.ZFhIZF/media/web.mp4: Output parent is writable: /private/tmp/pyffmpegcore-terminal-demo.ZFhIZF/media
+
+[OK] collision//private/tmp/pyffmpegcore-terminal-demo.ZFhIZF/media/web.mp4: No blocking output collision
+
+[OK] disk//private/tmp/pyffmpegcore-terminal-demo.ZFhIZF/media/web.mp4: Free space 5554302976 bytes; estimate 3802982
+
+[OK] container//private/tmp/pyffmpegcore-terminal-demo.ZFhIZF/media/web.mp4: Muxer available: mp4
+
+
+
+$ demo-env/bin/pyffmpegcore profile run web/mp4-compatible --input media/demo-input.mp4 --output media/web.mp4 --receipt media/web.receipt.json
+
+
+Progress:  32.9% (19.73s)
+Progress:  60.2% (36.11s)
+Progress:  86.4% (51.83s)
+Progress: 100% complete
+
+Output: /private/tmp/pyffmpegcore-terminal-demo.ZFhIZF/media/web.mp4
+
+Container: mov,mp4,m4a,3gp,3g2,mj2
+
+Duration: 60.02 seconds
+
+Size: 2.5 MB
+
+Video: h264 320x180
+
+Audio: aac
+
+Receipt: /private/tmp/pyffmpegcore-terminal-demo.ZFhIZF/media/web.receipt.json
+
+
+
+$ demo-env/bin/pyffmpegcore receipt validate media/web.receipt.json
+
+Valid receipt: schema 1.0, 1 item(s)
+
+
+
+PASS — public install, preflight, plan, progress, output, and receipt all verified.
+
+No upload. No telemetry. Content hashing stayed off.
+
+Recording complete — replay the commands against any local media file.
+

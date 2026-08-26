@@ -18,7 +18,7 @@ def test_readme_is_cli_first():
     assert "safe, explainable FFmpeg task runner" in readme
     assert readme.index("## Install and prove one useful result") < readme.index("## Python API")
     assert re.search(
-        r"pipx install (?:pyffmpegcore|git\+https://github\.com/OthmaneBlial/pyffmpegcore\.git@[0-9a-f]{40})",
+        r'pipx install (?:"pyffmpegcore==[0-9]+\.[0-9]+\.[0-9]+"|pyffmpegcore|git\+https://github\.com/OthmaneBlial/pyffmpegcore\.git@[0-9a-f]{40})',
         readme,
     )
     assert "pyffmpegcore.git@main" not in readme

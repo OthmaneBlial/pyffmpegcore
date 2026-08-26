@@ -129,6 +129,7 @@ class FFmpegRunner:
         threads: int | None = None,
         audio_only: bool = False,
         hardware_acceleration: str | None = None,
+        preserve_all_streams: bool = False,
         force: bool = False,
         progress_callback: Callable[[ProgressEvent], None] | None = None,
     ) -> JobResult:
@@ -142,6 +143,7 @@ class FFmpegRunner:
             threads=threads,
             audio_only=audio_only,
             hardware_acceleration=hardware_acceleration,
+            preserve_all_streams=preserve_all_streams,
         )
         return self._run_workflow(
             self.planner.convert(input_file, output_file, options, force=force),

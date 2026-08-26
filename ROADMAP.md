@@ -111,13 +111,13 @@ P0 Truth and reproducibility
 
 ### P0.3 Publish a real public beta
 
-- [ ] Confirm the `pyffmpegcore` project name and maintainer account controls in PyPI.
+- [x] Confirm the `pyffmpegcore` project name and maintainer account controls in PyPI.
 - [x] Single-source the version or enforce equality between package metadata, runtime `__version__`, CLI `--version`, tag, wheel metadata, and release name.
 - [x] Add `twine check`, wheel/sdist content checks, clean artifact installation, and README rendering validation.
 - [x] Build the wheel and sdist once in an unprivileged job; test those exact files; never rebuild inside the publishing job.
-- [ ] Configure a protected GitHub Environment named `pypi` and PyPI Trusted Publishing with narrowly scoped OIDC permissions.
-- [ ] Publish the first honest beta from a signed/protected tag only after every earlier P0 gate passes.
-- [ ] Create a matching GitHub Release with release notes, compatibility statement, SHA-256 checksums, and links to PyPI attestations.
+- [x] Configure a protected GitHub Environment named `pypi` and PyPI Trusted Publishing with narrowly scoped OIDC permissions.
+- [x] Publish the first honest beta from a signed/protected tag only after every earlier P0 gate passes.
+- [x] Create a matching GitHub Release with release notes, compatibility statement, SHA-256 checksums, and links to PyPI attestations.
 - [x] Document rollback, yanking, deprecation, and security-fix procedures.
 - [x] Replace broken badges immediately; restore PyPI badges only after the public endpoints are healthy. Add the existing CI badge now.
 
@@ -178,7 +178,7 @@ P0 Truth and reproducibility
 ### P1.2 Build a proof-led README
 
 - [x] Put one working install command, one representative task, expected output, and the support matrix above the long command catalog.
-- [ ] Record a real 60–90 second terminal demo: public install, `doctor`, synthetic smoke test, explained plan, progress, output summary, and receipt. Do not fake terminal output.
+- [x] Record a real 60–90 second terminal demo: public install, `doctor`, synthetic smoke test, explained plan, progress, output summary, and receipt. Do not fake terminal output.
 - [x] Provide accessible text steps and alt text for every visual asset.
 - [x] Show one measurable before/after result, such as file size, format, streams, or loudness—not decorative screenshots.
 - [x] Move the complete command catalog to docs and keep three high-value recipes in the README.
@@ -328,11 +328,11 @@ P0 Truth and reproducibility
 
 ### P5.1 Turn support into public knowledge
 
-- [ ] Convert repeated real user questions into tested recipes and troubleshooting pages.
+- [x] Convert repeated real user questions into tested recipes and troubleshooting pages.
 - [x] Publish before/after media evidence and receipts for each flagship recipe.
 - [x] Invite recipe proposals through a structured issue form; promote only validated recipes into the supported catalog.
 - [x] Enable Discussions for recipe requests/show-and-tell only when the maintainer can triage it consistently.
-- [ ] Link releases to the exact recipes, compatibility evidence, and user problems they improve.
+- [x] Link releases to the exact recipes, compatibility evidence, and user problems they improve.
 
 ### P5.2 Make first contributions genuinely bounded
 
@@ -349,6 +349,11 @@ P0 Truth and reproducibility
 - [x] Maintain an honest comparison page and update it when competitor behavior changes.
 - [x] Ask users for the workflow they completed and friction encountered, not merely for a star.
 - [x] Never use star exchanges, mass unsolicited posting, fake benchmarks, or unverified “fastest/easiest/secure” claims.
+
+The source-backed [public-beta launch runbook](LAUNCH.md) records current
+channel rules, factual copy, hard release gates, and a publication log. The
+distribution checkbox stays open until a real public post URL and working
+artifact are recorded; preparing copy is not treated as distribution.
 
 **P5 acceptance gate**
 
