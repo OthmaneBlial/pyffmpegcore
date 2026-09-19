@@ -129,6 +129,11 @@ receipt checksums.
 | Fit under 256 KiB | 4,042,503-byte MP4 | **248,417 bytes**; target passed |
 | Podcast loudness | −22.0 LUFS WAV | **−16.2 LUFS MP3** for a −16.0 LUFS target |
 
+A [19 September replay](docs/evidence.md#replay-on-19-september-2026) shows
+the size tradeoff: a VP9 WebM grew **78.2%** when converted to a more widely
+playable H.264/AAC MP4. The web profile targets compatibility, not guaranteed
+compression.
+
 [Inspect the complete evidence](docs/evidence.md) or read the [real-media test
 methodology](docs/test-methodology.md), including fixture generation,
 capability skips, failure contracts, and artifact validation.

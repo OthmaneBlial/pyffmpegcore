@@ -10,16 +10,16 @@ hide:
     <div class="pfc-hero__copy">
       <p class="pfc-eyebrow">Local media automation / signal online</p>
       <h1 id="pfc-hero-title">FFmpeg jobs you can <span>explain.</span></h1>
-      <p class="pfc-hero__lede">
-        Preflight the machine. Preview the exact plan. Run a maintained workflow.
-        Keep a privacy-redacted receipt. PyFFmpegCore turns fragile media commands
-        into repeatable operations for the terminal, Python, and CI.
-      </p>
       <div class="pfc-actions">
         <a class="pfc-button" href="quickstart/">Prove it in five minutes</a>
         <a class="pfc-button pfc-button--ghost" href="terminal-demo/">Watch the archived 0.2.1 run</a>
         <a class="pfc-button pfc-button--ghost" href="recipes/">Pick a real recipe</a>
       </div>
+      <p class="pfc-hero__lede">
+        Preflight the machine. Preview the exact plan. Run a maintained workflow.
+        Keep a privacy-redacted receipt. PyFFmpegCore turns fragile media commands
+        into repeatable operations for the terminal, Python, and CI.
+      </p>
     </div>
     <div class="pfc-hero__console">
       <div class="pfc-terminal" aria-label="Illustrative PyFFmpegCore smoke-test flow, not a captured terminal">
@@ -103,28 +103,28 @@ hide:
     <div class="pfc-section__head">
       <h2 id="proof-title">Measured.<br>Not mocked.</h2>
       <p>
-        These are reproducible runs against generated first-party fixtures, with the
-        commands, probes, receipts, and checksums published for inspection.
+        The 19 September replay used generated first-party fixtures. Commands,
+        probes, receipts, checksums, and the size tradeoff are open for inspection.
       </p>
     </div>
     <div class="pfc-proof-grid">
       <article class="pfc-proof">
-        <span class="pfc-proof__label">Web video / size change</span>
-        <strong>−19.4%</strong>
-        <p>688,662-byte MOV to a 555,083-byte browser-compatible H.264 MP4.</p>
-        <a href="evidence/#web-compatible-video">Inspect the evidence →</a>
+        <span class="pfc-proof__label">Web video / compatibility cost</span>
+        <strong>+78.2%</strong>
+        <p>2,141,004-byte VP9 WebM to a 3,814,506-byte H.264/AAC MP4. Wider playback compatibility can increase size.</p>
+        <a href="evidence/#replay-on-19-september-2026">Inspect the replay →</a>
       </article>
       <article class="pfc-proof">
         <span class="pfc-proof__label">Exact-size / output</span>
         <strong>248,417 B</strong>
         <p>A 4,042,503-byte source compressed below a strict 256 KiB target.</p>
-        <a href="evidence/#exact-size-compression">Inspect the evidence →</a>
+        <a href="evidence/#replay-on-19-september-2026">Inspect the replay →</a>
       </article>
       <article class="pfc-proof">
         <span class="pfc-proof__label">Podcast / measured loudness</span>
         <strong>−16.2 LUFS</strong>
         <p>A −22.0 LUFS WAV normalized toward the declared −16.0 LUFS speech target.</p>
-        <a href="evidence/#podcast-loudness">Inspect the evidence →</a>
+        <a href="evidence/#replay-on-19-september-2026">Inspect the replay →</a>
       </article>
     </div>
   </section>

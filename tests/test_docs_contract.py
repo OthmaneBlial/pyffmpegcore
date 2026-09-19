@@ -113,3 +113,17 @@ class DocumentValidationTests(TestCase):
         self._write("guide.md", "# Missing heading\n")
         source = self._write("source.md", "[link](guide.md#missing%20heading)\n")
         self.assertEqual(checker.validate_document(source, source.read_text(encoding="utf-8")), [])
+
+    def test_html_link_checks_mkdocs_clean_url_fragment(self) -> None:
+        self._write("guide.md", "# Present heading\n")
+        source = self._write("source.md", '<a href="guide/#missing-heading">Read guide</a>\n')
+        failures = checker.validate_document(source, source.read_text(encoding="utf-8"))
+        self.assertEqual(len(failures), 1)
+        self.assertIn("missing heading fragment", failures[0])
+
+    def test_html_link_resolves_clean_url_index_page(self) -> None:
+        section = Path(self._directory.name) / "section"
+        section.mkdir()
+        (section / "index.md").write_text("# Section\n", encoding="utf-8")
+        source = self._write("source.md", '<a href="section/#section">Read section</a>\n')
+        self.assertEqual(checker.validate_document(source, source.read_text(encoding="utf-8")), [])

@@ -218,6 +218,13 @@ valider avant de cocher.
 
 ### 3.3 Vérifier le site rendu et son accessibilité
 
+**État :** page d'accueil locale contrôlée en navigateur à 320, 375, 768 et
+1280 px sans débordement horizontal ; premier appel à l'action avancé sur
+mobile, copie exacte de la commande vérifiée, thèmes clair/sombre et console
+sans erreur observés. Les liens HTML du site sont désormais soumis au
+contrôle des ancres. Revue complète au clavier, lecteur d'écran, autres pages
+et site public encore à faire ; tâche ouverte.
+
 - **Objectif :** que l'identité visuelle existante serve la compréhension sur mobile et au clavier.
 - **Changements :** auditer le site MkDocs réel à 320/375/768 px et desktop en clair/sombre ; contrôler débordements de code et tableaux, contraste, focus, réduction du mouvement, bouton de copie, navigation, liens de recette et absence d'erreurs console ; corriger uniquement les défauts observés. Garder une solution sans JavaScript pour copier l'installation.
 - **Fichiers :** `docs/index.md`, `docs/stylesheets/extra.css`, `docs/javascripts/site.js`, `mkdocs.yml` et pages de référence.

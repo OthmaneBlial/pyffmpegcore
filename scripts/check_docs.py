@@ -14,6 +14,7 @@ DOC_ROOTS = [
     *sorted((REPO_ROOT / "docs").rglob("*.md")),
 ]
 LINK_PATTERN = re.compile(r"(?<!!)\[[^]]+\]\(([^)]+)\)")
+HTML_LINK_PATTERN = re.compile(r"<a\b[^>]*\bhref\s*=\s*['\"]([^'\"]+)['\"]", re.IGNORECASE)
 IMAGE_PATTERN = re.compile(r"!\[([^]]*)\]\(([^)]+)\)")
 HEADING_PATTERN = re.compile(r"^#{1,6}[ \t]+(.*)$")
 FENCE_PATTERN = re.compile(r"^[ \t]*(```|~~~)")
@@ -52,14 +53,21 @@ def collect_heading_slugs(path: Path) -> frozenset[str]:
 
 
 def parse_local_target(source: Path, target: str) -> tuple[Path | None, str | None]:
-    """Split a Markdown target into a local path and optional heading fragment."""
+    """Resolve a local Markdown or MkDocs clean-URL target and its fragment."""
     if target.startswith(("http://", "https://", "mailto:")):
         return None, None
     path_part, separator, fragment = target.partition("#")
     path_part = path_part.strip()
     if not path_part:
         return (source, unquote(fragment.strip())) if separator and fragment.strip() else (None, None)
-    return (source.parent / path_part).resolve(), unquote(fragment.strip()) if separator else None
+    resolved = (source.parent / path_part).resolve()
+    if path_part.endswith("/"):
+        page = resolved.with_suffix(".md")
+        if page.is_file():
+            resolved = page
+        elif (resolved / "index.md").is_file():
+            resolved = resolved / "index.md"
+    return resolved, unquote(fragment.strip()) if separator else None
 
 
 def _describe(source: Path) -> Path:
@@ -72,7 +80,7 @@ def _describe(source: Path) -> Path:
 def validate_document(source: Path, text: str) -> list[str]:
     """Validate links, image alternatives, and heading fragments in one document."""
     failures = []
-    for target in LINK_PATTERN.findall(text):
+    for target in [*LINK_PATTERN.findall(text), *HTML_LINK_PATTERN.findall(text)]:
         resolved, fragment = parse_local_target(source, target)
         if resolved is None:
             continue
