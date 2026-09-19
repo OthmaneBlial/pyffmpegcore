@@ -51,12 +51,15 @@ The container workflow:
    QEMU for arm64 on the amd64 runner;
 3. blocks on HIGH or CRITICAL Trivy findings for which an upstream fix exists
    on either architecture;
-4. publishes an amd64/arm64 OCI image only after those gates;
+4. publishes an amd64/arm64 OCI image only after those gates and an explicit
+   maintainer-triggered `workflow_dispatch` with `publish=true`;
 5. attaches BuildKit SBOM and maximum provenance;
 6. creates a GitHub artifact attestation for the pushed digest.
 
-A weekly scheduled run rebuilds and scans without publishing. Dependency or
-base updates require review and a new immutable digest.
+Pushes, tags, and the weekly scheduled run rebuild and scan without publishing.
+Dependency or base updates require review and a new immutable digest. A
+maintainer must deliberately dispatch the workflow with `publish=true` after
+reviewing the exact scan artifact.
 Container maintenance is owned by the repository maintainer.
 
 The complete SARIF also reports Debian/CPython advisories whose `Fixed Version`
