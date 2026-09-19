@@ -345,7 +345,14 @@ arm64, `uv tool` 0.12.17 a installé hors réseau ce wheel CI exact
 (`c5a00fc…` du run `35447046421`) en environnement isolé ; `--version`,
 `doctor` et `smoke-test` ont réussi. L'essai `uv tool` du prochain artefact sur
 les autres OS, la version finale, les attestations de publication et les
-SHA-256 publics restent à valider ; tâche ouverte.
+SHA-256 publics restent à valider ; tâche ouverte. Le [dry-run release
+`35450686248`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35450686248)
+du SHA `94f4f9f` a depuis construit un bundle `0.2.2` unique, validé `twine`
+et les six ancres Linux/macOS/Windows Python 3.10/3.14. L'artefact a été
+téléchargé et ses sommes vérifiées : wheel
+`9f0778000c5d84c2f65f3f01a83fedf2d3429d151dcf565ae915b7e5b0afa2cb`, sdist
+`a9bdd153a52b1dd5166f1cc62725da8151e2fbb4836e2cd9d77882585254b675`. Ce
+dry-run ne crée ni tag, ni nouvelle release, ni publication PyPI.
 
 - **Objectif :** qu'un installateur retrouve dans wheel/sdist le même comportement que le checkout.
 - **Changements :** bâtir une seule fois les distributions, inspecter contenu, version, licence et README rendu ; installer ces fichiers en environnement vierge ; vérifier `pipx`, `pip` et `uv tool` annoncés ; synchroniser le numéro de version entre code, tag, docs, Action et conteneur quand ils sont publiés ensemble.
