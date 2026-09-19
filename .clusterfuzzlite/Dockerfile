@@ -2,3 +2,4 @@ FROM gcr.io/oss-fuzz-base/base-builder-python@sha256:6b2b3a7e4a2da50de47f94925cf
 
 COPY . /src/pyffmpegcore
 WORKDIR /src/pyffmpegcore
+COPY ./.clusterfuzzlite/build.sh /src/build.sh
