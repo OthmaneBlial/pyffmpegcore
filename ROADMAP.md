@@ -124,6 +124,12 @@ a validé les six installations sur Linux, macOS et Windows (Python 3.10 et
 
 ### 1.3 Mettre trois résultats phares à l'épreuve
 
+**État :** replay synthétique du 19 septembre consigné dans
+[`docs/evidence.md`](docs/evidence.md), avec receipts validés, décodage complet
+et mesure LUFS. Le cas VP9 montre une sortie web 78,2 % plus volumineuse.
+L'écoute/inspection humaine et des médias représentatifs consentis manquent
+encore ; la tâche reste ouverte.
+
 - **Objectif :** concentrer l'investissement produit sur la vidéo web, la taille d'upload et la voix/podcast, déjà présents dans le dépôt.
 - **Changements :** rejouer chaque recette avec médias générés et médias consentis représentatifs ; relever durée, codecs, pistes conservées/perdues, taille et qualité audible/visible ; expliciter les cas où le profil refuse ou avertit. Corriger dans le moteur partagé les défauts observés avant tout nouveau preset.
 - **Fichiers :** `docs/recipes/web-video.md`, `exact-size.md`, `podcast.md`, `pyffmpegcore/profiles.py`, `planning.py`, `preflight.py`, `tests/test_profiles_real.py` et tests de compression/audio.

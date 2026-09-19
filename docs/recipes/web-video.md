@@ -41,6 +41,11 @@ video/audio streams; it is not lossless. Use the [preserve every stream
 recipe](preserve-streams.md) instead when remuxing a rich file without track
 loss. Existing outputs require explicit CLI `--force`.
 
+The profile optimizes compatibility, not file size. A
+[dated replay with a generated VP9 WebM](../evidence.md#replay-on-19-september-2026)
+grew from 2,141,004 to 3,814,506 bytes after H.264/AAC conversion. Use the
+target-size recipe if an upload ceiling is the primary constraint.
+
 Media compatibility does not replace web-server correctness. Serve the file
 with the appropriate `Content-Type` and byte-range support for the target
 browser.

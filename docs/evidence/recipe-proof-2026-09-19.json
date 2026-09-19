@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-09-19",
+  "source": {
+    "kind": "deterministic-first-party-fixtures",
+    "generator": "tests/media/download_fixtures.py",
+    "manifest": "tests/media/manifest.json"
+  },
+  "environment": {
+    "pyffmpegcore": "0.2.2",
+    "python": "3.14.6",
+    "platform": "macOS 26.6 arm64",
+    "ffmpeg": "9.0.1"
+  },
+  "measurements": [
+    {
+      "recipe": "web-compatible-from-vp9",
+      "input_fixture": "sample_webm_vp9.webm",
+      "input_bytes": 2141004,
+      "output_bytes": 3814506,
+      "size_change_percent": 78.2,
+      "output_video_codec": "h264",
+      "output_audio_codec": "aac",
+      "moov_before_mdat": true,
+      "receipt": "web-from-vp9-2026-09-19.receipt.json",
+      "receipt_sha256": "92ee270adbc1b866fdc0bf16bd1b1ca67fd93fbf9bf221953e6bb3a241889f30",
+      "receipt_valid": true,
+      "full_decode_passed": true
+    },
+    {
+      "recipe": "exact-size-upload",
+      "input_fixture": "sample_mp4_h264.mp4",
+      "input_bytes": 4042503,
+      "output_bytes": 248417,
+      "target_bytes": 262144,
+      "target_met": true,
+      "output_video_codec": "h264",
+      "output_audio_codec": "aac",
+      "receipt": "exact-size-2026-09-19.receipt.json",
+      "receipt_sha256": "803e7db400cc8bfbc96350d40f23f86c12d6242a5d8baeaa0032256037e0ddd5",
+      "receipt_valid": true,
+      "full_decode_passed": true
+    },
+    {
+      "recipe": "podcast-loudness",
+      "input_fixture": "sample_audio_wav.wav",
+      "input_bytes": 370518,
+      "output_bytes": 101996,
+      "input_lufs": -22.0,
+      "output_lufs": -16.2,
+      "target_lufs": -16.0,
+      "output_audio_codec": "mp3",
+      "receipt": "podcast-2026-09-19.receipt.json",
+      "receipt_sha256": "f8aa1bb6acd03b9d6db92a0b115f840d21c3c285d9c2c2687c0de6e64cea1470",
+      "receipt_valid": true,
+      "full_decode_passed": true
+    }
+  ],
+  "limits": [
+    "Synthetic fixtures only; no subjective listening or visual quality claim.",
+    "Exact byte counts can change with another FFmpeg build."
+  ]
+}

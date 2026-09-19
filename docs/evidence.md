@@ -15,6 +15,26 @@ publishing local media paths.
 The compact [evidence index](evidence/recipe-proof-2026-08-25.json) records the
 receipt SHA-256 values so changes are reviewable.
 
+## Replay on 19 September 2026
+
+The installed `0.2.2` wheel was replayed on macOS 26.6 arm64, Python 3.14.6,
+and FFmpeg 9.0.1 using the same generated fixture set. All three outputs
+passed `probe`, receipt validation, and a complete FFmpeg decode to `null`.
+These are synthetic checks; no human picture or listening assessment was made.
+
+| Recipe | Generated input | Measured output | Receipt |
+| --- | ---: | ---: | --- |
+| Web MP4 from VP9 WebM | 2,141,004 bytes | 3,814,506 bytes, H.264/AAC; **78.2% larger** | [Receipt](evidence/web-from-vp9-2026-09-19.receipt.json) |
+| 256 KiB upload limit | 4,042,503 bytes | 248,417 bytes, H.264/AAC; limit passed | [Receipt](evidence/exact-size-2026-09-19.receipt.json) |
+| Podcast loudness | 370,518-byte WAV, −22.0 LUFS | 101,996-byte MP3, −16.2 LUFS | [Receipt](evidence/podcast-2026-09-19.receipt.json) |
+
+The VP9 example is a useful counterexample to a compression promise: the web
+profile targets wider playback compatibility, and re-encoding can increase
+file size. Its output has `moov` before `mdat` for progressive download. The
+[replay index](evidence/recipe-proof-2026-09-19.json) records the environment,
+receipt SHA-256 values, stream facts, and checks. Measurements on other FFmpeg
+builds may differ.
+
 ## Reproduce
 
 Generate the same inputs, then run:
@@ -26,6 +46,12 @@ pyffmpegcore profile run web/mp4-compatible \
   --input tests/media/downloads/sample_video_mov.mov \
   --output web.mp4 \
   --receipt web-video.receipt.json
+
+# Replay the VP9 counterexample separately, using a new output path.
+pyffmpegcore profile run web/mp4-compatible \
+  --input tests/media/downloads/sample_webm_vp9.webm \
+  --output web-from-vp9.mp4 \
+  --receipt web-from-vp9.receipt.json
 
 pyffmpegcore compress \
   --input tests/media/downloads/sample_mp4_h264.mp4 \
