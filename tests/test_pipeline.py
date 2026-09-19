@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import threading
+from pathlib import Path
 
 import pytest
 
@@ -18,6 +19,28 @@ from pyffmpegcore import (
     ValidationError,
     migrate_pipeline_document,
 )
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+
+
+def test_documented_powershell_pipeline_uses_environment_and_resume_evidence():
+    """Keep the copyable PowerShell flow aligned with the public CLI contract."""
+    guide = (REPO_ROOT / "docs" / "pipelines.md").read_text(encoding="utf-8")
+    section = guide.split("### PowerShell: variable, evidence, and resume", 1)[1].split(
+        "## Optional content-aware cache", 1
+    )[0]
+    assert '$env:INPUT = (Resolve-Path "tests/media/downloads/sample_video_mov.mov").Path' in section
+    assert '$env:OUTPUT_DIR = Join-Path (Get-Location).Path "build/Web Publish"' in section
+    assert section.count('pyffmpegcore pipeline run "pipelines/web-publish.json"') == 2
+    for token in (
+        "--var INPUT --var OUTPUT_DIR",
+        '--receipt-dir "build/Pipeline Receipts"',
+        '--events "build/Pipeline Events.jsonl"',
+        '--state "build/Pipeline State.json"',
+        "--resume",
+    ):
+        assert token in section
+    assert "--var INPUT=" not in section
 
 
 def _document(source: str) -> dict:

@@ -63,6 +63,40 @@ same cancellation contract used by one-off workflows. State is written
 atomically after each successful step and contains only step IDs and cache
 keys—never source paths or secret values.
 
+### PowerShell: variable, evidence, and resume
+
+From a repository checkout with PyFFmpegCore and FFmpeg installed, generate
+the local fixture and run the included `web-publish.json` template. The
+template declares `INPUT` and `OUTPUT_DIR`; `--var` passes only their names
+and reads their values from the environment. Quoted paths keep spaces intact.
+
+```powershell
+python tests/media/download_fixtures.py --force
+New-Item -ItemType Directory -Force "build" | Out-Null
+$env:INPUT = (Resolve-Path "tests/media/downloads/sample_video_mov.mov").Path
+$env:OUTPUT_DIR = Join-Path (Get-Location).Path "build/Web Publish"
+
+pyffmpegcore pipeline run "pipelines/web-publish.json" `
+  --var INPUT --var OUTPUT_DIR `
+  --receipt-dir "build/Pipeline Receipts" `
+  --events "build/Pipeline Events.jsonl" `
+  --state "build/Pipeline State.json" `
+  --result-json
+
+pyffmpegcore pipeline run "pipelines/web-publish.json" `
+  --var INPUT --var OUTPUT_DIR `
+  --receipt-dir "build/Pipeline Receipts" `
+  --events "build/Pipeline Events.jsonl" `
+  --state "build/Pipeline State.json" `
+  --resume --result-json
+```
+
+The first run writes one redacted receipt per step, JSON Lines events, and
+atomic resume state. The second run reuses steps only when their signatures
+and outputs still match; inspect the result's item statuses. Receipts omit
+private paths by default. Do not put credentials in the command, pipeline
+file, or `OUTPUT_DIR` value.
+
 ## Optional content-aware cache
 
 ```json
