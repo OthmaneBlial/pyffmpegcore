@@ -238,7 +238,10 @@ demo et au build conteneur ; [matrice CI complète](https://github.com/OthmaneBl
 [release à blanc](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35445461779),
 [conteneur multi-architecture](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35449281881)
 et [ClusterFuzzLite](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35449599477)
-réussis. Le corpus de mutations a révélé puis corrigé une exception UTF-8 du
+réussis. Le correctif `dab7197` remplace aussi le `read-all` global du workflow
+ClusterFuzzLite par des permissions explicites ; la [CI déclenchée sur ce SHA](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35451503286)
+et le [fuzzing avec ces permissions](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35451677762)
+ont réussi. Le corpus de mutations a révélé puis corrigé une exception UTF-8 du
 lecteur de receipts ; trois cibles et deux seeds ont tourné dans CI, puis la
 cible Atheris a été reconnue par Scorecard. Au dernier inventaire après
 `b9ceea7`, la [CI complète](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35449898003),
