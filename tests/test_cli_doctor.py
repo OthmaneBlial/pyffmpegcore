@@ -57,4 +57,20 @@ def test_doctor_reports_missing_binary_with_environment_exit_code():
     payload = json.loads(result.stdout)
     assert payload["ffmpeg"]["available"] is False
     assert "Executable not found" in payload["ffmpeg"]["error"]
+    assert "--ffmpeg-path" in payload["ffmpeg"]["remedy"]
+    assert "pyffmpegcore doctor" in payload["ffmpeg"]["remedy"]
     assert payload["capabilities"] is None
+
+
+def test_doctor_human_report_includes_next_step_for_missing_ffprobe():
+    result = subprocess.run(
+        [sys.executable, "-m", "pyffmpegcore", "doctor", "--ffprobe-path", "/definitely/missing/ffprobe"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 3
+    assert "ffprobe: MISSING" in result.stdout
+    assert "Remedy:" in result.stdout
+    assert "--ffprobe-path" in result.stdout

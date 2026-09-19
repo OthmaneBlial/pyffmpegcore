@@ -226,7 +226,14 @@ class PreflightEngine:
             output = Path(value)
             parent = _nearest_existing_parent(output.parent)
             if not parent.is_dir() or not os.access(parent, os.W_OK):
-                checks.append(PreflightCheck(f"output/{value}", "fail", f"Output parent is not writable: {parent}"))
+                checks.append(
+                    PreflightCheck(
+                        f"output/{value}",
+                        "fail",
+                        f"Output parent is not writable: {parent}",
+                        "Choose an output in a writable directory or grant write access to its parent.",
+                    )
+                )
                 continue
             checks.append(PreflightCheck(f"output/{value}", "pass", f"Output parent is writable: {parent}"))
             if output.exists() and plan.policy.overwrite is OverwritePolicy.REFUSE:
@@ -235,7 +242,7 @@ class PreflightEngine:
                         f"collision/{value}",
                         "fail",
                         "Output already exists and overwrite policy is refuse",
-                        "Choose another output or explicitly use overwrite policy replace.",
+                        "Choose another output or explicitly allow replacement (CLI: --force).",
                     )
                 )
             else:

@@ -864,6 +864,12 @@ def collect_doctor_report(ctx: CLIContext) -> dict[str, Any]:
     """
     ffmpeg = inspect_binary(ctx.ffmpeg_path)
     ffprobe = inspect_binary(ctx.ffprobe_path)
+    for label, binary in (("ffmpeg", ffmpeg), ("ffprobe", ffprobe)):
+        if not binary["available"]:
+            binary["remedy"] = (
+                "Install FFmpeg and FFprobe from a trusted package source, open a new terminal, "
+                f"or pass --{label}-path to a trusted executable; then rerun pyffmpegcore doctor."
+            )
     capabilities = inspect_ffmpeg_capabilities(ctx.ffmpeg_path) if ffmpeg["available"] else None
     return {
         "cli_version": __version__,
@@ -909,6 +915,8 @@ def render_doctor_report(ctx: CLIContext, report: dict[str, Any]) -> None:
             )
             if binary_report["error"]:
                 echo(ctx, f"  {binary_report['error']}")
+            if binary_report.get("remedy"):
+                echo(ctx, f"  Remedy: {binary_report['remedy']}")
 
     capabilities = report.get("capabilities")
     if capabilities:
@@ -1185,6 +1193,8 @@ def handle_probe(args: argparse.Namespace) -> int:
     except RuntimeError as exc:
         message = str(exc)
         exit_code = EXIT_ENVIRONMENT_ERROR if "was not found" in message else EXIT_RUNTIME_ERROR
+        if exit_code == EXIT_ENVIRONMENT_ERROR:
+            message += " Install FFmpeg and FFprobe, or pass --ffprobe-path to a trusted executable; then rerun doctor."
         raise CLIError(message, exit_code=exit_code) from exc
 
     if args.json:

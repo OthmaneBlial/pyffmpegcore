@@ -52,6 +52,7 @@ def test_cli_missing_binary_returns_environment_error(tmp_path):
     )
 
     assert result.returncode == 3
+    assert "--ffprobe-path" in result.stderr
 
 
 def test_cli_missing_required_stream_returns_validation_error(tmp_path):

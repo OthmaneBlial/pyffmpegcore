@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from collections import namedtuple
 from unittest.mock import patch
 
@@ -143,7 +144,37 @@ def test_preflight_refuses_collision_and_corrupted_input(tmp_path):
     assert not report.ok
     assert any(check.name.startswith("probe/") and check.status == "fail" for check in report.checks)
     assert any(check.name.startswith("collision/") and check.status == "fail" for check in report.checks)
+    assert "--force" in next(check.hint for check in report.checks if check.name.startswith("collision/"))
     assert output.read_bytes() == b"keep"
+
+
+def test_preflight_explains_unwritable_output_parent(tmp_path):
+    source = tmp_path / "source.mp4"
+    source.write_bytes(b"media")
+    output = tmp_path / "output.mp4"
+    plan = ExecutionPlan(
+        workflow="convert",
+        command=("ffmpeg", "-i", str(source), str(output)),
+        inputs=(str(source),),
+        outputs=(str(output),),
+    )
+    actual_access = os.access
+
+    def access(path, mode):
+        if path == tmp_path and mode == os.W_OK:
+            return False
+        return actual_access(path, mode)
+
+    with patch("pyffmpegcore.preflight.os.access", side_effect=access):
+        report = PreflightEngine(
+            inventory=inventory(),
+            executable_resolver=lambda _binary: "/usr/bin/ffmpeg",
+        ).check(plan)
+
+    output_check = next(check for check in report.checks if check.name.startswith("output/"))
+    assert not report.ok
+    assert output_check.status == "fail"
+    assert "writable directory" in (output_check.hint or "")
 
 
 def test_windows_drive_path_is_not_treated_as_a_remote_protocol():
