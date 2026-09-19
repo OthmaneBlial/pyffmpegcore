@@ -256,12 +256,10 @@ et site public encore à faire ; tâche ouverte.
 
 ### 4.2 Aligner conteneur et Action sur un digest sain
 
-**État :** le nouveau digest `538bbee6` de 0.3 est épinglé dans l'Action et
-son workflow d'intégration ; vérification du nouveau pin en attente. Le
-[run précédent `35441678859`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35441678859)
-avait réussi les trois chemins local, conteneur et Action avec le digest
-antérieur. À rejouer sur le SHA de la prochaine release avant de fermer le
-gate 4.
+**État :** [x] le digest `538bbee6` de 0.3 est épinglé dans l'Action ; le
+[run `35444144915`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35444144915)
+a réussi la comparaison local/conteneur/Action avec le nouveau pin. À rejouer
+sur le SHA de la prochaine release avant de fermer le gate 4.
 
 - **Objectif :** donner aux utilisateurs CI une intégration reproductible qui ne pointe pas vers un runtime ancien par inadvertance.
 - **Changements :** après 0.3/0.4, remplacer le digest dans l'Action, le test d'intégration et les guides ; contrôler local/conteneur/Action sur la même pipeline et receipt normalisé ; conserver le réseau fermé par défaut et la politique de licences/SBOM.
