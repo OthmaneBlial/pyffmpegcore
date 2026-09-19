@@ -158,6 +158,12 @@ encore ; la tâche reste ouverte.
 
 ### 2.2 Borner les tâches coûteuses et les entrées hostiles
 
+**État :** contrôle des URL et redaction des diagnostics de pipeline ajouté ;
+capture des pipes et historique de progression bornés localement pour la
+politique `TAIL`, avec régressions sur gros diagnostics et nettoyage après
+timeout. Aucun plafond dur universel sur mémoire, disque ou taille de sortie
+n'est encore garanti ; validation CI de ces changements en attente.
+
 - **Objectif :** réduire les surprises de temps, espace et réseau tout en annonçant honnêtement que PyFFmpegCore n'est pas un sandbox.
 - **Changements :** définir des plafonds optionnels/explicites de temps et de sortie là où le moteur peut les garantir, distinguer préflight estimatif et limite dure, durcir redaction des diagnostics et politique URL/protocoles, tester nettoyage après annulation/timeout/disque plein. Maintenir l'exécution en vecteur d'arguments et `-nostdin`.
 - **Fichiers :** `pyffmpegcore/executor.py`, `preflight.py`, `receipt.py`, `pipeline.py`, `docs/SECURITY_MODEL.md`, `docs/receipts.md`, tests de sécurité et échecs.

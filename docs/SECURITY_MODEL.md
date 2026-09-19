@@ -47,6 +47,13 @@ FFmpeg parses complex attacker-controlled formats. Keep FFmpeg patched and proce
 
 Small compressed inputs can require large amounts of CPU, memory, disk, or output bandwidth. The current CLI does not enforce universal time, memory, frame, pixel, or output-size limits. Run untrusted jobs with OS/container quotas and validate media dimensions and duration before expensive work. Future limits must fail closed and appear in plans and receipts.
 
+Managed process pipes are drained in bounded read chunks. The default `TAIL`
+capture retains at most `capture_tail_chars` of stdout and stderr per stream;
+`DISCARD` retains no published diagnostics, while explicit `FULL` capture can
+grow with FFmpeg output. This bounds retained diagnostics, not FFmpeg's memory,
+CPU, decoded frames, or bytes written to media outputs. Timeout applies to
+managed execution; use an OS or container quota for a hard disk/memory limit.
+
 ## Binary Selection
 
 `--ffmpeg-path` and `--ffprobe-path` execute the selected local binaries. Supplying an untrusted executable path is equivalent to executing that program. `doctor` reports the resolved paths so automation can verify the toolchain.

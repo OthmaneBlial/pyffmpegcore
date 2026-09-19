@@ -11,6 +11,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from pyffmpegcore import (
+    CapturePolicy,
     CompressOptions,
     ExecutionPlan,
     ExecutionPolicy,
@@ -244,12 +245,42 @@ def test_execution_replaces_invalid_utf8_without_stalling_pipe_drains(tmp_path):
     assert "bad-byte: �" in result.stderr
 
 
-def test_execution_falls_back_only_when_structured_progress_is_unsupported():
+@pytest.mark.parametrize(
+    ("capture_policy", "expected_stdout", "expected_stderr"),
+    [
+        (CapturePolicy.TAIL, "S" * 64, "E" * 64),
+        (CapturePolicy.DISCARD, None, None),
+        (CapturePolicy.FULL, "S" * 131_072, "E" * 131_072),
+    ],
+)
+def test_execution_drains_large_pipes_with_explicit_capture_policy(capture_policy, expected_stdout, expected_stderr):
+    plan = ExecutionPlan(
+        workflow="test/large-diagnostics",
+        command=(
+            sys.executable,
+            "-c",
+            "import sys; sys.stdout.write('S' * 131072); sys.stderr.write('E' * 131072)",
+        ),
+        inputs=(),
+        outputs=(),
+        policy=ExecutionPolicy(stdout=capture_policy, stderr=capture_policy, capture_tail_chars=64),
+    )
+
+    result = FFmpegRunner().execute_plan(plan)
+
+    assert result.succeeded
+    assert result.stdout == expected_stdout
+    assert result.stderr == expected_stderr
+
+
+@pytest.mark.parametrize("trailing_diagnostics", [0, 32_768])
+def test_execution_falls_back_only_when_structured_progress_is_unsupported(trailing_diagnostics):
     code = (
         "import sys; "
         "has_progress = '-progress' in sys.argv; "
         "print(\"Unrecognized option 'progress'\" if has_progress else "
         "'frame= 12 fps=25.0 size= 1kB time=00:00:01.50 bitrate=10.0kbits/s speed=1.25x', file=sys.stderr); "
+        f"print('x' * {trailing_diagnostics} if has_progress else '', file=sys.stderr); "
         "raise SystemExit(1 if has_progress else 0)"
     )
     plan = ExecutionPlan(
@@ -285,6 +316,26 @@ def test_execution_removes_new_incomplete_output_after_runtime_failure(tmp_path)
     assert result.status is JobStatus.FAILED
     assert not output.exists()
     assert result.outputs[0]["exists"] is False
+    assert any("Removed incomplete outputs" in warning for warning in result.warnings)
+
+
+def test_execution_removes_new_incomplete_output_after_timeout(tmp_path):
+    output = tmp_path / "partial-on-timeout.bin"
+    code = "from pathlib import Path; import sys, time; Path(sys.argv[1]).write_bytes(b'partial'); time.sleep(5)"
+    plan = ExecutionPlan(
+        workflow="test/partial-timeout",
+        command=(sys.executable, "-c", code, str(output)),
+        inputs=(),
+        outputs=(str(output),),
+        policy=ExecutionPolicy(timeout_seconds=0.5),
+    )
+
+    result = FFmpegRunner().execute_plan(plan)
+
+    assert result.status is JobStatus.TIMED_OUT
+    assert result.exit_category == "timeout"
+    assert result.outputs[0]["exists"] is False
+    assert not output.exists()
     assert any("Removed incomplete outputs" in warning for warning in result.warnings)
 
 
