@@ -31,10 +31,16 @@ supply-chain boundary.
 
 - The Action accepts environment **names**, never inline secret values. Only
   the requested names are passed into the container and pipeline compiler.
-- The image is fixed in `action.yml` by OCI digest, networking defaults to
-  `none`, and all requested paths must stay under `GITHUB_WORKSPACE`. Set
+- The image is fixed in `action.yml` by OCI digest and networking defaults to
+  `none`. Pipeline, receipt, state, event, result, and additional artifact paths
+  must be relative to `GITHUB_WORKSPACE`; the Action rejects `..` and symlinks
+  in their existing path components. Artifact globs need a literal directory
+  prefix. Paths are checked before execution and again before upload. Set
   `network: bridge` only for a pipeline that intentionally declares remote
   inputs.
+- Run this Action in a workspace that other untrusted processes cannot change
+  concurrently. A process that replaces path components after validation can
+  bypass these checks; the Action is not a filesystem sandbox.
 - The container runs with the host runner UID/GID, so generated files remain
   usable by later workflow steps.
 - Receipts, atomic resume state, JSON Lines events, the machine-readable result,

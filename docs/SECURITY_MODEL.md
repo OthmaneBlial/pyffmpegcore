@@ -23,7 +23,7 @@ FFmpeg filter graphs and concat manifests have their own grammars. Values embedd
 
 ## Files, Temporary Data, and Overwrites
 
-Commands reject an existing output unless the user passes `--force`. Temporary work should use private, randomly named directories and be removed after completion. Release and CI scripts must not place credentials or personal media into artifacts. Symlink and time-of-check/time-of-use attacks are not fully prevented when processing in an attacker-controlled directory; use a trusted working directory for hostile inputs.
+Commands reject an existing output unless the user passes `--force`. Temporary work should use private, randomly named directories and be removed after completion. Release and CI scripts must not place credentials or personal media into artifacts. The GitHub Action rejects existing symlinks in its workspace paths and rechecks artifact paths before upload. Symlink and time-of-check/time-of-use attacks are not fully prevented when another process can change a directory after validation; use a trusted working directory for hostile inputs.
 
 ## URLs and Credentials
 

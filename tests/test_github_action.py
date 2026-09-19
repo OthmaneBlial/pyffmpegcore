@@ -7,6 +7,8 @@ import re
 import subprocess
 from pathlib import Path
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 ACTION_SCRIPT = REPO_ROOT / "scripts" / "run_pipeline_action.sh"
 
@@ -73,6 +75,59 @@ def test_action_script_rejects_mutable_image_and_parent_paths(tmp_path):
     result = subprocess.run(["bash", str(ACTION_SCRIPT)], env=escaped, capture_output=True, text=True, check=False)
     assert result.returncode == 2
     assert "stay inside GITHUB_WORKSPACE" in result.stderr
+
+
+@pytest.mark.parametrize(
+    ("setting", "relative_path"),
+    [
+        ("PYFFMPEGCORE_ACTION_PIPELINE", "escape/pipeline.json"),
+        ("PYFFMPEGCORE_ACTION_RECEIPT_DIR", "escape/receipts"),
+        ("PYFFMPEGCORE_ACTION_STATE", "escape/state.json"),
+        ("PYFFMPEGCORE_ACTION_EVENTS", "escape/events.jsonl"),
+        ("PYFFMPEGCORE_ACTION_RESULT", "escape/result.json"),
+        ("PYFFMPEGCORE_ACTION_ARTIFACTS", "escape/**"),
+    ],
+)
+def test_action_script_rejects_workspace_symlink_escape(tmp_path, setting, relative_path):
+    workspace = tmp_path / "workspace"
+    outside = tmp_path / "outside"
+    workspace.mkdir()
+    outside.mkdir()
+    (workspace / "pipeline.json").write_text("{}\n", encoding="utf-8")
+    try:
+        (workspace / "escape").symlink_to(outside, target_is_directory=True)
+    except (NotImplementedError, OSError):
+        pytest.skip("creating a directory symlink is unavailable on this host")
+    environment = _action_environment(workspace, f"ghcr.io/othmaneblial/pyffmpegcore@sha256:{'b' * 64}")
+    environment[setting] = relative_path
+
+    result = subprocess.run(["bash", str(ACTION_SCRIPT)], env=environment, capture_output=True, text=True, check=False)
+
+    assert result.returncode == 2
+    assert "symbolic link" in result.stderr
+    assert list(outside.iterdir()) == []
+
+
+def test_action_path_validation_accepts_unicode_and_spaces_without_docker(tmp_path):
+    workspace = tmp_path / "workspace"
+    source_dir = workspace / "média été"
+    output_dir = workspace / "sorties été"
+    source_dir.mkdir(parents=True)
+    output_dir.mkdir()
+    (source_dir / "pipeline.json").write_text("{}\n", encoding="utf-8")
+    environment = _action_environment(workspace, f"ghcr.io/othmaneblial/pyffmpegcore@sha256:{'c' * 64}")
+    environment["PYFFMPEGCORE_ACTION_PIPELINE"] = "média été/pipeline.json"
+    environment["PYFFMPEGCORE_ACTION_ARTIFACTS"] = "sorties été/**"
+
+    result = subprocess.run(
+        ["bash", str(ACTION_SCRIPT), "--validate-only"],
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
 
 
 def test_action_metadata_uses_immutable_image_and_pinned_dependencies():
