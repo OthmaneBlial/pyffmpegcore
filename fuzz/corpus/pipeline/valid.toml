@@ -1,0 +1,8 @@
+schema_version = "1.0"
+name = "fuzz_pipeline_toml"
+
+[[steps]]
+id = "convert"
+workflow = "convert"
+input = "source.webm"
+output = "out.mp4"

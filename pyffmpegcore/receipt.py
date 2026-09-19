@@ -210,7 +210,7 @@ class RunReceipt:
     def read(cls, path: str | Path) -> RunReceipt:
         try:
             document = json.loads(Path(path).read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError) as exc:
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
             raise ValidationError(f"unable to read receipt: {exc}") from exc
         return cls(document)
 

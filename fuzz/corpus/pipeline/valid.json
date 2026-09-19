@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0",
+  "name": "fuzz_pipeline",
+  "variables": {"OUTPUT": "out.mp4"},
+  "steps": [
+    {"id": "convert", "workflow": "convert", "input": "source.webm", "output": "${OUTPUT}"}
+  ]
+}

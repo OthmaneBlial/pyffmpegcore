@@ -32,6 +32,7 @@ SDIST_ALLOWED_ROOT_ENTRIES = frozenset(
         "CONTRIBUTING.md",
         "DEVELOPMENT.md",
         "EXAMPLES.md",
+        "fuzz",
         "LICENSE",
         "MANIFEST.in",
         "PKG-INFO",
@@ -79,6 +80,7 @@ SDIST_REQUIRED_PATHS = frozenset(
         "scripts/validate_capability_catalog.py",
         "tests/media/download_fixtures.py",
         "tests/media/manifest.json",
+        "fuzz/corpus/receipt/valid.json",
     }
 )
 SDIST_FORBIDDEN_PARTS = frozenset({".git", ".venv", "dist", "downloads", "site", "__pycache__"})

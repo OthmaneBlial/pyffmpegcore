@@ -199,8 +199,10 @@ manquantes sur macOS ; son artefact Markdown est téléchargeable depuis le run.
 **État :** verrous portables avec hashes préparés pour les outils CI/docs,
 pipx et le build conteneur ; install source sans résolution réseau et build
 sans isolation essayés localement sous macOS/Python 3.14. Validation sur la
-matrice, le run de release à blanc, le conteneur multi-architecture, le corpus
-de fuzzing et la revue des alertes restantes encore à faire ; tâche ouverte.
+matrice, le run de release à blanc et le conteneur multi-architecture en cours.
+Le nouveau corpus de mutations a révélé puis corrigé une exception UTF-8 du
+lecteur de receipts ; les seeds et la régression passent localement, nouveau
+job CI et revue des alertes encore à vérifier. Tâche ouverte.
 
 - **Objectif :** distinguer les vulnérabilités corrigibles, les avis sans correctif, les signaux de politique et les doublons historiques, puis réduire les causes plutôt que masquer les alertes.
 - **Changements :** tenir `SECURITY_TRIAGE.md` à jour pour chaque digest ; tester et scanner aussi l'image arm64 avant publication ; remplacer les installations `pip` non verrouillées en CI/release par un lock avec hashes pour la matrice Python/OS ; créer un corpus de fuzzing pour les parseurs de pipeline, profil et receipt ; contrôler la couverture CodeQL et des tests sur les révisions proposées ; préparer les preuves du badge OpenSSF sans revendiquer son octroi prématurément.

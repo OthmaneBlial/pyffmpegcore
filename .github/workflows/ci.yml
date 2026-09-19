@@ -92,7 +92,7 @@ jobs:
           python -m pip install --only-binary=:all: --require-hashes
           -r .github/requirements/ci.txt
       - name: Build wheel and sdist
-        run: python scripts/build_cli_artifacts.py --outdir dist --json > artifact-report.json
+        run: python -m scripts.build_cli_artifacts --outdir dist --json > artifact-report.json
       - name: Validate metadata and rendered README
         run: python -m twine check dist/*.whl dist/*.tar.gz
       - name: Validate wheel contents
@@ -186,6 +186,38 @@ jobs:
           name: compatibility-summary
           path: compatibility-summary.md
           if-no-files-found: error
+          retention-days: 14
+
+  parser-fuzz:
+    name: Bounded parser fuzz and crash replay corpus
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: .github/requirements/ci.txt
+      - name: Install locked tools and source
+        run: |
+          python -m pip install --only-binary=:all: --require-hashes -r .github/requirements/ci.txt
+          python -m pip install --no-index --no-deps --no-build-isolation -e .
+      - name: Mutate pipeline, profile, and receipt documents
+        run: |
+          python scripts/fuzz_parsers.py --seed 20260919 --iterations 1000 --crash-dir fuzz-crashes > fuzz-report.jsonl
+          python scripts/fuzz_parsers.py --seed 77 --iterations 1000 --crash-dir fuzz-crashes >> fuzz-report.jsonl
+      - name: Preserve reports and crash inputs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: parser-fuzz-evidence
+          path: |
+            fuzz-report.jsonl
+            fuzz-crashes/
+          if-no-files-found: warn
           retention-days: 14
 
   documentation:

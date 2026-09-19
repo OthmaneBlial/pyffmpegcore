@@ -51,7 +51,7 @@ jobs:
           python -m pip install --only-binary=:all: --require-hashes
           -r .github/requirements/ci.txt
       - name: Build wheel and sdist exactly once
-        run: python scripts/build_cli_artifacts.py --outdir dist --json > artifact-report.json
+        run: python -m scripts.build_cli_artifacts --outdir dist --json > artifact-report.json
       - name: Validate distributions
         run: python -m twine check dist/*.whl dist/*.tar.gz && python -m check_wheel_contents dist/*.whl
       - name: Assemble release bundle outside the PyPI upload directory

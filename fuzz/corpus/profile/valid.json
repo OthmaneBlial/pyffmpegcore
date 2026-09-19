@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0",
+  "name": "fuzz/convert",
+  "profile_version": 1,
+  "description": "Fuzz corpus conversion profile.",
+  "workflow": "convert",
+  "options": {"video_codec": "libx264", "audio_codec": "aac"},
+  "required_capabilities": ["encoder:libx264"]
+}

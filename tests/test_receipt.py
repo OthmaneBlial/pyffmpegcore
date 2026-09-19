@@ -143,3 +143,10 @@ def test_published_receipt_example_matches_runtime_validator():
     example = json.loads((REPO_ROOT / "docs" / "schemas" / "run-receipt-1.0.example.json").read_text(encoding="utf-8"))
 
     assert validate_receipt(example) == ()
+
+
+def test_receipt_invalid_utf8_is_a_validation_error(tmp_path: Path) -> None:
+    path = tmp_path / "receipt.json"
+    path.write_bytes(b'{"schema_version":"1.0","items":\xff}')
+    with pytest.raises(ValidationError, match="unable to read receipt"):
+        RunReceipt.read(path)

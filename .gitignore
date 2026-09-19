@@ -16,3 +16,4 @@ __pycache__/
 # Local media fixtures and generated validation outputs
 tests/media/downloads/
 tests/media/output/
+fuzz-crashes/

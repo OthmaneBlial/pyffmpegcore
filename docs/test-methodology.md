@@ -21,6 +21,9 @@ CI separates evidence:
 - full coverage executes the real media suite with an 80% gate;
 - exact-artifact smoke installs one prebuilt wheel on Linux, macOS, and Windows;
 - the weekly cold run regenerates all fixtures without a cache.
+- the bounded [parser mutation corpus](https://github.com/OthmaneBlial/pyffmpegcore/tree/main/fuzz)
+  replays valid/invalid pipeline, profile, and receipt documents, then mutates
+  them with fixed seeds and preserves unexpected inputs for replay.
 
 Each exact-artifact job uploads its command results and a capability-catalog
 report. `scripts/summarize_compatibility.py` rejects missing/failed cells and

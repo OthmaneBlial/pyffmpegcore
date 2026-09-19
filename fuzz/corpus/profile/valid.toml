@@ -1,0 +1,9 @@
+schema_version = "1.0"
+name = "fuzz/convert-toml"
+profile_version = 1
+description = "Fuzz corpus TOML profile."
+workflow = "convert"
+required_capabilities = ["encoder:libx264"]
+
+[options]
+video_codec = "libx264"

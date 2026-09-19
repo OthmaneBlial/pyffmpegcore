@@ -27,18 +27,27 @@ fixed version for either. Do not dismiss them solely to reduce the alert count.
 
 ## GitHub alert inventory
 
-At this snapshot, GitHub Code Scanning lists **697 open Trivy alerts** and
-**23 open Scorecard alerts**. Alert instances span repeated scans and are not
+At the `a44a64d` snapshot, GitHub Code Scanning lists **697 open Trivy alerts**
+and **6 open Scorecard alerts**. Alert instances span repeated scans and are not
 the same unit as the 874 findings in one current image or 366 distinct Trivy
 rule IDs. The current Scorecard SARIF also reports Branch Protection and Code
 Review scores; not every SARIF result appears as an open alert.
 
-The open Scorecard alerts comprise 19 `PinnedDependenciesID` instances from
-`pip` commands without hash-pinned transitive dependencies, plus one each for
-CI Tests, SAST coverage, Fuzzing, and the OpenSSF Best Practices badge. The
-Scorecard run passes as an analysis job, not as a remediation gate. Direct pushes
-to `main`, including those requested for this implementation, do not create the
-reviewed PR history that the CI Tests and Code Review checks reward.
+The lock reduced open `PinnedDependenciesID` instances from 19 to **2**. One
+points at a `pip install --no-index --no-deps --no-build-isolation .` command
+for the source already checked out at a commit SHA; this command fetches no
+external package. The other points at the real public `pip install
+pyffmpegcore==...` shown by the terminal demo, which intentionally exercises
+ordinary user installation. These are recorded as scanner limitations for
+their specific purpose, not dismissed alerts. The other four are CI Tests,
+SAST coverage, Fuzzing, and the OpenSSF Best Practices badge. The CI Tests
+message reports tests on one of three sampled merged PRs; SAST reports a scan
+on one of three sampled commits, despite current CodeQL runs succeeding on
+`main`. The new bounded parser fuzzer may not satisfy Scorecard's recognized
+external-fuzzer criterion. No Best Practices badge has been awarded. The
+Scorecard run passes as an analysis job, not as a remediation gate. Direct pushes to `main`, including those
+requested for this implementation, do not create the reviewed PR history that
+the CI Tests and Code Review checks reward.
 
 ## Remediation order
 
@@ -71,3 +80,19 @@ paths without echoing them, and redacts URLs embedded in published diagnostics.
 The new real-media test serves a fixture over loopback HTTP with a dummy
 credential and checks both the JSON result and receipt. It does not claim a
 general sandbox or guarantee redaction of every future third-party message.
+
+## Parser fuzzing and dependency locks
+
+The September 19 parser corpus uses bounded byte and structure mutations for
+pipeline, profile, and receipt files. It found an invalid UTF-8 receipt that
+raised `UnicodeDecodeError` outside the public validation boundary;
+`RunReceipt.read` now raises `ValidationError`, with a focused regression.
+The CI fuzz job and its crash artifact are pending a successful run on the
+fixing SHA. This is parser-only fuzzing; it does not exercise FFmpeg on hostile
+media or prove every possible input safe.
+
+Hash-bearing, wheel-only tool locks now cover CI, docs, release build, pipx
+verification, and container build inputs. A macOS/Python 3.14 clean install,
+local build, archive checks, and fast tests passed. The three-OS matrix,
+release dry run, and updated container scan are still being checked. Public
+wheel smoke deliberately uses the normal resolver to test user installation.
