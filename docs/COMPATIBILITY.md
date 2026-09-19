@@ -12,11 +12,32 @@ End-of-life Python versions are not advertised. A Python version is removed in t
 
 | Platform | Python 3.10 | Python 3.11–3.13 | Python 3.14 |
 | --- | --- | --- | --- |
-| Ubuntu GitHub-hosted runner | Exact-wheel media smoke | Package contract | Exact-wheel media smoke |
-| macOS GitHub-hosted runner | Exact-wheel media smoke | Expected to work | Exact-wheel media smoke |
-| Windows GitHub-hosted runner | Exact-wheel media smoke | Expected to work | Exact-wheel media smoke |
+| Ubuntu GitHub-hosted runner | Tested: exact-wheel media smoke | Tested: package contract only | Tested: exact-wheel media smoke |
+| macOS GitHub-hosted runner | Tested: exact-wheel media smoke | Expected; no current media smoke | Tested: exact-wheel media smoke |
+| Windows GitHub-hosted runner | Tested: exact-wheel media smoke | Expected; no current media smoke | Tested: exact-wheel media smoke |
 
-The [CI workflow](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/ci.yml) is authoritative. A cell counts as tested only when its current required check is green. Compatibility JSON artifacts record the runner architecture, Python version, CLI version, FFmpeg path/version, and FFprobe path/version.
+Python 3.9 and older, PyPy, other operating systems, and architectures outside
+the tested runners are **not in the support policy**. "Expected" cells have no
+cross-platform media result. Even a tested cell proves only the named workflows
+on that runner and FFmpeg build.
+
+The [CI workflow](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/ci.yml) is authoritative. A cell counts as tested only when its current required check is green. Compatibility JSON artifacts record the runner architecture, Python version, CLI version, FFmpeg path/version, and FFprobe path/version. The workflow also validates the six artifacts and uploads a readable summary; `python scripts/summarize_compatibility.py <downloaded-artifact-directory> --run-url <run-url>` reproduces it locally.
+
+### Verified snapshot: 19 September 2026
+
+In [run `35443219996`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35443219996), all six media smoke jobs and the Linux Python 3.10–3.14 package-contract jobs passed. The six media jobs installed the **same prebuilt wheel** (`pyffmpegcore-0.2.2-py3-none-any.whl`, SHA-256 `9f6e193e2615b17def8e0e58b024c9d6284fd691f405406e9d0371277c7ec969`). Each artifact reports 22/22 successful steps, including quickstart, probe, conversion, stream preservation, audio extraction, thumbnails, five profiles, batch, and pipeline.
+
+| Runner | Architecture | Python | FFmpeg reported by `doctor` | Capability catalog gaps |
+| --- | --- | --- | --- | --- |
+| Ubuntu | x86_64 | 3.10.21 / 3.14.7 | 6.1.1-3ubuntu5 | None reported |
+| macOS | arm64 | 3.10.11 / 3.14.7 | 9.0.1 | `encoder:libwebp` and `filter:subtitles` absent |
+| Windows | AMD64 | 3.10.11 / 3.14.7 | 9.0.1 essentials build | None reported |
+
+The macOS catalog gaps affect `images/webp` and `subtitles/burn` on that
+Homebrew build; those optional capabilities are **not** validated by the
+successful profile smoke. No Android, iOS, or physical-device behavior is
+implied by this CI snapshot. Runner packages move, so recheck the latest run
+before making a release claim.
 
 ## FFmpeg Policy
 
@@ -35,4 +56,4 @@ Optional filters and encoders vary by build. Tests skip a capability only when t
 
 The [scheduled cold-fixture workflow](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/fixtures.yml) regenerates fixtures without cache reuse and runs representative media jobs on all three operating systems every week. Failures indicate runner, package-manager, Python, or FFmpeg drift that must be triaged before the next release.
 
-Latest policy update: 2026-08-25. Consult the linked workflows for the latest execution date and exact versions.
+Latest policy update: 2026-09-19. Consult the linked workflows for the latest execution date and exact versions.

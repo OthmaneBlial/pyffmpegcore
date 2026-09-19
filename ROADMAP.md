@@ -173,6 +173,12 @@ n'est encore garanti ; validation CI de ces changements en attente.
 
 ### 2.3 Maintenir une matrice de compatibilité vérifiable
 
+**État :** les six artefacts du
+[run `35443219996`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35443219996)
+ont été résumés avec versions exactes et capacités absentes ; un job CI génère
+désormais ce rapport à partir des artefacts. Validation de ce nouveau job sur
+un run complet en attente avant de cocher.
+
 - **Objectif :** faire correspondre chaque affirmation Python/OS/FFmpeg à un run actuel et aux capacités réellement disponibles.
 - **Changements :** garder tests paquet 3.10–3.14 et wheel média sur trois OS ; rendre visibles les skips de codecs/filtres ; tester au moins une version FFmpeg de référence par famille et un build récent (FFmpeg 9.0.1 est l'environnement local d'audit, pas une preuve multi-OS) ; produire un rapport lisible depuis les artefacts CI.
 - **Fichiers :** `.github/workflows/ci.yml`, `fixtures.yml`, `scripts/validate_capability_catalog.py`, `docs/COMPATIBILITY.md`, `docs/test-methodology.md`.

@@ -22,4 +22,10 @@ CI separates evidence:
 - exact-artifact smoke installs one prebuilt wheel on Linux, macOS, and Windows;
 - the weekly cold run regenerates all fixtures without a cache.
 
+Each exact-artifact job uploads its command results and a capability-catalog
+report. `scripts/summarize_compatibility.py` rejects missing/failed cells and
+mixed wheel hashes before creating the CI job summary and Markdown artifact.
+The dated [compatibility policy](COMPATIBILITY.md) distinguishes those media
+checks from Linux-only package contracts and untested OS/Python combinations.
+
 Generated media is excluded from source and wheel artifacts. Tests and the generation manifest are included in the sdist so its evidence can be inspected and reproduced.
