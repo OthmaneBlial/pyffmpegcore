@@ -247,7 +247,9 @@ cible Atheris a été reconnue par Scorecard. Au dernier inventaire après
 `b9ceea7`, la [CI complète](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35449898003),
 le [CodeQL](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35449897997)
 et le [Scorecard](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35449898050)
-ont aussi réussi. 481 alertes Trivy restent ouvertes et le seul signal
+ont aussi réussi ; le contrôle Scorecard relancé après la réduction des
+permissions a également réussi dans le [run 35451875057](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35451875057).
+481 alertes Trivy restent ouvertes et le seul signal
 Scorecard ouvert est l'inscription externe OpenSSF Best Practices ; leur triage
 figure dans `SECURITY_TRIAGE.md`. Le candidat Trixie n'est pas encore publié.
 
