@@ -39,7 +39,7 @@ one documented for users until a separately authorized publication.
 
 ## GitHub alert inventory
 
-At the 19 September 2026 snapshot after `b0243b6`, GitHub Code Scanning lists
+At the 19 September 2026 snapshot after `b9ceea7`, GitHub Code Scanning lists
 **481 open Trivy alerts** and **1 open Scorecard alert**. Alert instances span
 repeated scans and are not the same unit as the 874 findings in one current
 image or 366 distinct Trivy rule IDs. The current Scorecard SARIF also reports Branch Protection and Code
@@ -104,7 +104,9 @@ Fuzzing alert is closed after that run.
 
 Hash-bearing, wheel-only tool locks now cover CI, docs, release build, pipx
 verification, the public terminal demo, and container build inputs. The
-[three-OS CI matrix](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35445459849),
+[current CI matrix](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35449898003),
+[CodeQL run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35449897997),
+[Scorecard run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35449898050),
 [release dry run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35445461779),
 and new two-architecture container scan succeeded. Public wheel smoke
 deliberately uses the normal resolver to test user installation.

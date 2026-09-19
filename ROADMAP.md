@@ -229,9 +229,12 @@ et [ClusterFuzzLite](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/3
 réussis. Le corpus de mutations a révélé puis corrigé une exception UTF-8 du
 lecteur de receipts ; trois cibles et deux seeds ont tourné dans CI, puis la
 cible Atheris a été reconnue par Scorecard. Au dernier inventaire après
-`b0243b6`, 481 alertes Trivy restent ouvertes et le seul signal Scorecard ouvert
-est l'inscription externe OpenSSF Best Practices ; leur triage figure dans
-`SECURITY_TRIAGE.md`. Le candidat Trixie n'est pas encore publié.
+`b9ceea7`, la [CI complète](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35449898003),
+le [CodeQL](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35449897997)
+et le [Scorecard](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35449898050)
+ont aussi réussi. 481 alertes Trivy restent ouvertes et le seul signal
+Scorecard ouvert est l'inscription externe OpenSSF Best Practices ; leur triage
+figure dans `SECURITY_TRIAGE.md`. Le candidat Trixie n'est pas encore publié.
 
 - **Objectif :** distinguer les vulnérabilités corrigibles, les avis sans correctif, les signaux de politique et les doublons historiques, puis réduire les causes plutôt que masquer les alertes.
 - **Changements :** tenir `SECURITY_TRIAGE.md` à jour pour chaque digest ; tester et scanner aussi l'image arm64 avant publication ; remplacer les installations `pip` non verrouillées en CI/release/demo par des locks avec hashes pour la matrice Python/OS ; maintenir le corpus et l'intégration ClusterFuzzLite reconnus par Scorecard ; contrôler la couverture CodeQL et des tests sur les révisions proposées ; préparer les preuves du badge OpenSSF sans revendiquer son octroi prématurément.
