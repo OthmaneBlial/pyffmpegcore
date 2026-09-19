@@ -26,8 +26,8 @@ manifest bytes match its SHA-256 and list both advertised platforms.
 
 ## Build inputs
 
-- base: `python:3.12.14-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e`
-- FFmpeg Debian package: `7:5.1.9-0+deb12u1`
+- base candidate: `python:3.12-slim-trixie@sha256:2f17fc044b579bab302c2e8054d3a686e2cb9a83de48e70534b94cd8ebbe06a9`
+- FFmpeg Debian package candidate: `7:7.1.5-0+deb13u1`
 - Python package: the exact checked-out repository revision recorded by OCI
   labels and provenance
 - runtime user: numeric UID/GID `10001`

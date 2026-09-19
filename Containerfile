@@ -1,6 +1,6 @@
-FROM python:3.12.14-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e
+FROM python:3.12-slim-trixie@sha256:2f17fc044b579bab302c2e8054d3a686e2cb9a83de48e70534b94cd8ebbe06a9
 
-ARG FFMPEG_VERSION=7:5.1.9-0+deb12u1
+ARG FFMPEG_VERSION=7:7.1.5-0+deb13u1
 
 LABEL org.opencontainers.image.title="PyFFmpegCore"
 LABEL org.opencontainers.image.description="Safe, explainable FFmpeg task runner for terminal and CI workflows"
