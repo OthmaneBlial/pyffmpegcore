@@ -128,6 +128,31 @@ def add_report_entry(
         )
 
 
+def add_expected_failure(
+    report: list[dict[str, object]],
+    name: str,
+    result: subprocess.CompletedProcess[str],
+    *,
+    exit_code: int,
+    required_text: tuple[str, ...],
+) -> bool:
+    """Record a refusal as passing only when its category and remedy match."""
+    published = f"{result.stdout}\n{result.stderr}"
+    passed = result.returncode == exit_code and all(part in published for part in required_text)
+    report.append(
+        {
+            "name": name,
+            "returncode": result.returncode,
+            "expected_returncode": exit_code,
+            "passed": passed,
+            "stdout": result.stdout.strip(),
+            "stderr": result.stderr.strip(),
+        }
+    )
+    print(f"clean-install check: {'passed' if passed else 'failed'} {name} (rc={result.returncode})", file=sys.stderr)
+    return passed
+
+
 def sha256_for_file(path: Path) -> str:
     """Return the SHA-256 digest for an artifact."""
     digest = hashlib.sha256()
@@ -352,6 +377,79 @@ def main(argv: list[str] | None = None) -> int:
             except json.JSONDecodeError:
                 return 1
             if receipt_result.get("valid") is not True:
+                return 1
+
+            missing_ffmpeg = run_command(
+                [str(cli_path), "doctor", "--ffmpeg-path", str(outputs_dir / "missing ffmpeg"), "--json"]
+            )
+            if not add_expected_failure(
+                commands,
+                "missing-ffmpeg-remedy",
+                missing_ffmpeg,
+                exit_code=3,
+                required_text=("Executable not found", "--ffmpeg-path", "pyffmpegcore doctor"),
+            ):
+                return 1
+            try:
+                missing_report = json.loads(missing_ffmpeg.stdout)
+            except json.JSONDecodeError:
+                return 1
+            if missing_report.get("ffmpeg", {}).get("available") is not False:
+                return 1
+
+            missing_encoder_output = outputs_dir / "missing-encoder.mp4"
+            missing_encoder = run_command(
+                [
+                    str(cli_path),
+                    "convert",
+                    "--input",
+                    str(quickstart_input),
+                    "--output",
+                    str(missing_encoder_output),
+                    "--video-codec",
+                    "pyffmpegcore_missing_encoder",
+                    "--audio-codec",
+                    "aac",
+                ]
+            )
+            if (
+                not add_expected_failure(
+                    commands,
+                    "missing-encoder-remedy",
+                    missing_encoder,
+                    exit_code=4,
+                    required_text=("encoder:pyffmpegcore_missing_encoder", "pyffmpegcore doctor"),
+                )
+                or missing_encoder_output.exists()
+            ):
+                return 1
+
+            existing_hash = sha256_for_file(quickstart_output)
+            existing_output = run_command(profile_base)
+            if (
+                not add_expected_failure(
+                    commands,
+                    "existing-output-remedy",
+                    existing_output,
+                    exit_code=4,
+                    required_text=("Output already exists", "--force"),
+                )
+                or sha256_for_file(quickstart_output) != existing_hash
+            ):
+                return 1
+
+            invalid_parent_output = quickstart_input / "child.mp4"
+            invalid_parent = run_command([*profile_base[:-1], str(invalid_parent_output)])
+            if (
+                not add_expected_failure(
+                    commands,
+                    "invalid-output-parent-remedy",
+                    invalid_parent,
+                    exit_code=4,
+                    required_text=("Output parent is not writable", "writable directory"),
+                )
+                or invalid_parent_output.exists()
+            ):
                 return 1
 
             ensure_media(args.media_root)
