@@ -9,6 +9,8 @@ This project now ships a `pyffmpegcore` console command.
 - `ffprobe`
 
 Install FFmpeg first using your normal OS package manager or binary installer.
+The [platform installation guide](docs/installation.md) includes Fedora and
+Arch package commands and checks for both executables.
 
 ## Install With `pipx`
 
@@ -94,8 +96,6 @@ Then run the repository-independent synthetic verification:
 ```bash
 pyffmpegcore smoke-test
 ```
-
-The install commands will switch to the shorter PyPI form only after a public package release exists.
 
 ## Windows Installer
 

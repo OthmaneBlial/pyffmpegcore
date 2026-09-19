@@ -15,6 +15,18 @@ SHELL_INSTALLER = REPO_ROOT / "install.sh"
 POWERSHELL_INSTALLER = REPO_ROOT / "install.ps1"
 
 
+def test_linux_ffmpeg_install_guidance_checks_both_binaries_and_workflow():
+    """Distribution instructions must include package provenance and executable checks."""
+    installation = (REPO_ROOT / "docs" / "installation.md").read_text(encoding="utf-8")
+    assert "sudo dnf install ffmpeg-free" in installation
+    assert "sudo pacman -S ffmpeg" in installation
+    assert "packages.fedoraproject.org/pkgs/ffmpeg/ffmpeg-free/" in installation
+    assert "archlinux.org/packages/extra/x86_64/ffmpeg/" in installation
+    for command in ("ffmpeg -version", "ffprobe -version", "pyffmpegcore doctor", "pyffmpegcore smoke-test"):
+        assert command in installation
+    assert "not executed on those distributions" in installation
+
+
 def test_shell_installer_help_and_syntax():
     """
     The Linux/macOS installer should be syntax-valid and explain its options.
