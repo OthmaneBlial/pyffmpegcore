@@ -4,7 +4,7 @@ This file defines the current public artifact strategy for the `pyffmpegcore` CL
 
 ## Current Strategy
 
-The CLI is currently distributed through standard Python packaging only:
+The CLI's downloadable Python release artifacts are:
 
 - wheel
 - source distribution
@@ -24,6 +24,12 @@ The install paths built on top of that are:
 - `./install.sh`
 - `.\install.ps1`
 
+The project also publishes a [digest-pinned container image](docs/container.md)
+and a [GitHub Action](docs/github-action.md) for CI workflows. Those are
+separate integration channels, not standalone desktop executables or assets
+inside the wheel/sdist. Their source revision and digest must be checked
+against the specific run cited by each guide before a release announces them.
+
 ## What We Are Not Shipping Yet
 
 We are not shipping standalone binaries in this release.
@@ -37,7 +43,8 @@ Why:
 
 That means the honest release story right now is:
 
-- Python package artifacts are first-class
+- wheel and sdist remain the downloadable Python release artifacts
+- container and Action users get separately versioned, pinned integration paths
 - installer scripts are bootstrap helpers around those package artifacts
 - standalone executables can be reconsidered later if there is real demand
 

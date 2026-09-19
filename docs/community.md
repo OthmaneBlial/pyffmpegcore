@@ -14,12 +14,15 @@ result took, and what friction remains.
 - Vulnerabilities use private security reporting, never a public issue or
   Discussion.
 
-The initial bounded newcomer queue is [#7](https://github.com/OthmaneBlial/pyffmpegcore/issues/7),
+The original bounded newcomer queue, [#7](https://github.com/OthmaneBlial/pyffmpegcore/issues/7),
 [#8](https://github.com/OthmaneBlial/pyffmpegcore/issues/8),
 [#9](https://github.com/OthmaneBlial/pyffmpegcore/issues/9),
 [#10](https://github.com/OthmaneBlial/pyffmpegcore/issues/10), and
-[#11](https://github.com/OthmaneBlial/pyffmpegcore/issues/11). Each issue names
-files, acceptance criteria, verification commands, and non-goals where useful.
+[#11](https://github.com/OthmaneBlial/pyffmpegcore/issues/11), is closed as of
+19 September 2026. Each issue names files, acceptance criteria, verification
+commands, and non-goals where useful. Check the
+[current open `good first issue` list](https://github.com/OthmaneBlial/pyffmpegcore/issues?q=is%3Aopen+label%3A%22good+first+issue%22)
+before choosing work; this snapshot has no open issues to claim as available.
 
 Labels have narrow meanings: `good first issue` is bounded and reviewable,
 `help wanted` has an active maintainer, `recipe` is a user outcome,

@@ -1,9 +1,7 @@
 site_name: PyFFmpegCore
 site_description: The safe, explainable FFmpeg task runner for the terminal, Python, and CI
 site_url: https://othmaneblial.github.io/pyffmpegcore/
-# The doubled path separator keeps Material from requesting releases/latest
-# before the first release exists; GitHub serves the canonical repository.
-repo_url: https://github.com//OthmaneBlial/pyffmpegcore
+repo_url: https://github.com/OthmaneBlial/pyffmpegcore
 repo_name: OthmaneBlial/pyffmpegcore
 edit_uri: edit/main/docs/
 

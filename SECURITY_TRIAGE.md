@@ -59,3 +59,15 @@ reviewed PR history that the CI Tests and Code Review checks reward.
 
 No alerts were bulk dismissed as part of this triage. Scan evidence and
 remaining findings should be reevaluated for each published digest.
+
+## Application-level URL handling
+
+An audit reproduction found that a media URL could be normalized into a local
+path, exposing a dummy credential in a single-command `--explain` output. A
+local HTTP pipeline replay also showed FFmpeg echoing its input URL inside the
+`--result-json` stderr field even though the receipt masked it. Commit
+`16371ec` preserves remote URIs in pipeline plans, rejects direct CLI URL
+paths without echoing them, and redacts URLs embedded in published diagnostics.
+The new real-media test serves a fixture over loopback HTTP with a dummy
+credential and checks both the JSON result and receipt. It does not claim a
+general sandbox or guarantee redaction of every future third-party message.

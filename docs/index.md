@@ -17,14 +17,14 @@ hide:
       </p>
       <div class="pfc-actions">
         <a class="pfc-button" href="quickstart/">Prove it in five minutes</a>
-        <a class="pfc-button pfc-button--ghost" href="terminal-demo/">Watch the 63-second proof</a>
+        <a class="pfc-button pfc-button--ghost" href="terminal-demo/">Watch the archived 0.2.1 run</a>
         <a class="pfc-button pfc-button--ghost" href="recipes/">Pick a real recipe</a>
       </div>
     </div>
     <div class="pfc-hero__console">
-      <div class="pfc-terminal" aria-label="Successful PyFFmpegCore smoke test">
+      <div class="pfc-terminal" aria-label="Illustrative PyFFmpegCore smoke-test flow, not a captured terminal">
         <div class="pfc-terminal__bar">
-          <span>Proof channel / local</span>
+          <span>Workflow illustration / local</span>
           <span class="pfc-terminal__status">● ready</span>
         </div>
         <div class="pfc-terminal__body">
@@ -56,9 +56,9 @@ hide:
   <section class="pfc-live-proof" aria-labelledby="live-proof-title">
     <div class="pfc-live-proof__signal" aria-hidden="true"><span>63.0</span><small>seconds</small></div>
     <div class="pfc-live-proof__copy">
-      <p class="pfc-kicker">Captured from public PyPI / no staged output</p>
-      <h2 id="live-proof-title">Watch the whole trust chain run.</h2>
-      <p>Fresh install. Real capability scan. Synthetic smoke test. Explained FFmpeg plan. Structured progress. Probed output. Validated receipt.</p>
+      <p class="pfc-kicker">Archived PyPI 0.2.1 recording / no staged output</p>
+      <h2 id="live-proof-title">Watch a real 0.2.1 run.</h2>
+      <p>The 63-second capture shows a fresh install, capability scan, synthetic smoke test, explained plan, progress, probed output, and validated receipt. The current signed release above is 0.2.2.</p>
       <div class="pfc-actions">
         <a class="pfc-button" href="terminal-demo/">Open the terminal proof</a>
         <a class="pfc-button pfc-button--ghost" href="https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.2.2">Inspect the signed release</a>

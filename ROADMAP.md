@@ -115,6 +115,12 @@ a validé les six installations sur Linux, macOS et Windows (Python 3.10 et
 
 ### 1.2 Rendre l'installation et les erreurs actionnables
 
+**État :** guides FFmpeg par OS ajoutés ; `0fd47fe` affiche des remèdes pour
+outils manquants et sorties refusées ; `16371ec` évite l'écho d'une URL secrète
+dans les commandes directes et le résultat JSON d'un pipeline. Tests ciblés et
+pipeline HTTP local réussis. Installation WinGet/Fedora/Arch et essais complets
+d'erreurs sur chaque OS encore à vérifier ; la tâche reste ouverte.
+
 - **Objectif :** éviter que « installez FFmpeg » ou une erreur de capacité soit une impasse.
 - **Changements :** expliquer, pour chaque OS supporté, comment installer et vérifier `ffmpeg`/`ffprobe` avec une source de paquets identifiée et un chemin de rattrapage ; faire afficher par `doctor` et les erreurs de préflight la capacité précise, le binaire utilisé et l'étape suivante. Préserver les contrats JSON et les codes de sortie.
 - **Fichiers :** `docs/installation.md`, `docs/troubleshooting.md`, `docs/COMPATIBILITY.md`, `pyffmpegcore/cli.py`, `preflight.py`, `presentation.py`, tests de `doctor` et d'erreurs.
@@ -182,6 +188,11 @@ encore ; la tâche reste ouverte.
 ## Phase 3 — P1 : documentation, UX visuelle et positionnement
 
 ### 3.1 Corriger les documents qui décrivent une autre époque
+
+**État :** checklist de prochaine release, canaux de distribution, politique
+de dépréciation, URL GitHub canonique et étiquetage du cast `0.2.1` corrigés
+localement ; publication et cohérence avec la prochaine version restent à
+valider avant de cocher.
 
 - **Objectif :** un nouvel utilisateur et un mainteneur lisent la même vérité sur la version et les canaux disponibles.
 - **Changements :** remplacer les cases historiques de `RELEASE_CHECKLIST.md` par une checklist à remplir pour chaque version avec URLs de preuves ; aligner `CLI_DISTRIBUTION.md` sur wheel/sdist, image et Action ; résoudre la contradiction de fenêtre de dépréciation entre `docs/RELEASING.md` et `docs/api-stability.md` ; enlever le contournement `repo_url: https://github.com//...` devenu obsolète ; distinguer le cast `0.2.1` de la release `0.2.2` ou enregistrer un nouveau cast réel de la version publiée.

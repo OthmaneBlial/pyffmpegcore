@@ -31,12 +31,14 @@ def test_cli_artifact_builder_help():
     assert "--json" in result.stdout
 
 
-def test_cli_distribution_doc_states_python_packaging_only():
+def test_cli_distribution_doc_distinguishes_release_artifacts_from_integrations():
     """
     The distribution doc should keep the current artifact strategy explicit.
     """
     distribution_doc = (REPO_ROOT / "CLI_DISTRIBUTION.md").read_text(encoding="utf-8")
-    assert "standard Python packaging only" in distribution_doc
+    assert "wheel and sdist remain the downloadable Python release artifacts" in distribution_doc
+    assert "digest-pinned container image" in distribution_doc
+    assert "GitHub Action" in distribution_doc
     assert "We are not shipping standalone binaries in this release." in distribution_doc
     assert "self-contained testable source" in distribution_doc
 

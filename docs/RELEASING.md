@@ -19,12 +19,13 @@ Only a maintainer with repository and PyPI project control may publish a release
    ruleset prevents deletion and non-fast-forward updates of `v*` refs:
 
    ```bash
+   release_version="$(python -c 'from pyffmpegcore import __version__; print(__version__)')"
    git -c gpg.format=ssh \
      -c user.signingkey="$HOME/.ssh/id_ed25519" \
-     tag -s v0.2.2 -m "pyffmpegcore 0.2.2"
+     tag -s "v${release_version}" -m "pyffmpegcore ${release_version}"
    git -c gpg.format=ssh \
      -c gpg.ssh.allowedSignersFile=.github/allowed_signers \
-     tag --verify v0.2.2
+     tag --verify "v${release_version}"
    ```
 
 5. Push the tag. The workflow builds once, tests the exact wheel on the supported OS/Python anchors, attests it, and publishes it through OIDC.
@@ -32,7 +33,7 @@ Only a maintainer with repository and PyPI project control may publish a release
 7. Record the public terminal proof only after those endpoints are healthy:
 
    ```bash
-   scripts/record_terminal_demo.sh docs/assets/terminal-demo-v0.2.2.cast 0.2.2
+   scripts/record_terminal_demo.sh "docs/assets/terminal-demo-v${release_version}.cast" "${release_version}"
    ```
 
    The recorder installs the exact public version in a fresh environment, captures a real PTY session, enforces a 60–90 second duration and required proof steps, rejects private home paths, and writes an accessible text transcript beside the cast. Never hand-edit the recording to invent output.
@@ -52,7 +53,13 @@ Delete an artifact only for legal, credential, malware, or personal-data exposur
 
 ## Deprecation
 
-Announce a CLI/API deprecation in the changelog and user documentation before removal. Keep the old behavior for at least one feature release when security and correctness allow, provide a migration example, and use a major version for intentional incompatible public-contract changes.
+Announce a CLI/API deprecation in the changelog and user documentation before
+removal. Before 1.0, follow the [API stability policy](api-stability.md): keep
+the old public API working for at least two minor releases and 90 days, emit a
+runtime `DeprecationWarning`, name the first removal version, and test both
+paths. Provide a migration example. After 1.0, intentional incompatible
+public-contract changes require a major version. Security or correctness
+exceptions need an explicit release note and migration path.
 
 ## Security Fixes
 
