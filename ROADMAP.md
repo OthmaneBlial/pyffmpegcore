@@ -234,6 +234,12 @@ et site public encore à faire ; tâche ouverte.
 
 ### 3.4 Actualiser la comparaison concurrentielle par tâches
 
+**État :** [x] comparaison datée du 19 septembre, cinq alternatives reliées
+à leurs documentations officielles, scénario PyFFmpegCore relié au replay et
+au receipt vérifiés, sans benchmark comparatif. Build strict, contrôle des
+liens internes et tableau mobile validés localement. Sources externes à
+réexaminer lors des prochaines releases majeures.
+
 - **Objectif :** expliquer le bon choix d'outil sans promesse de supériorité inventée.
 - **Changements :** reprendre `docs/comparison.md` avec une date, les documentations officielles actuelles de FFmpeg, `ffmpeg-python`, `python-ffmpeg`, `ffmpegio` et PyAV, puis un scénario commun (conversion contrôlée avec diagnostic, plan, sortie et preuve) ; distinguer capacités testées ici, capacités documentées ailleurs et limites. Relier les véritables différences au README.
 - **Fichiers :** `docs/comparison.md`, `README.md`, `research_pyffmpegcore_roadmap/` ou notes de preuve renouvelées.

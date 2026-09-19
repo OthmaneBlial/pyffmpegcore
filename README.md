@@ -114,8 +114,10 @@ size will reflect your input.
 
 Raw FFmpeg remains right when you already own and review the complete command.
 Graph builders fit arbitrary filter graphs. PyAV fits packet/frame access.
-PyFFmpegCore occupies the operational layer between intent and evidence. See
-the [factual comparison](docs/comparison.md).
+PyFFmpegCore packages a maintained path from preflight to a validated receipt.
+The [dated, task-based comparison](docs/comparison.md) shows that path on a
+reproduced VP9-to-MP4 job, including its larger output and links to each
+neighboring project's own documentation.
 
 ## Proof, not promises
 
