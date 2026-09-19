@@ -32,10 +32,13 @@ manifest bytes match its SHA-256 and list both advertised platforms.
   labels and provenance
 - runtime user: numeric UID/GID `10001`
 
-The base digest is immutable. The build upgrades Debian packages before adding
-FFmpeg. Debian dependency resolution can still change
-when a security update is published, so the pushed image digest, SBOM, and
-provenance—not a local rebuild—are the release identity.
+The public digest above is the immutable Bookworm image built from revision
+`7685c02`. The current unpublished candidate replaces that runtime with
+Trixie/FFmpeg `7:7.1.5-0+deb13u1`; its amd64/arm64 scan and smoke evidence is
+recorded in [run 35449281881](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35449281881).
+It has not replaced the public digest. Debian dependency resolution can still
+change when a security update is published, so the pushed image digest, SBOM,
+and provenance—not a local rebuild—are the release identity.
 
 The final runtime removes the checked-out source tree and Python packaging
 tools (`pip`, `setuptools`, and `wheel`) after installing PyFFmpegCore. Those
@@ -79,9 +82,11 @@ GPL/LGPL components. Debian copyright files remain installed under
 Codec patent rules vary by jurisdiction; image users remain responsible for
 their media and deployment context.
 
-The review baseline is the Debian Bookworm FFmpeg package source and copyright
-metadata. A future custom FFmpeg build requires a fresh license, codec,
-security-update, and maintenance review before it can replace this image.
+The public review baseline is the Debian Bookworm FFmpeg package source and
+copyright metadata. The unpublished Trixie candidate uses Debian's FFmpeg
+package source as well. A future custom FFmpeg build requires a fresh license,
+codec, security-update, and maintenance review before it can replace this
+image.
 
 ## Verification
 

@@ -80,11 +80,15 @@ Les phases suivantes sont des gates successifs. Une tâche n'est close que si se
 **État :** [x] Base rafraîchie dans `aeb2805` ; le
 [run conteneur `35446437477`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35446437477)
 a réussi les smokes non-root et scans bloquants sur amd64 et arm64 (QEMU),
-puis publié l'index
+puis publié l’index
 `sha256:796661ae57874f07221e9ad258499b9a9473282544744615c7b40b719aadbc9a`
 depuis le SHA `7685c02`, avec SBOM, provenance et attestation vérifiée. Les
 deux rapports complets gardent respectivement 874 et 863 constats sans version
-corrigée connue.
+corrigée connue. Le candidat Debian Trixie du SHA `d7b352e` a ensuite passé le
+build, les smokes non-root et les scans amd64/arm64 dans le
+[run `35449281881`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35449281881)
+avec zéro HIGH/CRITICAL corrigible, mais il n'a pas été publié : la publication
+est désormais réservée au `workflow_dispatch` avec `publish=true`.
 
 - **Objectif :** produire un digest de conteneur maintenu dont le scan de publication passe.
 - **Changements :** rafraîchir la base Debian épinglée et les paquets corrigés, vérifier la disponibilité de la version FFmpeg retenue, reconstruire l'image multi-architecture, conserver la liste des licences et le SBOM. Identifier dans le rapport Trivy les deux CVE `libpcre2-8-0` et traiter toute nouvelle alerte fixable.
@@ -217,19 +221,21 @@ manquantes sur macOS ; son artefact Markdown est téléchargeable depuis le run.
 
 ### 2.4 Réduire les alertes de chaîne logicielle par des corrections prouvées
 
-**État :** verrous avec hashes appliqués aux outils CI/docs, pipx et au build
-conteneur ; [matrice CI complète](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35445459849),
-[release à blanc](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35445461779)
-et [conteneur multi-architecture](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35446437477)
+**État :** verrous avec hashes appliqués aux outils CI/docs, pipx, au terminal
+demo et au build conteneur ; [matrice CI complète](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35445459849),
+[release à blanc](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35445461779),
+[conteneur multi-architecture](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35449281881)
+et [ClusterFuzzLite](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35449599477)
 réussis. Le corpus de mutations a révélé puis corrigé une exception UTF-8 du
-lecteur de receipts ; trois cibles et deux seeds ont tourné dans CI. Au dernier
-inventaire, 697 alertes Trivy et quatre Scorecard restent ouvertes ; leur
-triage figure dans `SECURITY_TRIAGE.md`. Le badge externe, un éventuel fuzzing
-reconnu par Scorecard et les futurs avis Debian restent ouverts.
+lecteur de receipts ; trois cibles et deux seeds ont tourné dans CI, puis la
+cible Atheris a été reconnue par Scorecard. Au dernier inventaire après
+`b0243b6`, 481 alertes Trivy restent ouvertes et le seul signal Scorecard ouvert
+est l'inscription externe OpenSSF Best Practices ; leur triage figure dans
+`SECURITY_TRIAGE.md`. Le candidat Trixie n'est pas encore publié.
 
 - **Objectif :** distinguer les vulnérabilités corrigibles, les avis sans correctif, les signaux de politique et les doublons historiques, puis réduire les causes plutôt que masquer les alertes.
-- **Changements :** tenir `SECURITY_TRIAGE.md` à jour pour chaque digest ; tester et scanner aussi l'image arm64 avant publication ; remplacer les installations `pip` non verrouillées en CI/release par un lock avec hashes pour la matrice Python/OS ; créer un corpus de fuzzing pour les parseurs de pipeline, profil et receipt ; contrôler la couverture CodeQL et des tests sur les révisions proposées ; préparer les preuves du badge OpenSSF sans revendiquer son octroi prématurément.
-- **Fichiers :** `Containerfile`, `.github/workflows/container.yml`, `ci.yml`, `release.yml`, `codeql.yml`, `scorecard.yml`, `pyproject.toml`, fichiers de lock, `tests/` ou `fuzz/`, `SECURITY_TRIAGE.md`.
+- **Changements :** tenir `SECURITY_TRIAGE.md` à jour pour chaque digest ; tester et scanner aussi l'image arm64 avant publication ; remplacer les installations `pip` non verrouillées en CI/release/demo par des locks avec hashes pour la matrice Python/OS ; maintenir le corpus et l'intégration ClusterFuzzLite reconnus par Scorecard ; contrôler la couverture CodeQL et des tests sur les révisions proposées ; préparer les preuves du badge OpenSSF sans revendiquer son octroi prématurément.
+- **Fichiers :** `Containerfile`, `.clusterfuzzlite/`, `.github/workflows/container.yml`, `ci.yml`, `release.yml`, `codeql.yml`, `scorecard.yml`, `scripts/run_terminal_demo.sh`, `pyproject.toml`, fichiers de lock, `tests/`, `fuzz_targets/`, `SECURITY_TRIAGE.md`.
 - **Acceptation :** les deux architectures passent le filtre HIGH/CRITICAL corrigible et un smoke non-root ; installations CI/release déterministes avec hashes et contrôle des distributions ; cibles de fuzzing reproduisant au moins les erreurs de validation connues et exécutées en CI ; Scorecard et Code Scanning récents liés au même SHA, avec chaque alerte ouverte catégorisée. Le badge externe n'est annoncé que s'il est accordé.
 - **Validation :** artefacts Trivy amd64/arm64, manifest OCI, exécution du lock sur Python 3.10–3.14 et les trois OS, corpus de fuzzing et crash replay, CodeQL/CI/Scorecard sur un SHA identique, revue manuelle des alertes restant ouvertes.
 - **Dépendances/risques :** 0.3, 0.4 et 2.3 ; les avis Debian sans version corrigée ne peuvent pas être fermés honnêtement par un changement local, le score de revue dépend de la politique PR et le badge exige une validation externe.

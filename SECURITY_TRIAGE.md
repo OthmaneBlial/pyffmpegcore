@@ -25,29 +25,35 @@ open after the base refresh and Debian package upgrade. Two new open instances
 of `CVE-2026-8674` affect `libc-bin` and `libc6`; Trivy currently reports no
 fixed version for either. Do not dismiss them solely to reduce the alert count.
 
+The [Trixie candidate run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35449281881)
+also built and smoke-tested both architectures without publishing them. Its
+complete amd64 and arm64 reports each contain 592 findings (1 CRITICAL, 206
+HIGH, 203 MEDIUM, 164 LOW, and 18 UNKNOWN across 215 rule IDs), while both
+blocking reports contain zero HIGH/CRITICAL findings with a known fixed
+version. The candidate artifacts identify Debian 13.7 and image IDs
+`sha256:5acf802a5256b4fbdd55709545e22970b3d2dea5364560f68bb1b43c4f6be2f6`
+(amd64) and
+`sha256:945e00ad92bdb7f0dcf8949109e2a540aeba0f17195804e9bd0f5b25e0987496`
+(arm64). They are scan evidence only; the public GHCR digest above remains the
+one documented for users until a separately authorized publication.
+
 ## GitHub alert inventory
 
-At the 19 September 2026 snapshot after `3a7315d`, GitHub Code Scanning lists
-**697 open Trivy alerts** and **4 open Scorecard alerts**. Alert instances span
+At the 19 September 2026 snapshot after `b0243b6`, GitHub Code Scanning lists
+**481 open Trivy alerts** and **1 open Scorecard alert**. Alert instances span
 repeated scans and are not the same unit as the 874 findings in one current
 image or 366 distinct Trivy rule IDs. The current Scorecard SARIF also reports Branch Protection and Code
 Review scores; not every SARIF result appears as an open alert.
 
-The lock reduced open `PinnedDependenciesID` instances from 19 to **2**. One
-points at a `pip install --no-index --no-deps --no-build-isolation .` command
-for the source already checked out at a commit SHA; this command fetches no
-external package. The other points at the real public `pip install
-pyffmpegcore==...` shown by the terminal demo, which intentionally exercises
-ordinary user installation. These are recorded as scanner limitations for
-their specific purpose, not dismissed alerts. The other two open alerts are
-Fuzzing and the OpenSSF Best Practices badge. The earlier CI Tests and SAST
-alerts are no longer open after recent CI and CodeQL runs; this is an
-observation of GitHub's current inventory, not a claim about future commits.
-The bounded parser fuzzer has not satisfied Scorecard's recognized
-external-fuzzer criterion. No Best Practices badge has been awarded. A passing
-Scorecard analysis job does not mean all its checks score highly. Direct
-pushes to `main`, including those requested for this implementation, do not
-create a reviewed PR history.
+The hash-bearing wheel install in the Action and the public terminal demo
+removed the open `PinnedDependenciesID` instances. The successful
+[ClusterFuzzLite run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35449599477)
+is now recognized by Scorecard, and its Fuzzing alert is closed. The remaining
+Scorecard alert is the OpenSSF Best Practices badge, which requires an
+authenticated external project enrollment; no badge has been awarded. A
+passing Scorecard analysis job does not mean all its checks score highly.
+Direct pushes to `main`, including those requested for this implementation, do
+not create a reviewed PR history.
 
 ## Remediation order
 
@@ -56,9 +62,9 @@ create a reviewed PR history.
    packages, publish a new digest, and recheck both architectures.
 2. Maintain the hash-bearing CI/release dependency locks across the supported
    Python/OS matrix and recheck wheel and sdist installs after updates.
-3. Maintain the bounded pipeline/profile/receipt parser fuzz corpus and CI
-   crash artifacts. Evaluate a recognized continuous-fuzzing integration if
-   the corpus and maintenance cost justify it.
+3. Maintain the bounded pipeline/profile/receipt parser fuzz corpus, the
+   ClusterFuzzLite integration, and CI crash artifacts. Keep the recognized
+   fuzzer target and its base image pinned as they evolve.
 4. Check that CodeQL and required tests finish on the same proposed revision.
    A maintainer should decide the repository's review policy before changing
    branch protection or claiming that Scorecard's PR-history findings are fixed.
@@ -91,8 +97,13 @@ executed three parser targets with 1,003 cases per target and two seeds, and
 provides a crash artifact when a job fails. This is parser-only fuzzing; it
 does not exercise FFmpeg on hostile media or prove every possible input safe.
 
+The [ClusterFuzzLite build](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35449599477)
+now builds the Atheris parser target as the expected `parser_fuzzer.pkg` plus
+wrapper and runs the configured address-sanitized fuzzing job. Scorecard's
+Fuzzing alert is closed after that run.
+
 Hash-bearing, wheel-only tool locks now cover CI, docs, release build, pipx
-verification, and container build inputs. The
+verification, the public terminal demo, and container build inputs. The
 [three-OS CI matrix](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35445459849),
 [release dry run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35445461779),
 and new two-architecture container scan succeeded. Public wheel smoke
