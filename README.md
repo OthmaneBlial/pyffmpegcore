@@ -49,12 +49,18 @@ Install the exact public beta from PyPI in an isolated environment:
 ```bash
 pipx install "pyffmpegcore==0.2.2"
 pyffmpegcore doctor
-pyffmpegcore smoke-test
+pyffmpegcore smoke-test --keep-dir pyffmpegcore-demo
+pyffmpegcore profile run web/mp4-compatible --input pyffmpegcore-demo/synthetic-input.mp4 --output pyffmpegcore-demo/web.mp4 --explain
+pyffmpegcore profile run web/mp4-compatible --input pyffmpegcore-demo/synthetic-input.mp4 --output pyffmpegcore-demo/web.mp4 --receipt pyffmpegcore-demo/web.receipt.json
+pyffmpegcore probe --input pyffmpegcore-demo/web.mp4 --json
+pyffmpegcore receipt validate pyffmpegcore-demo/web.receipt.json --json
 ```
 
-`doctor` identifies the real binaries and indexed capabilities. `smoke-test`
-generates synthetic media, performs a complete transform, probes the result,
-and cleans up—no checkout and no personal media required.
+These commands work in Bash, zsh, and PowerShell. They diagnose the installed
+FFmpeg, generate a synthetic clip, preview the plan without writing the MP4,
+create a web-compatible H.264/AAC file, inspect its streams, and validate the
+receipt. No checkout or personal media is required. See the
+[five-minute guide](docs/quickstart.md) for prerequisites and cleanup.
 
 ## Watch the real 63-second proof
 

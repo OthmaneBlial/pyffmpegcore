@@ -288,6 +288,72 @@ def main(argv: list[str] | None = None) -> int:
             return 1
 
         if not args.skip_media:
+            quickstart_dir = outputs_dir / "quickstart"
+            quickstart_input = quickstart_dir / "synthetic-input.mp4"
+            quickstart_output = quickstart_dir / "web.mp4"
+            quickstart_receipt = quickstart_dir / "web.receipt.json"
+            smoke = run_command(
+                [str(cli_path), "smoke-test", "--keep-dir", str(quickstart_dir)],
+                label="quickstart-smoke",
+            )
+            add_report_entry(commands, "quickstart-smoke", smoke)
+            if smoke.returncode != 0 or not quickstart_input.is_file():
+                return 1
+
+            profile_base = [
+                str(cli_path),
+                "profile",
+                "run",
+                "web/mp4-compatible",
+                "--input",
+                str(quickstart_input),
+                "--output",
+                str(quickstart_output),
+            ]
+            explain = run_command([*profile_base, "--explain"], label="quickstart-explain")
+            add_report_entry(commands, "quickstart-explain", explain)
+            if explain.returncode != 0 or quickstart_output.exists():
+                return 1
+
+            profile_run = run_command(
+                [*profile_base, "--receipt", str(quickstart_receipt)],
+                label="quickstart-profile",
+            )
+            add_report_entry(commands, "quickstart-profile", profile_run)
+            if profile_run.returncode != 0 or not quickstart_output.is_file():
+                return 1
+
+            quickstart_probe = run_command(
+                [str(cli_path), "probe", "--input", str(quickstart_output), "--json"],
+                label="quickstart-probe",
+            )
+            add_report_entry(commands, "quickstart-probe", quickstart_probe)
+            if quickstart_probe.returncode != 0:
+                return 1
+            try:
+                quickstart_streams = json.loads(quickstart_probe.stdout)
+            except json.JSONDecodeError:
+                return 1
+            if (
+                quickstart_streams.get("video", {}).get("codec") != "h264"
+                or quickstart_streams.get("audio", {}).get("codec") != "aac"
+            ):
+                return 1
+
+            receipt_check = run_command(
+                [str(cli_path), "receipt", "validate", str(quickstart_receipt), "--json"],
+                label="quickstart-receipt",
+            )
+            add_report_entry(commands, "quickstart-receipt", receipt_check)
+            if receipt_check.returncode != 0:
+                return 1
+            try:
+                receipt_result = json.loads(receipt_check.stdout)
+            except json.JSONDecodeError:
+                return 1
+            if receipt_result.get("valid") is not True:
+                return 1
+
             ensure_media(args.media_root)
 
             probe = run_command(
