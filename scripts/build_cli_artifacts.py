@@ -39,6 +39,7 @@ SDIST_ALLOWED_ROOT_ENTRIES = frozenset(
         "RELEASE_CHECKLIST.md",
         "ROADMAP.md",
         "SECURITY.md",
+        "SECURITY_TRIAGE.md",
         "SUPPORT.md",
         "docs",
         "examples",
