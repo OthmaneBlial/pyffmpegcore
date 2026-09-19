@@ -38,10 +38,17 @@ jobs:
           cache-dependency-path: .github/requirements/ci.txt
       - name: Install FFmpeg and local project
         run: |
+          set -euo pipefail
           sudo apt-get update
           sudo apt-get install --yes ffmpeg
           python -m pip install --only-binary=:all: --require-hashes -r .github/requirements/ci.txt
-          python -m pip install --no-index --no-deps --no-build-isolation .
+          python -m build --wheel --no-isolation --outdir "$RUNNER_TEMP/pyffmpegcore-wheel"
+          wheel_path="$(find "$RUNNER_TEMP/pyffmpegcore-wheel" -maxdepth 1 -type f -name '*.whl' -print -quit)"
+          test -n "$wheel_path"
+          wheel_hash="$(sha256sum "$wheel_path" | awk '{print $1}')"
+          printf '%s --hash=sha256:%s\n' "$wheel_path" "$wheel_hash" > "$RUNNER_TEMP/pyffmpegcore-wheel-requirements.txt"
+          python -m pip install --no-index --no-deps --only-binary=:all: --require-hashes \
+            -r "$RUNNER_TEMP/pyffmpegcore-wheel-requirements.txt"
       - name: Generate deterministic input
         run: |
           mkdir -p action-fixture
