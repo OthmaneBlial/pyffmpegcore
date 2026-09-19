@@ -118,6 +118,11 @@ est désormais réservée au `workflow_dispatch` avec `publish=true`.
 [run CI `35441425762`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35441425762)
 a validé les six installations sur Linux, macOS et Windows (Python 3.10 et
 3.14). Relecture indépendante du guide encore à faire avant de cocher.
+Une nouvelle exécution locale depuis un environnement vierge avec la wheel
+publique `pyffmpegcore==0.2.2` a aussi réussi `--version`, `doctor --json`,
+`smoke-test --keep-dir`, un profil H.264/AAC avec `--explain`, l'écriture d'un
+receipt et sa validation schema 1.0. Cette preuve locale ne remplace pas la
+relecture indépendante ni une nouvelle matrice publique.
 
 - **Objectif :** faire vivre la promesse « diagnostiquer → expliquer → produire → vérifier » depuis une installation propre, sans demander immédiatement un fichier personnel.
 - **Changements :** assembler un exemple synthétique court, généré localement, qui mène de `doctor` et `smoke-test --keep-dir` à un profil web, `--explain`, exécution, `probe` et validation du receipt ; garder les commandes copiables pour Bash/zsh et PowerShell. Si le parcours révèle un trou d'API/CLI, le corriger dans le moteur partagé avant de documenter un contournement.
@@ -253,10 +258,12 @@ figure dans `SECURITY_TRIAGE.md`. Le candidat Trixie n'est pas encore publié.
 de dépréciation, URL GitHub canonique et étiquetage du cast `0.2.1` corrigés
 localement. Un nouveau cast réel du wheel public `0.2.2` a été validé à
 89,5 secondes avec transcript et deux images tirées de ses frames ; l'ancien
-`0.2.1` reste archivé. Le site GitHub Pages public servait encore la page de
-démo `0.2.1` lors du contrôle du 19 septembre ; le README renvoie donc aux
-sources documentaires actuelles du dépôt. Publication du site et cohérence
-avec la prochaine version restent à valider avant de cocher.
+`0.2.1` reste archivé. Un contrôle public du 19 septembre sert toujours la
+page de démo `0.2.1` sur GitHub Pages, tandis que le README et les sources
+locales annoncent la preuve `0.2.2`; le site public expose aussi encore un
+lien de dépôt avec un double slash. Le README renvoie donc aux sources
+documentaires actuelles du dépôt. Publication du site et cohérence avec la
+prochaine version restent à valider avant de cocher.
 
 - **Objectif :** un nouvel utilisateur et un mainteneur lisent la même vérité sur la version et les canaux disponibles.
 - **Changements :** remplacer les cases historiques de `RELEASE_CHECKLIST.md` par une checklist à remplir pour chaque version avec URLs de preuves ; aligner `CLI_DISTRIBUTION.md` sur wheel/sdist, image et Action ; résoudre la contradiction de fenêtre de dépréciation entre `docs/RELEASING.md` et `docs/api-stability.md` ; enlever le contournement `repo_url: https://github.com//...` devenu obsolète ; distinguer le cast `0.2.1` de la release `0.2.2` ou enregistrer un nouveau cast réel de la version publiée.
