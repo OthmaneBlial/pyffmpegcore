@@ -182,6 +182,37 @@ def test_windows_drive_path_is_not_treated_as_a_remote_protocol():
     assert _input_scheme("https://example.test/clip.mp4") == "https"
 
 
+def test_preflight_redacts_remote_input_label_and_rejects_remote_output(tmp_path):
+    secret = "https://user:do-not-log@example.invalid/media.mp4?token=do-not-log"
+    plan = ExecutionPlan(
+        workflow="convert",
+        command=("ffmpeg", "-i", secret, str(tmp_path / "web.mp4")),
+        inputs=(secret,),
+        outputs=(str(tmp_path / "web.mp4"),),
+    )
+    report = PreflightEngine(
+        inventory=inventory(),
+        executable_resolver=lambda _binary: "/usr/bin/ffmpeg",
+    ).check(plan)
+    assert report.ok
+    assert "do-not-log" not in report.render()
+    assert any(check.name == "input/https://<redacted>" for check in report.checks)
+
+    remote_output = ExecutionPlan(
+        workflow="convert",
+        command=("ffmpeg", "-i", str(tmp_path / "source.mp4"), secret),
+        inputs=(),
+        outputs=(secret,),
+    )
+    output_report = PreflightEngine(
+        inventory=inventory(),
+        executable_resolver=lambda _binary: "/usr/bin/ffmpeg",
+    ).check(remote_output)
+    assert not output_report.ok
+    assert "do-not-log" not in output_report.render()
+    assert any(check.name == "output/remote" and check.status == "fail" for check in output_report.checks)
+
+
 def test_preflight_applies_stream_requirements_per_input(tmp_path):
     video = tmp_path / "video.mp4"
     subtitle = tmp_path / "captions.srt"

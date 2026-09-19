@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import replace
+from pathlib import Path
 from typing import TypedDict
 
-from .domain import CompressOptions, ConvertOptions, TemporaryFilePolicy
+from .domain import CompressOptions, ConvertOptions, TemporaryFilePolicy, is_url_like_path
 from .errors import ValidationError
 from .planning import WorkflowPlanner, parse_bitrate, parse_size
 from .profiles import ProfileRegistry
@@ -180,6 +181,12 @@ def _build_cli_plan(args: argparse.Namespace):
 
 def build_cli_plan(args: argparse.Namespace):
     """Build a CLI plan and apply the shared process/temporary-file policy."""
+    for value in vars(args).values():
+        candidates = value if isinstance(value, (list, tuple)) else (value,)
+        if any(isinstance(candidate, (str, Path)) and is_url_like_path(candidate) for candidate in candidates):
+            raise ValidationError(
+                "Direct media URLs are not supported here. Use a pipeline secret variable for remote input."
+            )
     plan = _build_cli_plan(args)
     temporary_files = TemporaryFilePolicy(getattr(args, "temp_files", TemporaryFilePolicy.CLEAN.value))
     return replace(plan, policy=replace(plan.policy, temporary_files=temporary_files))

@@ -21,6 +21,7 @@ from .workflow import WorkflowBatch
 RECEIPT_SCHEMA_VERSION = "1.0"
 _SECRET_ASSIGNMENT = re.compile(r"(?i)\b(authorization|api[-_]?key|password|secret|token)\s*([=:])\s*([^\s,;&]+)")
 _BEARER = re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._~+/=-]+")
+_EMBEDDED_URL = re.compile(r"(?i)\b[a-z][a-z0-9+.-]*://[^\s'\"]+")
 
 
 def _redact_url(value: str) -> str:
@@ -28,11 +29,15 @@ def _redact_url(value: str) -> str:
         parsed = urlsplit(value)
     except ValueError:
         return value
-    if not parsed.scheme or not parsed.netloc:
+    if not parsed.scheme or (not parsed.netloc and parsed.scheme != "file"):
         return value
-    host = parsed.hostname or "<host>"
-    if parsed.port is not None:
-        host = f"{host}:{parsed.port}"
+    host = parsed.hostname or ""
+    try:
+        port = parsed.port
+    except ValueError:
+        port = None
+    if port is not None:
+        host = f"{host}:{port}"
     basename = Path(parsed.path).name
     path = f"/<path>/{basename}" if basename else "/<path>"
     query = "<redacted>" if parsed.query else ""
@@ -79,8 +84,8 @@ def redact_receipt_value(value: Any, path_map: dict[str, str] | None = None) -> 
     redacted = value
     for private, replacement in replacements.items():
         redacted = redacted.replace(private, replacement)
-    if "://" in redacted and redacted == value:
-        redacted = _redact_url(redacted)
+    if "://" in redacted:
+        redacted = _EMBEDDED_URL.sub(lambda match: _redact_url(match.group(0)), redacted)
     redacted = _BEARER.sub("Bearer <redacted>", redacted)
     return _SECRET_ASSIGNMENT.sub(lambda match: f"{match.group(1)}{match.group(2)}<redacted>", redacted)
 

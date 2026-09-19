@@ -13,7 +13,7 @@ from typing import Any
 from urllib.parse import urlsplit
 
 from .capabilities import CapabilityInventory, requirements_for
-from .domain import ExecutionPlan, OverwritePolicy
+from .domain import ExecutionPlan, OverwritePolicy, is_url_like_path
 from .probe import FFprobeRunner
 
 PREFLIGHT_SCHEMA_VERSION = "1.0"
@@ -176,12 +176,13 @@ class PreflightEngine:
             parsed = urlsplit(value)
             if remote_scheme:
                 requirement = f"input-protocol:{remote_scheme}"
+                safe_name = f"input/{remote_scheme}://<redacted>"
                 if inventory.supports(requirement):
-                    checks.append(PreflightCheck(f"input/{value}", "pass", f"Protocol {remote_scheme} is available"))
+                    checks.append(PreflightCheck(safe_name, "pass", f"Protocol {remote_scheme} is available"))
                 else:
                     checks.append(
                         PreflightCheck(
-                            f"input/{value}",
+                            safe_name,
                             "fail",
                             f"Missing input protocol: {remote_scheme}",
                             capability_remedy(requirement, inventory),
@@ -223,6 +224,16 @@ class PreflightEngine:
         if estimated_bytes <= 0:
             estimated_bytes = sum(Path(value).stat().st_size for value in plan.inputs if Path(value).is_file())
         for value in plan.outputs:
+            if is_url_like_path(value):
+                checks.append(
+                    PreflightCheck(
+                        "output/remote",
+                        "fail",
+                        "Remote output URLs are not supported by this workflow.",
+                        "Choose a local output path, then upload the verified file separately.",
+                    )
+                )
+                continue
             output = Path(value)
             parent = _nearest_existing_parent(output.parent)
             if not parent.is_dir() or not os.access(parent, os.W_OK):

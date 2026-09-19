@@ -153,6 +153,20 @@ def test_preview_never_executes_shell_metacharacters(tmp_path, capsys, monkeypat
     assert not (tmp_path / "ALSO_NOT_CREATED.mp4").exists()
 
 
+@pytest.mark.parametrize("mode", [[], ["--explain"], ["--dry-run", "--plan-json"]])
+def test_direct_media_url_is_rejected_without_exposing_credentials(tmp_path, capsys, mode):
+    output = tmp_path / "web.mp4"
+    secret = "https://user:do-not-log@example.invalid/video.mp4?token=do-not-log"
+
+    returncode = main(["profile", "run", "web/mp4-compatible", "--input", secret, "--output", str(output), *mode])
+    captured = capsys.readouterr()
+
+    assert returncode == 4
+    assert "pipeline secret variable" in captured.err
+    assert "do-not-log" not in captured.out + captured.err
+    assert not output.exists()
+
+
 def test_preview_reports_invalid_bitrate_without_a_traceback(tmp_path, capsys):
     returncode = main(
         [

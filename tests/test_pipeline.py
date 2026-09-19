@@ -150,6 +150,7 @@ def test_pipeline_secret_values_live_outside_the_file_and_are_masked(tmp_path):
 
     secret = "https://user:very-private-token@example.invalid/video.mp4?token=very-private-token"
     pipeline = PipelineCompiler().compile(spec, variables={"SOURCE_URL": secret})
+    assert pipeline.steps[0].plan.inputs == (secret,)
     rendered = json.dumps(pipeline.to_dict())
     assert "very-private-token" not in rendered
     assert "<redacted>" in rendered

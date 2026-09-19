@@ -6,6 +6,7 @@ It checks:
 
 - the selected FFmpeg executable;
 - local input existence/readability or URL protocol support;
+- refusal of remote output URLs;
 - required video, audio, or subtitle streams;
 - encoders, decoders, filters, muxers, demuxers, protocols, and hardware requirements;
 - output-container support inferred from the extension;

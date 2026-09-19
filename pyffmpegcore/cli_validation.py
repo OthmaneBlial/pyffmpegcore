@@ -6,6 +6,8 @@ import argparse
 from collections.abc import Collection
 from pathlib import Path
 
+from .domain import is_url_like_path
+
 
 class CLIError(RuntimeError):
     """User-facing CLI error with a stable exit code."""
@@ -49,6 +51,11 @@ def require_existing_input(path_str: str, option_name: str = "--input") -> Path:
     """Validate that a required input path exists."""
     if not path_str:
         raise CLIError(f"{option_name} is required.")
+
+    if is_url_like_path(path_str):
+        raise CLIError(
+            "This command requires a local file. Use a local path; remote URLs belong in a pipeline secret variable."
+        )
 
     path = Path(path_str)
     if not path.exists():

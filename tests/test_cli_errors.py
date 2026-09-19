@@ -55,6 +55,20 @@ def test_cli_missing_binary_returns_environment_error(tmp_path):
     assert "--ffprobe-path" in result.stderr
 
 
+def test_probe_rejects_remote_url_without_echoing_credentials():
+    secret = "https://user:do-not-log@example.invalid/media.mp4?token=do-not-log"
+    result = subprocess.run(
+        [sys.executable, "-m", "pyffmpegcore", "probe", "--input", secret],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 4
+    assert "local file" in result.stderr
+    assert "do-not-log" not in result.stdout + result.stderr
+
+
 def test_cli_missing_required_stream_returns_validation_error(tmp_path):
     """
     Capability-aware preflight should reject a missing required stream before execution.

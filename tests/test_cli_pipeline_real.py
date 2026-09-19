@@ -3,11 +3,70 @@
 from __future__ import annotations
 
 import json
+import threading
+from functools import partial
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 import pytest
 
 from pyffmpegcore.cli import EXIT_OK, main
 from tests.media_utils import ensure_downloaded_media
+
+
+@pytest.mark.real_media
+def test_pipeline_remote_secret_is_kept_out_of_result_and_receipt(tmp_path, monkeypatch, capsys):
+    fixture = ensure_downloaded_media()["video_mp4_h264_1080p"]
+
+    class QuietHandler(SimpleHTTPRequestHandler):
+        def log_message(self, _format, *_args):
+            pass
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), partial(QuietHandler, directory=str(fixture.parent)))
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        secret = "integration-secret-do-not-log"
+        source_url = f"http://user:{secret}@127.0.0.1:{server.server_port}/{fixture.name}?token={secret}"
+        monkeypatch.setenv("SOURCE_URL", source_url)
+        output = tmp_path / "web.mp4"
+        receipts = tmp_path / "receipts"
+        pipeline = tmp_path / "remote.json"
+        pipeline.write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "name": "remote_secret",
+                    "secret_variables": ["SOURCE_URL"],
+                    "steps": [
+                        {
+                            "id": "web",
+                            "profile": "web/mp4-compatible",
+                            "input": "${SOURCE_URL}",
+                            "output": str(output),
+                        }
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        result_code = main(
+            ["pipeline", "run", str(pipeline), "--var", "SOURCE_URL", "--receipt-dir", str(receipts), "--result-json"]
+        )
+        captured = capsys.readouterr()
+
+        assert result_code == EXIT_OK, captured.err
+        assert json.loads(captured.out)["summary"]["succeeded"] == 1
+        assert output.is_file() and output.stat().st_size > 0
+        receipt_files = list(receipts.glob("*.json"))
+        assert len(receipt_files) == 1
+        published = captured.out + captured.err + receipt_files[0].read_text(encoding="utf-8")
+        assert secret not in published
+        assert "<redacted>" in published
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=3)
 
 
 @pytest.mark.real_media

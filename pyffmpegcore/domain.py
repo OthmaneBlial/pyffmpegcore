@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import asdict, dataclass, field
 from enum import Enum
 from pathlib import Path
@@ -271,6 +272,13 @@ class CompressOptions:
             raise ValidationError("minimum_video_bitrate must be positive")
 
 
+def is_url_like_path(path: str | Path) -> bool:
+    """Distinguish a URI from a local path, including Windows drive paths."""
+    return bool(re.match(r"^[A-Za-z][A-Za-z0-9+.-]*://", str(path)))
+
+
 def normalized_path(path: str | Path) -> str:
-    """Return an absolute path without requiring it to exist."""
+    """Return an absolute local path or preserve a remote URI exactly."""
+    if is_url_like_path(path):
+        return str(path)
     return str(Path(path).expanduser().resolve())

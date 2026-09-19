@@ -22,6 +22,7 @@ from pyffmpegcore import (
     migrate_receipt,
     validate_receipt,
 )
+from pyffmpegcore.receipt import redact_receipt_value
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -92,6 +93,21 @@ def test_receipt_redacts_credentials_private_paths_and_secrets_by_default(tmp_pa
     assert receipt.document["content_hashes"] == []
     assert receipt.document["items"][0]["proof"]["input_size_bytes"] is None
     assert receipt.document["items"][0]["proof"]["output_size_bytes"] == len(b"receipt output")
+
+
+def test_embedded_media_url_in_ffmpeg_diagnostic_is_redacted():
+    secret = "do-not-log"
+    diagnostic = (
+        "Input #0, mov, from 'https://alice:do-not-log@example.test/private/video.mp4?token=do-not-log': "
+        "Bearer do-not-log"
+    )
+
+    redacted = redact_receipt_value(diagnostic)
+
+    assert secret not in redacted
+    assert "alice" not in redacted
+    assert "example.test" in redacted
+    assert "<redacted>" in redacted
 
 
 def test_receipt_hashing_is_opt_in_and_records_algorithm(tmp_path):

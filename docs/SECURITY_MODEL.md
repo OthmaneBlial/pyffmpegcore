@@ -27,7 +27,17 @@ Commands reject an existing output unless the user passes `--force`. Temporary w
 
 ## URLs and Credentials
 
-Do not put credentials in media URLs or command arguments. Process lists, exceptions, logs, receipts, and CI output may expose them. PyFFmpegCore does not currently provide a secret-redaction guarantee for arbitrary FFmpeg diagnostics.
+Single-command CLI workflows reject URL-like media paths; use a pipeline with
+`secret_variables` for a remote input. Pipeline inputs preserve the URI for
+FFmpeg, while the preflight label and published pipeline results/receipts
+redact credentials, URL queries, and embedded URLs in FFmpeg diagnostics.
+Remote output URLs are refused by preflight. The Action disables networking by
+default; enable it only for an intentional remote source.
+
+Do not put credentials in command arguments. Process lists, exceptions, and
+unstructured third-party diagnostics may still expose them. PyFFmpegCore is
+not a general secret sandbox, and it cannot guarantee redaction for every
+future FFmpeg diagnostic format.
 
 ## Malicious Media and Metadata
 

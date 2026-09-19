@@ -137,6 +137,14 @@ Secret defaults in pipeline files are rejected. Named values are masked from
 plans, JSON output, event logs, cache keys, and per-step receipts. URL userinfo
 and query strings also use the normal receipt redaction policy.
 
+Remote inputs require a server that supports the access pattern of the media.
+In a local replay on 19 September 2026, a fast-start MP4 completed over HTTP,
+while a MOV whose `moov` atom followed `mdat` failed against a minimal server
+without byte-range seeking. Use a server with working ranges or download the
+file locally first. FFmpeg documents [HTTP seekability](https://ffmpeg.org/ffmpeg-protocols.html#http)
+and [the `faststart` layout](https://ffmpeg.org/ffmpeg-formats.html#mov_002c-mp4_002c-ismv).
+The Action needs `network: bridge` for an intentional remote input.
+
 ## Schema migration
 
 ```bash
