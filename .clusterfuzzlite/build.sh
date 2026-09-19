@@ -10,7 +10,7 @@ PYTHONPATH="$SRC/pyffmpegcore${PYTHONPATH:+:$PYTHONPATH}" \
     --workpath "$WORK/pyinstaller" \
     --specpath "$WORK/pyinstaller" \
     --onefile \
-    --name parser_fuzzer_package \
+    --name parser_fuzzer.pkg \
     "$fuzzer_source"
 
 cat > "$OUT/parser_fuzzer" <<'EOF'
@@ -18,6 +18,6 @@ cat > "$OUT/parser_fuzzer" <<'EOF'
 # LLVMFuzzerTestOneInput for fuzzer detection.
 set -eu
 this_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-exec "$this_dir/parser_fuzzer_package" "$@"
+exec "$this_dir/parser_fuzzer.pkg" "$@"
 EOF
 chmod +x "$OUT/parser_fuzzer"
