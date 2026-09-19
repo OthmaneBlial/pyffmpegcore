@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 import sys
-from functools import lru_cache
+from functools import cache
 from pathlib import Path
 from urllib.parse import unquote
 
@@ -27,7 +27,7 @@ def slugify_heading(text: str) -> str:
     return slug.strip("-")
 
 
-@lru_cache(maxsize=None)
+@cache
 def collect_heading_slugs(path: Path) -> frozenset[str]:
     """Return heading anchors for a Markdown file, including duplicate suffixes."""
     slugs: set[str] = set()

@@ -70,12 +70,12 @@ class DocumentValidationTests(TestCase):
         return path
 
     def test_valid_fragment_passes(self) -> None:
-        guide = self._write("guide.md", "# Missing heading\n")
+        self._write("guide.md", "# Missing heading\n")
         source = self._write("source.md", "[link](guide.md#missing-heading)\n")
         self.assertEqual(checker.validate_document(source, source.read_text(encoding="utf-8")), [])
 
     def test_missing_fragment_fails(self) -> None:
-        guide = self._write("guide.md", "# Present heading\n")
+        self._write("guide.md", "# Present heading\n")
         source = self._write("source.md", "[link](guide.md#missing-heading)\n")
         failures = checker.validate_document(source, source.read_text(encoding="utf-8"))
         self.assertEqual(len(failures), 1)
@@ -102,7 +102,7 @@ class DocumentValidationTests(TestCase):
         self.assertIn("empty alt text", failures[0])
 
     def test_duplicate_fragment_resolves_to_suffixed_slug(self) -> None:
-        guide = self._write("guide.md", "# Duplicate\n## Duplicate\n")
+        self._write("guide.md", "# Duplicate\n## Duplicate\n")
         source = self._write(
             "source.md",
             "# Duplicate\n## Duplicate\n\n[second](#duplicate-1)\n[first](#duplicate)\n",
@@ -110,6 +110,6 @@ class DocumentValidationTests(TestCase):
         self.assertEqual(checker.validate_document(source, source.read_text(encoding="utf-8")), [])
 
     def test_url_encoded_fragment_is_decoded(self) -> None:
-        guide = self._write("guide.md", "# Missing heading\n")
+        self._write("guide.md", "# Missing heading\n")
         source = self._write("source.md", "[link](guide.md#missing%20heading)\n")
         self.assertEqual(checker.validate_document(source, source.read_text(encoding="utf-8")), [])

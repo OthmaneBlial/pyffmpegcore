@@ -135,7 +135,5 @@ def test_thumbnail_recipe_proves_dimensions_receipt_and_force(tmp_path):
     assert refused.returncode == 4
     assert "Re-run with --force to overwrite" in refused.stderr
 
-    forced = subprocess.run(
-        [*command, "--force"], capture_output=True, text=True, check=False
-    )
+    forced = subprocess.run([*command, "--force"], capture_output=True, text=True, check=False)
     assert forced.returncode == 0, forced.stderr
