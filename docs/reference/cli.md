@@ -18,7 +18,7 @@ positional arguments:
   COMMAND
     doctor              Show FFmpeg, FFprobe, and environment diagnostics.
     smoke-test          Generate local synthetic media and verify a complete workflow.
-    completion          Print a shell completion script for bash, zsh, or PowerShell.
+    completion          Print a shell completion script for bash, zsh, Fish, or PowerShell.
     profile             List, explain, or validate versioned workflow profiles.
     batch               Validate, preview, or run a bounded resumable mixed-media batch.
     pipeline            Validate, visualize, migrate, or run a typed declarative media pipeline.
@@ -138,12 +138,12 @@ options:
 usage: pyffmpegcore completion [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
        [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
-       {bash,zsh,powershell}
+       {bash,zsh,fish,powershell}
 
-Print a shell completion script for bash, zsh, or PowerShell.
+Print a shell completion script for bash, zsh, Fish, or PowerShell.
 
 positional arguments:
-  {bash,zsh,powershell}
+  {bash,zsh,fish,powershell}
                         Shell name to generate completion for.
 
 options:

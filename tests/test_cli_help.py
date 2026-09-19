@@ -37,6 +37,8 @@ def test_cli_help_markdown_mentions_completion_install():
     assert "pyffmpegcore completion bash" in help_doc
     assert "~/.local/share/bash-completion/completions/pyffmpegcore" in help_doc
     assert "pyffmpegcore completion powershell" in help_doc
+    assert "pyffmpegcore completion fish" in help_doc
+    assert "~/.config/fish/completions/pyffmpegcore.fish" in help_doc
 
 
 def test_completion_bash_output_mentions_core_commands():
@@ -71,6 +73,24 @@ def test_completion_zsh_output_mentions_compdef():
     assert result.returncode == 0
     assert "#compdef pyffmpegcore" in result.stdout
     assert "compdef _pyffmpegcore pyffmpegcore" in result.stdout
+
+
+def test_completion_fish_output_uses_nested_parser_metadata():
+    """Fish completion must expose nested commands and their own options."""
+    result = subprocess.run(
+        [sys.executable, "-m", "pyffmpegcore", "completion", "fish"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "function __pyffmpegcore_completion_path" in result.stdout
+    assert "complete -c pyffmpegcore -f" in result.stdout
+    assert "case 'root:subtitles'" in result.stdout
+    assert "case 'subtitles:burn'" in result.stdout
+    assert "-n 'test (__pyffmpegcore_completion_path) = subtitles' -a 'burn'" in result.stdout
+    assert "-n 'test (__pyffmpegcore_completion_path) = subtitles__burn' -l subtitle" in result.stdout
 
 
 def test_completion_powershell_output_mentions_argument_completer():

@@ -78,6 +78,7 @@ Generate a completion script:
 ```bash
 pyffmpegcore completion bash
 pyffmpegcore completion zsh
+pyffmpegcore completion fish
 pyffmpegcore completion powershell
 ```
 
@@ -93,6 +94,13 @@ Example install for Zsh:
 ```bash
 mkdir -p ~/.zfunc
 pyffmpegcore completion zsh > ~/.zfunc/_pyffmpegcore
+```
+
+Example user-local install for Fish:
+
+```fish
+mkdir -p ~/.config/fish/completions
+pyffmpegcore completion fish > ~/.config/fish/completions/pyffmpegcore.fish
 ```
 
 Example install for PowerShell:

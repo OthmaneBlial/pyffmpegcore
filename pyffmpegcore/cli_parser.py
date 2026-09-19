@@ -182,12 +182,12 @@ def build_parser() -> argparse.ArgumentParser:
     completion_parser = subparsers.add_parser(
         "completion",
         parents=[common_parent],
-        help="Print a shell completion script for bash, zsh, or PowerShell.",
-        description="Print a shell completion script for bash, zsh, or PowerShell.",
+        help="Print a shell completion script for bash, zsh, Fish, or PowerShell.",
+        description="Print a shell completion script for bash, zsh, Fish, or PowerShell.",
     )
     completion_parser.add_argument(
         "shell",
-        choices=["bash", "zsh", "powershell"],
+        choices=["bash", "zsh", "fish", "powershell"],
         help="Shell name to generate completion for.",
     )
     completion_parser.set_defaults(handler_name="handle_completion")

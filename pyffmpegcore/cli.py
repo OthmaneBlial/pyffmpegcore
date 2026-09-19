@@ -264,6 +264,35 @@ def render_zsh_completion(program_name: str, metadata: dict[tuple[str, ...], dic
     return "\n".join(lines) + "\n"
 
 
+def render_fish_completion(program_name: str, metadata: dict[tuple[str, ...], dict[str, list[str]]]) -> str:
+    """Render Fish command and option completions from the argparse tree."""
+    function_name = f"__{program_name}_completion_path"
+    lines = [
+        f"function {function_name}",
+        "    set -l key root",
+        "    set -l tokens (commandline -xpc)",
+        "    for token in $tokens[2..-1]",
+        '        switch "$key:$token"',
+    ]
+    for path, node in metadata.items():
+        key = completion_key(path)
+        for subcommand in node["subcommands"]:
+            next_key = completion_key(path + (subcommand,))
+            lines.extend([f"            case '{key}:{subcommand}'", f"                set key {next_key}"])
+    lines.extend(["        end", "    end", "    echo $key", "end", f"complete -c {program_name} -f"])
+
+    for path, node in metadata.items():
+        condition = f"test ({function_name}) = {completion_key(path)}"
+        for subcommand in node["subcommands"]:
+            lines.append(f"complete -c {program_name} -n '{condition}' -a '{subcommand}'")
+        for option in node["options"]:
+            if option.startswith("--"):
+                lines.append(f"complete -c {program_name} -n '{condition}' -l {option[2:]}")
+            elif option.startswith("-") and len(option) == 2:
+                lines.append(f"complete -c {program_name} -n '{condition}' -s {option[1:]}")
+    return "\n".join(lines) + "\n"
+
+
 def render_powershell_completion(
     program_name: str,
     metadata: dict[tuple[str, ...], dict[str, list[str]]],
@@ -328,6 +357,8 @@ def render_completion_script(shell: str) -> str:
         return render_bash_completion("pyffmpegcore", metadata)
     if shell == "zsh":
         return render_zsh_completion("pyffmpegcore", metadata)
+    if shell == "fish":
+        return render_fish_completion("pyffmpegcore", metadata)
     if shell == "powershell":
         return render_powershell_completion("pyffmpegcore", metadata)
     raise CLIError(f"Unsupported completion shell: {shell}", exit_code=EXIT_USAGE_ERROR)

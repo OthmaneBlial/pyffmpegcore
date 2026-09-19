@@ -4,6 +4,11 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+
+- Fish shell completion generated from the same CLI parser metadata as Bash,
+  zsh, and PowerShell, including nested commands and options.
+
 ## [0.2.2] - 2026-08-26
 
 ### Added
