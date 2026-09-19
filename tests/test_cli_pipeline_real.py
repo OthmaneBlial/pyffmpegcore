@@ -10,7 +10,79 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import pytest
 
 from pyffmpegcore.cli import EXIT_OK, main
+from pyffmpegcore.probe import FFprobeRunner
 from tests.media_utils import ensure_downloaded_media
+
+
+@pytest.mark.real_media
+def test_direct_profile_and_pipeline_produce_equivalent_verified_media(tmp_path, capsys):
+    """Input adapters sharing a plan must also deliver the same media contract."""
+    source = ensure_downloaded_media()["video_mov_h264_640x360"]
+    direct_output = tmp_path / "direct.mp4"
+    pipeline_output = tmp_path / "pipeline.mp4"
+    direct_receipt = tmp_path / "direct.receipt.json"
+    pipeline_receipts = tmp_path / "pipeline-receipts"
+
+    assert (
+        main(
+            [
+                "profile",
+                "run",
+                "web/mp4-compatible",
+                "--input",
+                str(source),
+                "--output",
+                str(direct_output),
+                "--receipt",
+                str(direct_receipt),
+                "--result-json",
+            ]
+        )
+        == EXIT_OK
+    )
+    direct_result = json.loads(capsys.readouterr().out)
+
+    pipeline_path = tmp_path / "equivalent.json"
+    pipeline_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0",
+                "name": "equivalent_profile",
+                "steps": [
+                    {
+                        "id": "video",
+                        "profile": "web/mp4-compatible",
+                        "input": str(source),
+                        "output": str(pipeline_output),
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    assert (
+        main(["pipeline", "run", str(pipeline_path), "--receipt-dir", str(pipeline_receipts), "--result-json"])
+        == EXIT_OK
+    )
+    pipeline_result = json.loads(capsys.readouterr().out)
+
+    assert direct_result["summary"]["succeeded"] == pipeline_result["summary"]["succeeded"] == 1
+    assert len(list(pipeline_receipts.glob("*.receipt.json"))) == 1
+    for receipt in (direct_receipt, *pipeline_receipts.glob("*.receipt.json")):
+        assert main(["receipt", "validate", str(receipt), "--json"]) == EXIT_OK
+        assert json.loads(capsys.readouterr().out)["valid"] is True
+
+    direct_probe = FFprobeRunner().probe(str(direct_output))
+    pipeline_probe = FFprobeRunner().probe(str(pipeline_output))
+    for field in ("format_name", "duration", "video", "audio"):
+        if field == "duration":
+            assert abs(direct_probe[field] - pipeline_probe[field]) < 0.1
+        elif field in {"video", "audio"}:
+            for key in ("codec", "width", "height"):
+                if key in direct_probe.get(field, {}) or key in pipeline_probe.get(field, {}):
+                    assert direct_probe.get(field, {}).get(key) == pipeline_probe.get(field, {}).get(key)
+        else:
+            assert direct_probe[field] == pipeline_probe[field]
 
 
 @pytest.mark.real_media
