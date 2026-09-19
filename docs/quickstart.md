@@ -41,7 +41,10 @@ pyffmpegcore profile run web/mp4-compatible --input pyffmpegcore-demo/synthetic-
 ```
 
 This profile targets a browser-compatible H.264/AAC MP4. The CLI refuses to
-replace an existing output unless you explicitly add `--force`.
+replace an existing output unless you explicitly add `--force`. This step
+requires an FFmpeg build with `libx264` and `aac` encoders; `doctor --json`
+lists the capabilities of your selected binary. If either is absent, see
+[installation help](installation.md) and use a build that provides them.
 
 ## 5. Check the result and receipt
 

@@ -12,6 +12,7 @@ If either command fails, preserve the exit code and sanitized stderr. Do not pos
 ## `ffmpeg` or `ffprobe` is missing
 
 Install both from your operating system's trusted package source (see the
+[macOS and Windows commands](installation.md#macos-and-windows-ffmpeg) or the
 [Fedora and Arch Linux commands](installation.md#fedora-linux-and-arch-linux)),
 open a new terminal, and rerun `doctor`. An explicit path is supported:
 

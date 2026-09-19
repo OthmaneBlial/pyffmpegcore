@@ -47,7 +47,7 @@ Les phases suivantes sont des gates successifs. Une tâche n'est close que si se
 
 ### 0.1 Remettre la CI générale au vert
 
-**État :** [x] Corrections Ruff et version d'outil fixée dans `aa2cf4a` ; la [CI complète du SHA `a021465`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35440788485) a réussi tous ses jobs, dont couverture, matrice, wheels et documentation.
+**État :** [x] Corrections Ruff et version d'outil fixée dans `aa2cf4a` ; la [CI complète du SHA `57be43d`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35441425762) a réussi tous ses jobs, dont couverture, matrice, wheels et documentation.
 
 - **Objectif :** que le commit proposé pour publication passe réellement ses contrôles de qualité.
 - **Changements :** corriger les cinq erreurs Ruff visibles dans le dernier run (cache de `scripts/check_docs.py` et variables inutilisées de `tests/test_docs_contract.py`) ; décider d'une politique de mise à jour des outils de développement pour que `ruff>=0.6.0` ne change pas silencieusement les règles entre deux releases ; garder format et mypy actifs.
@@ -68,6 +68,14 @@ Les phases suivantes sont des gates successifs. Une tâche n'est close que si se
 - **Dépendances/risques :** 0.1 pour la validation globale ; différences de console/FFmpeg Windows à relever séparément plutôt que changer les attentes à l'aveugle.
 
 ### 0.3 Débloquer la chaîne de l'image sans désactiver le scan
+
+**État :** [x] Base rafraîchie dans `aeb2805` ; le
+[run conteneur `35441061585`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35441061585)
+a réussi les smokes non-root et scans bloquants sur amd64 et arm64 (QEMU),
+puis publié l'index
+`sha256:0244808caf90485eb7cf9fe99d7505b8739b90587fc8aab9ae412126e964a12c`
+avec SBOM, provenance et attestation vérifiée. Les deux rapports complets
+gardent respectivement 874 et 863 constats sans version corrigée connue.
 
 - **Objectif :** produire un digest de conteneur maintenu dont le scan de publication passe.
 - **Changements :** rafraîchir la base Debian épinglée et les paquets corrigés, vérifier la disponibilité de la version FFmpeg retenue, reconstruire l'image multi-architecture, conserver la liste des licences et le SBOM. Identifier dans le rapport Trivy les deux CVE `libpcre2-8-0` et traiter toute nouvelle alerte fixable.
@@ -92,6 +100,11 @@ Les phases suivantes sont des gates successifs. Une tâche n'est close que si se
 ## Phase 1 — P1 : montrer une valeur utile dès la première session
 
 ### 1.1 Fournir un parcours complet sans média privé
+
+**État :** guide et contrôle du wheel ajoutés dans `c0d939c` ; le
+[run CI `35441425762`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35441425762)
+a validé les six installations sur Linux, macOS et Windows (Python 3.10 et
+3.14). Relecture indépendante du guide encore à faire avant de cocher.
 
 - **Objectif :** faire vivre la promesse « diagnostiquer → expliquer → produire → vérifier » depuis une installation propre, sans demander immédiatement un fichier personnel.
 - **Changements :** assembler un exemple synthétique court, généré localement, qui mène de `doctor` et `smoke-test --keep-dir` à un profil web, `--explain`, exécution, `probe` et validation du receipt ; garder les commandes copiables pour Bash/zsh et PowerShell. Si le parcours révèle un trou d'API/CLI, le corriger dans le moteur partagé avant de documenter un contournement.
@@ -212,6 +225,12 @@ Les phases suivantes sont des gates successifs. Une tâche n'est close que si se
 - **Dépendances/risques :** gates 0–3 ; dépôt PyPI et GitHub externes, paquet déjà publié immuable.
 
 ### 4.2 Aligner conteneur et Action sur un digest sain
+
+**État :** [x] Digest vérifié de 0.3 épinglé dans `1aeb8c1` ; le
+[run d'intégration `35441678859`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35441678859)
+a réussi les trois chemins local, conteneur et Action ainsi que la comparaison
+des sorties et receipts normalisés. À rejouer sur le SHA de la prochaine
+release avant de fermer le gate 4.
 
 - **Objectif :** donner aux utilisateurs CI une intégration reproductible qui ne pointe pas vers un runtime ancien par inadvertance.
 - **Changements :** après 0.3/0.4, remplacer le digest dans l'Action, le test d'intégration et les guides ; contrôler local/conteneur/Action sur la même pipeline et receipt normalisé ; conserver le réseau fermé par défaut et la politique de licences/SBOM.

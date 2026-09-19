@@ -8,6 +8,41 @@
 
 Install FFmpeg using the package source you already trust for your operating system. PyFFmpegCore deliberately does not download or bundle it.
 
+## macOS and Windows FFmpeg
+
+On macOS, [Homebrew's `ffmpeg` formula](https://formulae.brew.sh/formula/ffmpeg)
+provides both `ffmpeg` and `ffprobe`:
+
+```bash
+brew install ffmpeg
+ffmpeg -version
+ffprobe -version
+```
+
+On Windows, the Microsoft WinGet catalog lists the
+[`Gyan.FFmpeg` full build](https://github.com/microsoft/winget-pkgs/blob/master/manifests/g/Gyan/FFmpeg/8.1/Gyan.FFmpeg.locale.en-US.yaml).
+Follow Microsoft's [WinGet install command](https://learn.microsoft.com/en-us/windows/package-manager/winget/install)
+in PowerShell:
+
+```powershell
+winget install --id Gyan.FFmpeg --exact
+```
+
+Open a new PowerShell window after installation, then run:
+
+```powershell
+ffmpeg -version
+ffprobe -version
+```
+
+If either executable is still missing, inspect the package's install location
+and `PATH`, or pass trusted absolute binary paths as shown in
+[troubleshooting](troubleshooting.md#ffmpeg-or-ffprobe-is-missing). The package commands
+above are checked against their official sources as of 19 September 2026;
+the Windows installation was not run on this macOS host. The macOS Homebrew
+build was used for the local audit, while CI also installs FFmpeg separately
+on hosted macOS and Windows runners.
+
 ## Fedora Linux and Arch Linux
 
 On Fedora Workstation, install the distribution's

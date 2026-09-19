@@ -5,17 +5,20 @@ open alert is exploitable or that the project has no vulnerabilities.
 
 ## Current container evidence
 
-The [successful container run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35440249408)
+The [successful container run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35441061585)
 built and published
-`ghcr.io/othmaneblial/pyffmpegcore@sha256:da8be496cc05a90226e36b11f28a5c2029475b22f0cf40fc9f228a5ea27eb8aa`.
-Its `container-evidence-35440249408` artifact contains the complete Trivy
-SARIF and the separate blocking report. The blocking report has **zero**
-HIGH/CRITICAL findings with a known fixed version. The complete report has
-**874 package findings** across **366 rule IDs**: 11 CRITICAL, 241 HIGH,
-363 MEDIUM, 226 LOW, and 33 UNKNOWN. Every finding in that report has an
-empty `Fixed Version` field. The scan gate passing therefore does not mean
-that the image is vulnerability-free. The current scan checks the amd64
-candidate; arm64 candidate scanning is being added before the next image gate.
+`ghcr.io/othmaneblial/pyffmpegcore@sha256:0244808caf90485eb7cf9fe99d7505b8739b90587fc8aab9ae412126e964a12c`.
+Its `container-evidence-35441061585` artifact contains separate complete Trivy
+SARIF and blocking reports for amd64 and arm64 candidates. Each blocking report
+has **zero** HIGH/CRITICAL findings with a known fixed version. The complete
+amd64 report has **874 package findings** across **366 rule IDs**: 11 CRITICAL,
+241 HIGH, 363 MEDIUM, 226 LOW, and 33 UNKNOWN. The arm64 report has **863
+findings** across **356 rule IDs**. Every finding in both reports has an empty
+`Fixed Version` field. The scan gate passing therefore does not mean that the
+image is vulnerability-free. Both candidates also passed non-root runtime,
+`doctor`, and synthetic smoke checks; arm64 ran under QEMU. The published OCI
+index and its two platform manifests were fetched anonymously, and the digest
+passed `gh attestation verify`.
 
 The six previously fixable PCRE2 advisories in the earlier image are no longer
 open after the base refresh and Debian package upgrade. Two new open instances

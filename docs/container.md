@@ -6,21 +6,22 @@ build. It runs as UID/GID `10001`, uses no shell entrypoint, and supports
 
 ```bash
 docker run --rm \
-  ghcr.io/othmaneblial/pyffmpegcore@sha256:da8be496cc05a90226e36b11f28a5c2029475b22f0cf40fc9f228a5ea27eb8aa \
+  ghcr.io/othmaneblial/pyffmpegcore@sha256:0244808caf90485eb7cf9fe99d7505b8739b90587fc8aab9ae412126e964a12c \
   doctor
 docker run --rm \
   --volume "$PWD:/workspace" \
   --workdir /workspace \
-  ghcr.io/othmaneblial/pyffmpegcore@sha256:da8be496cc05a90226e36b11f28a5c2029475b22f0cf40fc9f228a5ea27eb8aa \
+  ghcr.io/othmaneblial/pyffmpegcore@sha256:0244808caf90485eb7cf9fe99d7505b8739b90587fc8aab9ae412126e964a12c \
   pipeline run pipeline.json --receipt-dir receipts
 ```
 
 Do not use a mutable tag for repeatable automation. The digest above is the
-public `linux/amd64` and `linux/arm64` index built from revision `9aa1780`
-in the [19 September 2026 container run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35440249408).
-The runtime and blocking vulnerability gates passed, and the repository Action
-uses the same digest by default. The index and both platform manifests were
-also retrieved anonymously from GHCR.
+public `linux/amd64` and `linux/arm64` index built from revision `1cdaf24`
+in the [19 September 2026 container run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35441061585).
+Both candidate images passed the non-root runtime and blocking vulnerability
+gates, including arm64 under QEMU. The repository Action uses the same digest
+by default. The index and both platform manifests were retrieved anonymously
+from GHCR, and `gh attestation verify` succeeded for this digest.
 
 ## Build inputs
 
@@ -44,9 +45,11 @@ publishing an image.
 
 The container workflow:
 
-1. builds an amd64 candidate;
-2. proves the non-root user, `doctor`, and synthetic smoke test;
-3. blocks on HIGH or CRITICAL Trivy findings for which an upstream fix exists;
+1. builds amd64 and arm64 candidates;
+2. proves the non-root user, `doctor`, and synthetic smoke test on both, using
+   QEMU for arm64 on the amd64 runner;
+3. blocks on HIGH or CRITICAL Trivy findings for which an upstream fix exists
+   on either architecture;
 4. publishes an amd64/arm64 OCI image only after those gates;
 5. attaches BuildKit SBOM and maximum provenance;
 6. creates a GitHub artifact attestation for the pushed digest.
@@ -56,9 +59,10 @@ base updates require review and a new immutable digest.
 Container maintenance is owned by the repository maintainer.
 
 The complete SARIF also reports Debian/CPython advisories whose `Fixed Version`
-is empty. The run above recorded 874 findings in the full SARIF and zero in the
-separate blocking JSON. Many findings remain open in GitHub code scanning;
-passing the publication gate does not mean the image has no vulnerabilities.
+is empty. The run above recorded 874 amd64 and 863 arm64 findings in the full
+SARIF, and zero in each separate blocking JSON. Many findings remain open in
+GitHub code scanning; passing the publication gate does not mean the image has
+no vulnerabilities.
 When Trivy reports a fixed HIGH or CRITICAL version, the separate blocking scan
 fails until the base or package is upgraded and a new digest is published.
 
@@ -82,10 +86,10 @@ docker build --file Containerfile --tag pyffmpegcore:local .
 docker run --rm pyffmpegcore:local smoke-test --json
 
 gh attestation verify \
-  oci://ghcr.io/othmaneblial/pyffmpegcore@sha256:da8be496cc05a90226e36b11f28a5c2029475b22f0cf40fc9f228a5ea27eb8aa \
+  oci://ghcr.io/othmaneblial/pyffmpegcore@sha256:0244808caf90485eb7cf9fe99d7505b8739b90587fc8aab9ae412126e964a12c \
   --repo OthmaneBlial/pyffmpegcore
 ```
 
 The workflow's `container-evidence-*` artifact contains the doctor report,
-smoke report, FFmpeg version, a complete SARIF vulnerability report, and the
-filtered HIGH/CRITICAL JSON publication gate for every build.
+smoke report, FFmpeg version, complete SARIF vulnerability reports, and the
+filtered HIGH/CRITICAL JSON publication gate for both architectures.
