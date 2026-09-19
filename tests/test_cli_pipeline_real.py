@@ -83,7 +83,7 @@ def test_pipeline_cli_preflight_run_receipts_and_content_cache(tmp_path, capsys)
     assert first["summary"] == {"total": 3, "succeeded": 3, "failed": 0, "blocked": 0, "cancelled": 0}
     assert {path.name for path in output_dir.iterdir()} == {"video.mp4", "poster.jpg", "audio.m4a"}
     assert len(list(receipt_dir.glob("*.receipt.json"))) == 3
-    events = [json.loads(line) for line in events_path.read_text().splitlines()]
+    events = [json.loads(line) for line in events_path.read_text(encoding="utf-8").splitlines()]
     assert {item["event"] for item in events} >= {"started", "succeeded"}
 
     assert main([*arguments, "--resume"]) == EXIT_OK

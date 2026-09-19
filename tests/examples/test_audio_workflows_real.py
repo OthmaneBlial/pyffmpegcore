@@ -29,6 +29,8 @@ def _decode_ok(path: str) -> bool:
         ["ffmpeg", "-v", "error", "-i", path, "-f", "null", "-"],
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         check=False,
     )
     return result.returncode == 0
@@ -39,6 +41,8 @@ def _volume_levels(path: str) -> tuple[float, float]:
         ["ffmpeg", "-i", path, "-af", "volumedetect", "-f", "null", "-"],
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         check=False,
     )
     mean_match = re.search(r"mean_volume:\s*(-?\d+(?:\.\d+)?) dB", result.stderr)

@@ -24,6 +24,8 @@ def ffmpeg_has_filter(filter_name: str, ffmpeg_path: str = "ffmpeg") -> bool:
         [ffmpeg_path, "-hide_banner", "-filters"],
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         check=False,
     )
     if result.returncode != 0:
@@ -42,6 +44,8 @@ def ffmpeg_has_encoder(encoder_name: str, ffmpeg_path: str = "ffmpeg") -> bool:
         [ffmpeg_path, "-hide_banner", "-encoders"],
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         check=False,
     )
     if result.returncode != 0:
@@ -55,7 +59,7 @@ def ffmpeg_has_encoder(encoder_name: str, ffmpeg_path: str = "ffmpeg") -> bool:
 
 @lru_cache(maxsize=1)
 def load_manifest() -> dict:
-    return json.loads(MANIFEST_PATH.read_text())
+    return json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
 
 
 @lru_cache(maxsize=1)
@@ -69,6 +73,8 @@ def ensure_downloaded_media() -> dict[str, Path]:
         check=True,
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
     )
 
     return fixture_map

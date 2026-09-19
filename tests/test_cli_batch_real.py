@@ -72,7 +72,7 @@ def test_cli_batch_partial_receipts_events_and_resume(tmp_path, capsys):
         "podcast-audio.receipt.json",
         "missing-input.receipt.json",
     }
-    events = [json.loads(line) for line in events_path.read_text().splitlines()]
+    events = [json.loads(line) for line in events_path.read_text(encoding="utf-8").splitlines()]
     assert [item["sequence"] for item in events] == list(range(1, len(events) + 1))
     assert {item["event"] for item in events} >= {"queued", "started", "succeeded", "failed"}
 

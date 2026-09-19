@@ -129,7 +129,7 @@ def test_batch_resume_uses_matching_signature_and_existing_output(tmp_path):
         state_path=state,
     )
     assert first.succeeded
-    assert json.loads(state.read_text())["completed"]["resume"] == BatchJob("resume", plan).signature
+    assert json.loads(state.read_text(encoding="utf-8"))["completed"]["resume"] == BatchJob("resume", plan).signature
 
     second_engine = FakeEngine()
     second = BatchRunner(engine=second_engine).run(
@@ -153,7 +153,7 @@ def test_batch_writes_a_redacted_receipt_for_failed_items(tmp_path):
     )
 
     assert result.items[0].status == "failed"
-    document = (receipts / "failed.receipt.json").read_text()
+    document = (receipts / "failed.receipt.json").read_text(encoding="utf-8")
     assert "private-value" not in document
     assert str(tmp_path) not in document
     assert "<path>" in document
