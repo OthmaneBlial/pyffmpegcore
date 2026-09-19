@@ -47,6 +47,8 @@ Les phases suivantes sont des gates successifs. Une tâche n'est close que si se
 
 ### 0.1 Remettre la CI générale au vert
 
+**État :** [x] Corrections Ruff et version d'outil fixée dans `aa2cf4a` ; la [CI complète du SHA `a021465`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35440788485) a réussi tous ses jobs, dont couverture, matrice, wheels et documentation.
+
 - **Objectif :** que le commit proposé pour publication passe réellement ses contrôles de qualité.
 - **Changements :** corriger les cinq erreurs Ruff visibles dans le dernier run (cache de `scripts/check_docs.py` et variables inutilisées de `tests/test_docs_contract.py`) ; décider d'une politique de mise à jour des outils de développement pour que `ruff>=0.6.0` ne change pas silencieusement les règles entre deux releases ; garder format et mypy actifs.
 - **Fichiers :** `scripts/check_docs.py`, `tests/test_docs_contract.py`, `pyproject.toml`, `.github/workflows/ci.yml`, si la politique de dépendances change.
@@ -55,6 +57,8 @@ Les phases suivantes sont des gates successifs. Une tâche n'est close que si se
 - **Dépendances/risques :** première tâche ; une mise à jour de Ruff peut révéler d'autres diagnostics, à corriger explicitement.
 
 ### 0.2 Corriger le contrôle Windows en encodage natif non UTF‑8
+
+**État :** [x] Correctif `ddf9641` ; [workflow fixtures sur les trois OS](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35439890072) réussi. Régression CP1252 et 17 tests ciblés réussis localement.
 
 - **Objectif :** rendre les fixtures et les tests reproductibles sur le Windows effectivement annoncé.
 - **Changements :** lire explicitement le manifeste et tout autre fichier texte contrôlé par le dépôt en UTF‑8 ; auditer les `read_text`/`write_text` et sorties `subprocess` du chemin fixtures/exemples ; ajouter une régression sous locale Windows/CP1252 sans masquer les échecs par des skips.
@@ -73,6 +77,8 @@ Les phases suivantes sont des gates successifs. Une tâche n'est close que si se
 - **Dépendances/risques :** 0.1 ; changements amont Debian, taille d'image et politique de codecs/licences. Ne pas ajouter d'exception CVE pour obtenir un vert artificiel.
 
 ### 0.4 Fermer l'évasion du workspace de la GitHub Action
+
+**État :** [x] Correctif `2635773` ; six cas de lien symbolique et chemins Unicode/espaces validés localement, puis [intégration Action](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35440123285) et [réexécution avec le digest actualisé](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35440788514) réussies. Une modification concurrente du workspace reste hors garantie et est documentée.
 
 - **Objectif :** garantir que les chemins d'entrée, état, événements, receipts et résultat restent dans `GITHUB_WORKSPACE`, même avec des liens symboliques.
 - **Changements :** résoudre et vérifier les parents réels avant création/écriture, refuser les symlinks non sûrs et les chemins externes, prévoir la course entre validation et écriture ; limiter aussi les chemins d'artefacts acceptés. Documenter clairement ce que la vérification ne peut pas garantir si un autre processus modifie le workspace en parallèle.
@@ -143,7 +149,16 @@ Les phases suivantes sont des gates successifs. Une tâche n'est close que si se
 - **Validation :** matrices GitHub, artefacts `doctor --json`, contrôle des versions et de la provenance des wheels.
 - **Dépendances/risques :** 0.2, 1.3 et 2.2 ; dérive des runners et des paquets FFmpeg.
 
-**Gate 2 :** aucune régression des schémas publics, des politiques d'écrasement et d'annulation ; tests de sécurité et matrice pertinents verts.
+### 2.4 Réduire les alertes de chaîne logicielle par des corrections prouvées
+
+- **Objectif :** distinguer les vulnérabilités corrigibles, les avis sans correctif, les signaux de politique et les doublons historiques, puis réduire les causes plutôt que masquer les alertes.
+- **Changements :** tenir `SECURITY_TRIAGE.md` à jour pour chaque digest ; tester et scanner aussi l'image arm64 avant publication ; remplacer les installations `pip` non verrouillées en CI/release par un lock avec hashes pour la matrice Python/OS ; créer un corpus de fuzzing pour les parseurs de pipeline, profil et receipt ; contrôler la couverture CodeQL et des tests sur les révisions proposées ; préparer les preuves du badge OpenSSF sans revendiquer son octroi prématurément.
+- **Fichiers :** `Containerfile`, `.github/workflows/container.yml`, `ci.yml`, `release.yml`, `codeql.yml`, `scorecard.yml`, `pyproject.toml`, fichiers de lock, `tests/` ou `fuzz/`, `SECURITY_TRIAGE.md`.
+- **Acceptation :** les deux architectures passent le filtre HIGH/CRITICAL corrigible et un smoke non-root ; installations CI/release déterministes avec hashes et contrôle des distributions ; cibles de fuzzing reproduisant au moins les erreurs de validation connues et exécutées en CI ; Scorecard et Code Scanning récents liés au même SHA, avec chaque alerte ouverte catégorisée. Le badge externe n'est annoncé que s'il est accordé.
+- **Validation :** artefacts Trivy amd64/arm64, manifest OCI, exécution du lock sur Python 3.10–3.14 et les trois OS, corpus de fuzzing et crash replay, CodeQL/CI/Scorecard sur un SHA identique, revue manuelle des alertes restant ouvertes.
+- **Dépendances/risques :** 0.3, 0.4 et 2.3 ; les avis Debian sans version corrigée ne peuvent pas être fermés honnêtement par un changement local, le score de revue dépend de la politique PR et le badge exige une validation externe.
+
+**Gate 2 :** aucune régression des schémas publics, des politiques d'écrasement et d'annulation ; tests de sécurité, matrice et preuves de chaîne logicielle pertinents verts. Les alertes sans correctif restent visibles et suivies.
 
 ## Phase 3 — P1 : documentation, UX visuelle et positionnement
 
