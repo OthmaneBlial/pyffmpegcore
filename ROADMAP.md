@@ -163,7 +163,8 @@ d'entrée et des contrats différents. La carte de ces responsabilités est dans
 [`docs/architecture.md`](docs/architecture.md). Le rendu des quatre scripts de
 complétion a été extrait de `cli.py` vers `cli_completion.py` sans changer les
 sorties (hashes comparés localement). Suite complète et CI après extraction à
-confirmer avant de clore cette tâche.
+confirmer avant de clore cette tâche. Deux contrats directs vérifient désormais
+la parité des plans normalisés CLI/pipeline pour `convert` et le profil web.
 
 - **Objectif :** permettre de corriger un workflow sans propager des divergences entre CLI, profils, moteur et pipelines.
 - **Changements :** cartographier les branches encore dupliquées dans les quatre gros modules ; découper seulement les responsabilités où les tests montrent un couplage réel ; garder une seule compilation des arguments et des contrats stables pour plans, résultats, receipts et codes de sortie.
