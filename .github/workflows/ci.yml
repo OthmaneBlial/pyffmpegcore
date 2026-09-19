@@ -94,7 +94,7 @@ jobs:
       - name: Include artifact report
         run: cp artifact-report.json dist/artifact-report.json
       - name: Upload immutable distributions
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: python-distributions
           path: dist/
@@ -140,7 +140,7 @@ jobs:
         run: python scripts/validate_cli_install.py --artifact dist --json > compatibility-report.json
       - name: Upload compatibility evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: compatibility-${{ runner.os }}-py${{ matrix.python-version }}
           path: |
@@ -177,7 +177,7 @@ jobs:
       - name: Verify documented package entry points
         run: python scripts/validate_cli_install.py --artifact dist --skip-media --json
       - name: Upload built documentation
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: documentation-site
           path: site/
@@ -206,7 +206,7 @@ jobs:
         run: python -m pytest --cov=pyffmpegcore --cov-report=term-missing --cov-report=xml:coverage.xml
       - name: Upload coverage evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: coverage-python-3.12
           path: coverage.xml
