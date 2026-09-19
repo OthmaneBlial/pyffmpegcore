@@ -8,6 +8,41 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 
 - Fish shell completion generated from the same CLI parser metadata as Bash,
   zsh, and PowerShell, including nested commands and options.
+- A public-wheel quickstart, a validated `0.2.2` terminal recording and
+  transcript, and source-linked frames of its plan and verified result.
+- A dated replay of the web-video, exact-size, and podcast recipes with
+  generated media, probes, receipts, and the web compatibility size trade-off.
+- A task-based comparison with FFmpeg CLI, ffmpeg-python, python-ffmpeg,
+  ffmpegio, and PyAV, grounded in their maintainers' documentation.
+- A generated exact-wheel compatibility summary for Linux, macOS, and Windows,
+  plus a bounded, repeatable parser mutation corpus and CI crash artifacts.
+- A contributor architecture map and CLI/pipeline normalized-plan parity tests.
+
+### Changed
+
+- CI, documentation, release, pipx verification, and container build tools use
+  reviewed wheel-only dependency locks with hashes.
+- The container publication gate scans and smoke-tests both amd64 and arm64
+  candidates, then publishes an attested multi-architecture digest.
+- The GitHub Action uses a verified digest and its integration workflow compares
+  local, container, and Action outputs.
+- The README leads with a real public install and terminal frames; long tables
+  on the documentation site are keyboard-scrollable on narrow screens.
+
+### Fixed
+
+- Direct commands reject URL-like media paths without echoing credentials;
+  pipeline results and receipts redact credentials embedded in FFmpeg messages.
+- The Action rejects existing symlink paths and rechecks artifact paths before
+  upload.
+- Missing tools, capabilities, and refused output paths point to concrete
+  remedies while retaining exit-code contracts.
+- Managed FFmpeg jobs bound default diagnostic capture and progress history,
+  and the terminal clears stale characters after progress updates.
+- Invalid UTF-8 receipt input now reports a validation error instead of an
+  uncaught decoding exception.
+- Fixture metadata decoding and the Ruff quality gate work on the supported
+  Windows and CI environments.
 
 ## [0.2.2] - 2026-08-26
 
