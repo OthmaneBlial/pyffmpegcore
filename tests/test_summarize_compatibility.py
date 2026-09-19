@@ -71,3 +71,21 @@ def test_summary_refuses_failed_check(tmp_path: Path) -> None:
     report_path.write_text(json.dumps(report), encoding="utf-8")
     with pytest.raises(ValueError, match="failed checks"):
         render_report(tmp_path, "https://example.test/actions/runs/1")
+
+
+def test_summary_counts_only_validated_expected_refusals(tmp_path: Path) -> None:
+    make_six_cells(tmp_path)
+    report_path = tmp_path / "compatibility-Linux-py3.10" / "compatibility-report.json"
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    report["commands"].append(
+        {"name": "missing-encoder-remedy", "returncode": 4, "expected_returncode": 4, "passed": True}
+    )
+    report_path.write_text(json.dumps(report), encoding="utf-8")
+    assert "Linux | arm64 | 3.10.1 | ffmpeg version 9.0.1 | 2/2" in render_report(
+        tmp_path, "https://example.test/actions/runs/1"
+    )
+
+    report["commands"][-1]["passed"] = False
+    report_path.write_text(json.dumps(report), encoding="utf-8")
+    with pytest.raises(ValueError, match="missing-encoder-remedy"):
+        render_report(tmp_path, "https://example.test/actions/runs/1")

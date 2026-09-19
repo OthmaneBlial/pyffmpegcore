@@ -10,11 +10,18 @@ from pathlib import Path
 EXPECTED_CELLS = {(system, python) for system in ("Linux", "macOS", "Windows") for python in ("3.10", "3.14")}
 
 
+def check_passed(command: dict[str, object]) -> bool:
+    """Accept an expected refusal only when the installer validated its remedy."""
+    if "expected_returncode" in command:
+        return command.get("passed") is True and command["returncode"] == command["expected_returncode"]
+    return command["returncode"] == 0 and command.get("passed", True) is True
+
+
 def load_cell(directory: Path) -> dict[str, str | int]:
     report = json.loads((directory / "compatibility-report.json").read_text(encoding="utf-8"))
     catalog = json.loads((directory / "capability-catalog-report.json").read_text(encoding="utf-8"))
     commands = report["commands"]
-    failures = [command["name"] for command in commands if command["returncode"] != 0]
+    failures = [command["name"] for command in commands if not check_passed(command)]
     if failures or not catalog["catalog_valid"]:
         raise ValueError(f"{directory.name}: failed checks: {failures or catalog['catalog_errors']}")
     doctor = next(command for command in commands if command["name"] == "cli-doctor")
@@ -68,7 +75,8 @@ def render_report(root: Path, run_url: str) -> str:
             "",
             "The checks install one prebuilt wheel, then exercise the quickstart, "
             "probe, conversion, stream preservation, audio extraction, thumbnails, "
-            "five profiles, batch, and pipeline. A catalog gap means that optional "
+            "five profiles, batch, pipeline, and four expected error remedies. "
+            "A catalog gap means that optional "
             "capability is unavailable on this FFmpeg build; it is not a passed "
             "media test for that capability.",
             "",
