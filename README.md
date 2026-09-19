@@ -11,19 +11,15 @@
 
 <p align="center">
   <a href="https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/action-integration.yml"><img alt="Action integration" src="https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/action-integration.yml/badge.svg"></a>
   <a href="https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/codeql.yml/badge.svg"></a>
-  <a href="https://securityscorecards.dev/viewer/?uri=github.com/OthmaneBlial/pyffmpegcore"><img alt="OpenSSF Scorecard" src="https://api.securityscorecards.dev/projects/github.com/OthmaneBlial/pyffmpegcore/badge"></a>
   <a href="https://pypi.org/project/pyffmpegcore/"><img alt="PyPI version" src="https://img.shields.io/pypi/v/pyffmpegcore"></a>
-  <a href="https://pypi.org/project/pyffmpegcore/"><img alt="Supported Python versions" src="https://img.shields.io/pypi/pyversions/pyffmpegcore"></a>
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/github/license/OthmaneBlial/pyffmpegcore"></a>
-  <a href="https://github.com/OthmaneBlial/pyffmpegcore/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/OthmaneBlial/pyffmpegcore?style=flat"></a>
 </p>
 
 <p align="center">
   <a href="https://othmaneblial.github.io/pyffmpegcore/"><strong>Explore the docs</strong></a> ·
   <a href="https://othmaneblial.github.io/pyffmpegcore/quickstart/">Five-minute proof</a> ·
-  <a href="https://othmaneblial.github.io/pyffmpegcore/terminal-demo/">63-second terminal proof</a> ·
+  <a href="docs/terminal-demo.md">89.5-second public run</a> ·
   <a href="https://othmaneblial.github.io/pyffmpegcore/recipes/">Task-first recipes</a> ·
   <a href="https://othmaneblial.github.io/pyffmpegcore/evidence/">Measured evidence</a> ·
   <a href="SECURITY.md">Security</a>
@@ -33,14 +29,28 @@ PyFFmpegCore is for developers and technical creators who want repeatable
 local media automation without owning a growing pile of fragile FFmpeg strings.
 It supports Python 3.10–3.14 on Linux, macOS, and Windows; `ffmpeg` and
 `ffprobe` remain explicit system dependencies.
+Start with `pipx install "pyffmpegcore==0.2.2"`, then run
+`pyffmpegcore smoke-test` to produce and verify synthetic media.
 
-```text
-                  review before                    prove after
-                       │                                │
-input ──> preflight ──> deterministic plan ──> run ──> receipt ──> output
-            │                                  │
-            └─ fail before mutation            └─ timeout / cancel / cleanup
-```
+## A real public install, plan, and result
+
+These frames were rendered from the [validated, unedited `0.2.2` terminal
+recording](docs/assets/terminal-demo-v0.2.2.cast) made on 19 September 2026.
+It installed the public PyPI wheel on macOS arm64 with Python 3.14.6 and
+FFmpeg 9.0.1, then used generated media. The images crop the actual terminal
+screen; they do not add command output.
+
+![Terminal frame showing the 0.2.2 web profile command, its exact FFmpeg plan, stream choices, and preflight PASS.](docs/assets/terminal-plan-v0.2.2.png)
+
+The planned job selects H.264/AAC and checks the required encoder and muxer
+before writing. [Open the plan image at full resolution](docs/assets/terminal-plan-v0.2.2.png)
+or [read the full transcript](docs/assets/terminal-demo-v0.2.2.txt).
+
+![Terminal frame showing the probed H.264/AAC MP4 and successful receipt validation from the same public run.](docs/assets/terminal-result-v0.2.2.png)
+
+The 60-second synthetic input produced a 2.5 MB MP4 and a schema 1.0 receipt.
+The fixture is a functional demonstration, not a compression or quality claim.
+[Open the result image at full resolution](docs/assets/terminal-result-v0.2.2.png).
 
 ## Install and prove one useful result
 
@@ -62,16 +72,16 @@ create a web-compatible H.264/AAC file, inspect its streams, and validate the
 receipt. No checkout or personal media is required. See the
 [five-minute guide](docs/quickstart.md) for prerequisites and cleanup.
 
-## Watch the real 63-second proof
+## Watch the real 89.5-second public run
 
 This is a validated terminal recording, not edited sample output. It installs
-`0.2.1` from public PyPI, runs `doctor`, creates synthetic media, explains the
+`0.2.2` from public PyPI, runs `doctor`, creates synthetic media, explains the
 exact plan, shows structured progress, probes the output, and validates the
 privacy-redacted receipt.
 
-- [Download the asciicast](docs/assets/terminal-demo-v0.2.1.cast)
-- [Read the accessible transcript](docs/assets/terminal-demo-v0.2.1.txt)
-- [Open the annotated proof page](https://othmaneblial.github.io/pyffmpegcore/terminal-demo/)
+- [Download the asciicast](docs/assets/terminal-demo-v0.2.2.cast)
+- [Read the accessible transcript](docs/assets/terminal-demo-v0.2.2.txt)
+- [Open the annotated proof page](docs/terminal-demo.md)
 
 Now turn a camera/editor MOV into a conservative web MP4. Inspect first; write
 only when the plan is acceptable:

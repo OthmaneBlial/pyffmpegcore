@@ -12,7 +12,7 @@ hide:
       <h1 id="pfc-hero-title">FFmpeg jobs you can <span>explain.</span></h1>
       <div class="pfc-actions">
         <a class="pfc-button" href="quickstart/">Prove it in five minutes</a>
-        <a class="pfc-button pfc-button--ghost" href="terminal-demo/">Watch the archived 0.2.1 run</a>
+        <a class="pfc-button pfc-button--ghost" href="terminal-demo/">Watch the real 0.2.2 run</a>
         <a class="pfc-button pfc-button--ghost" href="recipes/">Pick a real recipe</a>
       </div>
       <p class="pfc-hero__lede">
@@ -54,11 +54,11 @@ hide:
   </section>
 
   <section class="pfc-live-proof" aria-labelledby="live-proof-title">
-    <div class="pfc-live-proof__signal" aria-hidden="true"><span>63.0</span><small>seconds</small></div>
+    <div class="pfc-live-proof__signal" aria-hidden="true"><span>89.5</span><small>seconds</small></div>
     <div class="pfc-live-proof__copy">
-      <p class="pfc-kicker">Archived PyPI 0.2.1 recording / no staged output</p>
-      <h2 id="live-proof-title">Watch a real 0.2.1 run.</h2>
-      <p>The 63-second capture shows a fresh install, capability scan, synthetic smoke test, explained plan, progress, probed output, and validated receipt. The current signed release above is 0.2.2.</p>
+      <p class="pfc-kicker">Public PyPI 0.2.2 recording / no staged output</p>
+      <h2 id="live-proof-title">Watch a real 0.2.2 run.</h2>
+      <p>The 89.5-second capture shows a fresh install, capability scan, synthetic smoke test, explained plan, progress, probed output, and validated receipt from the current signed public release.</p>
       <div class="pfc-actions">
         <a class="pfc-button" href="terminal-demo/">Open the terminal proof</a>
         <a class="pfc-button pfc-button--ghost" href="https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.2.2">Inspect the signed release</a>

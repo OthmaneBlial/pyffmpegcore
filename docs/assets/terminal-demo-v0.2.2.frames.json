@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "source": "terminal-demo-v0.2.2.cast",
+  "source_sha256": "4769bebaa50c301f13dce7a6c3e1e40327f60db21177a7fa98e2b722cbaf7ce2",
+  "renderer": {
+    "terminal_emulator": "pyte 0.8.2",
+    "image_library": "Pillow 12.3.0",
+    "font": "Menlo 20 px",
+    "terminal_size": "100 columns x 32 rows",
+    "text_edits": false
+  },
+  "frames": [
+    {
+      "file": "terminal-plan-v0.2.2.png",
+      "sha256": "e63d25cfe79b5e67c76a4d08fb17cea648077e7b29e683d5b2fdd7572d28cb61",
+      "at_seconds": 62.691,
+      "stop_after_event_start": "Plan 1.0",
+      "visible_rows": [0, 32],
+      "pixels": [1256, 940]
+    },
+    {
+      "file": "terminal-result-v0.2.2.png",
+      "sha256": "366495244bdc02e88caaa92e5ce8d1ef0d72f97fe017a37da7ec061f00a8d69d",
+      "at_seconds": 85.511,
+      "visible_rows": [18, 31],
+      "pixels": [1256, 408]
+    }
+  ]
+}
