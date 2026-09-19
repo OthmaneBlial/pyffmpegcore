@@ -245,15 +245,8 @@ def test_execution_replaces_invalid_utf8_without_stalling_pipe_drains(tmp_path):
     assert "bad-byte: �" in result.stderr
 
 
-@pytest.mark.parametrize(
-    ("capture_policy", "expected_stdout", "expected_stderr"),
-    [
-        (CapturePolicy.TAIL, "S" * 64, "E" * 64),
-        (CapturePolicy.DISCARD, None, None),
-        (CapturePolicy.FULL, "S" * 131_072, "E" * 131_072),
-    ],
-)
-def test_execution_drains_large_pipes_with_explicit_capture_policy(capture_policy, expected_stdout, expected_stderr):
+@pytest.mark.parametrize("capture_policy", [CapturePolicy.TAIL, CapturePolicy.DISCARD, CapturePolicy.FULL])
+def test_execution_drains_large_pipes_with_explicit_capture_policy(capture_policy):
     plan = ExecutionPlan(
         workflow="test/large-diagnostics",
         command=(
@@ -269,8 +262,17 @@ def test_execution_drains_large_pipes_with_explicit_capture_policy(capture_polic
     result = FFmpegRunner().execute_plan(plan)
 
     assert result.succeeded
-    assert result.stdout == expected_stdout
-    assert result.stderr == expected_stderr
+    expected_length = {
+        CapturePolicy.TAIL: 64,
+        CapturePolicy.DISCARD: None,
+        CapturePolicy.FULL: 131_072,
+    }[capture_policy]
+    if expected_length is None:
+        assert result.stdout is None
+        assert result.stderr is None
+    else:
+        assert result.stdout == "S" * expected_length
+        assert result.stderr == "E" * expected_length
 
 
 @pytest.mark.parametrize("trailing_diagnostics", [0, 32_768])
