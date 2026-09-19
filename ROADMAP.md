@@ -175,11 +175,14 @@ la parité des plans normalisés CLI/pipeline pour `convert` et le profil web.
 
 ### 2.2 Borner les tâches coûteuses et les entrées hostiles
 
-**État :** contrôle des URL et redaction des diagnostics de pipeline ajouté ;
-capture des pipes et historique de progression bornés localement pour la
-politique `TAIL`, avec régressions sur gros diagnostics et nettoyage après
-timeout. Aucun plafond dur universel sur mémoire, disque ou taille de sortie
-n'est encore garanti ; validation CI de ces changements en attente.
+**État :** [x] contrôle des URL et redaction des diagnostics de pipeline ;
+capture des pipes et historique de progression bornés pour la politique
+`TAIL` ; timeout explicite, catégorie `timeout`, nettoyage de sortie partielle,
+annulation et préflight de disque bas couverts par des régressions. La
+[CI complète `35445459849`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35445459849)
+a réussi avec 87,93 % de couverture des lignes. Le modèle de sécurité précise
+qu'aucun plafond dur universel ne protège la mémoire, le disque ou la taille
+des sorties ; un quota OS/conteneur reste nécessaire pour un média hostile.
 
 - **Objectif :** réduire les surprises de temps, espace et réseau tout en annonçant honnêtement que PyFFmpegCore n'est pas un sandbox.
 - **Changements :** définir des plafonds optionnels/explicites de temps et de sortie là où le moteur peut les garantir, distinguer préflight estimatif et limite dure, durcir redaction des diagnostics et politique URL/protocoles, tester nettoyage après annulation/timeout/disque plein. Maintenir l'exécution en vecteur d'arguments et `-nostdin`.
@@ -228,8 +231,10 @@ job CI et revue des alertes encore à vérifier. Tâche ouverte.
 
 **État :** checklist de prochaine release, canaux de distribution, politique
 de dépréciation, URL GitHub canonique et étiquetage du cast `0.2.1` corrigés
-localement ; publication et cohérence avec la prochaine version restent à
-valider avant de cocher.
+localement. Un nouveau cast réel du wheel public `0.2.2` a été validé à
+89,5 secondes avec transcript et deux images tirées de ses frames ; l'ancien
+`0.2.1` reste archivé. Publication du site et cohérence avec la prochaine
+version restent à valider avant de cocher.
 
 - **Objectif :** un nouvel utilisateur et un mainteneur lisent la même vérité sur la version et les canaux disponibles.
 - **Changements :** remplacer les cases historiques de `RELEASE_CHECKLIST.md` par une checklist à remplir pour chaque version avec URLs de preuves ; aligner `CLI_DISTRIBUTION.md` sur wheel/sdist, image et Action ; résoudre la contradiction de fenêtre de dépréciation entre `docs/RELEASING.md` et `docs/api-stability.md` ; enlever le contournement `repo_url: https://github.com//...` devenu obsolète ; distinguer le cast `0.2.1` de la release `0.2.2` ou enregistrer un nouveau cast réel de la version publiée.
@@ -239,6 +244,13 @@ valider avant de cocher.
 - **Dépendances/risques :** gates 0–2 ; le cast existant doit rester archivé comme preuve de `0.2.1`, non être retouché pour paraître `0.2.2`.
 
 ### 3.2 Faire voir l'application réelle dès le README
+
+**État :** l'installation PyPI `0.2.2` a été enregistrée en PTY réel sur
+macOS arm64/Python 3.14.6/FFmpeg 9.0.1 ; le validateur du dépôt accepte le
+cast de 89,5 secondes. Deux PNG rendent sans ajout de texte les frames du
+plan et du résultat/receipt, avec source et limites précisées dans le README.
+Rendu GitHub clair/sombre/étroit et mise à jour après prochaine release encore
+à vérifier.
 
 - **Objectif :** que la première vue GitHub montre une commande, une décision de plan et un résultat réellement obtenus.
 - **Changements :** raccourcir le mur de badges et placer un parcours vérifié au premier écran ; capturer de vraies images de terminal avec version, OS, date et fixture non privée ; montrer avant/après utile (format, pistes, taille ou loudness) avec un lien vers les receipts. Conserver la bannière SVG si elle aide la lecture, sans confondre console illustrative HTML et capture.

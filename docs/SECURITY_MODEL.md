@@ -45,7 +45,7 @@ FFmpeg parses complex attacker-controlled formats. Keep FFmpeg patched and proce
 
 ## Resource Exhaustion
 
-Small compressed inputs can require large amounts of CPU, memory, disk, or output bandwidth. The current CLI does not enforce universal time, memory, frame, pixel, or output-size limits. Run untrusted jobs with OS/container quotas and validate media dimensions and duration before expensive work. Future limits must fail closed and appear in plans and receipts.
+Small compressed inputs can require large amounts of CPU, memory, disk, or output bandwidth. The CLI offers an explicit `--timeout` for managed media jobs, but does not enforce a universal deadline across a batch or pipeline, nor memory, frame, pixel, or output-size limits. Run untrusted jobs with OS/container quotas and validate media dimensions and duration before expensive work. Future limits must fail closed and appear in plans and receipts.
 
 Managed process pipes are drained in bounded read chunks. The default `TAIL`
 capture retains at most `capture_tail_chars` of stdout and stderr per stream;
