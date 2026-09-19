@@ -102,6 +102,45 @@ jobs:
           skip-setup-trivy: true
           exit-code: "1"
 
+      - name: Build local arm64 scan image
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          file: Containerfile
+          load: true
+          platforms: linux/arm64
+          tags: pyffmpegcore:scan-arm64
+          provenance: false
+          sbom: false
+
+      - name: Prove arm64 non-root runtime and media stack under QEMU
+        run: |
+          test "$(docker run --rm --platform linux/arm64 --entrypoint id pyffmpegcore:scan-arm64 -u)" = "10001"
+          docker run --rm --platform linux/arm64 pyffmpegcore:scan-arm64 doctor --json > container-doctor-arm64.json
+          docker run --rm --platform linux/arm64 pyffmpegcore:scan-arm64 smoke-test --json > container-smoke-arm64.json
+
+      - name: Generate complete arm64 vulnerability report
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: pyffmpegcore:scan-arm64
+          format: sarif
+          output: trivy-results-arm64.sarif
+          scanners: vuln
+          skip-setup-trivy: true
+          exit-code: "0"
+
+      - name: Block fixed high and critical arm64 vulnerabilities
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: pyffmpegcore:scan-arm64
+          format: json
+          output: trivy-blocking-arm64.json
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          scanners: vuln
+          skip-setup-trivy: true
+          exit-code: "1"
+
       - name: Upload scan and runtime evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -111,14 +150,18 @@ jobs:
             container-doctor.json
             container-smoke.json
             container-ffmpeg.txt
+            container-doctor-arm64.json
+            container-smoke-arm64.json
             trivy-results.sarif
             trivy-blocking.json
+            trivy-results-arm64.sarif
+            trivy-blocking-arm64.json
           if-no-files-found: warn
           retention-days: 30
 
       - name: Upload vulnerability findings to code scanning
         if: always() && hashFiles('trivy-results.sarif') != ''
-        uses: github/codeql-action/upload-sarif@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28 # v4.37.8
+        uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
         with:
           sarif_file: trivy-results.sarif
           category: pyffmpegcore-container
