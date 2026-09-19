@@ -386,6 +386,14 @@ prochaine release avant de fermer le gate 4.
 
 ### 4.3 Décider explicitement des exécutables autonomes
 
+**État :** décision de distribution documentée dans
+[`CLI_DISTRIBUTION.md`](CLI_DISTRIBUTION.md) : wheel/sdist restent les
+artefacts officiels, le conteneur et l'Action sont des canaux séparés, et aucun
+binaire autonome n'est annoncé. Aucun issue ou PR ouvert ne demande aujourd'hui
+un exécutable natif ; la décision pourra être rouverte après les essais
+indépendants de la phase 5. La preuve utilisateur requise pour fermer cette
+tâche n'existe pas encore.
+
 - **Objectif :** répondre au besoin de binaires téléchargeables sans confondre paquet Python et application autonome.
 - **Changements :** relever, pendant les essais utilisateurs, si Python/pipx est le vrai obstacle ; chiffrer taille, démarrage, signature/notarisation, mises à jour de sécurité et dépendance FFmpeg externe. Si la demande est avérée, prototyper un exécutable sur un OS, puis étendre seulement avec CI, signatures, hashes et tests propres ; sinon maintenir wheel/sdist comme téléchargement officiel et expliquer ce choix.
 - **Fichiers :** `CLI_DISTRIBUTION.md`, `docs/installation.md`, et, si retenu, scripts de packaging, `.github/workflows/release.yml` et guide de vérification.
@@ -394,6 +402,12 @@ prochaine release avant de fermer le gate 4.
 - **Dépendances/risques :** 4.1 et demandes d'installation déjà observables dans les issues/support ; coût Apple/Windows et maintenance de FFmpeg. Les essais de 5.1 pourront rouvrir la décision, sans bloquer une release Python saine.
 
 ### 4.4 Publier la prochaine version et contrôler son état public
+
+**État :** non publiée. Le dry-run `35450686248` construit et teste le bundle
+`0.2.2`, mais aucun nouveau tag, release GitHub, upload PyPI ou digest GHCR n'a
+été créé. Une publication réelle nécessite une autorisation et les contrôles
+publics correspondants ; la release `v0.2.2` reste l'artefact public de
+référence.
 
 - **Objectif :** remplacer la preuve historique `v0.2.2` par une release qui inclut les corrections précédentes.
 - **Changements :** remplir la checklist par liens réels ; changelog et notes de migration ; tag annoté signé ; exécuter le pipeline de publication existant ; vérifier les fichiers publics PyPI et GitHub, checksums, attestations, installation, page docs et digest GHCR/Action si annoncés ; choisir explicitement le statut GitHub « prerelease » si la version reste annoncée comme bêta. En cas de gate rouge, corriger puis publier une nouvelle version sans réécrire l'ancienne.
@@ -408,6 +422,10 @@ prochaine release avant de fermer le gate 4.
 
 ### 5.1 Observer des premiers usages indépendants
 
+**État :** non exécutée. Le dépôt ne contient pas cinq essais consentis par des
+utilisateurs indépendants ; les installations locales et CI ne peuvent pas les
+remplacer.
+
 - **Objectif :** savoir si les promesses de cinq minutes, diagnostic et receipt sont compréhensibles hors de l'équipe.
 - **Changements :** faire essayer l'installation et un résultat utile à au moins cinq personnes du public cible sur des machines différentes, avec consentement ; relever OS, version FFmpeg, temps, blocages et résultat, sans collecter leurs médias ni télémétrie par défaut ; corriger les obstacles récurrents avant une diffusion large.
 - **Fichiers :** `docs/quickstart.md`, `docs/troubleshooting.md`, `docs/community.md`, issues et tests correspondant aux défauts ; note anonymisée de protocole/résultats.
@@ -417,6 +435,11 @@ prochaine release avant de fermer le gate 4.
 
 ### 5.2 Garder une entrée de contribution vivante
 
+**État :** structure documentaire prête, mais aucune nouvelle contribution
+indépendante n'est prouvée. La file historique d'issues `#7`–`#11` est fermée
+et aucune issue ouverte ne peut être présentée comme une tâche communautaire
+active.
+
 - **Objectif :** transformer les demandes réelles en améliorations maintenables.
 - **Changements :** vérifier que les issues `#7`–`#11` et labels cités dans `docs/community.md` sont toujours ouverts/pertinents ; fermer ou réécrire les sujets obsolètes, ajouter des tâches bornées tirées des essais, préciser tests et critères ; créditer les contributeurs et appliquer les délais de support annoncés.
 - **Fichiers :** `CONTRIBUTING.md`, `SUPPORT.md`, `docs/community.md`, formulaires `.github/ISSUE_TEMPLATE/` et issues GitHub.
@@ -425,6 +448,10 @@ prochaine release avant de fermer le gate 4.
 - **Dépendances/risques :** 5.1 ; capacité de triage, disponibilité d'autres contributeurs.
 
 ### 5.3 Partager une preuve vérifiable dans les bons canaux
+
+**État :** non publié. `LAUNCH.md` contient le runbook et des brouillons, mais
+aucune publication communautaire vérifiable liée à une nouvelle release n'a
+été effectuée.
 
 - **Objectif :** faire connaître un outil qui résout un problème concret, sans sollicitation artificielle de stars.
 - **Changements :** réviser les règles actuelles de chaque communauté avant publication ; publier un exemple reproductible et l'affiliation du mainteneur ; consigner URL, date, release et retour technique dans `LAUNCH.md` ; améliorer les recettes à partir des questions répétées.
@@ -438,6 +465,10 @@ prochaine release avant de fermer le gate 4.
 ## Phase 6 — finale : vraie vidéo du produit terminé
 
 > **Interdiction de produire cette vidéo avant validation des gates 0 à 5.** Le cast `v0.2.1` existant reste une archive de preuve ; il ne satisfait pas cette phase. Utiliser obligatoirement la skill **`ffmpeg-video-editor`** au moment de la capture et du montage.
+
+**État :** bloquée par les gates 4 et 5 non clôturés. Aucun export vidéo final
+ne doit être présenté comme la démonstration du produit terminé tant qu'une
+release publique et des retours indépendants ne sont pas prouvés.
 
 ### 6.1 Écrire un scénario à partir de la release finale
 
