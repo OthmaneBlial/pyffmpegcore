@@ -40,11 +40,32 @@
     });
   }
 
-  if (typeof document$ !== "undefined") {
-    document$.subscribe(initializeCopyButtons);
-  } else if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initializeCopyButtons);
-  } else {
+  function updateScrollableTables() {
+    document.querySelectorAll(".md-typeset__scrollwrap").forEach((wrapper) => {
+      if (wrapper.scrollWidth > wrapper.clientWidth + 1) {
+        wrapper.tabIndex = 0;
+        wrapper.setAttribute("role", "region");
+        wrapper.setAttribute("aria-label", "Scrollable data table");
+      } else {
+        wrapper.removeAttribute("tabindex");
+        wrapper.removeAttribute("role");
+        wrapper.removeAttribute("aria-label");
+      }
+    });
+  }
+
+  function initializePage() {
     initializeCopyButtons();
+    updateScrollableTables();
+  }
+
+  window.addEventListener("resize", updateScrollableTables);
+
+  if (typeof document$ !== "undefined") {
+    document$.subscribe(initializePage);
+  } else if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializePage);
+  } else {
+    initializePage();
   }
 })();

@@ -252,8 +252,12 @@ valider avant de cocher.
 1280 px sans débordement horizontal ; premier appel à l'action avancé sur
 mobile, copie exacte de la commande vérifiée, thèmes clair/sombre et console
 sans erreur observés. Les liens HTML du site sont désormais soumis au
-contrôle des ancres. Revue complète au clavier, lecteur d'écran, autres pages
-et site public encore à faire ; tâche ouverte.
+contrôle des ancres. Sur l'accueil, le focus clavier est visible jusqu'à la
+commande de copie. Les tableaux débordants d'architecture et de comparaison
+ont maintenant une région nommée et focalisable à 320 px ; une flèche droite
+fait défiler la colonne masquée, et le tab-stop disparaît à 1280 px. Revue
+complète au lecteur d'écran, autres pages et site public encore à faire ;
+tâche ouverte.
 
 - **Objectif :** que l'identité visuelle existante serve la compréhension sur mobile et au clavier.
 - **Changements :** auditer le site MkDocs réel à 320/375/768 px et desktop en clair/sombre ; contrôler débordements de code et tableaux, contraste, focus, réduction du mouvement, bouton de copie, navigation, liens de recette et absence d'erreurs console ; corriger uniquement les défauts observés. Garder une solution sans JavaScript pour copier l'installation.

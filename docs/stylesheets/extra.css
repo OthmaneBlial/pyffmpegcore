@@ -71,6 +71,11 @@ body {
   padding-bottom: 4rem;
 }
 
+.md-typeset__scrollwrap:focus-visible {
+  outline: 2px solid var(--md-accent-fg-color);
+  outline-offset: -2px;
+}
+
 .md-typeset h1,
 .md-typeset h2,
 .md-typeset h3 {
