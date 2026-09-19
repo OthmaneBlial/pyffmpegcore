@@ -6,18 +6,18 @@ build. It runs as UID/GID `10001`, uses no shell entrypoint, and supports
 
 ```bash
 docker run --rm \
-  ghcr.io/othmaneblial/pyffmpegcore@sha256:0244808caf90485eb7cf9fe99d7505b8739b90587fc8aab9ae412126e964a12c \
+  ghcr.io/othmaneblial/pyffmpegcore@sha256:538bbee63b043ac9a3716230c1859766dfe617070f85b5900089eb18a1fae019 \
   doctor
 docker run --rm \
   --volume "$PWD:/workspace" \
   --workdir /workspace \
-  ghcr.io/othmaneblial/pyffmpegcore@sha256:0244808caf90485eb7cf9fe99d7505b8739b90587fc8aab9ae412126e964a12c \
+  ghcr.io/othmaneblial/pyffmpegcore@sha256:538bbee63b043ac9a3716230c1859766dfe617070f85b5900089eb18a1fae019 \
   pipeline run pipeline.json --receipt-dir receipts
 ```
 
 Do not use a mutable tag for repeatable automation. The digest above is the
-public `linux/amd64` and `linux/arm64` index built from revision `1cdaf24`
-in the [19 September 2026 container run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35441061585).
+public `linux/amd64` and `linux/arm64` index built from revision `fbd3c0b`
+in the [19 September 2026 container run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35443612193).
 Both candidate images passed the non-root runtime and blocking vulnerability
 gates, including arm64 under QEMU. The repository Action uses the same digest
 by default. The index and both platform manifests were retrieved anonymously
@@ -86,7 +86,7 @@ docker build --file Containerfile --tag pyffmpegcore:local .
 docker run --rm pyffmpegcore:local smoke-test --json
 
 gh attestation verify \
-  oci://ghcr.io/othmaneblial/pyffmpegcore@sha256:0244808caf90485eb7cf9fe99d7505b8739b90587fc8aab9ae412126e964a12c \
+  oci://ghcr.io/othmaneblial/pyffmpegcore@sha256:538bbee63b043ac9a3716230c1859766dfe617070f85b5900089eb18a1fae019 \
   --repo OthmaneBlial/pyffmpegcore
 ```
 

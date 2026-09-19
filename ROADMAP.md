@@ -70,10 +70,10 @@ Les phases suivantes sont des gates successifs. Une tâche n'est close que si se
 ### 0.3 Débloquer la chaîne de l'image sans désactiver le scan
 
 **État :** [x] Base rafraîchie dans `aeb2805` ; le
-[run conteneur `35441061585`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35441061585)
+[run conteneur `35443612193`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35443612193)
 a réussi les smokes non-root et scans bloquants sur amd64 et arm64 (QEMU),
 puis publié l'index
-`sha256:0244808caf90485eb7cf9fe99d7505b8739b90587fc8aab9ae412126e964a12c`
+`sha256:538bbee63b043ac9a3716230c1859766dfe617070f85b5900089eb18a1fae019`
 avec SBOM, provenance et attestation vérifiée. Les deux rapports complets
 gardent respectivement 874 et 863 constats sans version corrigée connue.
 
@@ -256,11 +256,12 @@ et site public encore à faire ; tâche ouverte.
 
 ### 4.2 Aligner conteneur et Action sur un digest sain
 
-**État :** [x] Digest vérifié de 0.3 épinglé dans `1aeb8c1` ; le
-[run d'intégration `35441678859`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35441678859)
-a réussi les trois chemins local, conteneur et Action ainsi que la comparaison
-des sorties et receipts normalisés. À rejouer sur le SHA de la prochaine
-release avant de fermer le gate 4.
+**État :** le nouveau digest `538bbee6` de 0.3 est épinglé dans l'Action et
+son workflow d'intégration ; vérification du nouveau pin en attente. Le
+[run précédent `35441678859`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35441678859)
+avait réussi les trois chemins local, conteneur et Action avec le digest
+antérieur. À rejouer sur le SHA de la prochaine release avant de fermer le
+gate 4.
 
 - **Objectif :** donner aux utilisateurs CI une intégration reproductible qui ne pointe pas vers un runtime ancien par inadvertance.
 - **Changements :** après 0.3/0.4, remplacer le digest dans l'Action, le test d'intégration et les guides ; contrôler local/conteneur/Action sur la même pipeline et receipt normalisé ; conserver le réseau fermé par défaut et la politique de licences/SBOM.

@@ -5,10 +5,10 @@ open alert is exploitable or that the project has no vulnerabilities.
 
 ## Current container evidence
 
-The [successful container run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35441061585)
+The [successful container run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35443612193)
 built and published
-`ghcr.io/othmaneblial/pyffmpegcore@sha256:0244808caf90485eb7cf9fe99d7505b8739b90587fc8aab9ae412126e964a12c`.
-Its `container-evidence-35441061585` artifact contains separate complete Trivy
+`ghcr.io/othmaneblial/pyffmpegcore@sha256:538bbee63b043ac9a3716230c1859766dfe617070f85b5900089eb18a1fae019`.
+Its `container-evidence-35443612193` artifact contains separate complete Trivy
 SARIF and blocking reports for amd64 and arm64 candidates. Each blocking report
 has **zero** HIGH/CRITICAL findings with a known fixed version. The complete
 amd64 report has **874 package findings** across **366 rule IDs**: 11 CRITICAL,

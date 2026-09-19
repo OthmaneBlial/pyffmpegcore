@@ -47,6 +47,10 @@ supply-chain boundary.
   `false` when stricter fresh-workspace behavior is required.
 
 The default image is
-`ghcr.io/othmaneblial/pyffmpegcore@sha256:0244808caf90485eb7cf9fe99d7505b8739b90587fc8aab9ae412126e964a12c`.
-The verified Action commit is
-`1aeb8c1ab34c16719338021f49cbcda5395c65ee`.
+`ghcr.io/othmaneblial/pyffmpegcore@sha256:538bbee63b043ac9a3716230c1859766dfe617070f85b5900089eb18a1fae019`.
+The previous verified Action commit is
+`1aeb8c1ab34c16719338021f49cbcda5395c65ee`, which used an older
+image. The new default image was verified through the
+[container run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35443612193);
+the Action integration run for this pin must succeed before it is cited as a
+verified Action revision.
