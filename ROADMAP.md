@@ -78,12 +78,13 @@ Les phases suivantes sont des gates successifs. Une tâche n'est close que si se
 ### 0.3 Débloquer la chaîne de l'image sans désactiver le scan
 
 **État :** [x] Base rafraîchie dans `aeb2805` ; le
-[run conteneur `35443612193`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35443612193)
+[run conteneur `35446437477`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35446437477)
 a réussi les smokes non-root et scans bloquants sur amd64 et arm64 (QEMU),
 puis publié l'index
-`sha256:538bbee63b043ac9a3716230c1859766dfe617070f85b5900089eb18a1fae019`
-avec SBOM, provenance et attestation vérifiée. Les deux rapports complets
-gardent respectivement 874 et 863 constats sans version corrigée connue.
+`sha256:796661ae57874f07221e9ad258499b9a9473282544744615c7b40b719aadbc9a`
+depuis le SHA `7685c02`, avec SBOM, provenance et attestation vérifiée. Les
+deux rapports complets gardent respectivement 874 et 863 constats sans version
+corrigée connue.
 
 - **Objectif :** produire un digest de conteneur maintenu dont le scan de publication passe.
 - **Changements :** rafraîchir la base Debian épinglée et les paquets corrigés, vérifier la disponibilité de la version FFmpeg retenue, reconstruire l'image multi-architecture, conserver la liste des licences et le SBOM. Identifier dans le rapport Trivy les deux CVE `libpcre2-8-0` et traiter toute nouvelle alerte fixable.
@@ -157,14 +158,18 @@ encore ; la tâche reste ouverte.
 
 ### 2.1 Réduire les points de maintenance risqués
 
-**État :** les deux adaptateurs `cli_planning.py` et `pipeline.py` convergent
+**État :** [x] les deux adaptateurs `cli_planning.py` et `pipeline.py` convergent
 déjà vers `WorkflowPlanner` ; leurs branches similaires acceptent des formats
 d'entrée et des contrats différents. La carte de ces responsabilités est dans
 [`docs/architecture.md`](docs/architecture.md). Le rendu des quatre scripts de
 complétion a été extrait de `cli.py` vers `cli_completion.py` sans changer les
-sorties (hashes comparés localement). Suite complète et CI après extraction à
-confirmer avant de clore cette tâche. Deux contrats directs vérifient désormais
-la parité des plans normalisés CLI/pipeline pour `convert` et le profil web.
+sorties (hashes comparés localement). La
+[CI complète après extraction](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35446437482)
+a réussi. Deux contrats directs vérifient la parité des plans normalisés
+CLI/pipeline pour `convert` et le profil web ; un nouvel essai FFmpeg réel
+compare désormais les sorties et valide les receipts des deux chemins.
+Essai ciblé local et [CI complète du SHA `ec5dc0c`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35447328360)
+réussis, avec 88 % de couverture globale. Aucun schéma public n'a changé.
 
 - **Objectif :** permettre de corriger un workflow sans propager des divergences entre CLI, profils, moteur et pipelines.
 - **Changements :** cartographier les branches encore dupliquées dans les quatre gros modules ; découper seulement les responsabilités où les tests montrent un couplage réel ; garder une seule compilation des arguments et des contrats stables pour plans, résultats, receipts et codes de sortie.
@@ -208,13 +213,15 @@ manquantes sur macOS ; son artefact Markdown est téléchargeable depuis le run.
 
 ### 2.4 Réduire les alertes de chaîne logicielle par des corrections prouvées
 
-**État :** verrous portables avec hashes préparés pour les outils CI/docs,
-pipx et le build conteneur ; install source sans résolution réseau et build
-sans isolation essayés localement sous macOS/Python 3.14. Validation sur la
-matrice, le run de release à blanc et le conteneur multi-architecture en cours.
-Le nouveau corpus de mutations a révélé puis corrigé une exception UTF-8 du
-lecteur de receipts ; les seeds et la régression passent localement, nouveau
-job CI et revue des alertes encore à vérifier. Tâche ouverte.
+**État :** verrous avec hashes appliqués aux outils CI/docs, pipx et au build
+conteneur ; [matrice CI complète](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35445459849),
+[release à blanc](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35445461779)
+et [conteneur multi-architecture](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35446437477)
+réussis. Le corpus de mutations a révélé puis corrigé une exception UTF-8 du
+lecteur de receipts ; trois cibles et deux seeds ont tourné dans CI. Au dernier
+inventaire, 697 alertes Trivy et quatre Scorecard restent ouvertes ; leur
+triage figure dans `SECURITY_TRIAGE.md`. Le badge externe, un éventuel fuzzing
+reconnu par Scorecard et les futurs avis Debian restent ouverts.
 
 - **Objectif :** distinguer les vulnérabilités corrigibles, les avis sans correctif, les signaux de politique et les doublons historiques, puis réduire les causes plutôt que masquer les alertes.
 - **Changements :** tenir `SECURITY_TRIAGE.md` à jour pour chaque digest ; tester et scanner aussi l'image arm64 avant publication ; remplacer les installations `pip` non verrouillées en CI/release par un lock avec hashes pour la matrice Python/OS ; créer un corpus de fuzzing pour les parseurs de pipeline, profil et receipt ; contrôler la couverture CodeQL et des tests sur les révisions proposées ; préparer les preuves du badge OpenSSF sans revendiquer son octroi prématurément.
@@ -233,8 +240,10 @@ job CI et revue des alertes encore à vérifier. Tâche ouverte.
 de dépréciation, URL GitHub canonique et étiquetage du cast `0.2.1` corrigés
 localement. Un nouveau cast réel du wheel public `0.2.2` a été validé à
 89,5 secondes avec transcript et deux images tirées de ses frames ; l'ancien
-`0.2.1` reste archivé. Publication du site et cohérence avec la prochaine
-version restent à valider avant de cocher.
+`0.2.1` reste archivé. Le site GitHub Pages public servait encore la page de
+démo `0.2.1` lors du contrôle du 19 septembre ; le README renvoie donc aux
+sources documentaires actuelles du dépôt. Publication du site et cohérence
+avec la prochaine version restent à valider avant de cocher.
 
 - **Objectif :** un nouvel utilisateur et un mainteneur lisent la même vérité sur la version et les canaux disponibles.
 - **Changements :** remplacer les cases historiques de `RELEASE_CHECKLIST.md` par une checklist à remplir pour chaque version avec URLs de preuves ; aligner `CLI_DISTRIBUTION.md` sur wheel/sdist, image et Action ; résoudre la contradiction de fenêtre de dépréciation entre `docs/RELEASING.md` et `docs/api-stability.md` ; enlever le contournement `repo_url: https://github.com//...` devenu obsolète ; distinguer le cast `0.2.1` de la release `0.2.2` ou enregistrer un nouveau cast réel de la version publiée.
@@ -249,8 +258,9 @@ version restent à valider avant de cocher.
 macOS arm64/Python 3.14.6/FFmpeg 9.0.1 ; le validateur du dépôt accepte le
 cast de 89,5 secondes. Deux PNG rendent sans ajout de texte les frames du
 plan et du résultat/receipt, avec source et limites précisées dans le README.
-Rendu GitHub clair/sombre/étroit et mise à jour après prochaine release encore
-à vérifier.
+Rendu du README vérifié visuellement sur GitHub en affichage clair par défaut,
+y compris les deux PNG et leurs liens pleine résolution. Mode sombre, largeur
+étroite GitHub et mise à jour après prochaine release encore à vérifier.
 
 - **Objectif :** que la première vue GitHub montre une commande, une décision de plan et un résultat réellement obtenus.
 - **Changements :** raccourcir le mur de badges et placer un parcours vérifié au premier écran ; capturer de vraies images de terminal avec version, OS, date et fixture non privée ; montrer avant/après utile (format, pistes, taille ou loudness) avec un lien vers les receipts. Conserver la bannière SVG si elle aide la lecture, sans confondre console illustrative HTML et capture.
@@ -300,6 +310,14 @@ réexaminer lors des prochaines releases majeures.
 
 ### 4.1 Vérifier exactement ce qui sera téléchargé
 
+**État :** [release à blanc `35445461779`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35445461779)
+réussie : bundle wheel/sdist construit une seule fois, SHA-256 contrôlés,
+`twine check`, contenu et installations propres sur les six ancres OS/Python.
+La [CI `35447046421`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35447046421)
+a de nouveau installé un seul wheel préconstruit sur ces six ancres. L'essai
+`uv tool` du prochain artefact, la version finale, les attestations de
+publication et les SHA-256 publics restent à valider ; tâche ouverte.
+
 - **Objectif :** qu'un installateur retrouve dans wheel/sdist le même comportement que le checkout.
 - **Changements :** bâtir une seule fois les distributions, inspecter contenu, version, licence et README rendu ; installer ces fichiers en environnement vierge ; vérifier `pipx`, `pip` et `uv tool` annoncés ; synchroniser le numéro de version entre code, tag, docs, Action et conteneur quand ils sont publiés ensemble.
 - **Fichiers :** `pyproject.toml`, `MANIFEST.in`, `scripts/build_cli_artifacts.py`, `scripts/validate_cli_install.py`, `.github/workflows/release.yml`, `docs/installation.md`.
@@ -309,10 +327,12 @@ réexaminer lors des prochaines releases majeures.
 
 ### 4.2 Aligner conteneur et Action sur un digest sain
 
-**État :** [x] le digest `538bbee6` de 0.3 est épinglé dans l'Action ; le
-[run `35444144915`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35444144915)
-a réussi la comparaison local/conteneur/Action avec le nouveau pin. À rejouer
-sur le SHA de la prochaine release avant de fermer le gate 4.
+**État :** [x] le digest `796661ae` de 0.3 est épinglé dans l'Action au SHA
+`3a7315d` ; le [run `35447046432`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35447046432)
+a réussi la comparaison local/conteneur/Action et a produit les trois sorties.
+L'index et ses deux manifests ont été récupérés anonymement et comparés à
+leurs SHA-256 ; l'attestation du digest est valide. À rejouer sur le SHA de la
+prochaine release avant de fermer le gate 4.
 
 - **Objectif :** donner aux utilisateurs CI une intégration reproductible qui ne pointe pas vers un runtime ancien par inadvertance.
 - **Changements :** après 0.3/0.4, remplacer le digest dans l'Action, le test d'intégration et les guides ; contrôler local/conteneur/Action sur la même pipeline et receipt normalisé ; conserver le réseau fermé par défaut et la politique de licences/SBOM.

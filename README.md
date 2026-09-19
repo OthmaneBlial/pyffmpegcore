@@ -17,11 +17,11 @@
 </p>
 
 <p align="center">
-  <a href="https://othmaneblial.github.io/pyffmpegcore/"><strong>Explore the docs</strong></a> ·
-  <a href="https://othmaneblial.github.io/pyffmpegcore/quickstart/">Five-minute proof</a> ·
+  <a href="docs/index.md"><strong>Current docs</strong></a> ·
+  <a href="docs/quickstart.md">Five-minute proof</a> ·
   <a href="docs/terminal-demo.md">89.5-second public run</a> ·
-  <a href="https://othmaneblial.github.io/pyffmpegcore/recipes/">Task-first recipes</a> ·
-  <a href="https://othmaneblial.github.io/pyffmpegcore/evidence/">Measured evidence</a> ·
+  <a href="docs/recipes/index.md">Task-first recipes</a> ·
+  <a href="docs/evidence.md">Measured evidence</a> ·
   <a href="SECURITY.md">Security</a>
 </p>
 

@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: OthmaneBlial/pyffmpegcore@5f69f607a0a58816329448e2cd768be4fcf6e985
+      - uses: OthmaneBlial/pyffmpegcore@3a7315d9a830a3ffcbf45dccd17c6ca45400a796
         env:
           OUTPUT_DIR: build/release
         with:
@@ -20,7 +20,7 @@ jobs:
 ```
 
 The Action reference above is the immutable revision validated by the
-[Action integration run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35444144915).
+[Action integration run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35447046432).
 The workflow compares local, container, and Action receipts and outputs.
 A moving branch or tag is convenient for exploration but is not a reproducible
 supply-chain boundary.
@@ -47,8 +47,8 @@ supply-chain boundary.
   `false` when stricter fresh-workspace behavior is required.
 
 The default image is
-`ghcr.io/othmaneblial/pyffmpegcore@sha256:538bbee63b043ac9a3716230c1859766dfe617070f85b5900089eb18a1fae019`.
+`ghcr.io/othmaneblial/pyffmpegcore@sha256:796661ae57874f07221e9ad258499b9a9473282544744615c7b40b719aadbc9a`.
 The image was verified through the
-[container run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35443612193),
+[container run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35446437477),
 and the Action integration run above compared the local, container, and Action
 results on this pin. A future Action revision needs its own integration run.

@@ -6,22 +6,23 @@ build. It runs as UID/GID `10001`, uses no shell entrypoint, and supports
 
 ```bash
 docker run --rm \
-  ghcr.io/othmaneblial/pyffmpegcore@sha256:538bbee63b043ac9a3716230c1859766dfe617070f85b5900089eb18a1fae019 \
+  ghcr.io/othmaneblial/pyffmpegcore@sha256:796661ae57874f07221e9ad258499b9a9473282544744615c7b40b719aadbc9a \
   doctor
 docker run --rm \
   --volume "$PWD:/workspace" \
   --workdir /workspace \
-  ghcr.io/othmaneblial/pyffmpegcore@sha256:538bbee63b043ac9a3716230c1859766dfe617070f85b5900089eb18a1fae019 \
+  ghcr.io/othmaneblial/pyffmpegcore@sha256:796661ae57874f07221e9ad258499b9a9473282544744615c7b40b719aadbc9a \
   pipeline run pipeline.json --receipt-dir receipts
 ```
 
 Do not use a mutable tag for repeatable automation. The digest above is the
-public `linux/amd64` and `linux/arm64` index built from revision `fbd3c0b`
-in the [19 September 2026 container run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35443612193).
+public `linux/amd64` and `linux/arm64` index built from revision `7685c02`
+in the [19 September 2026 container run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35446437477).
 Both candidate images passed the non-root runtime and blocking vulnerability
 gates, including arm64 under QEMU. The repository Action uses the same digest
 by default. The index and both platform manifests were retrieved anonymously
-from GHCR, and `gh attestation verify` succeeded for this digest.
+from GHCR, and `gh attestation verify` succeeded for this digest. The index
+manifest bytes match its SHA-256 and list both advertised platforms.
 
 ## Build inputs
 
@@ -86,7 +87,7 @@ docker build --file Containerfile --tag pyffmpegcore:local .
 docker run --rm pyffmpegcore:local smoke-test --json
 
 gh attestation verify \
-  oci://ghcr.io/othmaneblial/pyffmpegcore@sha256:538bbee63b043ac9a3716230c1859766dfe617070f85b5900089eb18a1fae019 \
+  oci://ghcr.io/othmaneblial/pyffmpegcore@sha256:796661ae57874f07221e9ad258499b9a9473282544744615c7b40b719aadbc9a \
   --repo OthmaneBlial/pyffmpegcore
 ```
 
