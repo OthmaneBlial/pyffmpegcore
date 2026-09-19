@@ -157,6 +157,14 @@ encore ; la tâche reste ouverte.
 
 ### 2.1 Réduire les points de maintenance risqués
 
+**État :** les deux adaptateurs `cli_planning.py` et `pipeline.py` convergent
+déjà vers `WorkflowPlanner` ; leurs branches similaires acceptent des formats
+d'entrée et des contrats différents. La carte de ces responsabilités est dans
+[`docs/architecture.md`](docs/architecture.md). Le rendu des quatre scripts de
+complétion a été extrait de `cli.py` vers `cli_completion.py` sans changer les
+sorties (hashes comparés localement). Suite complète et CI après extraction à
+confirmer avant de clore cette tâche.
+
 - **Objectif :** permettre de corriger un workflow sans propager des divergences entre CLI, profils, moteur et pipelines.
 - **Changements :** cartographier les branches encore dupliquées dans les quatre gros modules ; découper seulement les responsabilités où les tests montrent un couplage réel ; garder une seule compilation des arguments et des contrats stables pour plans, résultats, receipts et codes de sortie.
 - **Fichiers :** `pyffmpegcore/cli.py`, `cli_parser.py`, `planning.py`, `pipeline.py`, `workflow.py`, `domain.py` et tests de contrats.

@@ -94,6 +94,7 @@ nav:
       - Security model: SECURITY_MODEL.md
       - Releasing: RELEASING.md
   - Project:
+      - Architecture: architecture.md
       - Comparison: comparison.md
       - Test methodology: test-methodology.md
       - Migration notes: migration.md
