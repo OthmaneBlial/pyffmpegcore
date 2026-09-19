@@ -6,29 +6,32 @@ build. It runs as UID/GID `10001`, uses no shell entrypoint, and supports
 
 ```bash
 docker run --rm \
-  ghcr.io/othmaneblial/pyffmpegcore@sha256:c51cffe123e254650337e8973db4ab01587dbaa8ad08df77fee3c1ca3c08e5ca \
+  ghcr.io/othmaneblial/pyffmpegcore@sha256:da8be496cc05a90226e36b11f28a5c2029475b22f0cf40fc9f228a5ea27eb8aa \
   doctor
 docker run --rm \
   --volume "$PWD:/workspace" \
   --workdir /workspace \
-  ghcr.io/othmaneblial/pyffmpegcore@sha256:c51cffe123e254650337e8973db4ab01587dbaa8ad08df77fee3c1ca3c08e5ca \
+  ghcr.io/othmaneblial/pyffmpegcore@sha256:da8be496cc05a90226e36b11f28a5c2029475b22f0cf40fc9f228a5ea27eb8aa \
   pipeline run pipeline.json --receipt-dir receipts
 ```
 
 Do not use a mutable tag for repeatable automation. The digest above is the
-public `linux/amd64` and `linux/arm64` index built from revision `96654e3` after
-the runtime and vulnerability gates passed. The repository Action uses the same
-digest by default.
+public `linux/amd64` and `linux/arm64` index built from revision `9aa1780`
+in the [19 September 2026 container run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35440249408).
+The runtime and blocking vulnerability gates passed, and the repository Action
+uses the same digest by default. The index and both platform manifests were
+also retrieved anonymously from GHCR.
 
 ## Build inputs
 
-- base: `python:3.12.14-slim-bookworm@sha256:0f5b26b9518d002b6173fd61daad821fa340635ebfec5bba471013f9ca114579`
+- base: `python:3.12.14-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e`
 - FFmpeg Debian package: `7:5.1.9-0+deb12u1`
 - Python package: the exact checked-out repository revision recorded by OCI
   labels and provenance
 - runtime user: numeric UID/GID `10001`
 
-The base digest is immutable. Debian dependency resolution can still change
+The base digest is immutable. The build upgrades Debian packages before adding
+FFmpeg. Debian dependency resolution can still change
 when a security update is published, so the pushed image digest, SBOM, and
 provenance—not a local rebuild—are the release identity.
 
@@ -49,15 +52,15 @@ The container workflow:
 6. creates a GitHub artifact attestation for the pushed digest.
 
 A weekly scheduled run rebuilds and scans without publishing. Dependency or
-base updates require a reviewed pull request and a new immutable digest.
+base updates require review and a new immutable digest.
 Container maintenance is owned by the repository maintainer.
 
-The complete SARIF intentionally also reports Debian/CPython advisories whose
-`Fixed Version` is empty. Those findings cannot be patched inside this image
-without replacing the supported upstream package source. They are explicitly
-triaged as accepted upstream risk in GitHub code scanning, not silently
-discarded. When Trivy starts reporting a fixed version, the separate blocking
-scan fails until the base or package is upgraded and a new digest is published.
+The complete SARIF also reports Debian/CPython advisories whose `Fixed Version`
+is empty. The run above recorded 874 findings in the full SARIF and zero in the
+separate blocking JSON. Many findings remain open in GitHub code scanning;
+passing the publication gate does not mean the image has no vulnerabilities.
+When Trivy reports a fixed HIGH or CRITICAL version, the separate blocking scan
+fails until the base or package is upgraded and a new digest is published.
 
 ## Licensing and codecs
 
@@ -79,7 +82,7 @@ docker build --file Containerfile --tag pyffmpegcore:local .
 docker run --rm pyffmpegcore:local smoke-test --json
 
 gh attestation verify \
-  oci://ghcr.io/othmaneblial/pyffmpegcore@sha256:c51cffe123e254650337e8973db4ab01587dbaa8ad08df77fee3c1ca3c08e5ca \
+  oci://ghcr.io/othmaneblial/pyffmpegcore@sha256:da8be496cc05a90226e36b11f28a5c2029475b22f0cf40fc9f228a5ea27eb8aa \
   --repo OthmaneBlial/pyffmpegcore
 ```
 

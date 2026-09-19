@@ -38,7 +38,8 @@ require_workspace_path() {
   fi
 }
 
-readonly workspace="$(cd -P -- "${GITHUB_WORKSPACE:?GITHUB_WORKSPACE is required}" && pwd)"
+workspace="$(cd -P -- "${GITHUB_WORKSPACE:?GITHUB_WORKSPACE is required}" && pwd)"
+readonly workspace
 readonly image="${PYFFMPEGCORE_ACTION_IMAGE:?PYFFMPEGCORE_ACTION_IMAGE is required}"
 readonly pipeline="${PYFFMPEGCORE_ACTION_PIPELINE:?PYFFMPEGCORE_ACTION_PIPELINE is required}"
 readonly receipt_dir="${PYFFMPEGCORE_ACTION_RECEIPT_DIR:-.pyffmpegcore/receipts}"

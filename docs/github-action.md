@@ -9,7 +9,7 @@ jobs:
   media:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: OthmaneBlial/pyffmpegcore@671a041807cdd54f7a7fed6534e7a4d69f372fb1
         env:
           OUTPUT_DIR: build/release
@@ -49,6 +49,6 @@ supply-chain boundary.
   `false` when stricter fresh-workspace behavior is required.
 
 The default image is
-`ghcr.io/othmaneblial/pyffmpegcore@sha256:c51cffe123e254650337e8973db4ab01587dbaa8ad08df77fee3c1ca3c08e5ca`.
+`ghcr.io/othmaneblial/pyffmpegcore@sha256:da8be496cc05a90226e36b11f28a5c2029475b22f0cf40fc9f228a5ea27eb8aa`.
 The verified Action commit is
 `671a041807cdd54f7a7fed6534e7a4d69f372fb1`.
