@@ -106,34 +106,30 @@ class CLIProgressPrinter:
     def __init__(self, total_duration: float | None = None):
         self.total_duration = total_duration
         self.seen_progress = False
+        self._printed_width = 0
+
+    def _write_line(self, message: str, *, final: bool = False) -> None:
+        padding = " " * max(0, self._printed_width - len(message))
+        print("\r" + message + padding, end="\n" if final else "", file=sys.stderr, flush=True)
+        self._printed_width = max(self._printed_width, len(message))
 
     def __call__(self, progress: dict[str, Any]) -> None:
         if progress.get("status") == "end":
             if self.seen_progress:
-                print("\rProgress: 100% complete", file=sys.stderr)
+                self._write_line("Progress: 100% complete", final=True)
             return
 
         time_seconds = progress.get("time_seconds")
         if time_seconds is not None and self.total_duration:
             self.seen_progress = True
             percentage = min(100.0, (time_seconds / self.total_duration) * 100.0)
-            print(
-                f"\rProgress: {percentage:5.1f}% ({time_seconds:0.2f}s)",
-                end="",
-                file=sys.stderr,
-                flush=True,
-            )
+            self._write_line(f"Progress: {percentage:5.1f}% ({time_seconds:0.2f}s)")
             return
 
         frame = progress.get("frame")
         if frame is not None:
             self.seen_progress = True
-            print(
-                f"\rFrame: {frame}",
-                end="",
-                file=sys.stderr,
-                flush=True,
-            )
+            self._write_line(f"Frame: {frame}")
 
 
 def render_completion_script(shell: str) -> str:

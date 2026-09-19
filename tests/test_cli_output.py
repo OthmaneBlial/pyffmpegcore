@@ -29,6 +29,17 @@ def test_progress_printer_finishes_cleanly(capsys):
     assert "100% complete" in captured.err
 
 
+def test_progress_printer_clears_longer_previous_status(capsys):
+    """A carriage-return update must not leave stale characters on screen."""
+    printer = CLIProgressPrinter(total_duration=123456.78)
+    printer({"time_seconds": 123456.78, "status": "progress"})
+    printer({"status": "end"})
+
+    terminal_line = capsys.readouterr().err.split("\r")[-1].rstrip("\n")
+    assert terminal_line.rstrip() == "Progress: 100% complete"
+    assert len(terminal_line) > len("Progress: 100% complete")
+
+
 def test_report_batch_results_prints_summary(capsys):
     """
     Batch commands should print a concise success/failure summary.
