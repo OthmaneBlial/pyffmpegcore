@@ -127,8 +127,12 @@ a validé les six installations sur Linux, macOS et Windows (Python 3.10 et
 **État :** guides FFmpeg par OS ajoutés ; `0fd47fe` affiche des remèdes pour
 outils manquants et sorties refusées ; `16371ec` évite l'écho d'une URL secrète
 dans les commandes directes et le résultat JSON d'un pipeline. Tests ciblés et
-pipeline HTTP local réussis. Installation WinGet/Fedora/Arch et essais complets
-d'erreurs sur chaque OS encore à vérifier ; la tâche reste ouverte.
+pipeline HTTP local réussis. Le contrôle de wheel installé exerce désormais
+quatre refus (binaire et encodeur absents, sortie présente, parent de sortie
+invalide) et vérifie leurs remèdes : les six cellules Linux/macOS/Windows ont
+passé [26/26 contrôles](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35448000531).
+Installation réelle via WinGet/Fedora/Arch et revue humaine des textes d'erreur
+sur chaque OS encore à vérifier ; la tâche reste ouverte.
 
 - **Objectif :** éviter que « installez FFmpeg » ou une erreur de capacité soit une impasse.
 - **Changements :** expliquer, pour chaque OS supporté, comment installer et vérifier `ffmpeg`/`ffprobe` avec une source de paquets identifiée et un chemin de rattrapage ; faire afficher par `doctor` et les erreurs de préflight la capacité précise, le binaire utilisé et l'étape suivante. Préserver les contrats JSON et les codes de sortie.
@@ -258,9 +262,11 @@ avec la prochaine version restent à valider avant de cocher.
 macOS arm64/Python 3.14.6/FFmpeg 9.0.1 ; le validateur du dépôt accepte le
 cast de 89,5 secondes. Deux PNG rendent sans ajout de texte les frames du
 plan et du résultat/receipt, avec source et limites précisées dans le README.
-Rendu du README vérifié visuellement sur GitHub en affichage clair par défaut,
-y compris les deux PNG et leurs liens pleine résolution. Mode sombre, largeur
-étroite GitHub et mise à jour après prochaine release encore à vérifier.
+Rendu du README vérifié visuellement sur GitHub en affichage clair par défaut
+et à 375 px, y compris les deux PNG et leurs liens pleine résolution. À 375 px,
+la largeur du document et celle du viewport valent toutes deux 375 px : aucun
+débordement horizontal n'a été observé. Mode sombre et mise à jour après
+prochaine release encore à vérifier.
 
 - **Objectif :** que la première vue GitHub montre une commande, une décision de plan et un résultat réellement obtenus.
 - **Changements :** raccourcir le mur de badges et placer un parcours vérifié au premier écran ; capturer de vraies images de terminal avec version, OS, date et fixture non privée ; montrer avant/après utile (format, pistes, taille ou loudness) avec un lien vers les receipts. Conserver la bannière SVG si elle aide la lecture, sans confondre console illustrative HTML et capture.
@@ -310,13 +316,20 @@ réexaminer lors des prochaines releases majeures.
 
 ### 4.1 Vérifier exactement ce qui sera téléchargé
 
-**État :** [release à blanc `35445461779`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35445461779)
+**État :** [release à blanc `35447937367`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35447937367)
 réussie : bundle wheel/sdist construit une seule fois, SHA-256 contrôlés,
 `twine check`, contenu et installations propres sur les six ancres OS/Python.
-La [CI `35447046421`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35447046421)
-a de nouveau installé un seul wheel préconstruit sur ces six ancres. L'essai
-`uv tool` du prochain artefact, la version finale, les attestations de
-publication et les SHA-256 publics restent à valider ; tâche ouverte.
+Le bundle du SHA `c22be1b` donne `71e89526…` pour le wheel et `df8823cf…`
+pour le sdist ; les deux hashes et les archives ont été revérifiés après
+téléchargement. Ils portent encore la version de travail `0.2.2` et ne sont
+pas les fichiers PyPI déjà publiés sous ce numéro.
+La [CI `35448000531`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35448000531)
+a de nouveau installé un seul wheel préconstruit sur ces six ancres. Sur macOS
+arm64, `uv tool` 0.12.17 a installé hors réseau ce wheel CI exact
+(`c5a00fc…` du run `35447046421`) en environnement isolé ; `--version`,
+`doctor` et `smoke-test` ont réussi. L'essai `uv tool` du prochain artefact sur
+les autres OS, la version finale, les attestations de publication et les
+SHA-256 publics restent à valider ; tâche ouverte.
 
 - **Objectif :** qu'un installateur retrouve dans wheel/sdist le même comportement que le checkout.
 - **Changements :** bâtir une seule fois les distributions, inspecter contenu, version, licence et README rendu ; installer ces fichiers en environnement vierge ; vérifier `pipx`, `pip` et `uv tool` annoncés ; synchroniser le numéro de version entre code, tag, docs, Action et conteneur quand ils sont publiés ensemble.
