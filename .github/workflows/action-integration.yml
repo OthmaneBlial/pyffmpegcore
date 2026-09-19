@@ -8,6 +8,7 @@ on:
       - "scripts/run_pipeline_action.sh"
       - "tests/fixtures/action-pipeline.json"
       - ".github/workflows/action-integration.yml"
+      - ".github/requirements/ci.txt"
   push:
     branches: [main]
     paths:
@@ -16,6 +17,7 @@ on:
       - "scripts/run_pipeline_action.sh"
       - "tests/fixtures/action-pipeline.json"
       - ".github/workflows/action-integration.yml"
+      - ".github/requirements/ci.txt"
   workflow_dispatch:
 
 permissions:
@@ -33,11 +35,13 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
+          cache-dependency-path: .github/requirements/ci.txt
       - name: Install FFmpeg and local project
         run: |
           sudo apt-get update
           sudo apt-get install --yes ffmpeg
-          python -m pip install .
+          python -m pip install --only-binary=:all: --require-hashes -r .github/requirements/ci.txt
+          python -m pip install --no-index --no-deps --no-build-isolation .
       - name: Generate deterministic input
         run: |
           mkdir -p action-fixture

@@ -6,12 +6,14 @@ on:
       - "pyffmpegcore/**"
       - "scripts/benchmark_overhead.py"
       - ".github/workflows/benchmark.yml"
+      - ".github/requirements/ci.txt"
   push:
     branches: [main]
     paths:
       - "pyffmpegcore/**"
       - "scripts/benchmark_overhead.py"
       - ".github/workflows/benchmark.yml"
+      - ".github/requirements/ci.txt"
   schedule:
     - cron: "17 6 * * 1"
   workflow_dispatch:
@@ -31,12 +33,13 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
+          cache-dependency-path: .github/requirements/ci.txt
       - name: Install FFmpeg and project
         run: |
           sudo apt-get update
           sudo apt-get install --yes ffmpeg
-          python -m pip install --upgrade pip
-          python -m pip install -e ".[dev]"
+          python -m pip install --only-binary=:all: --require-hashes -r .github/requirements/ci.txt
+          python -m pip install --no-index --no-deps --no-build-isolation -e .
       - name: Build wheel for size evidence
         run: python scripts/build_cli_artifacts.py --outdir dist --json > artifact-report.json
       - name: Measure startup, processing, artifact, and cache behavior

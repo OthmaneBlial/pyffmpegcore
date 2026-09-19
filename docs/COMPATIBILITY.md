@@ -25,7 +25,7 @@ The [CI workflow](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows
 
 ### Verified snapshot: 19 September 2026
 
-In [run `35443219996`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35443219996), all six media smoke jobs and the Linux Python 3.10–3.14 package-contract jobs passed. The six media jobs installed the **same prebuilt wheel** (`pyffmpegcore-0.2.2-py3-none-any.whl`, SHA-256 `9f6e193e2615b17def8e0e58b024c9d6284fd691f405406e9d0371277c7ec969`). Each artifact reports 22/22 successful steps, including quickstart, probe, conversion, stream preservation, audio extraction, thumbnails, five profiles, batch, and pipeline.
+In [run `35444560165`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35444560165), all six media smoke jobs, the Linux Python 3.10–3.14 package-contract jobs, and the new compatibility-summary job passed. The six media jobs installed the **same prebuilt wheel** (`pyffmpegcore-0.2.2-py3-none-any.whl`, SHA-256 `efe0d61eefd4d7ab1d8cf230b5b7af2ed8067cca4ae950af645ea28d3b39bf92`). Each artifact reports 22/22 successful steps, including quickstart, probe, conversion, stream preservation, audio extraction, thumbnails, five profiles, batch, and pipeline. The [generated Markdown artifact](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35444560165) records every cell and its capability gaps.
 
 | Runner | Architecture | Python | FFmpeg reported by `doctor` | Capability catalog gaps |
 | --- | --- | --- | --- | --- |

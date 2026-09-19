@@ -24,6 +24,7 @@ jobs:
         with:
           python-version: "3.14"
           cache: pip
+          cache-dependency-path: .github/requirements/ci.txt
       - name: Install FFmpeg on Ubuntu
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
@@ -34,7 +35,9 @@ jobs:
         if: runner.os == 'Windows'
         run: choco install ffmpeg -y --no-progress
       - name: Install project
-        run: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"
+        run: |
+          python -m pip install --only-binary=:all: --require-hashes -r .github/requirements/ci.txt
+          python -m pip install --no-index --no-deps --no-build-isolation -e .
       - name: Generate every fixture from scratch
         run: python tests/media/download_fixtures.py --force
       - name: Run package smoke test

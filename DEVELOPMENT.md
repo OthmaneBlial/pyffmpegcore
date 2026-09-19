@@ -27,6 +27,10 @@ pip install -e .[dev]
 The `dev` extra is the supported way to install local test and build tooling for this repository.
 Ruff is pinned in that extra so CI and local lint use the same rule set. Update the
 pin in a reviewed dependency change and fix new diagnostics before merging it.
+CI and release tooling use the [hash-bearing locks](.github/requirements/README.md)
+and build without an isolated environment so their external dependencies do not
+change during a run. Local development can use the commands above; use the lock
+when reproducing a CI dependency issue.
 
 ## Validation Commands
 

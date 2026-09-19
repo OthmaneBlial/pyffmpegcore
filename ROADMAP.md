@@ -1,8 +1,16 @@
 # ROADMAP — PyFFmpegCore
 
-> Audit du 19 septembre 2026, `main` à `a3705d4`. Ce document remplace le plan daté du 25 août : ses cases cochées décrivaient des travaux historiques et plusieurs constats initiaux ne correspondent plus au dépôt. Ici, les tâches sont **à réaliser** ; aucune case n'atteste une implémentation.
+> Audit initial du 19 septembre 2026, `main` à `a3705d4`. Le tableau de diagnostic
+> ci-dessous conserve cette photographie de départ. Les encarts **État** suivent
+> ensuite l'exécution : une case cochée renvoie à la preuve et au run cités, tandis
+> qu'une tâche partielle reste ouverte. Ce document remplace le plan du 25 août.
 >
-> Périmètre de l'audit : fichiers suivis par Git, métadonnées du dépôt GitHub, release et journaux de ses workflows, exécution locale sur macOS avec Python 3.14.6 et FFmpeg 9.0.1. Les validations locales ne prouvent ni une publication nouvelle, ni le bon fonctionnement sur Windows/Linux, ni une adoption par des utilisateurs. Les comparaisons de concurrents ci-dessous reflètent uniquement `docs/comparison.md` ; leur exactitude externe devra être revérifiée lors de la phase 3.
+> Périmètre de l'audit initial : fichiers suivis par Git, métadonnées du dépôt
+> GitHub, release et journaux de workflows, exécution locale sur macOS avec
+> Python 3.14.6 et FFmpeg 9.0.1. Les validations locales ne prouvent ni une
+> publication nouvelle, ni le bon fonctionnement sur Windows/Linux, ni une
+> adoption par des utilisateurs. La comparaison concurrentielle a été revérifiée
+> sur les sources officielles à la tâche 3.4.
 
 ## Diagnostic : ce qui existe réellement
 
@@ -173,11 +181,11 @@ n'est encore garanti ; validation CI de ces changements en attente.
 
 ### 2.3 Maintenir une matrice de compatibilité vérifiable
 
-**État :** les six artefacts du
-[run `35443219996`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35443219996)
-ont été résumés avec versions exactes et capacités absentes ; un job CI génère
-désormais ce rapport à partir des artefacts. Validation de ce nouveau job sur
-un run complet en attente avant de cocher.
+**État :** [x] la [CI complète `35444560165`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35444560165)
+a réussi les cinq contrats paquet Linux et les six essais du wheel exact
+Linux/macOS/Windows. Le nouveau job de synthèse a vérifié le SHA commun, les
+22 commandes par cellule, les versions FFmpeg et les deux capacités optionnelles
+manquantes sur macOS ; son artefact Markdown est téléchargeable depuis le run.
 
 - **Objectif :** faire correspondre chaque affirmation Python/OS/FFmpeg à un run actuel et aux capacités réellement disponibles.
 - **Changements :** garder tests paquet 3.10–3.14 et wheel média sur trois OS ; rendre visibles les skips de codecs/filtres ; tester au moins une version FFmpeg de référence par famille et un build récent (FFmpeg 9.0.1 est l'environnement local d'audit, pas une preuve multi-OS) ; produire un rapport lisible depuis les artefacts CI.
@@ -187,6 +195,12 @@ un run complet en attente avant de cocher.
 - **Dépendances/risques :** 0.2, 1.3 et 2.2 ; dérive des runners et des paquets FFmpeg.
 
 ### 2.4 Réduire les alertes de chaîne logicielle par des corrections prouvées
+
+**État :** verrous portables avec hashes préparés pour les outils CI/docs,
+pipx et le build conteneur ; install source sans résolution réseau et build
+sans isolation essayés localement sous macOS/Python 3.14. Validation sur la
+matrice, le run de release à blanc, le conteneur multi-architecture, le corpus
+de fuzzing et la revue des alertes restantes encore à faire ; tâche ouverte.
 
 - **Objectif :** distinguer les vulnérabilités corrigibles, les avis sans correctif, les signaux de politique et les doublons historiques, puis réduire les causes plutôt que masquer les alertes.
 - **Changements :** tenir `SECURITY_TRIAGE.md` à jour pour chaque digest ; tester et scanner aussi l'image arm64 avant publication ; remplacer les installations `pip` non verrouillées en CI/release par un lock avec hashes pour la matrice Python/OS ; créer un corpus de fuzzing pour les parseurs de pipeline, profil et receipt ; contrôler la couverture CodeQL et des tests sur les révisions proposées ; préparer les preuves du badge OpenSSF sans revendiquer son octroi prématurément.

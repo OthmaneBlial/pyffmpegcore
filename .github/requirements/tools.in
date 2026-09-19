@@ -1,0 +1,3 @@
+# CI and release build tools not declared as project extras.
+setuptools>=77.0.3
+wheel

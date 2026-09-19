@@ -105,6 +105,7 @@ def build_artifacts(project_root: Path, outdir: Path) -> subprocess.CompletedPro
             sys.executable,
             "-m",
             "build",
+            "--no-isolation",
             "--sdist",
             "--wheel",
             "--outdir",

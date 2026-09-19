@@ -1,0 +1,2 @@
+# Installer used only for public-release smoke checks.
+pipx
