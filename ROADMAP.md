@@ -122,7 +122,10 @@ Une nouvelle exécution locale depuis un environnement vierge avec la wheel
 publique `pyffmpegcore==0.2.2` a aussi réussi `--version`, `doctor --json`,
 `smoke-test --keep-dir`, un profil H.264/AAC avec `--explain`, l'écriture d'un
 receipt et sa validation schema 1.0. Cette preuve locale ne remplace pas la
-relecture indépendante ni une nouvelle matrice publique.
+relecture indépendante ni une nouvelle matrice publique. Le validateur de
+l'artefact exact issu du dry-run a ensuite exécuté 26 commandes sur macOS
+arm64, dont le parcours complet, les profils web/taille/audio/sous-titres,
+batch/pipeline et quatre refus attendus avec leurs codes/remèdes.
 
 - **Objectif :** faire vivre la promesse « diagnostiquer → expliquer → produire → vérifier » depuis une installation propre, sans demander immédiatement un fichier personnel.
 - **Changements :** assembler un exemple synthétique court, généré localement, qui mène de `doctor` et `smoke-test --keep-dir` à un profil web, `--explain`, exécution, `probe` et validation du receipt ; garder les commandes copiables pour Bash/zsh et PowerShell. Si le parcours révèle un trou d'API/CLI, le corriger dans le moteur partagé avant de documenter un contournement.
@@ -142,6 +145,10 @@ invalide) et vérifie leurs remèdes : les six cellules Linux/macOS/Windows ont
 passé [26/26 contrôles](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35448000531).
 Installation réelle via WinGet/Fedora/Arch et revue humaine des textes d'erreur
 sur chaque OS encore à vérifier ; la tâche reste ouverte.
+Le même validateur de wheel a toutefois vérifié localement les quatre refus
+attendus (FFmpeg absent, encodeur absent, sortie existante, parent invalide)
+avec les codes 3/4 et les remèdes correspondants ; cela ne remplace pas les
+essais d'installation natifs demandés pour Windows, Fedora et Arch.
 
 - **Objectif :** éviter que « installez FFmpeg » ou une erreur de capacité soit une impasse.
 - **Changements :** expliquer, pour chaque OS supporté, comment installer et vérifier `ffmpeg`/`ffprobe` avec une source de paquets identifiée et un chemin de rattrapage ; faire afficher par `doctor` et les erreurs de préflight la capacité précise, le binaire utilisé et l'étape suivante. Préserver les contrats JSON et les codes de sortie.
