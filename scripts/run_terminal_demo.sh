@@ -3,6 +3,22 @@ set -euo pipefail
 
 demo_version="${PYFFMPEGCORE_DEMO_VERSION:?Set PYFFMPEGCORE_DEMO_VERSION to the public release version.}"
 demo_cli="demo-env/bin/pyffmpegcore"
+demo_wheel_hash="${PYFFMPEGCORE_DEMO_WHEEL_HASH:-}"
+
+if [[ -z "$demo_wheel_hash" ]]; then
+  case "$demo_version" in
+    0.2.2)
+      demo_wheel_hash="cbc30605bd39a4cd7aa40cdf3e5e2bd59c5a1a88ee5cb9fe1678644a98c2c3f8"
+      ;;
+    *)
+      printf 'Set PYFFMPEGCORE_DEMO_WHEEL_HASH for release %s.\n' "$demo_version" >&2
+      exit 2
+      ;;
+  esac
+fi
+
+requirements_file="$(mktemp)"
+trap 'rm -f "$requirements_file"' EXIT
 
 pause_after() {
   sleep "$1"
@@ -22,7 +38,13 @@ python3 -m venv demo-env
 pause_after 2
 
 show_command "demo-env/bin/python -m pip install pyffmpegcore==$demo_version"
-demo-env/bin/python -m pip install --disable-pip-version-check "pyffmpegcore==$demo_version"
+printf 'pyffmpegcore==%s --hash=sha256:%s\n' "$demo_version" "$demo_wheel_hash" >"$requirements_file"
+demo-env/bin/python -m pip install \
+  --disable-pip-version-check \
+  --require-hashes \
+  --only-binary=:all: \
+  --no-deps \
+  -r "$requirements_file"
 pause_after 4
 
 show_command "$demo_cli --version"
