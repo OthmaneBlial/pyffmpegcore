@@ -62,6 +62,7 @@ class PreflightReport:
         return all(check.status != "fail" for check in self.checks)
 
     def to_dict(self) -> dict[str, Any]:
+        """Return versioned JSON-ready preflight facts and overall status."""
         return {
             "schema_version": self.schema_version,
             "workflow": self.workflow,
@@ -70,6 +71,7 @@ class PreflightReport:
         }
 
     def render(self) -> str:
+        """Render checks and available remedies as a concise human-readable report."""
         lines = [f"Preflight {'PASS' if self.ok else 'FAIL'} — {self.workflow}"]
         symbols = {"pass": "OK", "warn": "WARN", "fail": "FAIL"}
         for check in self.checks:
@@ -131,6 +133,11 @@ class PreflightEngine:
         self._executable_resolver = executable_resolver
 
     def check(self, plan: ExecutionPlan) -> PreflightReport:
+        """Check tools, capabilities, inputs, and output paths without executing.
+
+        Input streams may be probed when the plan requires them. The report
+        records failures and remediation hints instead of raising for them.
+        """
         checks: list[PreflightCheck] = []
         explicit_binary = any(separator in self.ffmpeg_path for separator in ("/", "\\"))
         resolved = (

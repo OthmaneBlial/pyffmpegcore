@@ -397,7 +397,10 @@ Check a plan without creating directories, outputs, or temporary files.
 
 ### `check(self, plan: 'ExecutionPlan') -> 'PreflightReport'`
 
-No public docstring is available.
+Check tools, capabilities, inputs, and output paths without executing.
+
+Input streams may be probed when the plan requires them. The report
+records failures and remediation hints instead of raising for them.
 
 ## `PreflightReport`
 
@@ -405,11 +408,11 @@ Versioned preflight result shared by human and JSON presenters.
 
 ### `render(self) -> 'str'`
 
-No public docstring is available.
+Render checks and available remedies as a concise human-readable report.
 
 ### `to_dict(self) -> 'dict[str, Any]'`
 
-No public docstring is available.
+Return versioned JSON-ready preflight facts and overall status.
 
 ## `ProgressCallback`
 
