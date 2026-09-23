@@ -448,6 +448,11 @@ sur le SHA `700e19b` a reconstruit le bundle une fois (395 561 octets), passé
 les six ancres Linux/macOS/Windows et Python 3.10/3.14. Il confirme le bundle
 de la tête courante ; la vérification du tag, les attestations et les contrôles
 publics sont ignorés en dispatch manuel, et la version construite reste `0.2.2`.
+Sur le SHA `d25e6ca3b90074aab78f1588dcd7a2064daaa2d5`, la CI générale a aussi
+reconstruit les distributions une fois et réussi les six essais du wheel exact,
+la couverture complète et les autres contrôles : 19 vérifications sur 19.
+Aucun workflow Container n'a tourné. Cette preuve ne crée ni signature,
+attestation, tag, release GitHub ou publication PyPI.
 
 - **Objectif :** qu'un installateur retrouve dans wheel/sdist le même comportement que le checkout.
 - **Changements :** bâtir une seule fois les distributions, inspecter contenu, version, licence et README rendu ; installer ces fichiers en environnement vierge ; vérifier `pipx`, `pip` et `uv tool` annoncés ; synchroniser le numéro de version entre code, tag, docs, Action et conteneur quand ils sont publiés ensemble.
