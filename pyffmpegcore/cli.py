@@ -946,22 +946,51 @@ def render_probe_report(ctx: CLIContext, metadata: dict[str, Any]) -> None:
     if metadata.get("bit_rate") is not None:
         echo(ctx, f"Bitrate: {metadata['bit_rate']} bps")
 
-    video = metadata.get("video")
-    if video:
-        echo(ctx, "Video stream:")
-        echo(ctx, f"  Codec: {video.get('codec', 'unknown')}")
-        echo(ctx, f"  Resolution: {video.get('width', '?')}x{video.get('height', '?')}")
-        if video.get("duration") is not None:
-            echo(ctx, f"  Duration: {video['duration']}")
-
-    audio = metadata.get("audio")
-    if audio:
-        echo(ctx, "Audio stream:")
-        echo(ctx, f"  Codec: {audio.get('codec', 'unknown')}")
-        if audio.get("sample_rate") is not None:
-            echo(ctx, f"  Sample rate: {audio['sample_rate']} Hz")
-        if audio.get("channels") is not None:
-            echo(ctx, f"  Channels: {audio['channels']}")
+    seen_types: set[str] = set()
+    for stream in metadata.get("streams", []):
+        stream_type = str(stream.get("codec_type", "unknown"))
+        stream_index = stream.get("index", "?")
+        label = f"{stream_type.title()} stream:"
+        if stream_type in seen_types:
+            label = f"{stream_type.title()} stream {stream_index}:"
+        seen_types.add(stream_type)
+        echo(ctx, label)
+        echo(ctx, f"  Codec: {stream.get('codec_name', 'unknown')}")
+        language = stream.get("language")
+        if language:
+            echo(ctx, f"  Language: {language}")
+        if stream.get("duration") is not None:
+            echo(ctx, f"  Duration: {stream['duration']}")
+        if stream_type == "video":
+            if stream.get("width") is not None and stream.get("height") is not None:
+                echo(ctx, f"  Resolution: {stream['width']}x{stream['height']}")
+            rotation = stream.get("rotation")
+            if rotation is not None and float(rotation) % 360:
+                echo(ctx, f"  Display rotation metadata: {float(rotation):g}°")
+            details = stream.get("details", {})
+            if details.get("pix_fmt") is not None:
+                echo(ctx, f"  Pixel format: {details['pix_fmt']}")
+            average_rate = details.get("avg_frame_rate")
+            nominal_rate = details.get("r_frame_rate")
+            if average_rate is not None or nominal_rate is not None:
+                echo(
+                    ctx,
+                    f"  Frame rates: average {average_rate or 'unknown'} fps; nominal {nominal_rate or 'unknown'} fps",
+                )
+                if average_rate and nominal_rate and average_rate != nominal_rate:
+                    echo(ctx, "  Note: differing rate fields may indicate variable frame rate; timestamps decide.")
+            color = stream.get("color", {})
+            if color:
+                echo(ctx, "  Color metadata: " + ", ".join(f"{key}={value}" for key, value in color.items()))
+        elif stream_type == "audio":
+            if stream.get("sample_rate") is not None:
+                echo(ctx, f"  Sample rate: {stream['sample_rate']} Hz")
+            if stream.get("channels") is not None:
+                echo(ctx, f"  Channels: {stream['channels']}")
+        elif stream_type == "attachment":
+            filename = stream.get("tags", {}).get("filename")
+            if filename:
+                echo(ctx, f"  Filename: {filename}")
 
     chapters = metadata.get("chapters", [])
     if chapters:

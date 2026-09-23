@@ -20,6 +20,9 @@ and why [secondary tracks disappear](https://superuser.com/questions/1513289/tra
 Each linked PyFFmpegCore recipe turns one of those clusters into an inspectable
 plan, a deterministic media test, and explicit verification steps.
 
-Use `probe` before and after. If the input has multiple audio tracks, chapters,
-attachments, rotation, HDR metadata, or cover art, verify what the workflow
-preserves before deleting the source.
+Use `probe` before and after. The human report lists every stream, rotation,
+color metadata, and average/nominal video rates; `--json` retains the structured
+facts. Different rate fields may indicate variable frame rate, but timestamps
+decide. If the input has multiple audio tracks, chapters, attachments, rotation,
+HDR metadata, or cover art, verify what the workflow preserves before deleting
+the source.
