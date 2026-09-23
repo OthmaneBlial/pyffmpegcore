@@ -72,6 +72,7 @@ class BatchPolicy:
             raise ValidationError("batch per_job_timeout_seconds must be positive when provided")
 
     def to_dict(self) -> dict[str, object]:
+        """Return validated concurrency, retry, input-size, and timeout limits."""
         return asdict(self)
 
 
@@ -104,6 +105,7 @@ class BatchEvent:
     schema_version: str = BATCH_SCHEMA_VERSION
 
     def to_dict(self) -> dict[str, object]:
+        """Serialize the versioned event as privacy-redacted JSON data."""
         return redact_receipt_value(asdict(self))
 
 
@@ -124,6 +126,7 @@ class BatchItemOutcome:
         return self.status in {"succeeded", "resumed"}
 
     def to_dict(self) -> dict[str, object]:
+        """Serialize the outcome and include execution evidence when available."""
         return redact_receipt_value(
             {
                 "job_id": self.job_id,
@@ -166,6 +169,7 @@ class BatchRun:
         return self.succeeded_count == len(self.items)
 
     def to_dict(self) -> dict[str, object]:
+        """Serialize policy, ordered item outcomes, and aggregate counts."""
         return {
             "schema_version": self.schema_version,
             "policy": self.policy.to_dict(),
@@ -530,6 +534,7 @@ class BatchManifest:
         return cls(validated, policy, schema_version=manifest_version)
 
     def to_dict(self) -> dict[str, object]:
+        """Serialize manifest version, policy, signatures, and redacted plans."""
         return {
             "schema_version": self.schema_version,
             "policy": self.policy.to_dict(),

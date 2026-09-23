@@ -9,7 +9,7 @@ One privacy-redacted JSON Lines event emitted by a batch run.
 
 ### `to_dict(self) -> 'dict[str, object]'`
 
-No public docstring is available.
+Serialize the versioned event as privacy-redacted JSON data.
 
 ## `BatchItemOutcome`
 
@@ -17,7 +17,7 @@ Stable per-item result, including resumed and cancelled jobs.
 
 ### `to_dict(self) -> 'dict[str, object]'`
 
-No public docstring is available.
+Serialize the outcome and include execution evidence when available.
 
 ## `BatchJob`
 
@@ -29,7 +29,7 @@ Strict versioned profile-job manifest compiled through the typed planner.
 
 ### `to_dict(self) -> 'dict[str, object]'`
 
-No public docstring is available.
+Serialize manifest version, policy, signatures, and redacted plans.
 
 ## `BatchPolicy`
 
@@ -37,7 +37,7 @@ Explicit concurrency, retry, input-size, and timeout limits.
 
 ### `to_dict(self) -> 'dict[str, object]'`
 
-No public docstring is available.
+Return validated concurrency, retry, input-size, and timeout limits.
 
 ## `BatchRun`
 
@@ -45,7 +45,7 @@ Versioned ordered outcome for one bounded batch execution.
 
 ### `to_dict(self) -> 'dict[str, object]'`
 
-No public docstring is available.
+Serialize policy, ordered item outcomes, and aggregate counts.
 
 ## `BatchRunner`
 
