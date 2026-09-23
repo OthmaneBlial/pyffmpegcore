@@ -364,6 +364,17 @@ réexaminer lors des prochaines releases majeures.
 
 ### 4.1 Vérifier exactement ce qui sera téléchargé
 
+**État au 23 septembre 2026 :** le dry-run du candidat `0.3.0`
+[`35921444046`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35921444046)
+a réussi sur le SHA exact `2d577f5ae9e83eb7343b618162a1b597adb005ce` : un bundle
+wheel/sdist, contrôles `twine`/contenu/SHA-256, fixtures déterministes forcées
+et six installations/tests du wheel exact sur Linux, macOS et Windows avec
+Python 3.10/3.14. La CI générale `35920627403` du même SHA passe la qualité,
+la matrice Python 3.10–3.14, la couverture à 80 %, la documentation, le fuzz et
+les six ancres wheel ; CodeQL `35920627493` et Scorecard `35920627411` passent
+aussi. Le dispatch `dry_run=true` saute signature de tag, attestations, PyPI,
+installation publique et GitHub Release. Le candidat n'est ni signé ni publié.
+
 **État :** [release à blanc `35447937367`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35447937367)
 réussie : bundle wheel/sdist construit une seule fois, SHA-256 contrôlés,
 `twine check`, contenu et installations propres sur les six ancres OS/Python.
@@ -434,7 +445,16 @@ tâche n'existe pas encore.
 
 ### 4.4 Publier la prochaine version et contrôler son état public
 
-**État :** non publiée. Les dry-runs `35450686248` et
+**État au 23 septembre 2026 :** le candidat `0.3.0` a passé son
+[dry-run `35921444046`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35921444046)
+sur le SHA `2d577f5ae9e83eb7343b618162a1b597adb005ce`; tous les contrôles de
+construction et les six tests du wheel exact ont réussi. Aucun tag `v0.3.0`,
+attestation, release GitHub ou upload PyPI n'a été créé. Le PyPI public reste
+`0.2.2`. La publication exige une autorisation et les gates publics ; l'Action
+et le conteneur n'ont pas été revalidés pour ce candidat, et aucun build
+conteneur n'a été exécuté conformément à l'instruction du mainteneur.
+
+**État historique :** les dry-runs `35450686248` et
 [`35916876361`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35916876361)
 construisent et testent les bundles `0.2.2`, mais aucun nouveau tag, release
 GitHub ou upload PyPI n'a été créé. Une publication réelle nécessite une

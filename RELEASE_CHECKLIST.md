@@ -3,10 +3,10 @@
 Copy this checklist for each new version. Every box starts open; a previous release or local dry-run does not satisfy the next one. Record the exact version, source SHA, and proof URLs below, then follow [docs/RELEASING.md](docs/RELEASING.md).
 
 - Target version and tag: candidate `0.3.0` / `v0.3.0`; not tagged or published
-- Source commit: _pending_
-- CI, compatibility, CodeQL, and Scorecard runs: _pending_
-- Container digest and Action integration run, if announced: _pending_
-- Public PyPI and GitHub Release URLs: _pending_
+- Source commit: `2d577f5ae9e83eb7343b618162a1b597adb005ce` (candidate artifact; not a release tag)
+- CI: [35920627403](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35920627403); release bundle and six exact-wheel OS/Python checks: [35921444046](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35921444046); CodeQL: [35920627493](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35920627493); Scorecard: [35920627411](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35920627411)
+- Container digest and Action integration run: not run; container build and scan are excluded by the maintainer's current instruction.
+- Public PyPI and GitHub Release URLs: pending; public PyPI remains `0.2.2` and `v0.3.0` does not exist.
 
 ## Product and Documentation
 
@@ -19,18 +19,18 @@ Copy this checklist for each new version. Every box starts open; a previous rele
 
 ## Automated Evidence
 
-- [ ] Ruff, formatting, mypy, fast tests, and the 80% full-suite coverage gate pass.
-- [ ] Python 3.10–3.14 package matrix passes.
-- [ ] The same prebuilt wheel passes media smoke tests on Linux, macOS, and Windows with Python 3.10 and 3.14.
-- [ ] Cold deterministic fixtures pass without cache reuse.
-- [ ] `twine check`, wheel contents, sdist contents, and clean isolated installation pass.
-- [ ] CodeQL and OpenSSF Scorecard findings are triaged.
+- [x] Ruff, formatting, mypy, fast tests, and the 80% full-suite coverage gate pass (CI `35920627403`, candidate source SHA above).
+- [x] Python 3.10–3.14 package matrix passes (CI `35920627403`).
+- [x] The same prebuilt wheel passes media smoke tests on Linux, macOS, and Windows with Python 3.10 and 3.14 (release dry-run `35921444046`).
+- [x] Cold deterministic fixtures pass without cache reuse (`--force` in each release matrix job, run `35921444046`).
+- [x] `twine check`, wheel contents, sdist contents, and clean isolated wheel installation pass (release dry-run `35921444046`).
+- [ ] CodeQL and OpenSSF Scorecard findings are triaged. Current GitHub inventory still has 483 Trivy alerts from the image scan on `25adc431` and low-severity Scorecard alert [#15](https://github.com/OthmaneBlial/pyffmpegcore/security/code-scanning/15); no alerts were dismissed.
 
 ## Publication
 
 - [ ] PyPI project ownership and the GitHub `pypi` environment are confirmed.
 - [ ] Trusted Publishing identity is scoped to `release.yml` and the `pypi` environment.
-- [ ] Release workflow dry-run passes.
+- [x] Release workflow dry-run passes (`35921444046`, exact candidate source SHA above; publication steps skipped).
 - [ ] The signed, protected version tag starts the release workflow.
 - [ ] GitHub Release prerelease status matches the package development-status classifier.
 - [ ] PyPI files, SHA-256 checksums, provenance attestations, and the GitHub Release describe the same artifacts.
