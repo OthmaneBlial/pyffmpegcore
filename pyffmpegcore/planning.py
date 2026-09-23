@@ -965,6 +965,8 @@ class WorkflowPlanner:
         planning_warnings: list[str] = []
         for index, source in enumerate(inputs):
             output = target_dir / f"{source.stem}.{extension}"
+            if output.is_symlink():
+                raise ValidationError(f"refusing symlinked image output: {output}")
             outputs.append(str(output))
             image_resize = resize
             if action == "optimize":

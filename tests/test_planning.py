@@ -119,3 +119,23 @@ def test_target_size_plan_rejects_an_impossible_request(tmp_path, monkeypatch):
 def test_image_plan_rejects_an_empty_directory(tmp_path):
     with pytest.raises(ValidationError, match="no supported images"):
         WorkflowPlanner().images("convert", str(tmp_path), str(tmp_path / "output"))
+
+
+def test_image_plan_rejects_symlinked_output_that_escapes_output_directory(tmp_path):
+    source_dir = tmp_path / "input"
+    output_dir = tmp_path / "output"
+    source_dir.mkdir()
+    output_dir.mkdir()
+    (source_dir / "sample.png").write_bytes(b"placeholder")
+    destination = output_dir / "sample.jpg"
+    outside_target = tmp_path / "outside.jpg"
+    try:
+        destination.symlink_to(outside_target)
+    except OSError as exc:
+        pytest.skip(f"symlinks unavailable: {exc}")
+
+    with pytest.raises(ValidationError, match="refusing symlinked image output"):
+        WorkflowPlanner().images("convert", str(source_dir), str(output_dir))
+
+    assert destination.is_symlink()
+    assert not outside_target.exists()
