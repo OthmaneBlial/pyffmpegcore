@@ -23,7 +23,7 @@ hide:
     </div>
     <div class="pfc-hero__console">
       <figure class="pfc-terminal-capture">
-        <a href="terminal-demo/" aria-label="Open the complete real terminal demonstration">
+        <a href="terminal-demo/">
           <img src="assets/terminal-plan-v0.2.2.png" alt="Real terminal capture from the public PyPI 0.2.2 run: exact FFmpeg plan, selected video and audio streams, required capabilities, and preflight PASS." width="1240" height="956" fetchpriority="high">
         </a>
         <figcaption>
