@@ -1,26 +1,7 @@
 name: Container
 
+# Manual-only while container execution is paused by the maintainer.
 on:
-  pull_request:
-    paths:
-      - "Containerfile"
-      - "container-requirements.txt"
-      - ".dockerignore"
-      - "pyffmpegcore/**"
-      - "pyproject.toml"
-      - ".github/workflows/container.yml"
-  push:
-    branches: [main]
-    tags: ["v*"]
-    paths:
-      - "Containerfile"
-      - "container-requirements.txt"
-      - ".dockerignore"
-      - "pyffmpegcore/**"
-      - "pyproject.toml"
-      - ".github/workflows/container.yml"
-  schedule:
-    - cron: "31 5 * * 3"
   workflow_dispatch:
     inputs:
       publish:
