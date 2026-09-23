@@ -27,8 +27,9 @@ Every profile has a `profile_version`. A new output contract requires a new prof
 preflight, executor, machine-result, and receipt layers as the task commands.
 The output extension is part of the contract and is validated before mutation.
 `subtitles/accessibility` additionally requires `--subtitle captions.srt` and
-accepts `--language` to label the track; it defaults to `und` when the code is
-unknown.
+accepts `--language` to label the track; it defaults to `und` when omitted.
+When FFprobe can inspect the result, managed execution verifies that the output
+subtitle stream carries the requested language label.
 Every built-in profile runs a golden real-media contract from the exact wheel on
 the Linux, macOS, and Windows compatibility matrix.
 

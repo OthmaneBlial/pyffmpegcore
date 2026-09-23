@@ -282,6 +282,20 @@ def _verify_outputs(plan: ExecutionPlan, result: JobResult, probe: FFprobeRunner
                             for stream_type in required_stream_types
                             if isinstance(stream_type, str) and stream_type not in actual_types
                         )
+                    expected_stream_languages = contract.get("stream_languages")
+                    if isinstance(expected_stream_languages, dict):
+                        for stream_type, expected_language in expected_stream_languages.items():
+                            if not isinstance(stream_type, str) or not isinstance(expected_language, str):
+                                continue
+                            actual_languages = [
+                                stream.language for stream in media.streams if stream.codec_type == stream_type
+                            ]
+                            contract_errors.extend(
+                                f"expected {expected_language} {stream_type} language, found "
+                                f"{actual_language or 'unknown'}"
+                                for actual_language in actual_languages
+                                if actual_language != expected_language
+                            )
                 if contract_errors:
                     verification["status"] = "failed"
                     verification["reason"] = "; ".join(contract_errors)

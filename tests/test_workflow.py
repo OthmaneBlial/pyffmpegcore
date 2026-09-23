@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 import sys
 
+import pytest
+
 from pyffmpegcore import (
     ConvertOptions,
     ExecutionPlan,
@@ -315,6 +317,32 @@ def test_workflow_fails_when_profile_pixel_format_contract_is_broken(tmp_path, m
     assert result.exit_category == "validation"
     assert result.outputs[0]["verification"]["streams"][0]["pixel_format"] == "yuv422p"
     assert result.outputs[0]["verification"]["reason"] == ("expected yuv420p pixel format for video, found yuv422p")
+
+
+@pytest.mark.parametrize(("language", "actual"), [("eng", "eng"), (None, "unknown")])
+def test_workflow_fails_when_profile_subtitle_language_contract_is_broken(tmp_path, monkeypatch, language, actual):
+    output = tmp_path / "output.mp4"
+    code = f"from pathlib import Path; Path({str(output)!r}).write_bytes(b'media')"
+    plan = ExecutionPlan(
+        workflow="profile/subtitles/accessibility",
+        command=(sys.executable, "-c", code),
+        inputs=(),
+        outputs=(str(output),),
+        metadata={"output_contract": {"stream_languages": {"subtitle": "fra"}}},
+    )
+    media = MediaInfo(
+        path=str(output),
+        format_name="mp4",
+        streams=(StreamInfo(index=0, codec_type="subtitle", codec_name="mov_text", language=language),),
+    )
+    monkeypatch.setattr(FFprobeRunner, "probe_media", lambda _runner, _path: media)
+    prepared = PreparedWorkflow(plan, PreflightReport(plan.workflow, ()))
+
+    result = WorkflowEngine(ffprobe_path="fake-ffprobe").run(prepared).items[0].result
+
+    assert result.status is JobStatus.FAILED
+    assert result.exit_category == "validation"
+    assert result.outputs[0]["verification"]["reason"] == f"expected fra subtitle language, found {actual}"
 
 
 def test_workflow_fails_when_profile_requires_a_missing_output_stream(tmp_path, monkeypatch):

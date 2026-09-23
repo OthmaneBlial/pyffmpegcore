@@ -139,17 +139,19 @@ def test_builtin_profile_rejects_an_output_that_breaks_its_contract(tmp_path):
         )
 
 
-def test_accessibility_profile_accepts_a_subtitle_language_override(tmp_path):
+@pytest.mark.parametrize(("language", "expected_language"), [(None, "und"), ("fra", "fra")])
+def test_accessibility_profile_sets_the_subtitle_language_contract(tmp_path, language, expected_language):
     plan = ProfileRegistry().plan(
         "subtitles/accessibility",
         WorkflowPlanner(),
         str(tmp_path / "input.mp4"),
         str(tmp_path / "output.mp4"),
         subtitle_file=str(tmp_path / "captions.srt"),
-        subtitle_language="fra",
+        subtitle_language=language,
     )
 
-    assert "language=fra" in plan.command
+    assert f"language={expected_language}" in plan.command
+    assert plan.metadata["output_contract"]["stream_languages"] == {"subtitle": expected_language}
 
 
 def test_subtitle_language_override_is_rejected_for_other_profiles(tmp_path):
@@ -160,4 +162,17 @@ def test_subtitle_language_override_is_rejected_for_other_profiles(tmp_path):
             str(tmp_path / "input.mp4"),
             str(tmp_path / "output.mp4"),
             subtitle_language="fra",
+        )
+
+
+@pytest.mark.parametrize("language", ["", 42])
+def test_accessibility_profile_rejects_invalid_subtitle_language(tmp_path, language):
+    with pytest.raises(ValidationError, match="subtitle_language must be a non-empty string"):
+        ProfileRegistry().plan(
+            "subtitles/accessibility",
+            WorkflowPlanner(),
+            str(tmp_path / "input.mp4"),
+            str(tmp_path / "output.mp4"),
+            subtitle_file=str(tmp_path / "captions.srt"),
+            subtitle_language=language,
         )

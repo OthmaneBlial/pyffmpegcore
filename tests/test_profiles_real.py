@@ -10,13 +10,13 @@ from tests.media_utils import ensure_downloaded_media
 
 @pytest.mark.real_media
 @pytest.mark.parametrize(
-    ("name", "input_id", "suffix", "expected_video", "expected_audio", "needs_subtitle"),
+    ("name", "input_id", "suffix", "expected_video", "expected_audio", "subtitle_language"),
     [
-        ("web/mp4-compatible", "rich_streams_mkv", ".mp4", "h264", "aac", False),
-        ("web/small-upload", "rich_streams_mkv", ".mp4", "h264", "aac", False),
-        ("audio/podcast-speech", "audio_wav_pcm", ".m4a", None, "aac", False),
-        ("subtitles/accessibility", "video_mov_h264_640x360", ".mp4", "h264", None, True),
-        ("archive/mezzanine", "rich_streams_mkv", ".mkv", "ffv1", "flac", False),
+        ("web/mp4-compatible", "rich_streams_mkv", ".mp4", "h264", "aac", None),
+        ("web/small-upload", "rich_streams_mkv", ".mp4", "h264", "aac", None),
+        ("audio/podcast-speech", "audio_wav_pcm", ".m4a", None, "aac", None),
+        ("subtitles/accessibility", "video_mov_h264_640x360", ".mp4", "h264", None, "fra"),
+        ("archive/mezzanine", "rich_streams_mkv", ".mkv", "ffv1", "flac", None),
     ],
 )
 def test_builtin_profile_golden_media_contract(
@@ -26,7 +26,7 @@ def test_builtin_profile_golden_media_contract(
     suffix,
     expected_video,
     expected_audio,
-    needs_subtitle,
+    subtitle_language,
 ):
     fixtures = ensure_downloaded_media()
     output = tmp_path / f"profile-output{suffix}"
@@ -36,7 +36,8 @@ def test_builtin_profile_golden_media_contract(
         engine.planner,
         str(fixtures[input_id]),
         str(output),
-        subtitle_file=str(fixtures["subtitles_srt"]) if needs_subtitle else None,
+        subtitle_file=str(fixtures["subtitles_srt"]) if subtitle_language is not None else None,
+        subtitle_language=subtitle_language,
     )
 
     batch = engine.run(plan)
@@ -49,5 +50,6 @@ def test_builtin_profile_golden_media_contract(
         assert codecs["video"] == expected_video
     if expected_audio:
         assert codecs["audio"] == expected_audio
-    if needs_subtitle:
+    if subtitle_language is not None:
         assert codecs["subtitle"] == "mov_text"
+        assert next(stream for stream in media.streams if stream.codec_type == "subtitle").language == subtitle_language

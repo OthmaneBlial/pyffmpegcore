@@ -22,7 +22,7 @@ _PROFILE_FIELDS = {
     "options",
     "required_capabilities",
 }
-_PROFILE_OUTPUT_CONTRACTS = {
+_PROFILE_OUTPUT_CONTRACTS: dict[str, dict[str, Any]] = {
     "web/mp4-compatible": {
         "codecs": {"video": "h264", "audio": "aac"},
         "pixel_formats": {"video": "yuv420p"},
@@ -216,9 +216,12 @@ class ProfileRegistry:
     ) -> ExecutionPlan:
         """Compile a maintained built-in profile through the shared typed planner."""
         profile = self.get(name)
+        if subtitle_language is not None and (not isinstance(subtitle_language, str) or not subtitle_language):
+            raise ValidationError("subtitle_language must be a non-empty string")
         if subtitle_language is not None and profile.name != "subtitles/accessibility":
             raise ValidationError("subtitle_language is only supported by profile subtitles/accessibility")
         options = profile.options
+        profile_language: str | None = None
         suffix = Path(output_file).suffix.casefold()
         expected_suffixes = {
             "web/mp4-compatible": {".mp4"},
@@ -269,17 +272,21 @@ class ProfileRegistry:
         else:
             if subtitle_file is None:
                 raise ValidationError("profile subtitles/accessibility requires --subtitle")
+            profile_language = str(options["language"] if subtitle_language is None else subtitle_language)
             plan = planner.subtitles(
                 "add",
                 input_file,
                 output_file,
                 subtitle_file=subtitle_file,
-                language=str(options["language"] if subtitle_language is None else subtitle_language),
+                language=profile_language,
                 force=force,
                 timeout_seconds=timeout_seconds,
             )
 
         requirements = tuple(dict.fromkeys((*plan.required_capabilities, *profile.required_capabilities)))
+        output_contract: dict[str, Any] = deepcopy(_PROFILE_OUTPUT_CONTRACTS[profile.name])
+        if profile_language is not None:
+            output_contract["stream_languages"] = {"subtitle": profile_language}
         metadata = {
             **plan.metadata,
             "profile": {
@@ -287,7 +294,7 @@ class ProfileRegistry:
                 "name": profile.name,
                 "profile_version": profile.profile_version,
             },
-            "output_contract": deepcopy(_PROFILE_OUTPUT_CONTRACTS[profile.name]),
+            "output_contract": output_contract,
         }
         operations = (f"apply profile {profile.name} v{profile.profile_version}", *plan.operations)
         return replace(plan, required_capabilities=requirements, metadata=metadata, operations=operations)
