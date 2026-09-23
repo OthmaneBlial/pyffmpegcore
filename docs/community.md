@@ -19,7 +19,8 @@ The original bounded newcomer queue, [#7](https://github.com/OthmaneBlial/pyffmp
 [#9](https://github.com/OthmaneBlial/pyffmpegcore/issues/9),
 [#10](https://github.com/OthmaneBlial/pyffmpegcore/issues/10), and
 [#11](https://github.com/OthmaneBlial/pyffmpegcore/issues/11), is closed as of
-19 September 2026. Each issue names files, acceptance criteria, verification
+24 September 2026. A live check confirmed all five remain closed and the open
+issue list is empty. Each issue names files, acceptance criteria, verification
 commands, and non-goals where useful. Check the
 [current open `good first issue` list](https://github.com/OthmaneBlial/pyffmpegcore/issues?q=is%3Aopen+label%3A%22good+first+issue%22)
 before choosing work; this snapshot has no open issues to claim as available.

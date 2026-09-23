@@ -512,9 +512,10 @@ installations locales et CI ne peuvent pas les remplacer.
 ### 5.2 Garder une entrée de contribution vivante
 
 **État :** structure documentaire prête, mais aucune nouvelle contribution
-indépendante n'est prouvée. La file historique d'issues `#7`–`#11` est fermée
-et aucune issue ouverte ne peut être présentée comme une tâche communautaire
-active.
+indépendante n'est prouvée. La vérification GitHub du 24 septembre confirme
+que la file historique d'issues `#7`–`#11` est fermée et que la liste des
+issues ouvertes est vide ; aucune tâche communautaire active ne peut être
+citée.
 
 - **Objectif :** transformer les demandes réelles en améliorations maintenables.
 - **Changements :** vérifier que les issues `#7`–`#11` et labels cités dans `docs/community.md` sont toujours ouverts/pertinents ; fermer ou réécrire les sujets obsolètes, ajouter des tâches bornées tirées des essais, préciser tests et critères ; créditer les contributeurs et appliquer les délais de support annoncés.
