@@ -96,6 +96,8 @@ def _version_line(binary: str) -> str | None:
             [binary, "-version"],
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             check=False,
             timeout=5,
         )

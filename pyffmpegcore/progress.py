@@ -49,7 +49,15 @@ class ProgressTracker:
         # Add progress options to command
         progress_cmd = cmd + ["-progress", "pipe:1", "-nostats", "-loglevel", "error"]
 
-        process = subprocess.Popen(progress_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
+        process = subprocess.Popen(
+            progress_cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            bufsize=1,
+        )
 
         # Read progress from stdout
         progress_thread = threading.Thread(target=self._read_progress_pipe, args=(process.stdout,))
@@ -72,7 +80,15 @@ class ProgressTracker:
         """
         Fallback: Run FFmpeg and parse stderr for progress (legacy method).
         """
-        process = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True, bufsize=1)
+        process = subprocess.Popen(
+            cmd,
+            stderr=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            bufsize=1,
+        )
 
         # Start a thread to read stderr
         stderr_thread = threading.Thread(target=self._read_stderr, args=(process.stderr,))

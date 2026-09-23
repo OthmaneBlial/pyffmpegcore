@@ -39,7 +39,12 @@ def test_low_level_run_injects_safe_overwrite_refusal(mock_run):
 
     assert result.returncode == 0
     assert mock_run.call_args.args[0] == ["ffmpeg", "-n", "-version"]
-    assert mock_run.call_args.kwargs == {"capture_output": True, "text": True}
+    assert mock_run.call_args.kwargs == {
+        "capture_output": True,
+        "text": True,
+        "encoding": "utf-8",
+        "errors": "replace",
+    }
 
 
 @patch("subprocess.run")
@@ -140,6 +145,8 @@ def test_get_version(mock_run):
     mock_run.return_value = MagicMock(stdout="ffmpeg version 9.0\n")
 
     assert FFmpegRunner().get_version() == "ffmpeg version 9.0"
+    assert mock_run.call_args.kwargs["encoding"] == "utf-8"
+    assert mock_run.call_args.kwargs["errors"] == "replace"
 
 
 def test_progress_event_is_the_typed_callback_contract():

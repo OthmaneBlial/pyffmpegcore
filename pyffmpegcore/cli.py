@@ -618,6 +618,8 @@ def inspect_binary(binary_path: str) -> dict[str, Any]:
             [binary_path, "-version"],
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             check=False,
         )
     except OSError as exc:

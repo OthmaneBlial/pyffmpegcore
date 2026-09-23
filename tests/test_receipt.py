@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
@@ -22,7 +24,7 @@ from pyffmpegcore import (
     migrate_receipt,
     validate_receipt,
 )
-from pyffmpegcore.receipt import redact_receipt_value
+from pyffmpegcore.receipt import _version_line, redact_receipt_value
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -70,6 +72,15 @@ def _batch(tmp_path):
     )
     execution = WorkflowExecution(remote, str(output), report, result)
     return WorkflowBatch(PreparedWorkflow(plan, report), (execution,)), source, output
+
+
+@patch("pyffmpegcore.receipt.subprocess.run")
+def test_receipt_version_probe_decodes_tool_output_as_utf8(mock_run):
+    mock_run.return_value = subprocess.CompletedProcess(["ffmpeg", "-version"], 0, "ffmpeg version 9.0\n", "")
+
+    assert _version_line("ffmpeg") == "ffmpeg version 9.0"
+    assert mock_run.call_args.kwargs["encoding"] == "utf-8"
+    assert mock_run.call_args.kwargs["errors"] == "replace"
 
 
 def test_receipt_redacts_credentials_private_paths_and_secrets_by_default(tmp_path):

@@ -75,7 +75,13 @@ class FFmpegRunner:
             result = (
                 ProgressTracker(progress_callback).run(command)
                 if progress_callback is not None
-                else subprocess.run(command, capture_output=True, text=True)
+                else subprocess.run(
+                    command,
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                )
             )
         except FileNotFoundError as exc:
             raise RuntimeError(
@@ -320,6 +326,8 @@ class FFmpegRunner:
                 [self.ffmpeg_path, "-version"],
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 check=True,
             )
         except FileNotFoundError as exc:

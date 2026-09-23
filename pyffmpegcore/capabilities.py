@@ -49,6 +49,8 @@ def _listing(binary: str, option: str) -> str:
             [binary, "-hide_banner", option],
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             check=False,
         )
     except OSError:

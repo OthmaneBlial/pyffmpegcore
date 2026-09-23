@@ -4,6 +4,8 @@ Tests for ProgressTracker.
 
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from pyffmpegcore.progress import ProgressCallback, ProgressTracker
 
 
@@ -56,7 +58,8 @@ class TestProgressTracker:
 
     @patch("subprocess.Popen")
     @patch("threading.Thread")
-    def test_run_with_progress(self, mock_thread, mock_popen):
+    @pytest.mark.parametrize("use_pipe", [True, False])
+    def test_run_with_progress(self, mock_thread, mock_popen, use_pipe):
         """Test run method with progress callback."""
         # Mock process
         mock_process = MagicMock()
@@ -74,7 +77,7 @@ class TestProgressTracker:
         mock_process.stderr = mock_stderr
 
         callback_calls = []
-        tracker = ProgressTracker(lambda x: callback_calls.append(x))
+        tracker = ProgressTracker(lambda x: callback_calls.append(x), use_pipe=use_pipe)
 
         cmd = ["ffmpeg", "-i", "input.mp4", "output.mp4"]
         result = tracker.run(cmd)
@@ -82,9 +85,14 @@ class TestProgressTracker:
         assert result.returncode == 0
         # Check that progress options were added
         call_args = mock_popen.call_args[0][0]
-        assert "-progress" in call_args
-        assert "pipe:1" in call_args
-        assert "-nostats" in call_args
+        if use_pipe:
+            assert "-progress" in call_args
+            assert "pipe:1" in call_args
+            assert "-nostats" in call_args
+        else:
+            assert "-progress" not in call_args
+        assert mock_popen.call_args.kwargs["encoding"] == "utf-8"
+        assert mock_popen.call_args.kwargs["errors"] == "replace"
 
 
 class TestProgressCallback:

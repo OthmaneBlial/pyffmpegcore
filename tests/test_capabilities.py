@@ -32,6 +32,9 @@ def _ffmpeg_listing(command, **_kwargs):
 def test_inventory_covers_all_capability_families(_mock_run):
     inventory = CapabilityInventory.inspect("/custom/ffmpeg")
 
+    assert all(call.kwargs["encoding"] == "utf-8" for call in _mock_run.call_args_list)
+    assert all(call.kwargs["errors"] == "replace" for call in _mock_run.call_args_list)
+
     assert inventory.supports("encoder:libx264")
     assert inventory.supports("decoder:h264")
     assert inventory.supports("filter:subtitles")
