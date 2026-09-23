@@ -84,7 +84,26 @@ def test_execution_fails_when_successful_command_does_not_create_output(tmp_path
     assert result.exit_category == "validation"
     assert result.returncode == 0
     assert result.outputs[0]["exists"] is False
-    assert result.stderr == f"Expected output file was not created: {output}"
+    assert result.stderr == f"Expected output file is missing or empty: {output}"
+
+
+def test_execution_fails_and_removes_empty_output(tmp_path):
+    output = tmp_path / "empty.bin"
+    code = f"from pathlib import Path; Path({str(output)!r}).write_bytes(b'')"
+    plan = ExecutionPlan(
+        workflow="test/empty-output",
+        command=(sys.executable, "-c", code),
+        inputs=(),
+        outputs=(str(output),),
+    )
+
+    result = FFmpegRunner().execute_plan(plan)
+
+    assert result.status is JobStatus.FAILED
+    assert result.exit_category == "validation"
+    assert not output.exists()
+    assert result.outputs[0]["exists"] is False
+    assert result.stderr == f"Expected output file is missing or empty: {output}"
 
 
 def test_execution_plan_runs_named_steps_in_order(tmp_path):

@@ -558,13 +558,13 @@ class ExecutionEngine:
                     break
             if status is JobStatus.SUCCEEDED:
                 missing_output = next(
-                    (value for value in plan.outputs if not Path(value).is_file()),
+                    (value for value in plan.outputs if not Path(value).is_file() or Path(value).stat().st_size == 0),
                     None,
                 )
                 if missing_output is not None:
                     status = JobStatus.FAILED
                     category = "validation"
-                    verification_error = f"Expected output file was not created: {missing_output}"
+                    verification_error = f"Expected output file is missing or empty: {missing_output}"
         finally:
             if workspace is not None:
                 retain = plan.policy.temporary_files is TemporaryFilePolicy.KEEP or (
