@@ -2,7 +2,7 @@
 
 Copy this checklist for each new version. Every box starts open; a previous release or local dry-run does not satisfy the next one. Record the exact version, source SHA, and proof URLs below, then follow [docs/RELEASING.md](docs/RELEASING.md).
 
-- Target version and tag: _pending_
+- Target version and tag: candidate `0.3.0` / `v0.3.0`; not tagged or published
 - Source commit: _pending_
 - CI, compatibility, CodeQL, and Scorecard runs: _pending_
 - Container digest and Action integration run, if announced: _pending_
