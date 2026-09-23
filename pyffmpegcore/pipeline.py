@@ -524,6 +524,11 @@ class PipelineCompiler:
         timeout_seconds: float | None = None,
         cache_enabled: bool | None = None,
     ) -> PipelinePlan:
+        """Resolve pipeline variables and compile steps without running FFmpeg.
+
+        Dependency references become producer output paths. Secret values are
+        retained only for redaction in the resulting plan and receipts.
+        """
         selected_variables = {**spec.variables, **(variables or {})}
         missing_secrets = sorted(set(spec.secret_variables) - set(selected_variables))
         if missing_secrets:
@@ -635,6 +640,11 @@ class PipelinePreflightEngine:
         self.engine = WorkflowEngine(ffmpeg_path=ffmpeg_path, ffprobe_path=ffprobe_path)
 
     def prepare(self, pipeline: PipelinePlan, *, allow_existing_outputs: bool = False) -> PreparedPipeline:
+        """Preflight each step and defer missing inputs produced by dependencies.
+
+        Existing outputs remain errors unless explicitly allowed for a later
+        cache or resume check; this method never executes a step.
+        """
         outputs = {step.id: set(step.plan.outputs) for step in pipeline.steps}
         prepared = []
         for step in pipeline.steps:
@@ -825,6 +835,11 @@ class PipelineRunner:
         hash_content: bool = False,
         event_callback: Any = None,
     ) -> PipelineRun:
+        """Execute steps in dependency order and return one outcome per step.
+
+        Failed dependencies block downstream steps. Optional state supports
+        resume and caching; receipts and event callbacks are opt-in.
+        """
         cancel = cancellation or threading.Event()
         selected_state = Path(state_path) if state_path is not None else None
         if selected_state is None and pipeline.cache.enabled:

@@ -264,7 +264,10 @@ Resolve variables/dependencies and compile every step through the typed planner.
 
 ### `compile(self, spec: 'PipelineSpec', *, variables: 'dict[str, str] | None' = None, force: 'bool' = False, timeout_seconds: 'float | None' = None, cache_enabled: 'bool | None' = None) -> 'PipelinePlan'`
 
-No public docstring is available.
+Resolve pipeline variables and compile steps without running FFmpeg.
+
+Dependency references become producer output paths. Secret values are
+retained only for redaction in the resulting plan and receipts.
 
 ## `PipelineEvent`
 
@@ -292,7 +295,10 @@ Preflight an entire DAG while explicitly deferring dependency outputs.
 
 ### `prepare(self, pipeline: 'PipelinePlan', *, allow_existing_outputs: 'bool' = False) -> 'PreparedPipeline'`
 
-No public docstring is available.
+Preflight each step and defer missing inputs produced by dependencies.
+
+Existing outputs remain errors unless explicitly allowed for a later
+cache or resume check; this method never executes a step.
 
 ## `PipelineRun`
 
@@ -308,7 +314,10 @@ Execute a prepared DAG with dependency blocking, cancellation, resume, and cachi
 
 ### `run(self, pipeline: 'PipelinePlan', *, cancellation: 'threading.Event | None' = None, state_path: 'str | Path | None' = None, resume: 'bool' = False, receipt_dir: 'str | Path | None' = None, hash_content: 'bool' = False, event_callback: 'Any' = None) -> 'PipelineRun'`
 
-No public docstring is available.
+Execute steps in dependency order and return one outcome per step.
+
+Failed dependencies block downstream steps. Optional state supports
+resume and caching; receipts and event callbacks are opt-in.
 
 ## `PipelineSpec`
 
