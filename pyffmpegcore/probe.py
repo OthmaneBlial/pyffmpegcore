@@ -186,6 +186,7 @@ class FFprobeRunner:
                         "start_time",
                         "avg_frame_rate",
                         "r_frame_rate",
+                        "pix_fmt",
                         "field_order",
                         "extradata_size",
                     )

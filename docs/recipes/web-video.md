@@ -41,6 +41,8 @@ video/audio streams; `--dry-run` and `--explain` warn that other tracks are
 omitted. It is not lossless. Use the [preserve every stream
 recipe](preserve-streams.md) instead when remuxing a rich file without track
 loss. Existing outputs require explicit CLI `--force`.
+Managed profile execution validates the probed video/audio codecs and video
+pixel format; the MP4 atom layout remains outside FFprobe's verification here.
 
 The profile optimizes compatibility, not file size. A
 [dated replay with a generated VP9 WebM](../evidence.md#replay-on-19-september-2026)

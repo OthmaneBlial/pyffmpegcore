@@ -125,6 +125,7 @@ def test_workflow_records_successful_output_probe(tmp_path, monkeypatch):
                 "codec": "pcm_s16le",
                 "width": None,
                 "height": None,
+                "pixel_format": None,
                 "sample_rate": None,
                 "channels": None,
                 "language": None,
@@ -213,6 +214,32 @@ def test_workflow_fails_when_profile_output_codec_contract_is_broken(tmp_path, m
     assert result.outputs[0]["verification"]["status"] == "failed"
     assert result.outputs[0]["verification"]["reason"] == "expected h264 video, found hevc"
     assert "expected h264 video, found hevc" in result.stderr
+
+
+def test_workflow_fails_when_profile_pixel_format_contract_is_broken(tmp_path, monkeypatch):
+    output = tmp_path / "output.mp4"
+    code = f"from pathlib import Path; Path({str(output)!r}).write_bytes(b'media')"
+    plan = ExecutionPlan(
+        workflow="profile/web/mp4-compatible",
+        command=(sys.executable, "-c", code),
+        inputs=(),
+        outputs=(str(output),),
+        metadata={"output_contract": {"pixel_formats": {"video": "yuv420p"}}},
+    )
+    media = MediaInfo(
+        path=str(output),
+        format_name="mp4",
+        streams=(StreamInfo(index=0, codec_type="video", codec_name="h264", details={"pix_fmt": "yuv422p"}),),
+    )
+    monkeypatch.setattr(FFprobeRunner, "probe_media", lambda _runner, _path: media)
+    prepared = PreparedWorkflow(plan, PreflightReport(plan.workflow, ()))
+
+    result = WorkflowEngine(ffprobe_path="fake-ffprobe").run(prepared).items[0].result
+
+    assert result.status is JobStatus.FAILED
+    assert result.exit_category == "validation"
+    assert result.outputs[0]["verification"]["streams"][0]["pixel_format"] == "yuv422p"
+    assert result.outputs[0]["verification"]["reason"] == ("expected yuv420p pixel format for video, found yuv422p")
 
 
 def test_workflow_fails_when_profile_requires_a_missing_output_stream(tmp_path, monkeypatch):

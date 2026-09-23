@@ -23,7 +23,10 @@ _PROFILE_FIELDS = {
     "required_capabilities",
 }
 _PROFILE_OUTPUT_CONTRACTS = {
-    "web/mp4-compatible": {"codecs": {"video": "h264", "audio": "aac"}},
+    "web/mp4-compatible": {
+        "codecs": {"video": "h264", "audio": "aac"},
+        "pixel_formats": {"video": "yuv420p"},
+    },
     "web/small-upload": {
         "codecs": {"video": "h264", "audio": "aac"},
         "required_stream_types": ["video"],

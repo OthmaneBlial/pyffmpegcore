@@ -193,6 +193,7 @@ def _verify_outputs(plan: ExecutionPlan, result: JobResult, probe: FFprobeRunner
                             "codec": stream.codec_name,
                             "width": stream.width,
                             "height": stream.height,
+                            "pixel_format": stream.details.get("pix_fmt"),
                             "sample_rate": stream.sample_rate,
                             "channels": stream.channels,
                             "language": stream.language,
@@ -217,6 +218,22 @@ def _verify_outputs(plan: ExecutionPlan, result: JobResult, probe: FFprobeRunner
                                 f"expected {expected_codec} {stream_type}, found {actual_codec or 'unknown'}"
                                 for actual_codec in actual_codecs
                                 if actual_codec != expected_codec
+                            )
+                    expected_pixel_formats = contract.get("pixel_formats")
+                    if isinstance(expected_pixel_formats, dict):
+                        for stream_type, expected_format in expected_pixel_formats.items():
+                            if not isinstance(stream_type, str) or not isinstance(expected_format, str):
+                                continue
+                            actual_formats = [
+                                stream.details.get("pix_fmt")
+                                for stream in media.streams
+                                if stream.codec_type == stream_type
+                            ]
+                            contract_errors.extend(
+                                f"expected {expected_format} pixel format for {stream_type}, found "
+                                f"{actual_format or 'unknown'}"
+                                for actual_format in actual_formats
+                                if actual_format != expected_format
                             )
                     required_stream_types = contract.get("required_stream_types")
                     if isinstance(required_stream_types, list):

@@ -76,6 +76,7 @@ class TestFFprobeRunner:
                     "codec_name": "hevc",
                     "width": 1920,
                     "height": 1080,
+                    "pix_fmt": "yuv420p10le",
                     "color_transfer": "smpte2084",
                     "color_primaries": "bt2020",
                     "tags": {"language": "fra", "rotate": "90"},
@@ -96,6 +97,7 @@ class TestFFprobeRunner:
         assert typed.streams[0].language == "fra"
         assert typed.streams[0].rotation == 90.0
         assert typed.streams[0].color["color_transfer"] == "smpte2084"
+        assert typed.streams[0].details["pix_fmt"] == "yuv420p10le"
         assert typed.streams[1].codec_type == "attachment"
         assert typed.chapters[0]["tags"]["title"] == "Intro"
 

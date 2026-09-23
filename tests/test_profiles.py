@@ -121,7 +121,10 @@ def test_builtin_profile_compiles_through_shared_typed_planner(tmp_path):
         "name": "web/mp4-compatible",
         "profile_version": 1,
     }
-    assert plan.metadata["output_contract"] == {"codecs": {"video": "h264", "audio": "aac"}}
+    assert plan.metadata["output_contract"] == {
+        "codecs": {"video": "h264", "audio": "aac"},
+        "pixel_formats": {"video": "yuv420p"},
+    }
     assert "encoder:libx264" in plan.required_capabilities
     assert plan.operations[0] == "apply profile web/mp4-compatible v1"
 
