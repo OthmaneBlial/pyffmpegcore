@@ -499,6 +499,7 @@ class ExecutionEngine:
         last_command = plan.command
         last_progress: ProgressEvent | None = None
         workspace: Path | None = None
+        verification_error: str | None = None
         warnings = list(plan.warnings)
         try:
             steps, workspace = _materialize_steps(plan)
@@ -555,6 +556,15 @@ class ExecutionEngine:
                     warnings.append("Structured FFmpeg progress unavailable; used legacy stderr fallback.")
                 if status is not JobStatus.SUCCEEDED:
                     break
+            if status is JobStatus.SUCCEEDED:
+                missing_output = next(
+                    (value for value in plan.outputs if not Path(value).is_file()),
+                    None,
+                )
+                if missing_output is not None:
+                    status = JobStatus.FAILED
+                    category = "validation"
+                    verification_error = f"Expected output file was not created: {missing_output}"
         finally:
             if workspace is not None:
                 retain = plan.policy.temporary_files is TemporaryFilePolicy.KEEP or (
@@ -588,7 +598,8 @@ class ExecutionEngine:
             returncode=returncode,
             elapsed_seconds=time.monotonic() - started,
             stdout=_captured(stdout_capture.value(), plan.policy.stdout, plan.policy.capture_tail_chars),
-            stderr=_captured(stderr_capture.value(), plan.policy.stderr, plan.policy.capture_tail_chars),
+            stderr=verification_error
+            or _captured(stderr_capture.value(), plan.policy.stderr, plan.policy.capture_tail_chars),
             progress=last_progress,
             warnings=tuple(warnings),
             outputs=_output_facts(plan.outputs),
