@@ -50,10 +50,13 @@ refused unless `--force` is explicit.
 
 ## Verify
 
-Compare the before/after probes. The maintained real-media test asserts one
-video stream, two differently tagged audio streams, one subtitle stream,
-Unicode container metadata, and two chapters after the copy. The exact wheel
-also runs this recipe on Linux, macOS, and Windows during release validation.
+Managed execution compares input/output stream type, codec, and language facts;
+a mismatch fails validation, while remote or unprobeable inputs are marked
+unverified. Compare the before/after probes for container metadata and chapters
+too. The maintained real-media test asserts one video stream, two differently
+tagged audio streams, one subtitle stream, Unicode container metadata, and two
+chapters after the copy. The exact wheel also runs this recipe on Linux, macOS,
+and Windows during release validation.
 
 If you need to re-encode while making custom per-stream choices, use reviewed
 raw FFmpeg for now and include the complete stream map in any recipe proposal.

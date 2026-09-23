@@ -19,6 +19,9 @@ diagnosing failure.
 If FFprobe can read an output that violates a built-in profile contract, the
 receipt keeps the observed stream facts and validation reason so the mismatch
 can be diagnosed without probing the file again.
+Managed `--preserve-all-streams` receipts also retain the input/output stream
+layout comparison under `output_probe.stream_preservation`. Unprobeable or
+remote inputs are marked unverified instead of causing a second network read.
 
 ## Private by default
 

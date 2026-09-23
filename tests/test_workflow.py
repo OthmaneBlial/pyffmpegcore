@@ -136,6 +136,81 @@ def test_workflow_records_successful_output_probe(tmp_path, monkeypatch):
     }
 
 
+def test_preserve_all_stream_contract_fails_when_output_layout_changes(tmp_path, monkeypatch):
+    source = tmp_path / "source.mkv"
+    source.touch()
+    output = tmp_path / "output.mkv"
+    code = f"from pathlib import Path; Path({str(output)!r}).write_bytes(b'media')"
+    plan = ExecutionPlan(
+        workflow="convert",
+        command=(sys.executable, "-c", code),
+        inputs=(str(source),),
+        outputs=(str(output),),
+        metadata={"stream_policy": "preserve-all"},
+    )
+    input_media = MediaInfo(
+        path=str(source),
+        streams=(
+            StreamInfo(index=0, codec_type="video", codec_name="h264"),
+            StreamInfo(index=1, codec_type="audio", codec_name="aac", language="eng"),
+            StreamInfo(index=2, codec_type="subtitle", codec_name="subrip", language="fra"),
+        ),
+    )
+    output_media = MediaInfo(
+        path=str(output),
+        streams=(
+            StreamInfo(index=0, codec_type="video", codec_name="h264"),
+            StreamInfo(index=1, codec_type="audio", codec_name="aac", language="eng"),
+        ),
+    )
+
+    def probe_media(_runner, path):
+        return input_media if path == str(source) else output_media
+
+    monkeypatch.setattr(FFprobeRunner, "probe_media", probe_media)
+    prepared = PreparedWorkflow(plan, PreflightReport(plan.workflow, ()))
+
+    result = WorkflowEngine(ffprobe_path="fake-ffprobe").run(prepared).items[0].result
+
+    assert result.status is JobStatus.FAILED
+    assert result.exit_category == "validation"
+    verification = result.outputs[0]["verification"]
+    assert verification["stream_preservation"]["status"] == "failed"
+    assert "subtitle/subrip/fra" in verification["reason"]
+
+
+def test_preserve_all_remote_input_is_not_reprobed(tmp_path, monkeypatch):
+    output = tmp_path / "remote-copy.mkv"
+    code = f"from pathlib import Path; Path({str(output)!r}).write_bytes(b'media')"
+    plan = ExecutionPlan(
+        workflow="convert",
+        command=(sys.executable, "-c", code),
+        inputs=("https://example.invalid/media.mkv",),
+        outputs=(str(output),),
+        metadata={"stream_policy": "preserve-all"},
+    )
+    output_media = MediaInfo(
+        path=str(output),
+        streams=(StreamInfo(index=0, codec_type="video", codec_name="h264"),),
+    )
+    probed_paths = []
+
+    def probe_media(_runner, path):
+        probed_paths.append(path)
+        return output_media
+
+    monkeypatch.setattr(FFprobeRunner, "probe_media", probe_media)
+    prepared = PreparedWorkflow(plan, PreflightReport(plan.workflow, ()))
+
+    result = WorkflowEngine(ffprobe_path="fake-ffprobe").run(prepared).items[0].result
+
+    assert result.succeeded
+    assert probed_paths == [str(output)]
+    assert result.outputs[0]["verification"]["stream_preservation"]["status"] == "unavailable"
+    assert "all-stream preservation is unverified" in result.warnings[0]
+    assert "example.invalid" not in " ".join(result.warnings)
+
+
 def test_workflow_fails_when_ffprobe_rejects_output(tmp_path, monkeypatch):
     output = tmp_path / "invalid.bin"
     code = f"from pathlib import Path; Path({str(output)!r}).write_bytes(b'not media')"

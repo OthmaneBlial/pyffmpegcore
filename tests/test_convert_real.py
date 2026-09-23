@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import pytest
 
-from pyffmpegcore import FFmpegRunner, FFprobeRunner
+from pyffmpegcore import ConvertOptions, FFmpegRunner, FFprobeRunner, WorkflowEngine
 from tests.media_utils import ensure_downloaded_media
 from tests.mp4_utils import top_level_mp4_atoms
 
@@ -127,3 +127,22 @@ def test_convert_preserves_all_stream_types_metadata_and_chapters(tmp_path):
     assert [stream.language for stream in metadata.streams if stream.codec_type == "subtitle"] == ["fra"]
     assert metadata.tags["title"] == "Résumé – 東京"
     assert [chapter["title"] for chapter in metadata.chapters] == ["Début", "Fin"]
+
+
+@pytest.mark.real_media
+def test_managed_preserve_all_streams_verifies_input_output_layout(tmp_path):
+    media = ensure_downloaded_media()
+    output_file = tmp_path / "managed-preserved.mkv"
+    engine = WorkflowEngine()
+    plan = engine.planner.convert(
+        str(media["rich_streams_mkv"]),
+        str(output_file),
+        ConvertOptions(preserve_all_streams=True),
+    )
+
+    result = engine.run(plan).items[0].result
+
+    assert result.succeeded, result.stderr
+    verification = result.outputs[0]["verification"]
+    assert verification["stream_preservation"]["status"] == "verified"
+    assert verification["stream_preservation"]["input_streams"] == verification["stream_preservation"]["output_streams"]

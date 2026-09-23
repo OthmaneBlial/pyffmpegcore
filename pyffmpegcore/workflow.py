@@ -8,7 +8,7 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import TypedDict
 
-from .domain import ExecutionPlan, JobResult, JobStatus, ProgressEvent
+from .domain import ExecutionPlan, JobResult, JobStatus, MediaInfo, ProgressEvent, is_url_like_path
 from .planning import WorkflowPlanner
 from .preflight import PreflightEngine, PreflightReport
 from .probe import FFprobeRunner
@@ -154,6 +154,13 @@ def _image_item_plan(plan: ExecutionPlan, index: int) -> ExecutionPlan:
     )
 
 
+def _stream_layout(media: MediaInfo) -> tuple[tuple[str, str, str], ...]:
+    """Return stable stream type/codec/language facts for preservation checks."""
+    return tuple(
+        sorted((stream.codec_type, stream.codec_name or "", stream.language or "") for stream in media.streams)
+    )
+
+
 def _verify_outputs(plan: ExecutionPlan, result: JobResult, probe: FFprobeRunner) -> JobResult:
     if not result.succeeded or not plan.outputs:
         return result
@@ -162,6 +169,16 @@ def _verify_outputs(plan: ExecutionPlan, result: JobResult, probe: FFprobeRunner
     warnings = list(result.warnings)
     errors = []
     missing_probe = f"FFprobe executable '{probe.ffprobe_path}' was not found."
+    verify_stream_preservation = plan.metadata.get("stream_policy") == "preserve-all"
+    input_layout: tuple[tuple[str, str, str], ...] | None = None
+    if verify_stream_preservation:
+        if not plan.inputs or is_url_like_path(plan.inputs[0]):
+            warnings.append("Input stream layout could not be probed; all-stream preservation is unverified.")
+        else:
+            try:
+                input_layout = _stream_layout(probe.probe_media(plan.inputs[0]))
+            except (OSError, RuntimeError, ValueError):
+                warnings.append("Input stream layout could not be probed; all-stream preservation is unverified.")
     for fact in result.outputs:
         output = dict(fact)
         path = str(output["path"])
@@ -205,6 +222,28 @@ def _verify_outputs(plan: ExecutionPlan, result: JobResult, probe: FFprobeRunner
                 }
                 contract = plan.metadata.get("output_contract")
                 contract_errors: list[str] = []
+                if verify_stream_preservation:
+                    output_layout = _stream_layout(media)
+                    if input_layout is None:
+                        verification["stream_preservation"] = {"status": "unavailable"}
+                    else:
+                        verification["stream_preservation"] = {
+                            "status": "verified" if output_layout == input_layout else "failed",
+                            "input_streams": [
+                                {"type": kind, "codec": codec or None, "language": language or None}
+                                for kind, codec, language in input_layout
+                            ],
+                            "output_streams": [
+                                {"type": kind, "codec": codec or None, "language": language or None}
+                                for kind, codec, language in output_layout
+                            ],
+                        }
+                        if output_layout != input_layout:
+                            expected = ", ".join("/".join(part for part in stream if part) for stream in input_layout)
+                            actual = ", ".join("/".join(part for part in stream if part) for stream in output_layout)
+                            contract_errors.append(
+                                f"preserve-all stream layout changed: input [{expected}], output [{actual}]"
+                            )
                 if isinstance(contract, dict):
                     expected_codecs = contract.get("codecs")
                     if isinstance(expected_codecs, dict):

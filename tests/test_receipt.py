@@ -129,6 +129,11 @@ def test_receipt_reuses_managed_output_probe_evidence(tmp_path, monkeypatch):
             }
         ],
         "chapter_count": 0,
+        "stream_preservation": {
+            "status": "verified",
+            "input_streams": [{"type": "audio", "codec": "aac", "language": "eng"}],
+            "output_streams": [{"type": "audio", "codec": "aac", "language": "eng"}],
+        },
     }
     item = batch.items[0]
     result = replace(item.result, outputs=(dict(item.result.outputs[0], verification=verification),))
@@ -144,6 +149,7 @@ def test_receipt_reuses_managed_output_probe_evidence(tmp_path, monkeypatch):
     assert output_probe["format_name"] == "matroska"
     assert output_probe["streams"][0]["codec"] == "aac"
     assert output_probe["streams"][0]["language"] == "eng"
+    assert output_probe["stream_preservation"]["status"] == "verified"
 
 
 def test_receipt_keeps_output_probe_facts_when_profile_contract_fails(tmp_path, monkeypatch):
