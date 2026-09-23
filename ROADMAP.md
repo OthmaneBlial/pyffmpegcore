@@ -384,7 +384,13 @@ et les six ancres Linux/macOS/Windows Python 3.10/3.14. L'artefact a été
 téléchargé et ses sommes vérifiées : wheel
 `9f0778000c5d84c2f65f3f01a83fedf2d3429d151dcf565ae915b7e5b0afa2cb`, sdist
 `a9bdd153a52b1dd5166f1cc62725da8151e2fbb4836e2cd9d77882585254b675`. Ce
-dry-run ne crée ni tag, ni nouvelle release, ni publication PyPI.
+dry-run ne crée ni tag, ni nouvelle release, ni publication PyPI. Un nouveau
+[dry-run `35916876361`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35916876361)
+sur le SHA `700e19b` a reconstruit le bundle une fois (395 561 octets), passé
+`twine check` et le contrôle de contenu, puis validé le même wheel exact sur
+les six ancres Linux/macOS/Windows et Python 3.10/3.14. Il confirme le bundle
+de la tête courante ; la vérification du tag, les attestations et les contrôles
+publics sont ignorés en dispatch manuel, et la version construite reste `0.2.2`.
 
 - **Objectif :** qu'un installateur retrouve dans wheel/sdist le même comportement que le checkout.
 - **Changements :** bâtir une seule fois les distributions, inspecter contenu, version, licence et README rendu ; installer ces fichiers en environnement vierge ; vérifier `pipx`, `pip` et `uv tool` annoncés ; synchroniser le numéro de version entre code, tag, docs, Action et conteneur quand ils sont publiés ensemble.
@@ -428,11 +434,12 @@ tâche n'existe pas encore.
 
 ### 4.4 Publier la prochaine version et contrôler son état public
 
-**État :** non publiée. Le dry-run `35450686248` construit et teste le bundle
-`0.2.2`, mais aucun nouveau tag, release GitHub, upload PyPI ou digest GHCR n'a
-été créé. Une publication réelle nécessite une autorisation et les contrôles
-publics correspondants ; la release `v0.2.2` reste l'artefact public de
-référence.
+**État :** non publiée. Les dry-runs `35450686248` et
+[`35916876361`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35916876361)
+construisent et testent les bundles `0.2.2`, mais aucun nouveau tag, release
+GitHub ou upload PyPI n'a été créé. Une publication réelle nécessite une
+autorisation et les contrôles publics correspondants ; la release `v0.2.2`
+reste l'artefact public de référence.
 
 - **Objectif :** remplacer la preuve historique `v0.2.2` par une release qui inclut les corrections précédentes.
 - **Changements :** remplir la checklist par liens réels ; changelog et notes de migration ; tag annoté signé ; exécuter le pipeline de publication existant ; vérifier les fichiers publics PyPI et GitHub, checksums, attestations, installation, page docs et digest GHCR/Action si annoncés ; choisir explicitement le statut GitHub « prerelease » si la version reste annoncée comme bêta. En cas de gate rouge, corriger puis publier une nouvelle version sans réécrire l'ancienne.

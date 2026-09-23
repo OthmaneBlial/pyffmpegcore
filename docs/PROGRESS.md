@@ -7,6 +7,7 @@ Updated: 2026-09-23
 - Audit started from `main` at `25adc43150842930f84e25c105a7612f1a4b02f1`, synchronized with `origin/main`.
 - Local environment: macOS arm64, Python 3.14.6, FFmpeg/FFprobe 9.0.1.
 - Public package version remains `0.2.2`; no new release was created.
+- Release dry-run [35916876361](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35916876361) passed on exact SHA `700e19bdd2c8d85ff9db30f8341d92e84a4c1d33`: one wheel/sdist bundle, `twine` and contents checks, and six exact-wheel OS/Python artifact tests. The 395,561-byte artifact is version `0.2.2`; manual dispatch skips tag verification, attestations, PyPI, and public-install gates, so it is not a new release.
 - The audit baseline CI for the starting SHA, [run 35451954201](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35451954201), succeeded, including quality checks, the 80% coverage gate, Python 3.10–3.14 package contracts, and six exact-wheel OS/Python smoke cells.
 - Core UTF-8 fixes were pushed in `ed83052`; full hosted CI [run 35886966278](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35886966278) passed on that exact SHA.
 - Helper-script UTF-8 fixes were pushed in `b70cacf`; full hosted CI [run 35887846148](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35887846148) passed on that exact SHA.
