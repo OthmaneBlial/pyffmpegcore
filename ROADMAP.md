@@ -191,6 +191,14 @@ le MP3 192 kb/s de 212 012 octets passe le probe, le receipt schema 1.0 et le
 décodage complet. Aucune écoute humaine ni média vocal représentatif consenti
 n'a encore été évalué. La tâche reste ouverte.
 
+Le 24 septembre, le checkout `0.3.0` a rejoué la recette exact-size sur le
+fixture H.264/AAC synthétique de 4 042 503 octets : `--explain` n'a rien créé,
+puis le mode deux passes a produit 248 417 octets sous la limite de 262 144.
+Probe H.264/AAC `yuv420p`, validation du receipt schema 1.0 et décodage complet
+réussis ; reçu conservé dans [`docs/evidence.md`](docs/evidence.md). Cette
+preuve ferme le contrôle de limite de taille sur ce fixture, pas la revue de
+qualité visuelle sur un média représentatif.
+
 - **Objectif :** concentrer l'investissement produit sur la vidéo web, la taille d'upload et la voix/podcast, déjà présents dans le dépôt.
 - **Changements :** rejouer chaque recette avec médias générés et médias consentis représentatifs ; relever durée, codecs, pistes conservées/perdues, taille et qualité audible/visible ; expliciter les cas où le profil refuse ou avertit. Corriger dans le moteur partagé les défauts observés avant tout nouveau preset.
 - **Fichiers :** `docs/recipes/web-video.md`, `exact-size.md`, `podcast.md`, `pyffmpegcore/profiles.py`, `planning.py`, `preflight.py`, `tests/test_profiles_real.py` et tests de compression/audio.

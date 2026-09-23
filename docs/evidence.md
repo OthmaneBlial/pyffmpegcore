@@ -35,6 +35,16 @@ file size. Its output has `moov` before `mdat` for progressive download. The
 receipt SHA-256 values, stream facts, and checks. Measurements on other FFmpeg
 builds may differ.
 
+## Exact-size replay on 24 September 2026
+
+The `0.3.0` checkout reran the generated six-second H.264/AAC fixture
+(4,042,503 bytes) on macOS arm64, Python 3.14.6, and FFmpeg 9.0.1. `--explain`
+created no output. Two-pass compression targeting 262,144 bytes produced a
+248,417-byte H.264/AAC MP4 (`yuv420p`); probe, schema 1.0 receipt validation,
+and full decode passed. The [receipt](evidence/exact-size-2026-09-24.receipt.json)
+has SHA-256 `121a127b72cf15cccfc6b9aa5043f029d4437f2aaada8ff41ada32830b77d435`.
+This synthetic replay verifies the size bound, not subjective picture quality.
+
 ## Reproduce
 
 Generate the same inputs, then run:
