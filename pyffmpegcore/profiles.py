@@ -109,6 +109,7 @@ class Profile:
         )
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize the versioned profile with JSON-compatible options and capabilities."""
         data = asdict(self)
         data["required_capabilities"] = list(self.required_capabilities)
         return data

@@ -101,6 +101,7 @@ class MediaInfo:
     chapters: tuple[dict[str, Any], ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize stream, container, and chapter facts as nested mappings."""
         return asdict(self)
 
 
@@ -117,6 +118,7 @@ class ProgressEvent:
     item: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize this versioned progress event for callbacks or JSON Lines."""
         return asdict(self)
 
 
@@ -156,6 +158,7 @@ class ExecutionPlan:
             raise ValidationError("command must contain an executable")
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize workflow, argument vectors, policy, streams, warnings, and metadata."""
         data = asdict(self)
         data["policy"]["overwrite"] = self.policy.overwrite.value
         data["policy"]["stdout"] = self.policy.stdout.value
@@ -191,6 +194,7 @@ class JobResult:
         return self.status is JobStatus.SUCCEEDED
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize the result with wire-format status and captured output evidence."""
         data = asdict(self)
         data["status"] = self.status.value
         return data

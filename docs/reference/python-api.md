@@ -97,7 +97,7 @@ Deterministic, non-shell execution plan for one media workflow.
 
 ### `to_dict(self) -> 'dict[str, Any]'`
 
-No public docstring is available.
+Serialize workflow, argument vectors, policy, streams, warnings, and metadata.
 
 ## `ExecutionPolicy`
 
@@ -228,7 +228,7 @@ Stable execution result with diagnostics and output evidence.
 
 ### `to_dict(self) -> 'dict[str, Any]'`
 
-No public docstring is available.
+Serialize the result with wire-format status and captured output evidence.
 
 ## `JobStatus`
 
@@ -244,7 +244,7 @@ Typed container, stream, and chapter information from FFprobe.
 
 ### `to_dict(self) -> 'dict[str, Any]'`
 
-No public docstring is available.
+Serialize stream, container, and chapter facts as nested mappings.
 
 ## `OverwritePolicy`
 
@@ -353,7 +353,7 @@ A named, versioned set of choices for one supported workflow.
 
 ### `to_dict(self) -> 'dict[str, Any]'`
 
-No public docstring is available.
+Serialize the versioned profile with JSON-compatible options and capabilities.
 
 ## `ProfileRegistry`
 
@@ -424,7 +424,7 @@ Versioned progress fact suitable for callbacks or JSON Lines output.
 
 ### `to_dict(self) -> 'dict[str, Any]'`
 
-No public docstring is available.
+Serialize this versioned progress event for callbacks or JSON Lines.
 
 ## `ProgressTracker`
 
@@ -567,7 +567,7 @@ Versioned machine-readable outcome for a single or multi-item plan.
 
 ### `to_dict(self) -> 'dict[str, object]'`
 
-No public docstring is available.
+Serialize the plan, preflight, ordered item results, and summary.
 
 ## `WorkflowEngine`
 
@@ -587,4 +587,4 @@ Preflight and execution facts for one input/output item.
 
 ### `to_dict(self) -> 'dict[str, object]'`
 
-No public docstring is available.
+Serialize item preflight, result, and measurable path/size proof.

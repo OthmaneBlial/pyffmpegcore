@@ -68,6 +68,7 @@ class WorkflowExecution:
         }
 
     def to_dict(self) -> dict[str, object]:
+        """Serialize item preflight, result, and measurable path/size proof."""
         return {
             "input": self.input,
             "output": self.output,
@@ -98,6 +99,7 @@ class WorkflowBatch:
         return self.failed_count == 0
 
     def to_dict(self) -> dict[str, object]:
+        """Serialize the plan, preflight, ordered item results, and summary."""
         return {
             "schema_version": self.schema_version,
             "plan": self.prepared.plan.to_dict(),
