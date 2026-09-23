@@ -333,8 +333,14 @@ contrôle des ancres. Sur l'accueil, le focus clavier est visible jusqu'à la
 commande de copie. Les tableaux débordants d'architecture et de comparaison
 ont maintenant une région nommée et focalisable à 320 px ; une flèche droite
 fait défiler la colonne masquée, et le tab-stop disparaît à 1280 px. Revue
-complète au lecteur d'écran, autres pages et site public encore à faire ;
-tâche ouverte.
+complète au lecteur d'écran encore à faire. Le 23 septembre, le site public a
+aussi été vérifié sur `quickstart`, `terminal-demo`, `installation`, `recipes`
+et `pipelines` (HTTP 200). Leurs arbres d'accessibilité exposent une navigation
+nominative, des titres structurés et des liens descriptifs ; les deux captures
+du cast ont un texte alternatif. Sur `quickstart`, la première tabulation montre
+un focus visible sur « Skip to content » et le bouton d'installation confirme
+la copie. Aucun défaut évident n'a été relevé dans cet échantillon ; les autres
+pages et la revue avec lecteur d'écran restent à faire.
 
 - **Objectif :** que l'identité visuelle existante serve la compréhension sur mobile et au clavier.
 - **Changements :** auditer le site MkDocs réel à 320/375/768 px et desktop en clair/sombre ; contrôler débordements de code et tableaux, contraste, focus, réduction du mouvement, bouton de copie, navigation, liens de recette et absence d'erreurs console ; corriger uniquement les défauts observés. Garder une solution sans JavaScript pour copier l'installation.
@@ -474,9 +480,10 @@ reste l'artefact public de référence.
 
 ### 5.1 Observer des premiers usages indépendants
 
-**État :** non exécutée. Le dépôt ne contient pas cinq essais consentis par des
-utilisateurs indépendants ; les installations locales et CI ne peuvent pas les
-remplacer.
+**État :** reportée pour le moment à la demande du mainteneur le 23 septembre
+2026 ; aucune invitation ni sollicitation ne doit être lancée. Le dépôt ne
+contient pas cinq essais consentis par des utilisateurs indépendants ; les
+installations locales et CI ne peuvent pas les remplacer.
 
 - **Objectif :** savoir si les promesses de cinq minutes, diagnostic et receipt sont compréhensibles hors de l'équipe.
 - **Changements :** faire essayer l'installation et un résultat utile à au moins cinq personnes du public cible sur des machines différentes, avec consentement ; relever OS, version FFmpeg, temps, blocages et résultat, sans collecter leurs médias ni télémétrie par défaut ; corriger les obstacles récurrents avant une diffusion large.
