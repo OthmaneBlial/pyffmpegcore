@@ -284,12 +284,14 @@ pas encore publié.
 de dépréciation, URL GitHub canonique et étiquetage du cast `0.2.1` corrigés
 localement. Un nouveau cast réel du wheel public `0.2.2` a été validé à
 89,5 secondes avec transcript et deux images tirées de ses frames ; l'ancien
-`0.2.1` reste archivé. Un contrôle public du 19 septembre sert toujours la
-page de démo `0.2.1` sur GitHub Pages, tandis que le README et les sources
-locales annoncent la preuve `0.2.2`; le site public expose aussi encore un
-lien de dépôt avec un double slash. Le README renvoie donc aux sources
-documentaires actuelles du dépôt. Publication du site et cohérence avec la
-prochaine version restent à valider avant de cocher.
+`0.2.1` reste archivé. Le 23 septembre, le site MkDocs construit et validé par
+la [CI `35913779148`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35913779148)
+sur `86ff62d` a été publié dans le dépôt Pages par le commit `5c207a1`; le
+[déploiement `35915228205`](https://github.com/OthmaneBlial/OthmaneBlial.github.io/actions/runs/35915228205)
+a réussi. La page d'accueil et le cast public affichent maintenant `0.2.2`;
+leurs liens GitHub pointent vers le dépôt canonique. Les pages en ligne
+répondent HTTP 200. Le prochain changement de version devra republier et
+revalider son propre site.
 
 - **Objectif :** un nouvel utilisateur et un mainteneur lisent la même vérité sur la version et les canaux disponibles.
 - **Changements :** remplacer les cases historiques de `RELEASE_CHECKLIST.md` par une checklist à remplir pour chaque version avec URLs de preuves ; aligner `CLI_DISTRIBUTION.md` sur wheel/sdist, image et Action ; résoudre la contradiction de fenêtre de dépréciation entre `docs/RELEASING.md` et `docs/api-stability.md` ; enlever le contournement `repo_url: https://github.com//...` devenu obsolète ; distinguer le cast `0.2.1` de la release `0.2.2` ou enregistrer un nouveau cast réel de la version publiée.
@@ -297,6 +299,10 @@ prochaine version restent à valider avant de cocher.
 - **Acceptation :** une recherche des versions, digests, durées et canaux ne laisse pas de contradiction ; chaque affirmation de release renvoie à son artefact exact ; les liens GitHub du site vont au dépôt canonique.
 - **Validation :** `scripts/check_docs.py`, build MkDocs strict, `scripts/validate_terminal_demo.py` si cast renouvelé, revue humaine de la checklist et des liens.
 - **Dépendances/risques :** gates 0–2 ; le cast existant doit rester archivé comme preuve de `0.2.1`, non être retouché pour paraître `0.2.2`.
+
+Rendu public revérifié en clair et en sombre. Le rendu local a été contrôlé à
+320, 375 et 1280 px sans débordement ; le site en ligne a été contrôlé à sa
+largeur effective de 469 px, également sans débordement.
 
 ### 3.2 Faire voir l'application réelle dès le README
 

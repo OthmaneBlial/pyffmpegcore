@@ -18,6 +18,7 @@
 
 <p align="center">
   <a href="docs/index.md"><strong>Current docs</strong></a> ·
+  <a href="https://othmaneblial.github.io/pyffmpegcore/">Live documentation site</a> ·
   <a href="docs/quickstart.md">Five-minute proof</a> ·
   <a href="docs/terminal-demo.md">89.5-second public run</a> ·
   <a href="docs/recipes/index.md">Task-first recipes</a> ·
