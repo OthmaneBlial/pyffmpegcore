@@ -77,7 +77,7 @@ The image-directory planner resolved generated output filenames before checking 
 - Built-in profile metadata now carries expected output codec and required stream contracts; managed FFprobe verification fails with a validation error when those contracts are broken.
 - Receipts preserve the actual output probe evidence and contract failure reason when a readable profile output fails validation.
 - The web compatibility profile also checks its `yuv420p` video pixel format, which the typed FFprobe path now retains.
-- `profile run subtitles/accessibility` now accepts `--language` and records that label in the planned FFmpeg arguments; the existing `und` default remains. The registry and CLI preview have regression coverage. Focused profile/CLI tests passed (38); Ruff, mypy, generated docs, and Markdown link checks passed locally.
+- `profile run subtitles/accessibility` now accepts `--language` and records that label in the planned FFmpeg arguments; the existing `und` default remains. The registry and CLI preview have regression coverage. Focused profile/CLI tests passed (38); Ruff, mypy, generated docs, and Markdown link checks passed locally. Hosted CI [35905460578](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35905460578), CodeQL [35905460350](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35905460350), Benchmarks [35905460396](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35905460396), and Scorecard [35905460441](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35905460441) passed on exact SHA `2cfe1de0ae6ed6401fdaabcd3eddb9fed13ccf5b`; Container run [35905460445](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35905460445) was canceled.
 
 ## Remaining work
 
