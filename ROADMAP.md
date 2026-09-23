@@ -198,6 +198,10 @@ Probe H.264/AAC `yuv420p`, validation du receipt schema 1.0 et décodage complet
 réussis ; reçu conservé dans [`docs/evidence.md`](docs/evidence.md). Cette
 preuve ferme le contrôle de limite de taille sur ce fixture, pas la revue de
 qualité visuelle sur un média représentatif.
+Une seconde exécution sur le même hôte a produit le même SHA-256 de sortie que
+le receipt. Le filtre FFmpeg SSIM donne `All:0.926144` sur ce fixture généré ;
+cette mesure propre au fixture ne remplace pas une revue humaine de média
+représentatif.
 
 - **Objectif :** concentrer l'investissement produit sur la vidéo web, la taille d'upload et la voix/podcast, déjà présents dans le dépôt.
 - **Changements :** rejouer chaque recette avec médias générés et médias consentis représentatifs ; relever durée, codecs, pistes conservées/perdues, taille et qualité audible/visible ; expliciter les cas où le profil refuse ou avertit. Corriger dans le moteur partagé les défauts observés avant tout nouveau preset.

@@ -43,7 +43,20 @@ created no output. Two-pass compression targeting 262,144 bytes produced a
 248,417-byte H.264/AAC MP4 (`yuv420p`); probe, schema 1.0 receipt validation,
 and full decode passed. The [receipt](evidence/exact-size-2026-09-24.receipt.json)
 has SHA-256 `121a127b72cf15cccfc6b9aa5043f029d4437f2aaada8ff41ada32830b77d435`.
-This synthetic replay verifies the size bound, not subjective picture quality.
+An independent rerun on the same host produced identical output bytes and
+matched the receipt's output SHA-256
+`6cd9a2a6a23a493e7fbd46e6095dc2e75bd32fa847421266695f84e9d8435566`. FFmpeg's
+SSIM filter measured `All:0.926144` on this generated fixture:
+
+```bash
+ffmpeg -v info \
+  -i tests/media/downloads/sample_mp4_h264.mp4 \
+  -i under-limit.mp4 \
+  -lavfi ssim -f null -
+```
+
+That fixture-only metric does not establish perceptual quality for
+representative media; human review remains open.
 
 ## Reproduce
 
