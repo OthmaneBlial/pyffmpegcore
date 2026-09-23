@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from copy import deepcopy
 from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 from typing import Any
@@ -20,6 +21,22 @@ _PROFILE_FIELDS = {
     "workflow",
     "options",
     "required_capabilities",
+}
+_PROFILE_OUTPUT_CONTRACTS = {
+    "web/mp4-compatible": {"codecs": {"video": "h264", "audio": "aac"}},
+    "web/small-upload": {
+        "codecs": {"video": "h264", "audio": "aac"},
+        "required_stream_types": ["video"],
+    },
+    "audio/podcast-speech": {
+        "codecs": {"audio": "aac"},
+        "required_stream_types": ["audio"],
+    },
+    "subtitles/accessibility": {
+        "codecs": {"subtitle": "mov_text"},
+        "required_stream_types": ["video", "subtitle"],
+    },
+    "archive/mezzanine": {"codecs": {"video": "ffv1", "audio": "flac"}},
 }
 
 
@@ -264,6 +281,7 @@ class ProfileRegistry:
                 "name": profile.name,
                 "profile_version": profile.profile_version,
             },
+            "output_contract": deepcopy(_PROFILE_OUTPUT_CONTRACTS[profile.name]),
         }
         operations = (f"apply profile {profile.name} v{profile.profile_version}", *plan.operations)
         return replace(plan, required_capabilities=requirements, metadata=metadata, operations=operations)

@@ -180,7 +180,7 @@ def _verify_outputs(plan: ExecutionPlan, result: JobResult, probe: FFprobeRunner
                 output["verification"] = {"status": "failed", "reason": "FFprobe found no media streams."}
                 errors.append(f"Output verification failed for {path}: FFprobe found no media streams.")
             else:
-                output["verification"] = {
+                verification: dict[str, object] = {
                     "status": "probed",
                     "format_name": media.format_name,
                     "duration": media.duration,
@@ -202,6 +202,35 @@ def _verify_outputs(plan: ExecutionPlan, result: JobResult, probe: FFprobeRunner
                     ],
                     "chapter_count": len(media.chapters),
                 }
+                contract = plan.metadata.get("output_contract")
+                contract_errors: list[str] = []
+                if isinstance(contract, dict):
+                    expected_codecs = contract.get("codecs")
+                    if isinstance(expected_codecs, dict):
+                        for stream_type, expected_codec in expected_codecs.items():
+                            if not isinstance(stream_type, str) or not isinstance(expected_codec, str):
+                                continue
+                            actual_codecs = [
+                                stream.codec_name for stream in media.streams if stream.codec_type == stream_type
+                            ]
+                            contract_errors.extend(
+                                f"expected {expected_codec} {stream_type}, found {actual_codec or 'unknown'}"
+                                for actual_codec in actual_codecs
+                                if actual_codec != expected_codec
+                            )
+                    required_stream_types = contract.get("required_stream_types")
+                    if isinstance(required_stream_types, list):
+                        actual_types = {stream.codec_type for stream in media.streams}
+                        contract_errors.extend(
+                            f"expected output stream type '{stream_type}', found none"
+                            for stream_type in required_stream_types
+                            if isinstance(stream_type, str) and stream_type not in actual_types
+                        )
+                if contract_errors:
+                    verification["status"] = "failed"
+                    verification["reason"] = "; ".join(contract_errors)
+                    errors.extend(f"Output verification failed for {path}: {error}" for error in contract_errors)
+                output["verification"] = verification
         outputs.append(output)
 
     if errors:

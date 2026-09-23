@@ -185,6 +185,66 @@ def test_workflow_fails_when_ffprobe_finds_no_streams(tmp_path, monkeypatch):
     }
 
 
+def test_workflow_fails_when_profile_output_codec_contract_is_broken(tmp_path, monkeypatch):
+    output = tmp_path / "output.mp4"
+    code = f"from pathlib import Path; Path({str(output)!r}).write_bytes(b'media')"
+    plan = ExecutionPlan(
+        workflow="profile/web/mp4-compatible",
+        command=(sys.executable, "-c", code),
+        inputs=(),
+        outputs=(str(output),),
+        metadata={"output_contract": {"codecs": {"video": "h264", "audio": "aac"}}},
+    )
+    media = MediaInfo(
+        path=str(output),
+        format_name="mp4",
+        streams=(
+            StreamInfo(index=0, codec_type="video", codec_name="hevc"),
+            StreamInfo(index=1, codec_type="audio", codec_name="aac"),
+        ),
+    )
+    monkeypatch.setattr(FFprobeRunner, "probe_media", lambda _runner, _path: media)
+    prepared = PreparedWorkflow(plan, PreflightReport(plan.workflow, ()))
+
+    result = WorkflowEngine(ffprobe_path="fake-ffprobe").run(prepared).items[0].result
+
+    assert result.status is JobStatus.FAILED
+    assert result.exit_category == "validation"
+    assert result.outputs[0]["verification"]["status"] == "failed"
+    assert result.outputs[0]["verification"]["reason"] == "expected h264 video, found hevc"
+    assert "expected h264 video, found hevc" in result.stderr
+
+
+def test_workflow_fails_when_profile_requires_a_missing_output_stream(tmp_path, monkeypatch):
+    output = tmp_path / "output.m4a"
+    code = f"from pathlib import Path; Path({str(output)!r}).write_bytes(b'media')"
+    plan = ExecutionPlan(
+        workflow="profile/audio/podcast-speech",
+        command=(sys.executable, "-c", code),
+        inputs=(),
+        outputs=(str(output),),
+        metadata={
+            "output_contract": {
+                "codecs": {"audio": "aac"},
+                "required_stream_types": ["audio"],
+            }
+        },
+    )
+    media = MediaInfo(
+        path=str(output),
+        format_name="mp4",
+        streams=(StreamInfo(index=0, codec_type="video", codec_name="h264"),),
+    )
+    monkeypatch.setattr(FFprobeRunner, "probe_media", lambda _runner, _path: media)
+    prepared = PreparedWorkflow(plan, PreflightReport(plan.workflow, ()))
+
+    result = WorkflowEngine(ffprobe_path="fake-ffprobe").run(prepared).items[0].result
+
+    assert result.status is JobStatus.FAILED
+    assert result.exit_category == "validation"
+    assert result.outputs[0]["verification"]["reason"] == "expected output stream type 'audio', found none"
+
+
 def test_workflow_marks_output_unverified_when_ffprobe_is_unavailable(tmp_path, monkeypatch):
     output = tmp_path / "output.bin"
     code = f"from pathlib import Path; Path({str(output)!r}).write_bytes(b'media')"
