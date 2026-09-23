@@ -351,7 +351,13 @@ nominative, des titres structurés et des liens descriptifs ; les deux captures
 du cast ont un texte alternatif. Sur `quickstart`, la première tabulation montre
 un focus visible sur « Skip to content » et le bouton d'installation confirme
 la copie. Aucun défaut évident n'a été relevé dans cet échantillon ; les autres
-pages et la revue avec lecteur d'écran restent à faire.
+pages et la revue avec lecteur d'écran restent à faire. Le 24 septembre, les
+vérifications clavier des pages publiques `recipes` et `quickstart` ont montré
+le lien « Skip to content » au premier focus ; Entrée place le fragment sur le
+titre, puis la tabulation reprend dans le contenu. La page `terminal-demo`
+expose deux images chargées avec un texte alternatif descriptif et des titres
+de niveaux 1 puis 2. Cet échantillon navigateur ne remplace pas une revue avec
+lecteur d'écran.
 
 - **Objectif :** que l'identité visuelle existante serve la compréhension sur mobile et au clavier.
 - **Changements :** auditer le site MkDocs réel à 320/375/768 px et desktop en clair/sombre ; contrôler débordements de code et tableaux, contraste, focus, réduction du mouvement, bouton de copie, navigation, liens de recette et absence d'erreurs console ; corriger uniquement les défauts observés. Garder une solution sans JavaScript pour copier l'installation.
