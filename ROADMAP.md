@@ -182,8 +182,14 @@ Le 24 septembre, le checkout `0.3.0` a aussi exécuté un clip synthétique
 créé ; `web/mp4-compatible` a produit un MP4 H.264/AAC `yuv420p` de 47 423
 octets. `ffprobe`, la validation du receipt schema 1.0 et le décodage complet
 ont réussi ; une frame synthétique a été inspectée visuellement. Cette preuve
-ne mesure pas la qualité d'un média réel ; aucune voix n'a été écoutée et aucun
-média représentatif consenti n'a été utilisé. La tâche reste ouverte.
+ne mesure pas la qualité d'un média réel.
+
+Un contrôle audio séparé a normalisé 8,77 s de parole synthétique macOS `say`
+avec `normalize-audio --method loudnorm` : EBU R128 est passé de −19,3 à
+−16,4 LUFS, le true peak mesuré est −1,8 dBFS face à une cible −1,5 dBTP, et
+le MP3 192 kb/s de 212 012 octets passe le probe, le receipt schema 1.0 et le
+décodage complet. Aucune écoute humaine ni média vocal représentatif consenti
+n'a encore été évalué. La tâche reste ouverte.
 
 - **Objectif :** concentrer l'investissement produit sur la vidéo web, la taille d'upload et la voix/podcast, déjà présents dans le dépôt.
 - **Changements :** rejouer chaque recette avec médias générés et médias consentis représentatifs ; relever durée, codecs, pistes conservées/perdues, taille et qualité audible/visible ; expliciter les cas où le profil refuse ou avertit. Corriger dans le moteur partagé les défauts observés avant tout nouveau preset.
