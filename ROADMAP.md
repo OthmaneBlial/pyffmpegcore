@@ -121,11 +121,14 @@ a validé les six installations sur Linux, macOS et Windows (Python 3.10 et
 Une nouvelle exécution locale depuis un environnement vierge avec la wheel
 publique `pyffmpegcore==0.2.2` a aussi réussi `--version`, `doctor --json`,
 `smoke-test --keep-dir`, un profil H.264/AAC avec `--explain`, l'écriture d'un
-receipt et sa validation schema 1.0. Cette preuve locale ne remplace pas la
-relecture indépendante ni une nouvelle matrice publique. Le validateur de
-l'artefact exact issu du dry-run a ensuite exécuté 26 commandes sur macOS
-arm64, dont le parcours complet, les profils web/taille/audio/sous-titres,
-batch/pipeline et quatre refus attendus avec leurs codes/remèdes.
+receipt et sa validation schema 1.0. Le 24 septembre, le parcours complet a été
+rejoué après installation dans un venv jetable sous macOS arm64, Python 3.14.6
+et FFmpeg 9.0.1 ; `--explain` n'a pas créé le MP4, `probe --json` a confirmé les
+codecs H.264/AAC et la validation a renvoyé `valid: true`. Cette preuve locale
+ne remplace pas la relecture indépendante ni une nouvelle matrice publique. Le
+validateur de l'artefact exact issu du dry-run a ensuite exécuté 26 commandes
+sur macOS arm64, dont le parcours complet, les profils web/taille/audio/
+sous-titres, batch/pipeline et quatre refus attendus avec leurs codes/remèdes.
 
 - **Objectif :** faire vivre la promesse « diagnostiquer → expliquer → produire → vérifier » depuis une installation propre, sans demander immédiatement un fichier personnel.
 - **Changements :** assembler un exemple synthétique court, généré localement, qui mène de `doctor` et `smoke-test --keep-dir` à un profil web, `--explain`, exécution, `probe` et validation du receipt ; garder les commandes copiables pour Bash/zsh et PowerShell. Si le parcours révèle un trou d'API/CLI, le corriger dans le moteur partagé avant de documenter un contournement.
