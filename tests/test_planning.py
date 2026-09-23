@@ -8,6 +8,8 @@ import pytest
 
 from pyffmpegcore import CompressOptions, ConvertOptions, ValidationError, WorkflowPlanner, parse_size
 from pyffmpegcore.planning import parse_bitrate
+from pyffmpegcore.preflight import PreflightReport
+from pyffmpegcore.presentation import render_plan_text
 
 
 def test_convert_plan_is_deterministic_and_uses_an_argument_vector(tmp_path):
@@ -51,6 +53,28 @@ def test_convert_plan_can_preserve_every_stream_without_reencoding(tmp_path):
     assert plan.selected_streams == ("all input streams",)
     assert plan.metadata["stream_policy"] == "preserve-all"
     assert "output container" in plan.warnings[0]
+
+
+@pytest.mark.parametrize(
+    ("options", "expected_warning"),
+    [
+        (
+            ConvertOptions(),
+            "Other video or audio streams, subtitles, data streams, and attachments are omitted",
+        ),
+        (
+            ConvertOptions(audio_only=True),
+            "Only the first audio stream is selected; video, other audio streams, subtitles, data streams,",
+        ),
+    ],
+)
+def test_convert_plan_warns_about_omitted_streams(tmp_path, options, expected_warning):
+    plan = WorkflowPlanner().convert(str(tmp_path / "input.mkv"), str(tmp_path / "output.mp4"), options)
+
+    assert expected_warning in plan.warnings[0]
+    preview = render_plan_text(plan, PreflightReport(workflow="convert", checks=()), explain=True)
+    assert "Warnings:" in preview
+    assert expected_warning in preview
 
 
 @pytest.mark.parametrize(

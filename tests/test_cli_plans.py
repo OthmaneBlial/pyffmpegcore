@@ -189,6 +189,18 @@ def test_preview_reports_invalid_bitrate_without_a_traceback(tmp_path, capsys):
     assert "Traceback" not in captured.err
 
 
+def test_convert_explain_warns_about_omitted_streams(tmp_path, capsys):
+    output = tmp_path / "converted.mp4"
+
+    returncode = main(["convert", "--input", str(VIDEO), "--output", str(output), "--explain"])
+    captured = capsys.readouterr()
+
+    assert returncode == 0
+    assert "Warnings:" in captured.out
+    assert "Other video or audio streams, subtitles, data streams, and attachments are omitted" in captured.out
+    assert not output.exists()
+
+
 def test_preview_serializes_timeout_and_temporary_file_policy(tmp_path, capsys):
     output = tmp_path / "joined.mp4"
 

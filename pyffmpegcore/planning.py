@@ -252,6 +252,22 @@ class WorkflowPlanner:
                 else "hardware acceleration: none; use the software path"
             ),
         )
+        if options.preserve_all_streams:
+            warnings = (
+                "Every input stream codec must be supported by the output container; "
+                "use a matching container such as Matroska when uncertain.",
+            )
+        elif options.audio_only:
+            warnings = (
+                "Only the first audio stream is selected; video, other audio streams, subtitles, data streams, "
+                "and attachments are omitted.",
+            )
+        else:
+            warnings = (
+                "Only the first video and first audio streams are selected. Other video or audio streams, "
+                "subtitles, data streams, and attachments are omitted. Use --preserve-all-streams when the "
+                "output container supports their codecs.",
+            )
         return self._plan(
             "convert",
             args,
@@ -262,14 +278,7 @@ class WorkflowPlanner:
             capabilities=required,
             streams=streams,
             operations=operations,
-            warnings=(
-                (
-                    "Every input stream codec must be supported by the output container; "
-                    "use a matching container such as Matroska when uncertain."
-                ),
-            )
-            if options.preserve_all_streams
-            else (),
+            warnings=warnings,
             metadata={
                 "required_stream_types": ["audio"] if options.audio_only else [],
                 "stream_policy": (
