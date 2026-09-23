@@ -453,6 +453,13 @@ reconstruit les distributions une fois et réussi les six essais du wheel exact,
 la couverture complète et les autres contrôles : 19 vérifications sur 19.
 Aucun workflow Container n'a tourné. Cette preuve ne crée ni signature,
 attestation, tag, release GitHub ou publication PyPI.
+L'artefact `python-distributions` de ce run a été téléchargé (405 463 octets)
+et contrôlé : wheel `pyffmpegcore-0.3.0-py3-none-any.whl`, 94 684 octets,
+SHA-256 `729b408acd6be7aa850dc7b375893cc47f7cf469978e6f8e164c679472b21310` ;
+sdist `pyffmpegcore-0.3.0.tar.gz`, 311 490 octets,
+SHA-256 `dbd38ebfb8b8fe47492c4ca700f9d9ce3d0a6b981400e6786acdf3cc2644e7a0`.
+Wheel, sdist et code source portent `0.3.0` ; le sdist contient README et
+licence. L'artefact reste non publié et non attesté.
 
 - **Objectif :** qu'un installateur retrouve dans wheel/sdist le même comportement que le checkout.
 - **Changements :** bâtir une seule fois les distributions, inspecter contenu, version, licence et README rendu ; installer ces fichiers en environnement vierge ; vérifier `pipx`, `pip` et `uv tool` annoncés ; synchroniser le numéro de version entre code, tag, docs, Action et conteneur quand ils sont publiés ensemble.
