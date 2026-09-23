@@ -96,9 +96,6 @@ def test_convert_selects_first_av_streams_and_preserves_unicode_metadata_and_cha
     )
 
     assert result.succeeded, result.stderr
-    verification = result.outputs[0]["verification"]
-    assert verification["stream_preservation"]["status"] == "verified"
-    assert verification["stream_preservation"]["input_streams"] == verification["stream_preservation"]["output_streams"]
     metadata = FFprobeRunner().probe_media(str(output_file))
     stream_types = [stream.codec_type for stream in metadata.streams]
     assert stream_types.count("video") == 1
@@ -121,6 +118,9 @@ def test_convert_preserves_all_stream_types_metadata_and_chapters(tmp_path):
     )
 
     assert result.succeeded, result.stderr
+    verification = result.outputs[0]["verification"]
+    assert verification["stream_preservation"]["status"] == "verified"
+    assert verification["stream_preservation"]["input_streams"] == verification["stream_preservation"]["output_streams"]
     metadata = FFprobeRunner().probe_media(str(output_file))
     stream_types = [stream.codec_type for stream in metadata.streams]
     assert stream_types.count("video") == 1
