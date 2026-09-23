@@ -93,7 +93,7 @@ The image-directory planner resolved generated output filenames before checking 
 
 ## Remaining work
 
-1. Continue the still-open items in `ROADMAP.md`, including real-user validation, native package-channel checks, human review of media quality, and a release based on a newly verified artifact.
+1. Continue the non-deferred items in `ROADMAP.md`, including native package-channel checks, human review of media quality, and a release based on a newly verified artifact. The five-person user-trial gate is deferred per maintainer request; do not draft or send an invitation now.
 2. Keep external user/community evidence separate from local or CI evidence. The roadmap's independent-user and public-promotion gates cannot be satisfied by synthetic tests.
 3. Do not make the final product video before the roadmap's release and user-validation gates pass.
 
