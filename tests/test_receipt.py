@@ -146,6 +146,34 @@ def test_receipt_reuses_managed_output_probe_evidence(tmp_path, monkeypatch):
     assert output_probe["streams"][0]["language"] == "eng"
 
 
+def test_receipt_keeps_output_probe_facts_when_profile_contract_fails(tmp_path, monkeypatch):
+    batch, _source, output = _batch(tmp_path)
+    verification = {
+        "status": "failed",
+        "format_name": "mp4",
+        "duration": 2.0,
+        "size_bytes": output.stat().st_size,
+        "bit_rate": 56,
+        "streams": [{"index": 0, "type": "video", "codec": "hevc"}],
+        "chapter_count": 0,
+        "reason": "expected h264 video, found hevc",
+    }
+    item = batch.items[0]
+    result = replace(item.result, outputs=(dict(item.result.outputs[0], verification=verification),))
+    batch = replace(batch, items=(replace(item, result=result),))
+
+    def unexpected_probe(*_args, **_kwargs):
+        raise AssertionError("receipt should reuse the failed managed output probe")
+
+    monkeypatch.setattr("pyffmpegcore.receipt.FFprobeRunner.probe_media", unexpected_probe)
+    receipt = ReceiptBuilder(ffmpeg_path="missing-ffmpeg", ffprobe_path="missing-ffprobe").build(batch)
+
+    output_probe = receipt.document["items"][0]["output_probe"]
+    assert output_probe["format_name"] == "mp4"
+    assert output_probe["streams"][0]["codec"] == "hevc"
+    assert output_probe["reason"] == "expected h264 video, found hevc"
+
+
 def test_embedded_media_url_in_ffmpeg_diagnostic_is_redacted():
     secret = "do-not-log"
     diagnostic = (

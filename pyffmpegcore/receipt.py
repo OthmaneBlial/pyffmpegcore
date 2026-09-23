@@ -113,7 +113,7 @@ def _probe_summary(
     verification: dict[str, Any] | None = None,
 ) -> dict[str, Any] | None:
     if verification is not None:
-        if path is None or verification.get("status") != "probed":
+        if path is None or "streams" not in verification:
             return None
         return {"path": path, **{key: value for key, value in verification.items() if key != "status"}}
     if path is None or "://" in path or not Path(path).is_file():
