@@ -165,9 +165,11 @@ et mesure LUFS. Le cas VP9 montre une sortie web 78,2 % plus volumineuse.
 Les plans de conversion avertissent maintenant que la sélection par défaut
 omet les pistes supplémentaires ; le mode audio seul décrit aussi ses
 omissions, et `--dry-run` comme `--explain` affichent cet avertissement. Les
-tests ciblés passent. Depuis `ba0312f`, les exécutions des profils intégrés
-vérifient aussi dans FFprobe les codecs promis et les types de pistes requis ;
-les cinq tests réels des profils passent sur la machine locale.
+tests ciblés passent. Depuis `ba0312f`, les profils intégrés vérifient dans
+FFprobe les codecs promis et les types de pistes requis. Le commit `3df1dc0`
+ajoute la vérification du format pixel `yuv420p` du profil web ; les 30 tests
+ciblés, dont les cinq tests réels des profils, passent localement. CI, CodeQL,
+Benchmarks et Scorecard sont verts sur le SHA exact.
 L'écoute/inspection humaine et des médias représentatifs consentis manquent
 encore ; la tâche reste ouverte.
 
