@@ -155,6 +155,29 @@ def test_workflow_fails_when_ffprobe_rejects_output(tmp_path, monkeypatch):
     }
 
 
+def test_workflow_fails_when_ffprobe_finds_no_streams(tmp_path, monkeypatch):
+    output = tmp_path / "streamless.bin"
+    code = f"from pathlib import Path; Path({str(output)!r}).write_bytes(b'media')"
+    plan = ExecutionPlan(
+        workflow="test/streamless-output",
+        command=(sys.executable, "-c", code),
+        inputs=(),
+        outputs=(str(output),),
+    )
+    media = MediaInfo(path=str(output), format_name="matroska", streams=())
+    monkeypatch.setattr(FFprobeRunner, "probe_media", lambda _runner, _path: media)
+    prepared = PreparedWorkflow(plan, PreflightReport(plan.workflow, ()))
+
+    result = WorkflowEngine(ffprobe_path="fake-ffprobe").run(prepared).items[0].result
+
+    assert result.status is JobStatus.FAILED
+    assert result.exit_category == "validation"
+    assert result.outputs[0]["verification"] == {
+        "status": "failed",
+        "reason": "FFprobe found no media streams.",
+    }
+
+
 def test_workflow_marks_output_unverified_when_ffprobe_is_unavailable(tmp_path, monkeypatch):
     output = tmp_path / "output.bin"
     code = f"from pathlib import Path; Path({str(output)!r}).write_bytes(b'media')"
