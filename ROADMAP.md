@@ -177,8 +177,13 @@ FFprobe les codecs promis et les types de pistes requis. Le commit `3df1dc0`
 ajoute la vérification du format pixel `yuv420p` du profil web ; les 30 tests
 ciblés, dont les cinq tests réels des profils, passent localement. CI, CodeQL,
 Benchmarks et Scorecard sont verts sur le SHA exact.
-L'écoute/inspection humaine et des médias représentatifs consentis manquent
-encore ; la tâche reste ouverte.
+Le 24 septembre, le checkout `0.3.0` a aussi exécuté un clip synthétique
+`testsrc2` de 1 s en 320×180 avec une tonalité de 660 Hz. `--explain` n'a rien
+créé ; `web/mp4-compatible` a produit un MP4 H.264/AAC `yuv420p` de 47 423
+octets. `ffprobe`, la validation du receipt schema 1.0 et le décodage complet
+ont réussi ; une frame synthétique a été inspectée visuellement. Cette preuve
+ne mesure pas la qualité d'un média réel ; aucune voix n'a été écoutée et aucun
+média représentatif consenti n'a été utilisé. La tâche reste ouverte.
 
 - **Objectif :** concentrer l'investissement produit sur la vidéo web, la taille d'upload et la voix/podcast, déjà présents dans le dépôt.
 - **Changements :** rejouer chaque recette avec médias générés et médias consentis représentatifs ; relever durée, codecs, pistes conservées/perdues, taille et qualité audible/visible ; expliciter les cas où le profil refuse ou avertit. Corriger dans le moteur partagé les défauts observés avant tout nouveau preset.
