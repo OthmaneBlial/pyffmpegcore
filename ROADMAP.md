@@ -257,9 +257,15 @@ le [CodeQL](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/3544989799
 et le [Scorecard](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35449898050)
 ont aussi réussi ; le contrôle Scorecard relancé après la réduction des
 permissions a également réussi dans le [run 35451875057](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35451875057).
-481 alertes Trivy restent ouvertes et le seul signal
-Scorecard ouvert est l'inscription externe OpenSSF Best Practices ; leur triage
-figure dans `SECURITY_TRIAGE.md`. Le candidat Trixie n'est pas encore publié.
+Au relevé du 23 septembre après `0952c0e`, **483 alertes Trivy** restent
+ouvertes (97 high, 199 medium, 164 low, 23 sans niveau de sévérité). Elles
+proviennent d'instances du scan planifié `35847548151` sur l'ancien SHA
+`25adc431` ; aucun nouveau scan de conteneur n'a été lancé. Il reste un signal
+Scorecard : l'inscription externe OpenSSF Best Practices. Les trois alertes
+Scorecard `TokenPermissionsID` ont disparu après le contrôle réussi
+[`35913522219`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35913522219).
+Le triage détaillé figure dans `SECURITY_TRIAGE.md`. Le candidat Trixie n'est
+pas encore publié.
 
 - **Objectif :** distinguer les vulnérabilités corrigibles, les avis sans correctif, les signaux de politique et les doublons historiques, puis réduire les causes plutôt que masquer les alertes.
 - **Changements :** tenir `SECURITY_TRIAGE.md` à jour pour chaque digest ; tester et scanner aussi l'image arm64 avant publication ; remplacer les installations `pip` non verrouillées en CI/release/demo par des locks avec hashes pour la matrice Python/OS ; maintenir le corpus et l'intégration ClusterFuzzLite reconnus par Scorecard ; contrôler la couverture CodeQL et des tests sur les révisions proposées ; préparer les preuves du badge OpenSSF sans revendiquer son octroi prématurément.

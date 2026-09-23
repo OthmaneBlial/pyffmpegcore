@@ -1,7 +1,8 @@
 # Security alert triage
 
-Snapshot: 19 September 2026. This is an evidence log, not a claim that every
-open alert is exploitable or that the project has no vulnerabilities.
+Updated: 23 September 2026. This is an evidence log, not a claim that every
+open alert is exploitable or that the project has no vulnerabilities. The
+container evidence below remains from 19 September; no newer image scan was run.
 
 ## Current container evidence
 
@@ -39,11 +40,25 @@ one documented for users until a separately authorized publication.
 
 ## GitHub alert inventory
 
-At the 19 September 2026 snapshot after `b9ceea7`, GitHub Code Scanning lists
-**481 open Trivy alerts** and **1 open Scorecard alert**. Alert instances span
-repeated scans and are not the same unit as the 874 findings in one current
-image or 366 distinct Trivy rule IDs. The current Scorecard SARIF also reports Branch Protection and Code
-Review scores; not every SARIF result appears as an open alert.
+At the historical 19 September 2026 snapshot after `b9ceea7`, GitHub Code
+Scanning listed **481 open Trivy alerts** and **1 open Scorecard alert**. Alert
+instances span repeated scans and are not the same unit as the 874 findings in
+one image scan or 366 distinct Trivy rule IDs. The current Scorecard SARIF also
+reports Branch Protection and Code Review scores; not every SARIF result
+appears as an open alert.
+
+The live inventory was rechecked on 23 September after `0952c0e`. It lists
+**483 open Trivy alerts** (97 high, 199 medium, 164 low, 23 without a severity
+level) and **1 open Scorecard alert**, the low-severity
+`CIIBestPracticesID`. The Trivy alerts are instances from the scheduled
+Container analysis [run 35847548151](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35847548151)
+on the older commit `25adc43150842930f84e25c105a7612f1a4b02f1`; they are not a
+fresh scan of the published digest. The current
+[Scorecard run 35913522219](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35913522219)
+passed on `0952c0ef57d13962bc4544bd300ccb0a585d47d8`; the three
+`TokenPermissionsID` alerts are no longer open. Workflow defaults are
+read-only, with required write scopes assigned to the relevant job. No new
+container was built, scanned, or published for this update.
 
 The hash-bearing wheel install in the Action and the public terminal demo
 removed the open `PinnedDependenciesID` instances. The successful
