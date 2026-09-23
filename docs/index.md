@@ -22,25 +22,16 @@ hide:
       </p>
     </div>
     <div class="pfc-hero__console">
-      <div class="pfc-terminal" aria-label="Illustrative PyFFmpegCore smoke-test flow, not a captured terminal">
-        <div class="pfc-terminal__bar">
-          <span>Workflow illustration / local</span>
-          <span class="pfc-terminal__status">● ready</span>
-        </div>
-        <div class="pfc-terminal__body">
-          <p class="pfc-prompt">$ pyffmpegcore doctor</p>
-          <p class="pfc-output">FFmpeg: found / capabilities indexed</p>
-          <p class="pfc-output">FFprobe: found / probe channel ready</p>
-          <br>
-          <p class="pfc-prompt">$ pyffmpegcore smoke-test</p>
-          <p class="pfc-output">Smoke test: PASS</p>
-          <p class="pfc-output--muted">Synthetic input: mpeg4 320x180</p>
-          <p class="pfc-output--muted">Verified thumbnail: 160x90</p>
-          <br>
-          <p class="pfc-output--cyan">No personal media. Artifacts cleaned.</p>
+      <figure class="pfc-terminal-capture">
+        <a href="terminal-demo/" aria-label="Open the complete real terminal demonstration">
+          <img src="assets/terminal-plan-v0.2.2.png" alt="Real terminal capture from the public PyPI 0.2.2 run: exact FFmpeg plan, selected video and audio streams, required capabilities, and preflight PASS." width="1240" height="956" fetchpriority="high">
+        </a>
+        <figcaption>
+          <span>Real terminal capture / public PyPI 0.2.2</span>
+          <a href="terminal-demo/">Watch the complete run →</a>
           <button class="pfc-copy" type="button" data-pfc-copy aria-label="Copy the public PyPI install command" aria-live="polite">Copy public install</button>
-        </div>
-      </div>
+        </figcaption>
+      </figure>
     </div>
   </section>
 

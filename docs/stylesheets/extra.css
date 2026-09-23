@@ -186,7 +186,6 @@ body {
 .pfc-kicker,
 .pfc-metric__label,
 .pfc-stage__index,
-.pfc-terminal__bar,
 .pfc-proof__label {
   font-family: var(--pfc-mono);
   font-size: 0.68rem;
@@ -292,54 +291,28 @@ body {
   color: var(--pfc-paper);
 }
 
-.pfc-terminal {
+.pfc-terminal-capture {
   width: 100%;
+  margin: 0;
+}
+
+.pfc-terminal-capture img {
+  display: block;
+  width: 100%;
+  height: auto;
   border: 1px solid #3a4540;
-  background: var(--pfc-panel);
   box-shadow: 14px 14px 0 #26302c;
 }
 
-.pfc-terminal__bar {
+.pfc-terminal-capture figcaption {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   justify-content: space-between;
-  min-height: 2.6rem;
-  padding: 0.7rem 0.85rem;
-  border-bottom: 1px solid #3a4540;
-  color: #93a19b;
-}
-
-.pfc-terminal__status {
-  color: var(--pfc-signal);
-}
-
-.pfc-terminal__body {
-  min-height: 22rem;
-  padding: 1.35rem;
+  gap: 0.7rem;
+  margin-top: 1rem;
   font-family: var(--pfc-mono);
-  font-size: clamp(0.7rem, 1.2vw, 0.84rem);
-  line-height: 1.8;
-  overflow-wrap: anywhere;
-}
-
-.pfc-terminal__body p {
-  margin: 0 0 0.45rem;
-}
-
-.pfc-prompt {
-  color: var(--pfc-signal);
-}
-
-.pfc-output {
-  color: #d8dfdb;
-}
-
-.pfc-output--muted {
-  color: #7f8c86;
-}
-
-.pfc-output--cyan {
-  color: var(--pfc-cyan);
+  font-size: 0.72rem;
+  line-height: 1.5;
 }
 
 .pfc-copy {
@@ -355,6 +328,17 @@ body {
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.pfc-terminal-capture .pfc-copy {
+  width: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--pfc-paper);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
 
 .pfc-copy:hover,
@@ -794,13 +778,8 @@ body {
     font-size: clamp(3.2rem, 18vw, 5.2rem);
   }
 
-  .pfc-terminal {
+  .pfc-terminal-capture img {
     box-shadow: 5px 5px 0 #26302c;
-  }
-
-  .pfc-terminal__body {
-    min-height: 0;
-    padding: 1rem;
   }
 
   .pfc-metrics,
