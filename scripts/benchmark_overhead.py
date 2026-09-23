@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Benchmark PyFFmpegCore startup, processing, artifact, and pipeline-cache overhead."""
+"""Benchmark PyFFmpegCore startup, planner, probe, processing, artifact, and pipeline-cache overhead."""
 
 from __future__ import annotations
 
@@ -11,8 +11,12 @@ import statistics
 import subprocess
 import tempfile
 import time
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
+
+from pyffmpegcore.domain import ConvertOptions
+from pyffmpegcore.planning import WorkflowPlanner
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -39,6 +43,15 @@ def _median(command: list[str], repeats: int, *, cwd: Path | None = None) -> flo
     return statistics.median(samples)
 
 
+def _median_operation(operation: Callable[[], object], repeats: int) -> float:
+    samples = []
+    for _ in range(repeats):
+        started = time.perf_counter()
+        operation()
+        samples.append(time.perf_counter() - started)
+    return statistics.median(samples)
+
+
 def _directory_size(path: Path) -> int:
     return sum(
         item.stat().st_size
@@ -62,6 +75,7 @@ def _resolve_command(value: str) -> str:
 def benchmark(args: argparse.Namespace) -> dict[str, Any]:
     cli_path = _resolve_command(args.cli)
     ffmpeg_path = _resolve_command(args.ffmpeg)
+    ffprobe_path = _resolve_command(args.ffprobe)
     with tempfile.TemporaryDirectory(prefix="pyffmpegcore-benchmark-") as temp_dir:
         workspace = Path(temp_dir)
         source = workspace / "source.mp4"
@@ -94,6 +108,34 @@ def benchmark(args: argparse.Namespace) -> dict[str, Any]:
                 str(source),
             ]
         )
+
+        planner = WorkflowPlanner(ffmpeg_path=ffmpeg_path)
+        planner_seconds = _median_operation(
+            lambda: planner.convert(str(source), str(workspace / "planned.mp4"), ConvertOptions()),
+            args.repeats,
+        )
+        raw_probe_command = [
+            ffprobe_path,
+            "-v",
+            "quiet",
+            "-print_format",
+            "json",
+            "-show_format",
+            "-show_streams",
+            "-show_chapters",
+            str(source),
+        ]
+        cli_probe_command = [
+            cli_path,
+            "probe",
+            "--input",
+            str(source),
+            "--json",
+            "--ffprobe-path",
+            ffprobe_path,
+        ]
+        raw_probe = _median(raw_probe_command, args.repeats)
+        cli_probe = _median(cli_probe_command, args.repeats)
 
         raw_output = workspace / "raw.jpg"
         cli_output = workspace / "cli.jpg"
@@ -192,6 +234,15 @@ def benchmark(args: argparse.Namespace) -> dict[str, Any]:
                 "pyffmpegcore_median_seconds": round(cli_startup, 6),
                 "orchestration_overhead_seconds": round(startup_overhead, 6),
             },
+            "planner": {
+                "workflow": "convert",
+                "median_seconds": round(planner_seconds, 6),
+            },
+            "probe": {
+                "raw_ffprobe_median_seconds": round(raw_probe, 6),
+                "pyffmpegcore_median_seconds": round(cli_probe, 6),
+                "orchestration_overhead_seconds": round(cli_probe - raw_probe, 6),
+            },
             "processing": {
                 "workflow": "thumbnail",
                 "raw_exact_plan_median_seconds": round(raw_processing, 6),
@@ -227,6 +278,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--cli", default="pyffmpegcore", help="Installed CLI path or command name.")
     parser.add_argument("--ffmpeg", default="ffmpeg", help="FFmpeg path or command name.")
+    parser.add_argument("--ffprobe", default="ffprobe", help="FFprobe path or command name.")
     parser.add_argument("--wheel", type=Path, help="Optional wheel whose byte size should be recorded.")
     parser.add_argument("--repeats", type=int, default=5, help="Median sample count. Defaults to %(default)s.")
     parser.add_argument("--max-startup-overhead", type=float, default=0.5)

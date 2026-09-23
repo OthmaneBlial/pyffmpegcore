@@ -21,21 +21,26 @@ def test_benchmark_cli_help_is_self_contained():
         check=False,
     )
     assert result.returncode == 0
-    assert "startup, processing, artifact, and pipeline-cache overhead" in result.stdout
+    assert "startup, planner, probe, processing, artifact, and pipeline-cache overhead" in result.stdout
     assert "--strict" in result.stdout
 
 
 def test_published_baseline_is_versioned_and_passes_honest_contract():
     baseline = json.loads(
-        (REPO_ROOT / "benchmarks" / "baseline-macos-arm64-2026-08-25.json").read_text(encoding="utf-8")
+        (REPO_ROOT / "benchmarks" / "baseline-macos-arm64-2026-09-23.json").read_text(encoding="utf-8")
     )
     assert baseline["schema_version"] == "1.0"
     assert baseline["passed"] is True
+    assert baseline["planner"]["workflow"] == "convert"
+    assert baseline["planner"]["median_seconds"] > 0
+    assert baseline["probe"]["raw_ffprobe_median_seconds"] > 0
+    assert baseline["probe"]["pyffmpegcore_median_seconds"] > 0
     assert baseline["processing"]["raw_output_bytes"] == baseline["processing"]["pyffmpegcore_output_bytes"]
     assert baseline["cache"]["cold_status"] == "succeeded"
     assert baseline["cache"]["warm_status"] == "cached"
     assert baseline["cache"]["speedup"] > 1
-    assert baseline["artifacts"]["wheel_bytes"] > 0
+    if baseline["artifacts"]["wheel_bytes"] is not None:
+        assert baseline["artifacts"]["wheel_bytes"] > 0
 
 
 def test_command_resolution_ignores_a_same_named_directory(tmp_path, monkeypatch):

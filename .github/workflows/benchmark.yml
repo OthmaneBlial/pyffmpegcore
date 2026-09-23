@@ -42,7 +42,7 @@ jobs:
           python -m pip install --no-index --no-deps --no-build-isolation -e .
       - name: Build wheel for size evidence
         run: python scripts/build_cli_artifacts.py --outdir dist --json > artifact-report.json
-      - name: Measure startup, processing, artifact, and cache behavior
+      - name: Measure startup, planning, probing, processing, artifact, and pipeline-cache behavior
         run: >-
           python scripts/benchmark_overhead.py
           --wheel dist/*.whl
