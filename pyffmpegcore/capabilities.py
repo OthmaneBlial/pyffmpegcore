@@ -140,9 +140,11 @@ class CapabilityInventory:
         return name in collections.get(kind, ())
 
     def missing(self, requirements: tuple[str, ...]) -> tuple[str, ...]:
+        """Return unsupported requirements in the same order as requested."""
         return tuple(requirement for requirement in requirements if not self.supports(requirement))
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize inventory, capability counts, baseline coverage, and subtitle support."""
         data = asdict(self)
         data.update(
             {

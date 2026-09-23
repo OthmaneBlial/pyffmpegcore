@@ -65,7 +65,7 @@ Versioned inventory of an installed FFmpeg executable.
 
 ### `missing(self, requirements: 'tuple[str, ...]') -> 'tuple[str, ...]'`
 
-No public docstring is available.
+Return unsupported requirements in the same order as requested.
 
 ### `supports(self, requirement: 'str') -> 'bool'`
 
@@ -73,7 +73,7 @@ Check a normalized `kind:name` requirement.
 
 ### `to_dict(self) -> 'dict[str, Any]'`
 
-No public docstring is available.
+Serialize inventory, capability counts, baseline coverage, and subtitle support.
 
 ## `CapturePolicy`
 
@@ -361,11 +361,11 @@ Resolve built-in profiles and strictly validate local profile files.
 
 ### `get(self, name: 'str') -> 'Profile'`
 
-No public docstring is available.
+Return a built-in profile or raise `ValidationError` for an unknown name.
 
 ### `list(self) -> 'tuple[Profile, ...]'`
 
-No public docstring is available.
+Return built-in profiles sorted by stable profile name.
 
 ### `load_file(self, path: 'str | Path') -> 'Profile'`
 

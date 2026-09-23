@@ -170,9 +170,11 @@ class ProfileRegistry:
         self._profiles = {profile.name: profile for profile in BUILTIN_PROFILES}
 
     def list(self) -> tuple[Profile, ...]:
+        """Return built-in profiles sorted by stable profile name."""
         return tuple(self._profiles[name] for name in sorted(self._profiles))
 
     def get(self, name: str) -> Profile:
+        """Return a built-in profile or raise `ValidationError` for an unknown name."""
         try:
             return self._profiles[name]
         except KeyError as exc:
