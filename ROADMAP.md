@@ -442,7 +442,7 @@ autorisation et les contrôles publics correspondants ; la release `v0.2.2`
 reste l'artefact public de référence.
 
 - **Objectif :** remplacer la preuve historique `v0.2.2` par une release qui inclut les corrections précédentes.
-- **Changements :** remplir la checklist par liens réels ; changelog et notes de migration ; tag annoté signé ; exécuter le pipeline de publication existant ; vérifier les fichiers publics PyPI et GitHub, checksums, attestations, installation, page docs et digest GHCR/Action si annoncés ; choisir explicitement le statut GitHub « prerelease » si la version reste annoncée comme bêta. En cas de gate rouge, corriger puis publier une nouvelle version sans réécrire l'ancienne.
+- **Changements :** remplir la checklist par liens réels ; changelog et notes de migration ; tag annoté signé ; exécuter le pipeline de publication existant ; vérifier les fichiers publics PyPI et GitHub, checksums, attestations, installation, page docs et digest GHCR/Action si annoncés ; faire correspondre le statut de la release GitHub au classifier de maturité du paquet. En cas de gate rouge, corriger puis publier une nouvelle version sans réécrire l'ancienne.
 - **Fichiers :** `CHANGELOG.md`, `RELEASE_CHECKLIST.md`, `docs/RELEASING.md`, `.github/release-notes/`, `README.md`, `docs/COMPATIBILITY.md`.
 - **Acceptation :** tag, version CLI, PyPI, wheel, sdist, release GitHub, attestations et notes nomment la même version ; tous les chemins annoncés sont accessibles ; aucun run requis rouge au SHA de release.
 - **Validation :** lecture des runs exacts jusqu'à succès, installation depuis PyPI et assets publics sur trois OS, sondage du conteneur et QA des liens du README/site.

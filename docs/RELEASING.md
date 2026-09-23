@@ -29,7 +29,7 @@ Only a maintainer with repository and PyPI project control may publish a release
    ```
 
 5. Push the tag. The workflow builds once, tests the exact wheel on the supported OS/Python anchors, attests it, and publishes it through OIDC.
-6. The workflow waits for the exact wheel and source distribution to appear in the public PyPI JSON endpoint. It then performs a clean `pipx install`, `--version`, `doctor`, and `smoke-test` on Linux, macOS, and Windows before creating the matching GitHub Release with checksums. A failed public-install gate must be fixed forward; it must not be bypassed by creating the release manually.
+6. The workflow waits for the exact wheel and source distribution to appear in the public PyPI JSON endpoint. It then performs a clean `pipx install`, `--version`, `doctor`, and `smoke-test` on Linux, macOS, and Windows before creating the matching GitHub Release with checksums. The GitHub Release is marked as a prerelease while the package classifier says Beta. A failed public-install gate must be fixed forward; it must not be bypassed by creating the release manually.
 7. Record the public terminal proof only after those endpoints are healthy:
 
    ```bash

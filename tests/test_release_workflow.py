@@ -12,3 +12,11 @@ def test_release_workflow_restores_and_verifies_the_exact_annotated_tag():
     assert '"refs/tags/$GITHUB_REF_NAME:refs/tags/$GITHUB_REF_NAME"' in workflow
     assert 'tag --verify "$GITHUB_REF_NAME"' in workflow
     assert 'test "$(git rev-list -n 1 "$GITHUB_REF_NAME")" = "$GITHUB_SHA"' in workflow
+
+
+def test_beta_release_is_marked_as_a_prerelease():
+    workflow = (REPO_ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
+    project = (REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8")
+
+    assert '"Development Status :: 4 - Beta"' in project
+    assert "--prerelease" in workflow

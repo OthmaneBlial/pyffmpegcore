@@ -233,6 +233,7 @@ jobs:
           gh release create "$GITHUB_REF_NAME" \
             release/*.whl release/*.tar.gz release/SHA256SUMS release/artifact-report.json \
             --verify-tag \
+            --prerelease \
             --title "pyffmpegcore $GITHUB_REF_NAME" \
             --generate-notes \
             --notes "$(cat release/release-notes.md)"

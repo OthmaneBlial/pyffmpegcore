@@ -32,6 +32,7 @@ Copy this checklist for each new version. Every box starts open; a previous rele
 - [ ] Trusted Publishing identity is scoped to `release.yml` and the `pypi` environment.
 - [ ] Release workflow dry-run passes.
 - [ ] The signed, protected version tag starts the release workflow.
+- [ ] GitHub Release prerelease status matches the package development-status classifier.
 - [ ] PyPI files, SHA-256 checksums, provenance attestations, and the GitHub Release describe the same artifacts.
 - [ ] The automated public-endpoint wait and clean `pipx install`, `--version`, `doctor`, and `smoke-test` matrix pass after publication.
 - [ ] The 60–90 second terminal cast and accessible transcript validate against the exact public version without private paths or fabricated output.
