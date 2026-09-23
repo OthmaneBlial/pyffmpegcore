@@ -174,6 +174,11 @@ class WorkflowPlanner:
         force: bool = False,
         timeout_seconds: float | None = None,
     ) -> ExecutionPlan:
+        """Plan conversion with explicit codec options and stream selection.
+
+        By default, map the first video and audio streams. Use
+        ``preserve_all_streams`` to copy every stream or ``audio_only`` to omit video.
+        """
         options = options or ConvertOptions()
         source, output = normalized_path(input_file), normalized_path(output_file)
         args: list[str] = []
@@ -298,6 +303,7 @@ class WorkflowPlanner:
         force: bool = False,
         timeout_seconds: float | None = None,
     ) -> ExecutionPlan:
+        """Plan scaling the input video to the dimensions in ``ResizeOptions``."""
         source, output = normalized_path(input_file), normalized_path(output_file)
         args = ["-i", source, "-vf", f"scale={options.width}:{options.height}"]
         if options.video_codec:
@@ -336,6 +342,10 @@ class WorkflowPlanner:
         force: bool = False,
         timeout_seconds: float | None = None,
     ) -> ExecutionPlan:
+        """Plan CRF or target-size compression from ``CompressOptions``.
+
+        A two-pass target-size plan probes the input duration and rejects video stream copy.
+        """
         options = options or CompressOptions()
         source, output = normalized_path(input_file), normalized_path(output_file)
         required = _codec_requirements(("video", options.video_codec), ("audio", options.audio_codec))
@@ -474,6 +484,10 @@ class WorkflowPlanner:
         force: bool = False,
         timeout_seconds: float | None = None,
     ) -> ExecutionPlan:
+        """Plan audio extraction with optional codec, bitrate, sample-rate, and channel settings.
+
+        Video streams are omitted from the output.
+        """
         source, output = normalized_path(input_file), normalized_path(output_file)
         audio_args, selected_codec = _audio_output_args(output, audio_bitrate, audio_codec)
         args = ["-i", source, "-vn", *audio_args]
@@ -517,6 +531,7 @@ class WorkflowPlanner:
         force: bool = False,
         timeout_seconds: float | None = None,
     ) -> ExecutionPlan:
+        """Plan one video frame as a still image at ``timestamp`` and the requested dimensions."""
         if width <= 0 or (height is not None and height <= 0) or not 1 <= quality <= 31:
             raise ValidationError("thumbnail dimensions must be positive and quality must be between 1 and 31")
         source, output = normalized_path(input_file), normalized_path(output_file)
@@ -559,6 +574,7 @@ class WorkflowPlanner:
         force: bool = False,
         timeout_seconds: float | None = None,
     ) -> ExecutionPlan:
+        """Plan a waveform image from the input audio stream at the requested size and color."""
         if width <= 0 or height <= 0:
             raise ValidationError("waveform dimensions must be positive")
         source, output = normalized_path(input_file), normalized_path(output_file)
@@ -598,6 +614,7 @@ class WorkflowPlanner:
         force: bool = False,
         timeout_seconds: float | None = None,
     ) -> ExecutionPlan:
+        """Plan a video or audio speed change; pitch preservation applies to audio filtering."""
         if kind not in {"video", "audio"}:
             raise ValidationError("speed kind must be video or audio")
         if factor <= 0:
@@ -665,6 +682,10 @@ class WorkflowPlanner:
         force: bool = False,
         timeout_seconds: float | None = None,
     ) -> ExecutionPlan:
+        """Plan ordered clip concatenation using stream copy or re-encoding.
+
+        Stream-copy mode expects compatible inputs; re-encode mode uses the requested codecs.
+        """
         if len(input_files) < 2:
             raise ValidationError("concat requires at least two inputs")
         if mode not in {"copy", "reencode"}:
@@ -737,6 +758,7 @@ class WorkflowPlanner:
         force: bool = False,
         timeout_seconds: float | None = None,
     ) -> ExecutionPlan:
+        """Plan adding, extracting, or burning subtitles; add and burn require ``subtitle_file``."""
         if action not in {"add", "extract", "burn"}:
             raise ValidationError("subtitle action must be add, extract, or burn")
         if action in {"add", "burn"} and subtitle_file is None:
@@ -830,6 +852,11 @@ class WorkflowPlanner:
         force: bool = False,
         timeout_seconds: float | None = None,
     ) -> ExecutionPlan:
+        """Plan audio mixing, concatenation, crossfade mashup, or background mixing.
+
+        ``volumes`` applies to a mix; ``crossfade_duration`` applies to a mashup, and
+        ``background_volume`` applies to a two-input background mix.
+        """
         if action not in {"mix", "concat", "mashup", "background"}:
             raise ValidationError("unsupported audio mix action")
         if len(input_files) < 2:
@@ -907,6 +934,10 @@ class WorkflowPlanner:
         force: bool = False,
         timeout_seconds: float | None = None,
     ) -> ExecutionPlan:
+        """Plan ``loudnorm`` normalization to the requested targets or the ``master`` chain.
+
+        The master chain applies fixed loudness targets, compression, and a limiter.
+        """
         source, output = normalized_path(input_file), normalized_path(output_file)
         if method == "loudnorm":
             graph = f"loudnorm=I={target_i}:TP={target_tp}:LRA={target_lra}"
@@ -959,6 +990,7 @@ class WorkflowPlanner:
         force: bool = False,
         timeout_seconds: float | None = None,
     ) -> ExecutionPlan:
+        """Plan a directory batch that converts, optimizes, or writes supported images as WebP."""
         if action not in {"convert", "optimize", "webp"}:
             raise ValidationError("unsupported image workflow")
         if not 1 <= quality <= 100:

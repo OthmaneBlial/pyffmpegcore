@@ -485,19 +485,28 @@ Build deterministic plans used by CLI, Python, examples, and pipelines.
 
 ### `compress(self, input_file: 'str', output_file: 'str', options: 'CompressOptions | None' = None, *, force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
 
-No public docstring is available.
+Plan CRF or target-size compression from ``CompressOptions``.
+
+A two-pass target-size plan probes the input duration and rejects video stream copy.
 
 ### `concat(self, input_files: 'list[str]', output_file: 'str', *, mode: 'str' = 'copy', video_codec: 'str' = 'libx264', audio_codec: 'str' = 'aac', force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
 
-No public docstring is available.
+Plan ordered clip concatenation using stream copy or re-encoding.
+
+Stream-copy mode expects compatible inputs; re-encode mode uses the requested codecs.
 
 ### `convert(self, input_file: 'str', output_file: 'str', options: 'ConvertOptions | None' = None, *, force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
 
-No public docstring is available.
+Plan conversion with explicit codec options and stream selection.
+
+By default, map the first video and audio streams. Use
+``preserve_all_streams`` to copy every stream or ``audio_only`` to omit video.
 
 ### `extract_audio(self, input_file: 'str', output_file: 'str', *, audio_codec: 'str | None' = None, audio_bitrate: 'str' = '192k', sample_rate: 'int | None' = None, channels: 'int | None' = None, threads: 'int | None' = None, force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
 
-No public docstring is available.
+Plan audio extraction with optional codec, bitrate, sample-rate, and channel settings.
+
+Video streams are omitted from the output.
 
 ### `image(self, input_file: 'str', output_file: 'str', *, quality: 'int' = 85, resize: 'tuple[int, int] | None' = None, force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
 
@@ -505,35 +514,40 @@ Plan one still-image conversion without routing through a directory batch.
 
 ### `images(self, action: 'str', input_dir: 'str', output_dir: 'str', *, output_format: 'str' = 'jpg', quality: 'int' = 85, resize: 'tuple[int, int] | None' = None, max_width: 'int' = 1920, max_height: 'int' = 1080, force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
 
-No public docstring is available.
+Plan a directory batch that converts, optimizes, or writes supported images as WebP.
 
 ### `mix_audio(self, action: 'str', input_files: 'list[str]', output_file: 'str', *, volumes: 'list[float] | None' = None, crossfade_duration: 'float' = 2.0, background_volume: 'float' = 0.3, force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
 
-No public docstring is available.
+Plan audio mixing, concatenation, crossfade mashup, or background mixing.
+
+``volumes`` applies to a mix; ``crossfade_duration`` applies to a mashup, and
+``background_volume`` applies to a two-input background mix.
 
 ### `normalize_audio(self, input_file: 'str', output_file: 'str', *, method: 'str' = 'loudnorm', target_i: 'float' = -16.0, target_tp: 'float' = -1.5, target_lra: 'float' = 11.0, force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
 
-No public docstring is available.
+Plan ``loudnorm`` normalization to the requested targets or the ``master`` chain.
+
+The master chain applies fixed loudness targets, compression, and a limiter.
 
 ### `resize(self, input_file: 'str', output_file: 'str', options: 'ResizeOptions', *, force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
 
-No public docstring is available.
+Plan scaling the input video to the dimensions in ``ResizeOptions``.
 
 ### `speed(self, kind: 'str', input_file: 'str', output_file: 'str', *, factor: 'float', preserve_pitch: 'bool' = True, force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
 
-No public docstring is available.
+Plan a video or audio speed change; pitch preservation applies to audio filtering.
 
 ### `subtitles(self, action: 'str', video_file: 'str', output_file: 'str', *, subtitle_file: 'str | None' = None, language: 'str' = 'eng', stream_index: 'int' = 0, font_size: 'int' = 24, font_color: 'str' = '&HFFFFFF', force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
 
-No public docstring is available.
+Plan adding, extracting, or burning subtitles; add and burn require ``subtitle_file``.
 
 ### `thumbnail(self, input_file: 'str', output_file: 'str', *, timestamp: 'str' = '00:00:01', width: 'int' = 320, height: 'int | None' = None, quality: 'int' = 2, force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
 
-No public docstring is available.
+Plan one video frame as a still image at ``timestamp`` and the requested dimensions.
 
 ### `waveform(self, input_file: 'str', output_file: 'str', *, width: 'int' = 800, height: 'int' = 200, colors: 'str' = 'white', force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
 
-No public docstring is available.
+Plan a waveform image from the input audio stream at the requested size and color.
 
 ## `WorkflowBatch`
 
