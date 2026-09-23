@@ -362,7 +362,7 @@ No public docstring is available.
 
 Load one strict versioned profile from JSON or TOML.
 
-### `plan(self, name: 'str', planner: 'WorkflowPlanner', input_file: 'str', output_file: 'str', *, subtitle_file: 'str | None' = None, force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
+### `plan(self, name: 'str', planner: 'WorkflowPlanner', input_file: 'str', output_file: 'str', *, subtitle_file: 'str | None' = None, subtitle_language: 'str | None' = None, force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
 
 Compile a maintained built-in profile through the shared typed planner.
 

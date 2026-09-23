@@ -210,6 +210,7 @@ class ProfileRegistry:
         output_file: str,
         *,
         subtitle_file: str | None = None,
+        subtitle_language: str | None = None,
         force: bool = False,
         timeout_seconds: float | None = None,
     ) -> ExecutionPlan:
@@ -271,7 +272,7 @@ class ProfileRegistry:
                 input_file,
                 output_file,
                 subtitle_file=subtitle_file,
-                language=str(options["language"]),
+                language=str(options["language"] if subtitle_language is None else subtitle_language),
                 force=force,
                 timeout_seconds=timeout_seconds,
             )

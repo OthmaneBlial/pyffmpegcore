@@ -77,6 +77,7 @@ The image-directory planner resolved generated output filenames before checking 
 - Built-in profile metadata now carries expected output codec and required stream contracts; managed FFprobe verification fails with a validation error when those contracts are broken.
 - Receipts preserve the actual output probe evidence and contract failure reason when a readable profile output fails validation.
 - The web compatibility profile also checks its `yuv420p` video pixel format, which the typed FFprobe path now retains.
+- `profile run subtitles/accessibility` now accepts `--language` and records that label in the planned FFmpeg arguments; the existing `und` default remains. The registry and CLI preview have regression coverage. Focused profile/CLI tests passed (38); Ruff, mypy, generated docs, and Markdown link checks passed locally.
 
 ## Remaining work
 

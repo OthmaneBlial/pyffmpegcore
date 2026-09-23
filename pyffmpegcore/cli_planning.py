@@ -41,6 +41,7 @@ def _build_cli_plan(args: argparse.Namespace):
             args.input,
             args.output,
             subtitle_file=getattr(args, "subtitle", None),
+            subtitle_language=getattr(args, "language", None),
             force=shared["force"],
             timeout_seconds=shared["timeout_seconds"],
         )

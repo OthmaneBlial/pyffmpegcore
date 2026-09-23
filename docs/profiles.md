@@ -8,6 +8,7 @@ pyffmpegcore profile show web/mp4-compatible
 pyffmpegcore profile show audio/podcast-speech --json
 pyffmpegcore profile validate ./review-copy.toml
 pyffmpegcore profile run web/mp4-compatible --input source.webm --output publish.mp4 --receipt publish.json
+pyffmpegcore profile run subtitles/accessibility --input lesson.mp4 --subtitle captions.srt --language fra --output lesson-captioned.mp4
 ```
 
 The built-in registry deliberately stays small:
@@ -25,7 +26,9 @@ Every profile has a `profile_version`. A new output contract requires a new prof
 `profile run` compiles the named built-in profile through the same typed planner,
 preflight, executor, machine-result, and receipt layers as the task commands.
 The output extension is part of the contract and is validated before mutation.
-`subtitles/accessibility` additionally requires `--subtitle captions.srt`.
+`subtitles/accessibility` additionally requires `--subtitle captions.srt` and
+accepts `--language` to label the track; it defaults to `und` when the code is
+unknown.
 Every built-in profile runs a golden real-media contract from the exact wheel on
 the Linux, macOS, and Windows compatibility matrix.
 

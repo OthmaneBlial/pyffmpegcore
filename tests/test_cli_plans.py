@@ -71,6 +71,19 @@ def deterministic_media_fixtures():
             "--output",
             "{tmp}/subtitled.mp4",
         ],
+        [
+            "profile",
+            "run",
+            "subtitles/accessibility",
+            "--input",
+            str(VIDEO),
+            "--output",
+            "{tmp}/profile-subtitled.mp4",
+            "--subtitle",
+            str(SUBTITLE),
+            "--language",
+            "fra",
+        ],
         ["subtitles", "extract", "--video", str(VIDEO), "--output", "{tmp}/captions.srt"],
         [
             "subtitles",
@@ -124,6 +137,32 @@ def test_every_writing_command_has_a_non_mutating_json_plan(
     assert payload["plan"]["outputs"]
     for output in payload["plan"]["outputs"]:
         assert not Path(output).exists()
+
+
+def test_accessibility_profile_cli_passes_the_subtitle_language(tmp_path, capsys, monkeypatch, capability_inventory):
+    monkeypatch.setattr("pyffmpegcore.preflight.CapabilityInventory.inspect", lambda _binary: capability_inventory)
+
+    returncode = main(
+        [
+            "profile",
+            "run",
+            "subtitles/accessibility",
+            "--input",
+            str(VIDEO),
+            "--output",
+            str(tmp_path / "profile-subtitled.mp4"),
+            "--subtitle",
+            str(SUBTITLE),
+            "--language",
+            "fra",
+            "--dry-run",
+            "--plan-json",
+        ]
+    )
+    captured = capsys.readouterr()
+
+    assert returncode in {0, 4}, captured.err
+    assert "language=fra" in json.loads(captured.out)["plan"]["command"]
 
 
 def test_preview_never_executes_shell_metacharacters(tmp_path, capsys, monkeypatch, capability_inventory):

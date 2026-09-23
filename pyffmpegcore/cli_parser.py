@@ -238,6 +238,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--subtitle",
         help="External subtitle path required by subtitles/accessibility.",
     )
+    profile_run_parser.add_argument(
+        "--language",
+        help="Subtitle language code for subtitles/accessibility. Defaults to the profile value (und).",
+    )
     profile_run_parser.set_defaults(handler_name="handle_planned_command")
 
     batch_parser = subparsers.add_parser(

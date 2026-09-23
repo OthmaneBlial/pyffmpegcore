@@ -137,3 +137,16 @@ def test_builtin_profile_rejects_an_output_that_breaks_its_contract(tmp_path):
             str(tmp_path / "input.mp4"),
             str(tmp_path / "output.mp4"),
         )
+
+
+def test_accessibility_profile_accepts_a_subtitle_language_override(tmp_path):
+    plan = ProfileRegistry().plan(
+        "subtitles/accessibility",
+        WorkflowPlanner(),
+        str(tmp_path / "input.mp4"),
+        str(tmp_path / "output.mp4"),
+        subtitle_file=str(tmp_path / "captions.srt"),
+        subtitle_language="fra",
+    )
+
+    assert "language=fra" in plan.command

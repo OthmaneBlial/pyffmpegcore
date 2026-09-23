@@ -307,7 +307,7 @@ options:
 usage: pyffmpegcore profile run [-h] [--verbose | --quiet] [--force] [--dry-run | --explain]
        [--plan-json] [--result-json] [--timeout SECONDS] [--temp-files {clean,keep-on-error,keep}]
        [--receipt FILE] [--hash-content] [--ffmpeg-path FFMPEG_PATH] [--ffprobe-path FFPROBE_PATH]
-       --input INPUT --output OUTPUT [--subtitle SUBTITLE] name
+       --input INPUT --output OUTPUT [--subtitle SUBTITLE] [--language LANGUAGE] name
 
 positional arguments:
   name                  Built-in profile name.
@@ -334,6 +334,8 @@ options:
   --input INPUT         Input media path.
   --output OUTPUT       Output media path.
   --subtitle SUBTITLE   External subtitle path required by subtitles/accessibility.
+  --language LANGUAGE   Subtitle language code for subtitles/accessibility. Defaults to the profile
+  value (und).
 ```
 
 ## `pyffmpegcore batch`
