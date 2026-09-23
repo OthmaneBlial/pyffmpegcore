@@ -45,7 +45,7 @@ def render_plan_text(plan: ExecutionPlan, preflight: PreflightReport, *, explain
         lines.extend(["Selected streams:", *[f"  {value}" for value in plan.selected_streams]])
         lines.extend(["Operations and trade-offs:", *[f"  {value}" for value in plan.operations]])
         lines.extend(["Required capabilities:", *[f"  {value}" for value in plan.required_capabilities]])
-        if plan.warnings:
-            lines.extend(["Warnings:", *[f"  {value}" for value in plan.warnings]])
+    if plan.warnings:
+        lines.extend(["Warnings:", *[f"  {value}" for value in plan.warnings]])
     lines.extend(["", preflight.render()])
     return "\n".join(lines)

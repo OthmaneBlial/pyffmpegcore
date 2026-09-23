@@ -37,8 +37,8 @@ if result.returncode != 0:
 The output should probe as an MP4-family container with H.264 video, AAC audio
 when the source has audio, YUV 4:2:0 pixels, and the `moov` atom before media
 data for progressive download. The command re-encodes and selects the first
-video/audio streams; `--explain` warns that other tracks are omitted. It is not
-lossless. Use the [preserve every stream
+video/audio streams; `--dry-run` and `--explain` warn that other tracks are
+omitted. It is not lossless. Use the [preserve every stream
 recipe](preserve-streams.md) instead when remuxing a rich file without track
 loss. Existing outputs require explicit CLI `--force`.
 

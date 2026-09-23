@@ -189,10 +189,11 @@ def test_preview_reports_invalid_bitrate_without_a_traceback(tmp_path, capsys):
     assert "Traceback" not in captured.err
 
 
-def test_convert_explain_warns_about_omitted_streams(tmp_path, capsys):
+@pytest.mark.parametrize("preview_option", ["--dry-run", "--explain"])
+def test_convert_preview_warns_about_omitted_streams(tmp_path, capsys, preview_option):
     output = tmp_path / "converted.mp4"
 
-    returncode = main(["convert", "--input", str(VIDEO), "--output", str(output), "--explain"])
+    returncode = main(["convert", "--input", str(VIDEO), "--output", str(output), preview_option])
     captured = capsys.readouterr()
 
     assert returncode == 0
