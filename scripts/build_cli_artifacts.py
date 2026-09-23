@@ -65,6 +65,8 @@ SDIST_REQUIRED_PATHS = frozenset(
         "docs/schemas/run-receipt-1.0.schema.json",
         "docs/schemas/batch-manifest-1.0.example.json",
         "docs/schemas/batch-manifest-1.0.schema.json",
+        "docs/schemas/batch-manifest-1.1.example.json",
+        "docs/schemas/batch-manifest-1.1.schema.json",
         "docs/schemas/pipeline-1.0.schema.json",
         "pyproject.toml",
         "pyffmpegcore/__init__.py",

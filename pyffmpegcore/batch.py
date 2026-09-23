@@ -21,6 +21,7 @@ from .receipt import ReceiptBuilder, redact_receipt_value
 from .workflow import WorkflowBatch, WorkflowEngine, WorkflowExecution
 
 BATCH_SCHEMA_VERSION = "1.0"
+BATCH_MANIFEST_SCHEMA_VERSION = "1.1"
 BATCH_STATE_SCHEMA_VERSION = "1.0"
 _TRANSIENT_DIAGNOSTICS = (
     "resource temporarily unavailable",
@@ -34,7 +35,7 @@ _TRANSIENT_DIAGNOSTICS = (
     "http error 503",
     "http error 504",
 )
-_JOB_FIELDS = {"id", "profile", "input", "output", "subtitle", "force"}
+_JOB_FIELDS = {"id", "profile", "input", "output", "subtitle", "subtitle_language", "force"}
 _POLICY_FIELDS = {"max_workers", "max_retries", "max_input_bytes", "per_job_timeout_seconds"}
 
 
@@ -417,7 +418,7 @@ class BatchManifest:
 
     jobs: tuple[BatchJob, ...]
     policy: BatchPolicy = field(default_factory=BatchPolicy)
-    schema_version: str = BATCH_SCHEMA_VERSION
+    schema_version: str = BATCH_MANIFEST_SCHEMA_VERSION
 
     @classmethod
     def read(
@@ -448,8 +449,11 @@ class BatchManifest:
         unknown = sorted(set(document) - {"schema_version", "policy", "jobs"})
         if unknown:
             raise ValidationError(f"unknown batch manifest fields: {', '.join(unknown)}")
-        if document.get("schema_version") != BATCH_SCHEMA_VERSION:
-            raise ValidationError(f"batch schema_version must be {BATCH_SCHEMA_VERSION!r}")
+        manifest_version = document.get("schema_version")
+        if manifest_version not in (BATCH_SCHEMA_VERSION, BATCH_MANIFEST_SCHEMA_VERSION):
+            raise ValidationError(
+                f"batch schema_version must be {BATCH_SCHEMA_VERSION!r} or {BATCH_MANIFEST_SCHEMA_VERSION!r}"
+            )
         policy_payload = document.get("policy", {})
         if not isinstance(policy_payload, dict):
             raise ValidationError("batch policy must be an object")
@@ -503,6 +507,12 @@ class BatchManifest:
             profile = payload.get("profile")
             if not isinstance(job_id, str) or not isinstance(profile, str):
                 raise ValidationError("each batch job requires string id and profile fields")
+            if manifest_version == BATCH_SCHEMA_VERSION and "subtitle_language" in payload:
+                raise ValidationError("subtitle_language requires batch manifest schema_version '1.1'")
+            subtitle_language = payload.get("subtitle_language")
+            if "subtitle_language" in payload:
+                if not isinstance(subtitle_language, str) or not subtitle_language:
+                    raise ValidationError("batch job subtitle_language must be a non-empty string")
             subtitle_value = payload.get("subtitle")
             subtitle = resolve(subtitle_value, "subtitle") if subtitle_value is not None else None
             plan = registry.plan(
@@ -511,12 +521,13 @@ class BatchManifest:
                 resolve(payload.get("input"), "input"),
                 resolve(payload.get("output"), "output"),
                 subtitle_file=subtitle,
+                subtitle_language=subtitle_language,
                 force=force or payload.get("force") is True,
                 timeout_seconds=policy.per_job_timeout_seconds,
             )
             jobs.append(BatchJob(job_id, plan))
         validated = validate_batch_jobs(jobs, policy)
-        return cls(validated, policy)
+        return cls(validated, policy, schema_version=manifest_version)
 
     def to_dict(self) -> dict[str, object]:
         return {

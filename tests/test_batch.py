@@ -186,8 +186,9 @@ def test_batch_manifest_compiles_mixed_profiles_relative_to_itself(tmp_path):
     (tmp_path / "clips").mkdir()
     (tmp_path / "clips" / "source ü.wav").write_bytes(b"audio")
     (tmp_path / "clips" / "source.mp4").write_bytes(b"video")
+    (tmp_path / "clips" / "captions.srt").write_text("1\n00:00:00,000 --> 00:00:01,000\nBonjour\n", encoding="utf-8")
     document = {
-        "schema_version": "1.0",
+        "schema_version": "1.1",
         "policy": {"max_workers": 2, "max_retries": 1, "max_input_bytes": "2MiB"},
         "jobs": [
             {
@@ -202,15 +203,58 @@ def test_batch_manifest_compiles_mixed_profiles_relative_to_itself(tmp_path):
                 "input": "clips/source ü.wav",
                 "output": "out/podcast.m4a",
             },
+            {
+                "id": "captioned",
+                "profile": "subtitles/accessibility",
+                "input": "clips/source.mp4",
+                "output": "out/captioned.mp4",
+                "subtitle": "clips/captions.srt",
+                "subtitle_language": "fra",
+            },
         ],
     }
 
     manifest = BatchManifest.from_dict(document, base_dir=tmp_path)
 
     assert manifest.policy.max_input_bytes == 2 * 1024 * 1024
-    assert [job.plan.workflow for job in manifest.jobs] == ["convert", "normalize-audio"]
+    assert [job.plan.workflow for job in manifest.jobs] == ["convert", "normalize-audio", "subtitles/add"]
     assert manifest.jobs[1].plan.inputs[0].endswith("source ü.wav")
+    assert "language=fra" in manifest.jobs[2].plan.command
+    assert manifest.to_dict()["schema_version"] == "1.1"
+
+
+def test_batch_manifest_preserves_1_0_and_rejects_1_1_fields(tmp_path):
+    document = {
+        "schema_version": "1.0",
+        "jobs": [{"id": "web", "profile": "web/mp4-compatible", "input": "source.mov", "output": "out.mp4"}],
+    }
+
+    manifest = BatchManifest.from_dict(document, base_dir=tmp_path)
+
     assert manifest.to_dict()["schema_version"] == "1.0"
+    document["jobs"][0]["subtitle_language"] = "fra"
+    with pytest.raises(ValidationError, match="requires batch manifest schema_version '1.1'"):
+        BatchManifest.from_dict(document, base_dir=tmp_path)
+
+
+@pytest.mark.parametrize("language", [None, "", 42])
+def test_batch_manifest_rejects_invalid_subtitle_language(tmp_path, language):
+    document = {
+        "schema_version": "1.1",
+        "jobs": [
+            {
+                "id": "captioned",
+                "profile": "subtitles/accessibility",
+                "input": "source.mp4",
+                "output": "captioned.mp4",
+                "subtitle": "captions.srt",
+                "subtitle_language": language,
+            }
+        ],
+    }
+
+    with pytest.raises(ValidationError, match="subtitle_language must be a non-empty string"):
+        BatchManifest.from_dict(document, base_dir=tmp_path)
 
 
 def test_cancelled_batch_does_not_start_work(tmp_path):

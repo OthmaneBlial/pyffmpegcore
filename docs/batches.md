@@ -6,7 +6,7 @@ audio, subtitle, and archival work without embedding shell strings.
 
 ```json
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "policy": {
     "max_workers": 2,
     "max_retries": 1,
@@ -25,6 +25,14 @@ audio, subtitle, and archival work without embedding shell strings.
       "profile": "audio/podcast-speech",
       "input": "media/episode.wav",
       "output": "build/episode.m4a"
+    },
+    {
+      "id": "captioned-video",
+      "profile": "subtitles/accessibility",
+      "input": "media/lesson.mp4",
+      "output": "build/lesson-captioned.mp4",
+      "subtitle": "media/captions.srt",
+      "subtitle_language": "fra"
     }
   ]
 }
@@ -33,6 +41,8 @@ audio, subtitle, and archival work without embedding shell strings.
 Paths are resolved relative to the manifest. Unknown fields, duplicate work,
 duplicate IDs, case-insensitive output collisions, invalid profiles, and inputs
 larger than the explicit resource limit fail before any job starts.
+Accessibility-profile jobs require `subtitle` and accept optional
+`subtitle_language`; omitted language retains the profile's `und` label.
 
 ## Validate, preview, and run
 

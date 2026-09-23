@@ -216,6 +216,8 @@ class ProfileRegistry:
     ) -> ExecutionPlan:
         """Compile a maintained built-in profile through the shared typed planner."""
         profile = self.get(name)
+        if subtitle_language is not None and profile.name != "subtitles/accessibility":
+            raise ValidationError("subtitle_language is only supported by profile subtitles/accessibility")
         options = profile.options
         suffix = Path(output_file).suffix.casefold()
         expected_suffixes = {

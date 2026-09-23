@@ -150,3 +150,14 @@ def test_accessibility_profile_accepts_a_subtitle_language_override(tmp_path):
     )
 
     assert "language=fra" in plan.command
+
+
+def test_subtitle_language_override_is_rejected_for_other_profiles(tmp_path):
+    with pytest.raises(ValidationError, match="only supported by profile subtitles/accessibility"):
+        ProfileRegistry().plan(
+            "web/mp4-compatible",
+            WorkflowPlanner(),
+            str(tmp_path / "input.mp4"),
+            str(tmp_path / "output.mp4"),
+            subtitle_language="fra",
+        )
