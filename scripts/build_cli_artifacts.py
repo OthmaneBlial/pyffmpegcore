@@ -116,6 +116,8 @@ def build_artifacts(project_root: Path, outdir: Path) -> subprocess.CompletedPro
         cwd=str(project_root),
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         check=False,
     )
 

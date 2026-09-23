@@ -19,7 +19,15 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 def _run(command: list[str], *, cwd: Path | None = None) -> tuple[float, subprocess.CompletedProcess[str]]:
     started = time.perf_counter()
-    result = subprocess.run(command, cwd=cwd, capture_output=True, text=True, check=False)
+    result = subprocess.run(
+        command,
+        cwd=cwd,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
     elapsed = time.perf_counter() - started
     if result.returncode != 0:
         raise RuntimeError(f"command failed ({result.returncode}): {command}\n{result.stderr or result.stdout}")

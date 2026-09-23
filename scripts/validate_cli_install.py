@@ -37,6 +37,8 @@ def run_command(
             cwd=str(cwd) if cwd is not None else None,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             check=False,
             timeout=timeout_seconds,
         )

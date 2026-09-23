@@ -7,6 +7,7 @@ from __future__ import annotations
 import subprocess
 import sys
 from pathlib import Path
+from unittest.mock import patch
 
 from scripts.validate_cli_install import add_report_entry, doctor_result_is_acceptable, run_command
 
@@ -42,6 +43,16 @@ def test_no_media_contract_accepts_structured_missing_binary_report():
 
     assert doctor_result_is_acceptable(result, require_binaries=False)
     assert not doctor_result_is_acceptable(result, require_binaries=True)
+
+
+@patch("scripts.validate_cli_install.subprocess.run")
+def test_clean_install_command_decodes_tool_output_as_utf8(mock_run):
+    mock_run.return_value = subprocess.CompletedProcess(["pyffmpegcore"], 0, "ok", "")
+
+    run_command(["pyffmpegcore", "--version"])
+
+    assert mock_run.call_args.kwargs["encoding"] == "utf-8"
+    assert mock_run.call_args.kwargs["errors"] == "replace"
 
 
 def test_no_media_contract_rejects_invalid_doctor_output():

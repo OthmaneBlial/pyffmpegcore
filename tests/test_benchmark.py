@@ -6,8 +6,9 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from unittest.mock import patch
 
-from scripts.benchmark_overhead import _resolve_command
+from scripts.benchmark_overhead import _resolve_command, _run
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -50,3 +51,13 @@ def test_command_resolution_ignores_a_same_named_directory(tmp_path, monkeypatch
     monkeypatch.setenv("PATH", str(binary_directory))
 
     assert _resolve_command("media-tool") == str(executable)
+
+
+@patch("scripts.benchmark_overhead.subprocess.run")
+def test_benchmark_command_decodes_tool_output_as_utf8(mock_run):
+    mock_run.return_value = subprocess.CompletedProcess(["python"], 0, "ok", "")
+
+    _run(["python", "--version"])
+
+    assert mock_run.call_args.kwargs["encoding"] == "utf-8"
+    assert mock_run.call_args.kwargs["errors"] == "replace"

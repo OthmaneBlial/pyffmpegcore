@@ -1,8 +1,10 @@
 """The post-publication gate requires the exact wheel and source release."""
 
+import subprocess
 from pathlib import Path
+from unittest.mock import patch
 
-from scripts.validate_public_pypi_install import cli_path
+from scripts.validate_public_pypi_install import cli_path, run_checked
 from scripts.wait_for_pypi import expected_filenames, release_filenames
 
 
@@ -40,3 +42,13 @@ def test_public_console_script_path_is_platform_specific():
 
     assert cli_path(bin_dir, platform="posix") == bin_dir / "pyffmpegcore"
     assert cli_path(bin_dir, platform="nt") == bin_dir / "pyffmpegcore.exe"
+
+
+@patch("scripts.validate_public_pypi_install.subprocess.run")
+def test_public_install_command_decodes_tool_output_as_utf8(mock_run):
+    mock_run.return_value = subprocess.CompletedProcess(["pyffmpegcore"], 0, "ok", "")
+
+    run_checked(["pyffmpegcore", "--version"])
+
+    assert mock_run.call_args.kwargs["encoding"] == "utf-8"
+    assert mock_run.call_args.kwargs["errors"] == "replace"

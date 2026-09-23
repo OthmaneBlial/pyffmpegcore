@@ -19,7 +19,14 @@ def cli_path(bin_dir: Path, *, platform: str | None = None) -> Path:
 
 def run_checked(command: list[str]) -> subprocess.CompletedProcess[str]:
     """Run a public CLI command and retain readable failure evidence."""
-    result = subprocess.run(command, capture_output=True, text=True, check=False)
+    result = subprocess.run(
+        command,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
     print(f"$ {' '.join(command)}")
     if result.stdout:
         print(result.stdout, end="")
