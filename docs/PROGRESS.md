@@ -17,6 +17,7 @@ Updated: 2026-09-23
 - Managed workflows now record FFprobe stream/format evidence, fail when FFprobe rejects output, and report `unavailable` with a warning when FFprobe cannot run. The full local suite passed on this implementation (376 passed, 7 skipped); after adding the CLI warning for unverified outputs, 12 focused tests and Ruff, format, and mypy passed.
 - The managed-output feature passed full hosted CI [run 35892952944](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35892952944), CodeQL [run 35892953107](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35892953107), Benchmarks [run 35892953006](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35892953006), and Scorecard [run 35892953146](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35892953146) on exact SHA `313543bc1d4957c7ad37fa3a0d9aff5bf0e17b4d`.
 - Streamless FFprobe results now have direct regression coverage (7 workflow tests passed locally). Full CI [run 35893651696](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35893651696), CodeQL [run 35893651337](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35893651337), and Scorecard [run 35893651309](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35893651309) passed on exact SHA `98b78e4baecf4b68b00643ed1971b629d4e16e8b`.
+- Successful managed output probes now retain duration, size, bitrate, stream indices/language/rotation, and chapter count. CLI summaries and receipts reuse those facts instead of probing the same output again; the full local suite passed (381 passed, 7 skipped).
 - The Container workflow [run 35889125917](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35889125917), triggered by the code push, was cancelled per the no-Docker instruction.
 - The Container workflow [run 35890855918](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35890855918), triggered by the output-verification fix, was cancelled per the no-Docker instruction; CodeQL, Benchmarks, and Scorecard passed on `ecf6bc1`.
 - The Container workflow [run 35891713312](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35891713312), triggered by the empty-output fix, was cancelled per the no-Docker instruction; CodeQL, Benchmarks, and Scorecard passed on `55d48e3`.
@@ -62,6 +63,7 @@ The image-directory planner resolved generated output filenames before checking 
 - Reproduced a false success when a zero-exit process omitted its declared output; the shared executor now reports validation failure and regression coverage passes in `tests/test_domain.py`.
 - Rejects and removes empty outputs after a zero-exit process; the focused domain tests pass (21 tests).
 - Managed workflow results now include FFprobe verification state and stream metadata. Corrupt or streamless outputs fail validation; missing FFprobe remains a warning marked `unavailable` and is visible in human CLI output. Full local suite: 376 passed, 7 skipped; 12 targeted tests passed after the CLI notice.
+- CLI success summaries and receipts reuse managed output verification facts; regression tests fail if either path probes the output twice.
 
 ## Remaining work
 

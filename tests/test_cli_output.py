@@ -13,6 +13,7 @@ from pyffmpegcore.cli import (
     _render_execution_successes,
     format_bytes,
     report_batch_results,
+    summarize_output_file,
 )
 from pyffmpegcore.workflow import WorkflowBatch
 
@@ -98,3 +99,30 @@ def test_success_summary_discloses_unavailable_output_verification(tmp_path, cap
     _render_execution_successes(CLIContext(), bundle)
 
     assert message in capsys.readouterr().out
+
+
+def test_output_summary_reuses_managed_probe_evidence(tmp_path, capsys, monkeypatch):
+    def unexpected_probe(*_args, **_kwargs):
+        raise AssertionError("output should use the completed workflow probe")
+
+    monkeypatch.setattr("pyffmpegcore.cli.FFprobeRunner.probe", unexpected_probe)
+    summarize_output_file(
+        CLIContext(),
+        tmp_path / "output.mp4",
+        {
+            "status": "probed",
+            "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+            "duration": 6.0,
+            "size_bytes": 12 * 1024,
+            "streams": [
+                {"type": "video", "codec": "h264", "width": 640, "height": 360},
+                {"type": "audio", "codec": "aac"},
+            ],
+        },
+    )
+
+    rendered = capsys.readouterr().out
+    assert "Duration: 6.00 seconds" in rendered
+    assert "Size: 12.0 KB" in rendered
+    assert "Video: h264 640x360" in rendered
+    assert "Audio: aac" in rendered

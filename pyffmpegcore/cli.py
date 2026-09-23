@@ -1002,13 +1002,30 @@ def raise_for_completed_process_error(result: subprocess.CompletedProcess | JobR
     raise CLIError(result.stderr or "FFmpeg command failed.", exit_code=EXIT_RUNTIME_ERROR)
 
 
-def summarize_output_file(ctx: CLIContext, output_path: Path) -> None:
+def summarize_output_file(
+    ctx: CLIContext,
+    output_path: Path,
+    verification: dict[str, Any] | None = None,
+) -> None:
     """
     Print a lightweight summary for a generated media file.
     """
-    try:
-        metadata = FFprobeRunner(ffprobe_path=ctx.ffprobe_path).probe(str(output_path))
-    except RuntimeError:
+    if verification is None:
+        try:
+            metadata = FFprobeRunner(ffprobe_path=ctx.ffprobe_path).probe(str(output_path))
+        except RuntimeError:
+            echo(ctx, f"Output: {output_path}")
+            return
+    elif verification.get("status") == "probed":
+        streams = verification.get("streams", [])
+        metadata = {
+            "format_name": verification.get("format_name"),
+            "duration": verification.get("duration"),
+            "size": verification.get("size_bytes"),
+            "video": next((stream for stream in streams if stream.get("type") == "video"), None),
+            "audio": next((stream for stream in streams if stream.get("type") == "audio"), None),
+        }
+    else:
         echo(ctx, f"Output: {output_path}")
         return
 
@@ -1107,7 +1124,15 @@ def _render_execution_successes(ctx: CLIContext, bundle: CLIExecutionBundle) -> 
         return
     for item in bundle.items:
         if item.result.succeeded and item.output is not None:
-            summarize_output_file(ctx, Path(item.output))
+            verification = next(
+                (
+                    fact.get("verification")
+                    for fact in item.result.outputs
+                    if fact.get("path") == item.output and isinstance(fact.get("verification"), dict)
+                ),
+                None,
+            )
+            summarize_output_file(ctx, Path(item.output), verification)
             if _unverified_output_count(item.result):
                 echo(ctx, "FFprobe unavailable; output media was not verified.")
             proof = item.proof

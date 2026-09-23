@@ -107,7 +107,15 @@ def _version_line(binary: str) -> str | None:
     return text.splitlines()[0] if text else None
 
 
-def _probe_summary(path: str | None, runner: FFprobeRunner) -> dict[str, Any] | None:
+def _probe_summary(
+    path: str | None,
+    runner: FFprobeRunner,
+    verification: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
+    if verification is not None:
+        if path is None or verification.get("status") != "probed":
+            return None
+        return {"path": path, **{key: value for key, value in verification.items() if key != "status"}}
     if path is None or "://" in path or not Path(path).is_file():
         return None
     try:
@@ -229,10 +237,17 @@ class ReceiptBuilder:
         probe = FFprobeRunner(self.ffprobe_path)
         items = []
         for item in batch.items:
+            output_facts = next(
+                (facts for facts in item.result.outputs if facts.get("path") == item.output),
+                None,
+            )
+            verification = output_facts.get("verification") if output_facts else None
+            if not isinstance(verification, dict):
+                verification = None
             items.append(
                 {
                     "input_probe": _probe_summary(item.input, probe),
-                    "output_probe": _probe_summary(item.output, probe),
+                    "output_probe": _probe_summary(item.output, probe, verification),
                     "proof": item.proof,
                     "preflight": item.preflight.to_dict(),
                     "result": {

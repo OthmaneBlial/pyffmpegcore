@@ -115,16 +115,23 @@ def test_workflow_records_successful_output_probe(tmp_path, monkeypatch):
     assert result.outputs[0]["verification"] == {
         "status": "probed",
         "format_name": "matroska",
+        "duration": None,
+        "size_bytes": None,
+        "bit_rate": None,
         "streams": [
             {
+                "index": 0,
                 "type": "audio",
                 "codec": "pcm_s16le",
                 "width": None,
                 "height": None,
                 "sample_rate": None,
                 "channels": None,
+                "language": None,
+                "rotation": None,
             }
         ],
+        "chapter_count": 0,
     }
 
 

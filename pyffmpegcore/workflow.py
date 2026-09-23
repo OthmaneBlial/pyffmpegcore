@@ -183,17 +183,24 @@ def _verify_outputs(plan: ExecutionPlan, result: JobResult, probe: FFprobeRunner
                 output["verification"] = {
                     "status": "probed",
                     "format_name": media.format_name,
+                    "duration": media.duration,
+                    "size_bytes": media.size,
+                    "bit_rate": media.bit_rate,
                     "streams": [
                         {
+                            "index": stream.index,
                             "type": stream.codec_type,
                             "codec": stream.codec_name,
                             "width": stream.width,
                             "height": stream.height,
                             "sample_rate": stream.sample_rate,
                             "channels": stream.channels,
+                            "language": stream.language,
+                            "rotation": stream.rotation,
                         }
                         for stream in media.streams
                     ],
+                    "chapter_count": len(media.chapters),
                 }
         outputs.append(output)
 

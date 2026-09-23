@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+from dataclasses import replace
 from pathlib import Path
 from unittest.mock import patch
 
@@ -104,6 +105,45 @@ def test_receipt_redacts_credentials_private_paths_and_secrets_by_default(tmp_pa
     assert receipt.document["content_hashes"] == []
     assert receipt.document["items"][0]["proof"]["input_size_bytes"] is None
     assert receipt.document["items"][0]["proof"]["output_size_bytes"] == len(b"receipt output")
+
+
+def test_receipt_reuses_managed_output_probe_evidence(tmp_path, monkeypatch):
+    batch, _source, output = _batch(tmp_path)
+    verification = {
+        "status": "probed",
+        "format_name": "matroska",
+        "duration": 2.0,
+        "size_bytes": output.stat().st_size,
+        "bit_rate": 56,
+        "streams": [
+            {
+                "index": 0,
+                "type": "audio",
+                "codec": "aac",
+                "width": None,
+                "height": None,
+                "sample_rate": 44100,
+                "channels": 2,
+                "language": "eng",
+                "rotation": None,
+            }
+        ],
+        "chapter_count": 0,
+    }
+    item = batch.items[0]
+    result = replace(item.result, outputs=(dict(item.result.outputs[0], verification=verification),))
+    batch = replace(batch, items=(replace(item, result=result),))
+
+    def unexpected_probe(*_args, **_kwargs):
+        raise AssertionError("receipt should reuse the managed output probe")
+
+    monkeypatch.setattr("pyffmpegcore.receipt.FFprobeRunner.probe_media", unexpected_probe)
+    receipt = ReceiptBuilder(ffmpeg_path="missing-ffmpeg", ffprobe_path="missing-ffprobe").build(batch)
+
+    output_probe = receipt.document["items"][0]["output_probe"]
+    assert output_probe["format_name"] == "matroska"
+    assert output_probe["streams"][0]["codec"] == "aac"
+    assert output_probe["streams"][0]["language"] == "eng"
 
 
 def test_embedded_media_url_in_ffmpeg_diagnostic_is_redacted():
