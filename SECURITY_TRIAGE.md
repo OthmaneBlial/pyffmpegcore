@@ -1,6 +1,6 @@
 # Security alert triage
 
-Updated: 23 September 2026. This is an evidence log, not a claim that every
+Updated: 24 September 2026. This is an evidence log, not a claim that every
 open alert is exploitable or that the project has no vulnerabilities. The
 container evidence below remains from 19 September; no newer image scan was run.
 
@@ -59,6 +59,16 @@ passed on `0952c0ef57d13962bc4544bd300ccb0a585d47d8`; the three
 `TokenPermissionsID` alerts are no longer open. Workflow defaults are
 read-only, with required write scopes assigned to the relevant job. No new
 container was built, scanned, or published for this update.
+
+The paginated GitHub Code Scanning API inventory was checked again on 24
+September after `6d0994a`. It returns 484 open alerts: 483 Trivy alerts on
+`25adc43150842930f84e25c105a7612f1a4b02f1` (97 HIGH, 199 MEDIUM, 164 LOW,
+23 without severity) and one LOW `CIIBestPracticesID` Scorecard alert on
+`main` at `6d0994af9b46fee9c8103c2b30593d7e68d35eb6`. CodeQL run
+[`35933577055`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35933577055)
+and Scorecard run
+[`35933576993`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35933576993)
+passed on that exact SHA. This inventory refresh did not run a container scan.
 
 The hash-bearing wheel install in the Action and the public terminal demo
 removed the open `PinnedDependenciesID` instances. The successful

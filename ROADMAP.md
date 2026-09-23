@@ -300,6 +300,13 @@ push et planification du workflow Container ont été désactivés conformément
 l'instruction de ne pas exécuter Docker ; une exécution manuelle reste possible
 mais n'est pas autorisée pendant cette pause. La validation des deux
 architectures et l'inventaire récent des alertes restent incomplets.
+L'inventaire GitHub paginé du 24 septembre confirme 484 alertes ouvertes : 483
+Trivy liées à l'ancien SHA `25adc431` et une alerte LOW
+`CIIBestPracticesID` liée à `main` sur `6d0994a`. CodeQL
+[`35933577055`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35933577055)
+et Scorecard
+[`35933576993`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35933576993)
+ont réussi sur ce SHA exact. Cette lecture API n'a déclenché aucun scan.
 
 - **Objectif :** distinguer les vulnérabilités corrigibles, les avis sans correctif, les signaux de politique et les doublons historiques, puis réduire les causes plutôt que masquer les alertes.
 - **Changements :** tenir `SECURITY_TRIAGE.md` à jour pour chaque digest ; tester et scanner aussi l'image arm64 avant publication ; remplacer les installations `pip` non verrouillées en CI/release/demo par des locks avec hashes pour la matrice Python/OS ; maintenir le corpus et l'intégration ClusterFuzzLite reconnus par Scorecard ; contrôler la couverture CodeQL et des tests sur les révisions proposées ; préparer les preuves du badge OpenSSF sans revendiquer son octroi prématurément.
