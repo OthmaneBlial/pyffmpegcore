@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import threading
 from collections.abc import Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import TypedDict
 
 from .domain import ExecutionPlan, JobResult, JobStatus, ProgressEvent
 from .planning import WorkflowPlanner
 from .preflight import PreflightEngine, PreflightReport
+from .probe import FFprobeRunner
 from .runner import FFmpegRunner
 
 
@@ -153,12 +154,71 @@ def _image_item_plan(plan: ExecutionPlan, index: int) -> ExecutionPlan:
     )
 
 
+def _verify_outputs(plan: ExecutionPlan, result: JobResult, probe: FFprobeRunner) -> JobResult:
+    if not result.succeeded or not plan.outputs:
+        return result
+
+    outputs = []
+    warnings = list(result.warnings)
+    errors = []
+    missing_probe = f"FFprobe executable '{probe.ffprobe_path}' was not found."
+    for fact in result.outputs:
+        output = dict(fact)
+        path = str(output["path"])
+        try:
+            media = probe.probe_media(path)
+        except (OSError, RuntimeError, ValueError) as exc:
+            reason = str(exc)
+            if isinstance(exc, OSError) or reason.startswith(missing_probe):
+                output["verification"] = {"status": "unavailable", "reason": reason}
+                warnings.append(f"Output media could not be probed: {path}: {reason}")
+            else:
+                output["verification"] = {"status": "failed", "reason": reason}
+                errors.append(f"Output verification failed for {path}: {reason}")
+        else:
+            if not media.streams:
+                output["verification"] = {"status": "failed", "reason": "FFprobe found no media streams."}
+                errors.append(f"Output verification failed for {path}: FFprobe found no media streams.")
+            else:
+                output["verification"] = {
+                    "status": "probed",
+                    "format_name": media.format_name,
+                    "streams": [
+                        {
+                            "type": stream.codec_type,
+                            "codec": stream.codec_name,
+                            "width": stream.width,
+                            "height": stream.height,
+                            "sample_rate": stream.sample_rate,
+                            "channels": stream.channels,
+                        }
+                        for stream in media.streams
+                    ],
+                }
+        outputs.append(output)
+
+    if errors:
+        diagnostic = "\n".join(errors)
+        if result.stderr:
+            diagnostic = f"{diagnostic}\n{result.stderr}"
+        return replace(
+            result,
+            status=JobStatus.FAILED,
+            exit_category="validation",
+            stderr=diagnostic,
+            warnings=tuple(warnings),
+            outputs=tuple(outputs),
+        )
+    return replace(result, warnings=tuple(warnings), outputs=tuple(outputs))
+
+
 class WorkflowEngine:
     """Compile, preflight, and execute every supported workflow through one public layer."""
 
     def __init__(self, *, ffmpeg_path: str = "ffmpeg", ffprobe_path: str = "ffprobe") -> None:
         self.planner = WorkflowPlanner(ffmpeg_path=ffmpeg_path, ffprobe_path=ffprobe_path)
         self._preflight = PreflightEngine(ffmpeg_path=ffmpeg_path, ffprobe_path=ffprobe_path)
+        self._output_probe = FFprobeRunner(ffprobe_path)
 
     def prepare(self, plan: ExecutionPlan) -> PreparedWorkflow:
         """Preflight an already compiled plan without mutating media or output paths."""
@@ -184,6 +244,7 @@ class WorkflowEngine:
                 if prepared.preflight.ok
                 else _preflight_failure_result(execution_plan, prepared.preflight)
             )
+            result = _verify_outputs(execution_plan, result, self._output_probe)
             item = WorkflowExecution(
                 input=execution_plan.inputs[0] if execution_plan.inputs else None,
                 output=execution_plan.outputs[0] if execution_plan.outputs else None,
@@ -208,6 +269,7 @@ class WorkflowEngine:
                 if preflight.ok
                 else _preflight_failure_result(item_plan, preflight)
             )
+            result = _verify_outputs(item_plan, result, self._output_probe)
             items.append(
                 WorkflowExecution(
                     input=item_plan.inputs[0],

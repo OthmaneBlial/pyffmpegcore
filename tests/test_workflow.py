@@ -3,14 +3,18 @@
 from __future__ import annotations
 
 import json
+import sys
 
 from pyffmpegcore import (
     ConvertOptions,
     ExecutionPlan,
+    FFprobeRunner,
     JobResult,
     JobStatus,
+    MediaInfo,
     PreflightReport,
     PreparedWorkflow,
+    StreamInfo,
     WorkflowEngine,
     WorkflowExecution,
 )
@@ -86,3 +90,92 @@ def test_workflow_execution_reports_before_after_target_proof(tmp_path):
         "target_met": True,
     }
     assert execution.to_dict()["proof"] == execution.proof
+
+
+def test_workflow_records_successful_output_probe(tmp_path, monkeypatch):
+    output = tmp_path / "output.bin"
+    code = f"from pathlib import Path; Path({str(output)!r}).write_bytes(b'media')"
+    plan = ExecutionPlan(
+        workflow="test/probed-output",
+        command=(sys.executable, "-c", code),
+        inputs=(),
+        outputs=(str(output),),
+    )
+    media = MediaInfo(
+        path=str(output),
+        format_name="matroska",
+        streams=(StreamInfo(index=0, codec_type="audio", codec_name="pcm_s16le"),),
+    )
+    monkeypatch.setattr(FFprobeRunner, "probe_media", lambda _runner, _path: media)
+    prepared = PreparedWorkflow(plan, PreflightReport(plan.workflow, ()))
+
+    result = WorkflowEngine(ffprobe_path="fake-ffprobe").run(prepared).items[0].result
+
+    assert result.succeeded
+    assert result.outputs[0]["verification"] == {
+        "status": "probed",
+        "format_name": "matroska",
+        "streams": [
+            {
+                "type": "audio",
+                "codec": "pcm_s16le",
+                "width": None,
+                "height": None,
+                "sample_rate": None,
+                "channels": None,
+            }
+        ],
+    }
+
+
+def test_workflow_fails_when_ffprobe_rejects_output(tmp_path, monkeypatch):
+    output = tmp_path / "invalid.bin"
+    code = f"from pathlib import Path; Path({str(output)!r}).write_bytes(b'not media')"
+    plan = ExecutionPlan(
+        workflow="test/invalid-output",
+        command=(sys.executable, "-c", code),
+        inputs=(),
+        outputs=(str(output),),
+    )
+
+    def reject_output(_runner, _path):
+        raise RuntimeError("Invalid data found when processing input")
+
+    monkeypatch.setattr(FFprobeRunner, "probe_media", reject_output)
+    prepared = PreparedWorkflow(plan, PreflightReport(plan.workflow, ()))
+
+    result = WorkflowEngine(ffprobe_path="fake-ffprobe").run(prepared).items[0].result
+
+    assert result.status is JobStatus.FAILED
+    assert result.exit_category == "validation"
+    assert "Output verification failed" in result.stderr
+    assert result.outputs[0]["verification"] == {
+        "status": "failed",
+        "reason": "Invalid data found when processing input",
+    }
+
+
+def test_workflow_marks_output_unverified_when_ffprobe_is_unavailable(tmp_path, monkeypatch):
+    output = tmp_path / "output.bin"
+    code = f"from pathlib import Path; Path({str(output)!r}).write_bytes(b'media')"
+    plan = ExecutionPlan(
+        workflow="test/no-ffprobe",
+        command=(sys.executable, "-c", code),
+        inputs=(),
+        outputs=(str(output),),
+    )
+
+    def unavailable(_runner, _path):
+        raise RuntimeError("FFprobe executable 'missing-ffprobe' was not found.")
+
+    monkeypatch.setattr(FFprobeRunner, "probe_media", unavailable)
+    prepared = PreparedWorkflow(plan, PreflightReport(plan.workflow, ()))
+
+    result = WorkflowEngine(ffprobe_path="missing-ffprobe").run(prepared).items[0].result
+
+    assert result.succeeded
+    assert result.outputs[0]["verification"] == {
+        "status": "unavailable",
+        "reason": "FFprobe executable 'missing-ffprobe' was not found.",
+    }
+    assert any("Output media could not be probed" in warning for warning in result.warnings)

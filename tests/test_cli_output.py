@@ -4,7 +4,17 @@ Unit tests for CLI output helpers.
 
 from __future__ import annotations
 
-from pyffmpegcore.cli import CLIContext, CLIProgressPrinter, format_bytes, report_batch_results
+import pytest
+
+from pyffmpegcore import ExecutionPlan, JobResult, JobStatus, PreflightReport, PreparedWorkflow, WorkflowExecution
+from pyffmpegcore.cli import (
+    CLIContext,
+    CLIProgressPrinter,
+    _render_execution_successes,
+    format_bytes,
+    report_batch_results,
+)
+from pyffmpegcore.workflow import WorkflowBatch
 
 
 def test_format_bytes_formats_common_sizes():
@@ -52,3 +62,39 @@ def test_report_batch_results_prints_summary(capsys):
 
     captured = capsys.readouterr()
     assert "Image conversion: 2 succeeded, 1 failed, 3 total" in captured.out
+
+
+@pytest.mark.parametrize(
+    ("workflow", "message"),
+    [
+        ("convert", "FFprobe unavailable; output media was not verified."),
+        ("images/convert", "FFprobe unavailable for 1 image output(s); media verification was skipped."),
+    ],
+)
+def test_success_summary_discloses_unavailable_output_verification(tmp_path, capsys, monkeypatch, workflow, message):
+    output = tmp_path / "result.mp4"
+    plan = ExecutionPlan(workflow, ("ffmpeg",), (), (str(output),))
+    result = JobResult(
+        workflow=workflow,
+        command=("ffmpeg",),
+        status=JobStatus.SUCCEEDED,
+        exit_category="ok",
+        returncode=0,
+        elapsed_seconds=0,
+        outputs=(
+            {
+                "path": str(output),
+                "exists": True,
+                "size_bytes": 1,
+                "verification": {"status": "unavailable", "reason": "missing ffprobe"},
+            },
+        ),
+    )
+    report = PreflightReport(workflow, ())
+    item = WorkflowExecution(None, str(output), report, result)
+    bundle = WorkflowBatch(PreparedWorkflow(plan, report), (item,))
+    monkeypatch.setattr("pyffmpegcore.cli.summarize_output_file", lambda *_args: None)
+
+    _render_execution_successes(CLIContext(), bundle)
+
+    assert message in capsys.readouterr().out

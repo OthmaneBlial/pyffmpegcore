@@ -1076,6 +1076,14 @@ def _render_execution_failures(bundle: CLIExecutionBundle) -> None:
         echo_error(f"{label}: {diagnostic}")
 
 
+def _unverified_output_count(result: JobResult) -> int:
+    return sum(
+        output.get("verification", {}).get("status") == "unavailable"
+        for output in result.outputs
+        if isinstance(output.get("verification"), dict)
+    )
+
+
 def _render_execution_successes(ctx: CLIContext, bundle: CLIExecutionBundle) -> None:
     """Keep the established human summaries on top of typed results."""
     if bundle.prepared.plan.workflow.startswith("images/"):
@@ -1093,10 +1101,15 @@ def _render_execution_successes(ctx: CLIContext, bundle: CLIExecutionBundle) -> 
                 "failed": bundle.failed_count,
             },
         )
+        unverified = sum(_unverified_output_count(item.result) for item in bundle.items)
+        if unverified:
+            echo(ctx, f"FFprobe unavailable for {unverified} image output(s); media verification was skipped.")
         return
     for item in bundle.items:
         if item.result.succeeded and item.output is not None:
             summarize_output_file(ctx, Path(item.output))
+            if _unverified_output_count(item.result):
+                echo(ctx, "FFprobe unavailable; output media was not verified.")
             proof = item.proof
             if proof["target_size_bytes"] is not None:
                 status = "PASS" if proof["target_met"] else "MISS"

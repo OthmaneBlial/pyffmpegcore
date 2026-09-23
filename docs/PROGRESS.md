@@ -13,8 +13,11 @@ Updated: 2026-09-23
 - Directory-image symlink protection was pushed in `167b754`; CI [run 35889125740](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35889125740), CodeQL [run 35889125916](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35889125916), Benchmarks [run 35889125884](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35889125884), and Scorecard [run 35889125847](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35889125847) passed on that exact SHA.
 - All six open Dependabot PRs (#15–#20) were closed at the user's request; the open-PR list was verified empty.
 - Managed execution now rejects a zero-exit command that failed to create a declared output file; focused local validation passed (20 tests), and hosted CI [run 35890855866](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35890855866) passed on exact SHA `ecf6bc103564ac5c81c1ec3def42c32458f5cd58`.
+- Empty declared outputs are now rejected and cleaned up; focused local validation passed (21 tests). Hosted CI [run 35891713418](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35891713418) passed on exact SHA `55d48e368881c4da8d914216b4360bda16625437`.
+- Managed workflows now record FFprobe stream/format evidence, fail when FFprobe rejects output, and report `unavailable` with a warning when FFprobe cannot run. The full local suite passed on this implementation (376 passed, 7 skipped); after adding the CLI warning for unverified outputs, 12 focused tests and Ruff, format, and mypy passed.
 - The Container workflow [run 35889125917](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35889125917), triggered by the code push, was cancelled per the no-Docker instruction.
 - The Container workflow [run 35890855918](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35890855918), triggered by the output-verification fix, was cancelled per the no-Docker instruction; CodeQL, Benchmarks, and Scorecard passed on `ecf6bc1`.
+- The Container workflow [run 35891713312](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35891713312), triggered by the empty-output fix, was cancelled per the no-Docker instruction; CodeQL, Benchmarks, and Scorecard passed on `55d48e3`.
 - No local Docker or container tooling was used.
 
 ## Baseline validation
@@ -35,7 +38,7 @@ Commands above used the ignored local `.venv` and its pinned CI tools. Initial a
 
 ## Architecture and decisions
 
-The repository already follows the intended path: typed workflow input, deterministic plan, preflight, managed execution, output checks, and privacy-aware receipt. CLI, Python, and pipeline adapters converge on the shared planner and workflow engine. Keep these boundaries and avoid broad refactoring without a demonstrated behavior or maintenance problem. The managed executor now rejects a successful process that omitted a declared output file; FFprobe-based output verification remains a gap because the CLI currently treats probe failure as a display-only fallback.
+The repository already follows the intended path: typed workflow input, deterministic plan, preflight, managed execution, output checks, FFprobe evidence, and privacy-aware receipt. CLI, Python, and pipeline adapters converge on the shared planner and workflow engine. Keep these boundaries and avoid broad refactoring without a demonstrated behavior or maintenance problem. The executor rejects missing or empty declared outputs. Managed workflows record FFprobe format and stream facts, classify unreadable outputs as validation failures, and explicitly flag unavailable FFprobe; the probe checks container metadata and streams but does not decode the full media.
 
 The audit found an inconsistency in the cross-platform text boundary. The managed executor and FFprobe parser decoded tool output as UTF-8 with replacement, but several runner, doctor, capability, receipt, install, release, benchmark, and artifact-build subprocesses used locale-dependent `text=True`. Core FFmpeg/FFprobe paths and the validation helpers now specify UTF-8 with replacement. Regression tests cover those paths. This aligns tool output with the documented decoding contract and avoids locale-dependent decode failures.
 
@@ -54,17 +57,19 @@ The image-directory planner resolved generated output filenames before checking 
 - Verified hosted CI, CodeQL, Benchmarks, and Scorecard passed on the exact pushed security-fix SHA `167b754`; cancelled its Container run.
 - Closed all six Dependabot PRs at the user's request and verified no open PRs remain.
 - Reproduced a false success when a zero-exit process omitted its declared output; the shared executor now reports validation failure and regression coverage passes in `tests/test_domain.py`.
+- Rejects and removes empty outputs after a zero-exit process; the focused domain tests pass (21 tests).
+- Managed workflow results now include FFprobe verification state and stream metadata. Corrupt or streamless outputs fail validation; missing FFprobe remains a warning marked `unavailable` and is visible in human CLI output. Full local suite: 376 passed, 7 skipped; 12 targeted tests passed after the CLI notice.
 
 ## Remaining work
 
-1. Make FFprobe output-probe failures visible in workflow results and receipts; current CLI summary silently falls back to the output path.
-2. Continue the still-open items in `ROADMAP.md`, including real-user validation, native package-channel checks, human review of media quality, and a release based on a newly verified artifact.
-3. Keep external user/community evidence separate from local or CI evidence. The roadmap's independent-user and public-promotion gates cannot be satisfied by synthetic tests.
-4. Do not make the final product video before the roadmap's release and user-validation gates pass.
+1. Continue the still-open items in `ROADMAP.md`, including real-user validation, native package-channel checks, human review of media quality, and a release based on a newly verified artifact.
+2. Keep external user/community evidence separate from local or CI evidence. The roadmap's independent-user and public-promotion gates cannot be satisfied by synthetic tests.
+3. Do not make the final product video before the roadmap's release and user-validation gates pass.
 
 ## Known validation limits
 
 - This local baseline covers one macOS/Python/FFmpeg combination. Cross-platform claims rely on the linked CI matrix, not this run.
+- FFprobe verification confirms readable container metadata and at least one media stream; it does not decode every packet or frame.
 - Seven local tests skipped because optional media capabilities or fixtures were unavailable; pytest reported each skip.
 - The local strict MkDocs build remains unverified; the current-SHA hosted CI docs job is the available passing evidence.
 - No new public package, container, or release was published during this audit.
