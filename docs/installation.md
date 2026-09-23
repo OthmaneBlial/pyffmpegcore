@@ -19,8 +19,8 @@ ffmpeg -version
 ffprobe -version
 ```
 
-On Windows, the Microsoft WinGet catalog lists the
-[`Gyan.FFmpeg` full build](https://github.com/microsoft/winget-pkgs/blob/master/manifests/g/Gyan/FFmpeg/8.1/Gyan.FFmpeg.locale.en-US.yaml).
+On Windows, the Microsoft WinGet repository currently lists the
+[`Gyan.FFmpeg` 8.1.2 full build](https://github.com/microsoft/winget-pkgs/blob/master/manifests/g/Gyan/FFmpeg/8.1.2/Gyan.FFmpeg.installer.yaml).
 Follow Microsoft's [WinGet install command](https://learn.microsoft.com/en-us/windows/package-manager/winget/install)
 in PowerShell:
 
@@ -37,15 +37,14 @@ ffprobe -version
 
 If either executable is still missing, inspect the package's install location
 and `PATH`, or pass trusted absolute binary paths as shown in
-[troubleshooting](troubleshooting.md#ffmpeg-or-ffprobe-is-missing). The package commands
-above are checked against their official sources as of 19 September 2026;
-the Windows installation was not run on this macOS host. The macOS Homebrew
-build was used for the local audit, while CI also installs FFmpeg separately
-on hosted macOS and Windows runners.
+[troubleshooting](troubleshooting.md#ffmpeg-or-ffprobe-is-missing). The WinGet,
+Fedora, Arch, and Homebrew package pages were checked on 24 September 2026.
+The Windows, Fedora, and Arch installations were not run on this macOS host.
+CI also installs FFmpeg separately on hosted macOS and Windows runners.
 
 ## Fedora Linux and Arch Linux
 
-On Fedora Workstation, install the distribution's
+On Fedora 44, install the distribution's
 [`ffmpeg-free` package](https://packages.fedoraproject.org/pkgs/ffmpeg/ffmpeg-free/)
 with the documented [DNF `install` command](https://dnf.readthedocs.io/en/stable/command_ref.html#install-command):
 
@@ -53,11 +52,11 @@ with the documented [DNF `install` command](https://dnf.readthedocs.io/en/stable
 sudo dnf install ffmpeg-free
 ```
 
-Fedora's [package file list](https://packages.fedoraproject.org/pkgs/ffmpeg/ffmpeg-free/fedora-43.html)
+Fedora's [Fedora 44 update file list](https://packages.fedoraproject.org/pkgs/ffmpeg/ffmpeg-free/fedora-44-updates.html)
 includes both `ffmpeg` and `ffprobe`. This build deliberately supports fewer
 codecs than some third-party FFmpeg builds.
 
-On Arch Linux, install the official
+On x86_64 Arch Linux, install the official
 [`ffmpeg` package](https://archlinux.org/packages/extra/x86_64/ffmpeg/)
 as described in the [ArchWiki installation section](https://wiki.archlinux.org/title/FFmpeg#Installation):
 
@@ -77,7 +76,7 @@ pyffmpegcore smoke-test
 ```
 
 These Fedora and Arch install commands were checked against official package
-pages on 19 September 2026; they were **not executed on those distributions**
+pages on 24 September 2026; they were **not executed on those distributions**
 in this audit. Encoder and filter availability depends on the installed FFmpeg
 build. Inspect `pyffmpegcore doctor --json` before relying on a particular
 workflow; PyFFmpegCore does not fetch missing codecs.

@@ -148,6 +148,10 @@ invalide) et vérifie leurs remèdes : les six cellules Linux/macOS/Windows ont
 passé [26/26 contrôles](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35448000531).
 Installation réelle via WinGet/Fedora/Arch et revue humaine des textes d'erreur
 sur chaque OS encore à vérifier ; la tâche reste ouverte.
+Le 24 septembre, les sources de paquets officielles ont été revérifiées :
+WinGet `Gyan.FFmpeg` 8.1.2, Fedora 44 `ffmpeg-free` avec `ffprobe`, Arch
+x86_64 FFmpeg 9.0.2 et Homebrew `ffmpeg` 9.0.2. Les liens d'installation ont
+été actualisés ; aucun installateur Windows/Fedora/Arch n'a été exécuté.
 Le même validateur de wheel a toutefois vérifié localement les quatre refus
 attendus (FFmpeg absent, encodeur absent, sortie existante, parent invalide)
 avec les codes 3/4 et les remèdes correspondants ; cela ne remplace pas les
