@@ -97,6 +97,7 @@ class PipelineCachePolicy:
             raise ValidationError("pipeline cache directory must not be empty")
 
     def to_dict(self) -> dict[str, object]:
+        """Return JSON-compatible cache settings."""
         return asdict(self)
 
 
@@ -127,6 +128,7 @@ class PipelineStepSpec:
             raise ValidationError(f"pipeline step {self.id} contains duplicate dependencies")
 
     def to_dict(self) -> dict[str, object]:
+        """Serialize the declarative step with JSON-compatible options."""
         result: dict[str, object] = {
             "id": self.id,
             "input": self.input,
@@ -261,6 +263,7 @@ class PipelineSpec:
         )
 
     def to_dict(self) -> dict[str, object]:
+        """Serialize the versioned manifest without its local base directory."""
         return {
             "schema_version": self.schema_version,
             "name": self.name,
@@ -294,6 +297,7 @@ class PipelinePlan:
     schema_version: str = PIPELINE_SCHEMA_VERSION
 
     def to_dict(self) -> dict[str, object]:
+        """Serialize compiled plans while masking declared secret values."""
         return _mask_secrets(
             {
                 "schema_version": self.schema_version,
@@ -619,6 +623,7 @@ class PreparedPipeline:
         return all(step.preflight.ok for step in self.steps)
 
     def to_dict(self) -> dict[str, object]:
+        """Return per-step preflight facts and the aggregate pipeline status."""
         return _mask_secrets(
             {
                 "schema_version": PIPELINE_SCHEMA_VERSION,
@@ -686,6 +691,7 @@ class PipelineEvent:
     schema_version: str = PIPELINE_SCHEMA_VERSION
 
     def to_dict(self, secrets: tuple[str, ...] = ()) -> dict[str, object]:
+        """Serialize this event and mask supplied secret values."""
         return _mask_secrets(asdict(self), secrets)
 
 
@@ -703,6 +709,7 @@ class PipelineStepOutcome:
         return self.status in {"succeeded", "resumed", "cached"}
 
     def to_dict(self, secrets: tuple[str, ...] = ()) -> dict[str, object]:
+        """Serialize this step outcome and redact nested execution evidence."""
         return _mask_secrets(
             {
                 "step_id": self.step_id,
@@ -743,6 +750,7 @@ class PipelineRun:
         return self.succeeded_count == len(self.items)
 
     def to_dict(self) -> dict[str, object]:
+        """Serialize ordered outcomes with a stable summary."""
         return {
             "schema_version": self.schema_version,
             "pipeline": self.pipeline.to_dict(),

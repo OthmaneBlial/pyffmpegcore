@@ -256,7 +256,7 @@ Optional output-validity cache; content hashing is explicit.
 
 ### `to_dict(self) -> 'dict[str, object]'`
 
-No public docstring is available.
+Return JSON-compatible cache settings.
 
 ## `PipelineCompiler`
 
@@ -275,7 +275,7 @@ PipelineEvent(sequence: 'int', event: 'str', step_id: 'str', detail: 'str | None
 
 ### `to_dict(self, secrets: 'tuple[str, ...]' = ()) -> 'dict[str, object]'`
 
-No public docstring is available.
+Serialize this event and mask supplied secret values.
 
 ## `PipelinePlan`
 
@@ -287,7 +287,7 @@ Render the dependency DAG as text, Mermaid, or Graphviz DOT.
 
 ### `to_dict(self) -> 'dict[str, object]'`
 
-No public docstring is available.
+Serialize compiled plans while masking declared secret values.
 
 ## `PipelinePreflightEngine`
 
@@ -306,7 +306,7 @@ PipelineRun(pipeline: 'PipelinePlan', items: 'tuple[PipelineStepOutcome, ...]', 
 
 ### `to_dict(self) -> 'dict[str, object]'`
 
-No public docstring is available.
+Serialize ordered outcomes with a stable summary.
 
 ## `PipelineRunner`
 
@@ -325,7 +325,7 @@ Versioned pipeline source with strict variables, cache, and typed steps.
 
 ### `to_dict(self) -> 'dict[str, object]'`
 
-No public docstring is available.
+Serialize the versioned manifest without its local base directory.
 
 ## `PipelineStepOutcome`
 
@@ -333,7 +333,7 @@ PipelineStepOutcome(step_id: 'str', status: 'str', cache_key: 'str', execution: 
 
 ### `to_dict(self, secrets: 'tuple[str, ...]' = ()) -> 'dict[str, object]'`
 
-No public docstring is available.
+Serialize this step outcome and redact nested execution evidence.
 
 ## `PipelineStepPlan`
 
@@ -345,7 +345,7 @@ One strict declarative step before variable and dependency resolution.
 
 ### `to_dict(self) -> 'dict[str, object]'`
 
-No public docstring is available.
+Serialize the declarative step with JSON-compatible options.
 
 ## `Profile`
 
@@ -381,7 +381,7 @@ Whole-pipeline structural, capability, and external-input preflight facts.
 
 ### `to_dict(self) -> 'dict[str, object]'`
 
-No public docstring is available.
+Return per-step preflight facts and the aggregate pipeline status.
 
 ## `PreparedWorkflow`
 
