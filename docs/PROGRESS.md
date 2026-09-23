@@ -12,7 +12,9 @@ Updated: 2026-09-23
 - Helper-script UTF-8 fixes were pushed in `b70cacf`; full hosted CI [run 35887846148](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35887846148) passed on that exact SHA.
 - Directory-image symlink protection was pushed in `167b754`; CI [run 35889125740](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35889125740), CodeQL [run 35889125916](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35889125916), Benchmarks [run 35889125884](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35889125884), and Scorecard [run 35889125847](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35889125847) passed on that exact SHA.
 - All six open Dependabot PRs (#15–#20) were closed at the user's request; the open-PR list was verified empty.
+- Managed execution now rejects a zero-exit command that failed to create a declared output file; focused local validation passed (20 tests), and hosted CI [run 35890855866](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35890855866) passed on exact SHA `ecf6bc103564ac5c81c1ec3def42c32458f5cd58`.
 - The Container workflow [run 35889125917](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35889125917), triggered by the code push, was cancelled per the no-Docker instruction.
+- The Container workflow [run 35890855918](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35890855918), triggered by the output-verification fix, was cancelled per the no-Docker instruction; CodeQL, Benchmarks, and Scorecard passed on `ecf6bc1`.
 - No local Docker or container tooling was used.
 
 ## Baseline validation
@@ -33,7 +35,7 @@ Commands above used the ignored local `.venv` and its pinned CI tools. Initial a
 
 ## Architecture and decisions
 
-The repository already follows the intended path: typed workflow input, deterministic plan, preflight, managed execution, output verification, and privacy-aware receipt. CLI, Python, and pipeline adapters converge on the shared planner and workflow engine. Keep these boundaries and avoid broad refactoring without a demonstrated behavior or maintenance problem.
+The repository already follows the intended path: typed workflow input, deterministic plan, preflight, managed execution, output checks, and privacy-aware receipt. CLI, Python, and pipeline adapters converge on the shared planner and workflow engine. Keep these boundaries and avoid broad refactoring without a demonstrated behavior or maintenance problem. The managed executor now rejects a successful process that omitted a declared output file; FFprobe-based output verification remains a gap because the CLI currently treats probe failure as a display-only fallback.
 
 The audit found an inconsistency in the cross-platform text boundary. The managed executor and FFprobe parser decoded tool output as UTF-8 with replacement, but several runner, doctor, capability, receipt, install, release, benchmark, and artifact-build subprocesses used locale-dependent `text=True`. Core FFmpeg/FFprobe paths and the validation helpers now specify UTF-8 with replacement. Regression tests cover those paths. This aligns tool output with the documented decoding contract and avoids locale-dependent decode failures.
 
@@ -51,12 +53,14 @@ The image-directory planner resolved generated output filenames before checking 
 - Reproduced and blocked symlink redirection for generated directory-image outputs; the focused planning suite passed (19 tests).
 - Verified hosted CI, CodeQL, Benchmarks, and Scorecard passed on the exact pushed security-fix SHA `167b754`; cancelled its Container run.
 - Closed all six Dependabot PRs at the user's request and verified no open PRs remain.
+- Reproduced a false success when a zero-exit process omitted its declared output; the shared executor now reports validation failure and regression coverage passes in `tests/test_domain.py`.
 
 ## Remaining work
 
-1. Continue the still-open items in `ROADMAP.md`, including real-user validation, native package-channel checks, human review of media quality, and a release based on a newly verified artifact.
-2. Keep external user/community evidence separate from local or CI evidence. The roadmap's independent-user and public-promotion gates cannot be satisfied by synthetic tests.
-3. Do not make the final product video before the roadmap's release and user-validation gates pass.
+1. Make FFprobe output-probe failures visible in workflow results and receipts; current CLI summary silently falls back to the output path.
+2. Continue the still-open items in `ROADMAP.md`, including real-user validation, native package-channel checks, human review of media quality, and a release based on a newly verified artifact.
+3. Keep external user/community evidence separate from local or CI evidence. The roadmap's independent-user and public-promotion gates cannot be satisfied by synthetic tests.
+4. Do not make the final product video before the roadmap's release and user-validation gates pass.
 
 ## Known validation limits
 
