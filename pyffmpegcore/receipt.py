@@ -205,12 +205,15 @@ class RunReceipt:
             raise ValidationError("invalid receipt: " + "; ".join(errors))
 
     def to_dict(self) -> dict[str, Any]:
+        """Return the validated receipt mapping."""
         return dict(self.document)
 
     def to_json(self) -> str:
+        """Render the receipt as indented UTF-8-compatible JSON with a trailing newline."""
         return json.dumps(self.document, indent=2, ensure_ascii=False) + "\n"
 
     def write(self, path: str | Path) -> Path:
+        """Create parent directories, write the JSON receipt, and return its path."""
         destination = Path(path)
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.write_text(self.to_json(), encoding="utf-8")

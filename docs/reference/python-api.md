@@ -469,15 +469,15 @@ Validated schema 1.0 receipt suitable for storage or bug reports.
 
 ### `to_dict(self) -> 'dict[str, Any]'`
 
-No public docstring is available.
+Return the validated receipt mapping.
 
 ### `to_json(self) -> 'str'`
 
-No public docstring is available.
+Render the receipt as indented UTF-8-compatible JSON with a trailing newline.
 
 ### `write(self, path: 'str | Path') -> 'Path'`
 
-No public docstring is available.
+Create parent directories, write the JSON receipt, and return its path.
 
 ## `StreamInfo`
 
