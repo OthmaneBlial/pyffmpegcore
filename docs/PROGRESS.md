@@ -9,6 +9,7 @@ Updated: 2026-09-23
 - Public package version remains `0.2.2`; no new release was created.
 - The audit baseline CI for the starting SHA, [run 35451954201](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35451954201), succeeded, including quality checks, the 80% coverage gate, Python 3.10–3.14 package contracts, and six exact-wheel OS/Python smoke cells.
 - Core UTF-8 fixes were pushed in `ed83052`; full hosted CI [run 35886966278](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35886966278) passed on that exact SHA.
+- Helper-script UTF-8 fixes were pushed in `b70cacf`; full hosted CI [run 35887846148](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35887846148) passed on that exact SHA.
 - No local Docker or container tooling was used.
 
 ## Baseline validation
@@ -23,7 +24,7 @@ Updated: 2026-09-23
 | `python scripts/check_docs.py` | Passed |
 | `python -m mkdocs build --strict --clean` | Not run locally: the pinned docs lock requires a `watchdog` binary wheel unavailable for this host. Current-SHA GitHub CI docs job passed. |
 
-After the core UTF-8 fix, the full suite passed again: 366 passed, 7 skipped, 0 failed in 139.38 seconds. Ruff, format, mypy, compileall, and `scripts/check_docs.py` passed on the changed tree. CI run 35886966278 passed build, package matrix, exact-wheel matrix, fuzz, strict docs, and 80% coverage gates. The release/install/benchmark helper follow-up passed 17 focused tests and the same local quality checks; hosted validation for its commit remains pending.
+After the core UTF-8 fix, the full suite passed again: 366 passed, 7 skipped, 0 failed in 139.38 seconds. Ruff, format, mypy, compileall, and `scripts/check_docs.py` passed on the changed tree. CI run 35886966278 passed build, package matrix, exact-wheel matrix, fuzz, strict docs, and 80% coverage gates. The release/install/benchmark helper follow-up passed 17 focused tests and the same local quality checks. CI run 35887846148 passed distribution build, quality, Python 3.10–3.14 contracts, all six exact-wheel cells, fuzz, strict docs, and the 80% coverage gate on `b70cacf`.
 
 Commands above used the ignored local `.venv` and its pinned CI tools. Initial attempts with `python` failed because that executable is not on this host; `python3` and `.venv/bin/python` are available.
 
@@ -41,13 +42,13 @@ The audit found an inconsistency in the cross-platform text boundary. The manage
 - Added explicit UTF-8/replacement decoding to remaining core FFmpeg/FFprobe text subprocess calls and focused tests for runner, progress, capabilities, doctor, and receipt version inspection.
 - Added the same decoding policy to install, release, benchmark, and artifact-build helpers; all 17 focused helper tests pass.
 - Verified hosted CI run 35886966278 succeeded on the exact pushed core-fix SHA `ed83052`.
+- Verified hosted CI run 35887846148 succeeded on the exact pushed helper-fix SHA `b70cacf`.
 
 ## Remaining work
 
-1. Push and validate the helper-script decoding follow-up; record the hosted CI result for its exact SHA.
-2. Continue the still-open items in `ROADMAP.md`, including real-user validation, native package-channel checks, human review of media quality, and a release based on a newly verified artifact.
-3. Keep external user/community evidence separate from local or CI evidence. The roadmap's independent-user and public-promotion gates cannot be satisfied by synthetic tests.
-4. Do not make the final product video before the roadmap's release and user-validation gates pass.
+1. Continue the still-open items in `ROADMAP.md`, including real-user validation, native package-channel checks, human review of media quality, and a release based on a newly verified artifact.
+2. Keep external user/community evidence separate from local or CI evidence. The roadmap's independent-user and public-promotion gates cannot be satisfied by synthetic tests.
+3. Do not make the final product video before the roadmap's release and user-validation gates pass.
 
 ## Known validation limits
 
