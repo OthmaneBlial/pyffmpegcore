@@ -59,7 +59,8 @@ pyffmpegcore batch run batch.json \
 `max_workers` is a hard concurrency bound from 1 to 32. `max_input_bytes` limits
 each local input; it accepts an integer or a documented size such as `2GiB`.
 `per_job_timeout_seconds` applies the normal cancellation and cleanup policy to
-every job.
+every job. `BatchRunner.run(..., policy=...)` also applies this override to
+direct Python API jobs; when it is unset, each plan keeps its own timeout.
 
 The result keeps manifest order even when jobs finish out of order. Exit code
 `0` means every item succeeded, `6` means stable partial success, and the normal

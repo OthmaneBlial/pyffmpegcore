@@ -43,6 +43,7 @@ class FakeEngine:
         self.responses = responses or {}
         self.delay = delay
         self.calls: list[str] = []
+        self.timeouts: list[float | None] = []
         self.active = 0
         self.max_active = 0
         self.lock = threading.Lock()
@@ -53,6 +54,7 @@ class FakeEngine:
     def run(self, plan, *, cancellation=None):
         with self.lock:
             self.calls.append(plan.workflow)
+            self.timeouts.append(plan.policy.timeout_seconds)
             self.active += 1
             self.max_active = max(self.max_active, self.active)
             configured = self.responses.get(plan.workflow, [(JobStatus.SUCCEEDED, "success", "")])
@@ -95,6 +97,23 @@ def test_batch_is_bounded_emits_ordered_events_and_keeps_ordered_results(tmp_pat
     assert [item.job_id for item in result.items] == [job.id for job in jobs]
     assert [event.sequence for event in events] == list(range(1, len(events) + 1))
     assert {event.event for event in events} >= {"queued", "started", "succeeded"}
+
+
+def test_batch_policy_timeout_applies_to_direct_python_jobs(tmp_path):
+    job = BatchJob("timed", _plan(tmp_path, "timed"))
+    engine = FakeEngine()
+
+    result = BatchRunner(engine=engine).run((job,), policy=BatchPolicy(per_job_timeout_seconds=1.5))
+
+    assert result.succeeded
+    assert engine.timeouts == [1.5]
+    assert job.plan.policy.timeout_seconds is None
+
+
+@pytest.mark.parametrize("timeout", [float("nan"), float("inf"), float("-inf")])
+def test_batch_timeout_must_be_finite(timeout):
+    with pytest.raises(ValidationError, match="batch per_job_timeout_seconds must be positive and finite"):
+        BatchPolicy(per_job_timeout_seconds=timeout)
 
 
 def test_batch_retries_only_classified_transient_runtime_failures(tmp_path):

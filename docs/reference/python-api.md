@@ -35,6 +35,8 @@ Serialize manifest version, policy, signatures, and redacted plans.
 
 Explicit concurrency, retry, input-size, and timeout limits.
 
+A configured per-job timeout overrides each plan's process timeout.
+
 ### `to_dict(self) -> 'dict[str, object]'`
 
 Return validated concurrency, retry, input-size, and timeout limits.
@@ -57,7 +59,8 @@ Run jobs once and refuse receipt replacement unless explicitly allowed.
 
 Existing state files require resume or explicit overwrite. State files
 are claimed before the first job starts and cannot alias media outputs
-or generated receipts.
+or generated receipts. A configured batch timeout overrides the timeout
+in each job plan.
 
 ## `CapabilityUnavailableError`
 
@@ -106,6 +109,8 @@ Serialize workflow, argument vectors, policy, streams, warnings, and metadata.
 ## `ExecutionPolicy`
 
 Explicit process, overwrite, capture, and cleanup behavior.
+
+A configured process timeout must be finite and greater than zero.
 
 ## `ExecutionStep`
 

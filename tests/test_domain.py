@@ -49,6 +49,12 @@ def test_typed_options_reject_invalid_values_immediately():
         ExecutionPolicy(timeout_seconds=0)
 
 
+@pytest.mark.parametrize("timeout", [float("nan"), float("inf"), float("-inf")])
+def test_execution_timeout_must_be_finite(timeout):
+    with pytest.raises(ValidationError, match="timeout_seconds must be positive and finite"):
+        ExecutionPolicy(timeout_seconds=timeout)
+
+
 def test_execution_plan_returns_stable_result(tmp_path):
     output = tmp_path / "result.txt"
     code = f"from pathlib import Path; Path({str(output)!r}).write_text('done')"

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import os
 import re
 from dataclasses import asdict, dataclass, field
@@ -50,7 +51,10 @@ class JobStatus(StringEnum):
 
 @dataclass(frozen=True, slots=True)
 class ExecutionPolicy:
-    """Explicit process, overwrite, capture, and cleanup behavior."""
+    """Explicit process, overwrite, capture, and cleanup behavior.
+
+    A configured process timeout must be finite and greater than zero.
+    """
 
     overwrite: OverwritePolicy = OverwritePolicy.REFUSE
     timeout_seconds: float | None = None
@@ -60,8 +64,13 @@ class ExecutionPolicy:
     temporary_files: TemporaryFilePolicy = TemporaryFilePolicy.CLEAN
 
     def __post_init__(self) -> None:
-        if self.timeout_seconds is not None and self.timeout_seconds <= 0:
-            raise ValidationError("timeout_seconds must be positive when provided")
+        if self.timeout_seconds is not None and (
+            not isinstance(self.timeout_seconds, (int, float))
+            or isinstance(self.timeout_seconds, bool)
+            or not math.isfinite(self.timeout_seconds)
+            or self.timeout_seconds <= 0
+        ):
+            raise ValidationError("timeout_seconds must be positive and finite when provided")
         if self.capture_tail_chars <= 0:
             raise ValidationError("capture_tail_chars must be positive")
 

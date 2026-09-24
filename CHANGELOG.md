@@ -4,6 +4,11 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Fixed
+
+- Python `BatchRunner` now applies `BatchPolicy.per_job_timeout_seconds` to
+  every plan; execution timeouts reject NaN and infinity.
+
 ## [0.3.0] - 2026-09-24
 
 ### Added

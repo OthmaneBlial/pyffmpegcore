@@ -14,7 +14,7 @@ formats and validation rules.
 | Public workflow compilation | `planning.py`, `profiles.py` | `ExecutionPlan` fields, warnings, required capabilities, and command vector |
 | Non-mutating checks | `preflight.py` | Explicit pass, warning, or failure before execution |
 | Shared execution | `workflow.py`, `runner.py`, `executor.py` | Job results, overwrite policy, timeout, cancellation, and cleanup |
-| Pipelines | `pipeline.py` | Strict versioned documents, dependency order, typed plans, cache state, and redaction |
+| Pipelines | `pipeline.py`, `pipeline_compiler.py`, `pipeline_runner.py` | Strict versioned documents, dependency order, typed plans, cache state, and redaction |
 | Evidence | `receipt.py` | Versioned receipt schema and privacy defaults |
 
 The CLI path is `cli_parser.build_parser` → `cli_planning.build_cli_plan` →

@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
 import threading
 from collections.abc import Callable, Iterable
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 from typing import Any, Protocol
 from urllib.parse import urlsplit
@@ -55,7 +56,10 @@ class WorkflowExecutor(Protocol):
 
 @dataclass(frozen=True, slots=True)
 class BatchPolicy:
-    """Explicit concurrency, retry, input-size, and timeout limits."""
+    """Explicit concurrency, retry, input-size, and timeout limits.
+
+    A configured per-job timeout overrides each plan's process timeout.
+    """
 
     max_workers: int = 2
     max_retries: int = 0
@@ -69,8 +73,13 @@ class BatchPolicy:
             raise ValidationError("batch max_retries must be between 0 and 10")
         if self.max_input_bytes is not None and self.max_input_bytes <= 0:
             raise ValidationError("batch max_input_bytes must be positive when provided")
-        if self.per_job_timeout_seconds is not None and self.per_job_timeout_seconds <= 0:
-            raise ValidationError("batch per_job_timeout_seconds must be positive when provided")
+        if self.per_job_timeout_seconds is not None and (
+            not isinstance(self.per_job_timeout_seconds, (int, float))
+            or isinstance(self.per_job_timeout_seconds, bool)
+            or not math.isfinite(self.per_job_timeout_seconds)
+            or self.per_job_timeout_seconds <= 0
+        ):
+            raise ValidationError("batch per_job_timeout_seconds must be positive and finite when provided")
 
     def to_dict(self) -> dict[str, object]:
         """Return validated concurrency, retry, input-size, and timeout limits."""
@@ -291,7 +300,8 @@ class BatchRunner:
 
         Existing state files require resume or explicit overwrite. State files
         are claimed before the first job starts and cannot alias media outputs
-        or generated receipts.
+        or generated receipts. A configured batch timeout overrides the timeout
+        in each job plan.
         """
         selected_policy = policy or BatchPolicy()
         ordered = validate_batch_jobs(jobs, selected_policy)
@@ -370,7 +380,13 @@ class BatchRunner:
             while attempts <= selected_policy.max_retries:
                 attempts += 1
                 emit("started", job, attempts)
-                batch = self.engine.run(job.plan, cancellation=cancel)
+                plan = job.plan
+                if selected_policy.per_job_timeout_seconds is not None:
+                    plan = replace(
+                        plan,
+                        policy=replace(plan.policy, timeout_seconds=selected_policy.per_job_timeout_seconds),
+                    )
+                batch = self.engine.run(plan, cancellation=cancel)
                 execution = batch.items[0]
                 receipt_path = receipt_paths.get(job.id)
                 if receipt_path is not None:
