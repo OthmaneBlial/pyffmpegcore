@@ -487,14 +487,16 @@ de 320 964 octets
 wheel a été installée hors ligne dans un venv propre ; le sdist a été installé
 hors ligne dans une cible isolée avec le backend déjà installé localement.
 `--version`, `doctor --json` et `smoke-test --json` ont réussi depuis chaque
-artefact. CodeQL, Scorecard, CI complète, Benchmarks et Container n'ont pas
-produit de run sur ce SHA. Les fichiers temporaires ne créent ni tag ni
-publication.
-Sur l'ancien SHA `a7f7abe9d52d9b88932f988fa4a3528b436a82ad`, CodeQL
-[`35954584806`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35954584806)
+artefact. CodeQL
+[`35955651145`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35955651145)
 et Scorecard
-[`35954584757`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35954584757)
-ont réussi ; ils ne couvrent pas le SHA courant.
+[`35955651131`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35955651131)
+ont réussi sur ce SHA exact. CI complète, Benchmarks et Container n'ont pas
+tourné. Les fichiers temporaires ne créent ni tag ni publication. Le commit
+documentaire `c7b098de7365f571fc1c577a6007d2a9f2972e26` passe aussi CodeQL
+[`35955915300`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35955915300)
+et Scorecard
+[`35955915236`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35955915236).
 Le dernier bundle hébergé vient du
 [run Release `35941884095`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35941884095),
 construit sur le SHA exact `401f0622a69b88d0beebfc32203d649070af0d86`. Ses six
