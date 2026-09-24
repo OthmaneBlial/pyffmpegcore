@@ -16,7 +16,8 @@ pyffmpegcore receipt validate run-receipt.json
 The job can fail and still produce a valid receipt. This is intentional: the
 exit category and preflight/result facts are often most valuable when
 diagnosing failure.
-If FFprobe can read an output that violates a built-in profile contract, the
+If FFprobe can read an output that violates a declared workflow or built-in
+profile contract, the
 receipt keeps the observed stream facts and validation reason so the mismatch
 can be diagnosed without probing the file again.
 Managed `--preserve-all-streams` receipts also retain the input/output stream

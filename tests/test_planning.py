@@ -6,7 +6,7 @@ import json
 
 import pytest
 
-from pyffmpegcore import CompressOptions, ConvertOptions, ValidationError, WorkflowPlanner, parse_size
+from pyffmpegcore import CompressOptions, ConvertOptions, ResizeOptions, ValidationError, WorkflowPlanner, parse_size
 from pyffmpegcore.domain import MediaInfo, StreamInfo
 from pyffmpegcore.planning import parse_bitrate
 from pyffmpegcore.preflight import PreflightReport
@@ -74,6 +74,62 @@ def test_concat_reencode_plan_selects_first_tracks_and_resets_timestamps(tmp_pat
     preview = render_plan_text(plan, PreflightReport(workflow=plan.workflow, checks=()), explain=True)
     assert "select the first video and audio stream" in preview
     assert "omit all other streams" in preview
+
+
+def test_concat_copy_plan_maps_every_input_stream(tmp_path):
+    plan = WorkflowPlanner().concat(
+        [str(tmp_path / "one.mkv"), str(tmp_path / "two.mkv")],
+        str(tmp_path / "joined.mkv"),
+        mode="copy",
+    )
+
+    assert plan.command[plan.command.index("-map") + 1] == "0"
+    assert plan.selected_streams == ("all input streams",)
+    assert "all matching input streams" in plan.operations[0]
+    assert plan.metadata["stream_policy"] == "preserve-all"
+
+
+def test_core_media_plans_declare_primary_output_streams(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        "pyffmpegcore.planning.FFprobeRunner.probe",
+        lambda _runner, _path: {"audio": {"sample_rate": 48_000}, "video": {"duration": 1}},
+    )
+    planner = WorkflowPlanner()
+    image_dir = tmp_path / "images"
+    image_dir.mkdir()
+    (image_dir / "still.png").write_bytes(b"image")
+    video = str(tmp_path / "video.mp4")
+    audio = str(tmp_path / "audio.wav")
+    subtitle = str(tmp_path / "captions.srt")
+
+    plans = (
+        (planner.resize(video, str(tmp_path / "resized.mp4"), ResizeOptions(320, 180)), ["video"]),
+        (planner.compress(video, str(tmp_path / "compressed.mp4")), ["video"]),
+        (planner.extract_audio(video, str(tmp_path / "audio.m4a")), ["audio"]),
+        (planner.thumbnail(video, str(tmp_path / "thumb.png")), ["video"]),
+        (planner.waveform(audio, str(tmp_path / "wave.png")), ["video"]),
+        (planner.speed("video", video, str(tmp_path / "fast.mp4"), factor=2), ["video", "audio"]),
+        (planner.speed("audio", audio, str(tmp_path / "fast.m4a"), factor=2), ["audio"]),
+        (
+            planner.subtitles("add", video, str(tmp_path / "subtitled.mp4"), subtitle_file=subtitle),
+            ["video", "subtitle"],
+        ),
+        (planner.subtitles("extract", video, str(tmp_path / "captions.srt")), ["subtitle"]),
+        (
+            planner.subtitles("burn", video, str(tmp_path / "burned.mp4"), subtitle_file=subtitle),
+            ["video"],
+        ),
+        (planner.mix_audio("mix", [audio, audio], str(tmp_path / "mix.m4a")), ["audio"]),
+        (planner.normalize_audio(audio, str(tmp_path / "normalized.m4a")), ["audio"]),
+        (planner.images("convert", str(image_dir), str(tmp_path / "converted")), ["video"]),
+        (planner.image(str(image_dir / "still.png"), str(tmp_path / "copy.png")), ["video"]),
+    )
+
+    for plan, expected in plans:
+        assert plan.metadata["output_contract"]["required_stream_types"] == expected, plan.workflow
+
+    copy_plan = planner.concat([video, video], str(tmp_path / "joined.mp4"), mode="copy")
+    assert copy_plan.metadata["stream_policy"] == "preserve-all"
 
 
 @pytest.mark.parametrize(

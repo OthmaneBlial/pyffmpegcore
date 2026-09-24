@@ -152,7 +152,11 @@ def _image_item_plan(plan: ExecutionPlan, index: int) -> ExecutionPlan:
         selected_streams=plan.selected_streams,
         operations=plan.operations,
         warnings=plan.warnings,
-        metadata={"structured_progress": True, "required_stream_types": ["video"]},
+        metadata={
+            "structured_progress": True,
+            "required_stream_types": ["video"],
+            "output_contract": {"required_stream_types": ["video"]},
+        },
     )
 
 

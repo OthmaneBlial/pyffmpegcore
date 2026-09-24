@@ -330,7 +330,10 @@ class WorkflowPlanner:
             ),
             streams=("video", "audio"),
             operations=(f"scale video to {options.width}x{options.height}",),
-            metadata={"required_stream_types": ["video"]},
+            metadata={
+                "required_stream_types": ["video"],
+                "output_contract": {"required_stream_types": ["video"]},
+            },
         )
 
     def compress(
@@ -353,7 +356,10 @@ class WorkflowPlanner:
         operations: list[str] = []
         steps: tuple[ExecutionStep, ...] = ()
         streams: tuple[str, ...] = ("video", "audio")
-        metadata: dict[str, object] = {"required_stream_types": ["video"]}
+        metadata: dict[str, object] = {
+            "required_stream_types": ["video"],
+            "output_contract": {"required_stream_types": ["video"]},
+        }
         if options.target_size_bytes is not None and options.two_pass:
             if options.video_codec == "copy":
                 raise ValidationError("video codec copy cannot satisfy a two-pass target-size contract")
@@ -526,7 +532,10 @@ class WorkflowPlanner:
             ),
             streams=("audio",),
             operations=("drop video streams", f"encode audio with {selected_codec}"),
-            metadata={"required_stream_types": ["audio"]},
+            metadata={
+                "required_stream_types": ["audio"],
+                "output_contract": {"required_stream_types": ["audio"]},
+            },
         )
 
     def thumbnail(
@@ -570,7 +579,10 @@ class WorkflowPlanner:
             timeout_seconds=timeout_seconds,
             streams=("video:0",),
             operations=(f"seek to {timestamp}", f"scale to {width}x{height or 'auto'}", "write one image"),
-            metadata={"required_stream_types": ["video"]},
+            metadata={
+                "required_stream_types": ["video"],
+                "output_contract": {"required_stream_types": ["video"]},
+            },
         )
 
     def waveform(
@@ -610,7 +622,10 @@ class WorkflowPlanner:
             timeout_seconds=timeout_seconds,
             streams=("audio:0",),
             operations=(f"render audio waveform at {width}x{height} in {colors}",),
-            metadata={"required_stream_types": ["audio"]},
+            metadata={
+                "required_stream_types": ["audio"],
+                "output_contract": {"required_stream_types": ["video"]},
+            },
         )
 
     def speed(
@@ -668,6 +683,9 @@ class WorkflowPlanner:
             )
             streams = ("audio:0",)
             required_streams = ["audio"]
+        output_streams = list(required_streams)
+        if kind == "video" and has_audio:
+            output_streams.append("audio")
         return self._plan(
             f"speed/{kind}",
             args,
@@ -678,7 +696,10 @@ class WorkflowPlanner:
             capabilities=capabilities,
             streams=streams,
             operations=(f"change playback speed by {factor:g}x", f"preserve pitch: {preserve_pitch}"),
-            metadata={"required_stream_types": required_streams},
+            metadata={
+                "required_stream_types": required_streams,
+                "output_contract": {"required_stream_types": output_streams},
+            },
         )
 
     def concat(
@@ -709,11 +730,12 @@ class WorkflowPlanner:
         streams: tuple[str, ...]
         if mode == "copy":
             manifest = "<pyffmpegcore-concat-manifest>"
-            args = ["-f", "concat", "-safe", "0", "-i", manifest, "-c", "copy", output]
+            args = ["-f", "concat", "-safe", "0", "-i", manifest, "-map", "0", "-c", "copy", output]
             metadata["concat_manifest"] = inputs
+            metadata["stream_policy"] = "preserve-all"
             capabilities = ("demuxer:concat",)
-            streams = ("video:all", "audio:all")
-            operations = ("stream-copy matching inputs in the listed order",)
+            streams = ("all input streams",)
+            operations = ("stream-copy all matching input streams in the listed order",)
         else:
             args = []
             for value in inputs:
@@ -847,6 +869,13 @@ class WorkflowPlanner:
             required = []
             metadata["input_stream_requirements"] = {video: ["video"], subtitle: ["subtitle"]}
         metadata["required_stream_types"] = required
+        metadata["output_contract"] = {
+            "required_stream_types": {
+                "add": ["video", "subtitle"],
+                "extract": ["subtitle"],
+                "burn": ["video"],
+            }[action]
+        }
         return self._plan(
             f"subtitles/{action}",
             args,
@@ -939,7 +968,10 @@ class WorkflowPlanner:
             ),
             streams=tuple(f"audio:{index}" for index in range(len(inputs))),
             operations=(f"{action} {len(inputs)} audio inputs", f"encode output with {codec}"),
-            metadata={"required_stream_types": ["audio"]},
+            metadata={
+                "required_stream_types": ["audio"],
+                "output_contract": {"required_stream_types": ["audio"]},
+            },
         )
 
     def normalize_audio(
@@ -993,7 +1025,10 @@ class WorkflowPlanner:
             capabilities=tuple(capabilities),
             streams=("audio:0",),
             operations=operations,
-            metadata={"required_stream_types": ["audio"]},
+            metadata={
+                "required_stream_types": ["audio"],
+                "output_contract": {"required_stream_types": ["audio"]},
+            },
         )
 
     def images(
@@ -1075,6 +1110,7 @@ class WorkflowPlanner:
             warnings=tuple(planning_warnings),
             metadata={
                 "required_stream_types": ["video"],
+                "output_contract": {"required_stream_types": ["video"]},
                 "item_count": len(inputs),
                 "output_directory": str(target_dir),
             },
@@ -1128,5 +1164,8 @@ class WorkflowPlanner:
             capabilities=capabilities,
             streams=("video:image",),
             operations=(f"convert one image to {suffix or 'the requested format'}", f"quality: {quality}"),
-            metadata={"required_stream_types": ["video"]},
+            metadata={
+                "required_stream_types": ["video"],
+                "output_contract": {"required_stream_types": ["video"]},
+            },
         )

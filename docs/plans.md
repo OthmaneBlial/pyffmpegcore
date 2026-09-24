@@ -42,6 +42,11 @@ pyffmpegcore thumbnail \
 
 Progress and human summaries are suppressed in this mode so stdout remains valid JSON. The normal stable exit categories still apply: `0` success, `3` environment, `4` validation/preflight, `5` execution, and `6` partial batch success. `--result-json` executes media and therefore cannot be combined with the non-mutating `--dry-run` or `--explain` modes.
 
+After successful execution, `WorkflowEngine` probes outputs when FFprobe is
+available. Workflows with a declared output contract fail validation if the
+probe cannot find a required primary stream. If FFprobe is unavailable, the
+result records that output verification could not be completed.
+
 ## Execute the same plan from Python
 
 `WorkflowEngine` exposes the same planner, preflight, item-aware execution, and stable result envelope used by the CLI:

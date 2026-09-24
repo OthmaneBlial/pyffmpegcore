@@ -17,7 +17,10 @@ properties, and available time-base/pixel-format metadata. The FFmpeg concat
 demuxer requires matching streams, codecs, and time bases. Matching probe facts
 cannot prove packet-level compatibility, so inspect the result and keep the
 source clips. Remote inputs receive a warning because preflight cannot compare
-their stream metadata.
+their stream metadata. After a successful local run, output verification
+compares the stream types, codecs, and languages against the first input when
+FFprobe can inspect the first input. Copy mode maps every stream; choose an
+output container that supports all input codecs.
 
 ## Re-encode
 
@@ -32,8 +35,8 @@ video dimensions match. Preflight rejects different video dimensions before
 writing; resize clips to a common size first. Every input must contain video
 and audio. Other tracks are omitted; preflight warns when it finds extra tracks
 or cannot inspect a remote input. Output verification fails if the resulting
-file does not contain both video and audio streams. FFmpeg's concat-filter requirements are
-described in its [filter documentation](https://ffmpeg.org/ffmpeg-filters.html#concat).
+file does not contain both video and audio streams. FFmpeg's concat-filter
+requirements are described in its [filter documentation](https://ffmpeg.org/ffmpeg-filters.html#concat).
 
 After reviewing the plan, run the same command without `--explain` and add a
 receipt:

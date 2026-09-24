@@ -9,9 +9,11 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 - Pipeline cache and resume signatures now include runtime and output
   fingerprints; changed outputs and remote inputs are not reused.
 - Video concatenation now checks copy-stream metadata and re-encode dimensions
-  before writing, selects explicit first tracks, warns when re-encoding omits
-  other tracks, requires video and audio in verified re-encode output, and
-  reports readable preflight failures.
+  before writing, copies every stream in copy mode, selects explicit first
+  tracks in re-encode mode, warns about omitted tracks, verifies required output
+  streams, and reports readable preflight failures.
+- Core transform plans declare primary output streams; FFprobe verification
+  fails the workflow when a readable output is missing one.
 
 ## [0.3.3] - 2026-09-24
 

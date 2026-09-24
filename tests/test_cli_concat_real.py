@@ -54,6 +54,88 @@ def test_concat_copy_real_media_handles_special_paths(tmp_path):
 
 
 @pytest.mark.real_media
+def test_concat_copy_preserves_multiple_audio_and_subtitle_streams(tmp_path):
+    if not all(ffmpeg_has_encoder(name) for name in ("mpeg4", "aac", "srt")):
+        pytest.skip("Local FFmpeg build does not include the required video, audio, and subtitle encoders")
+
+    subtitles = tmp_path / "captions.srt"
+    subtitles.write_text("1\n00:00:00,000 --> 00:00:00,800\nhello\n", encoding="utf-8")
+    first = tmp_path / "first.mkv"
+    subprocess.run(
+        [
+            "ffmpeg",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-f",
+            "lavfi",
+            "-i",
+            "testsrc2=size=64x64:rate=10:duration=1",
+            "-f",
+            "lavfi",
+            "-i",
+            "sine=frequency=440:sample_rate=48000:duration=1",
+            "-f",
+            "lavfi",
+            "-i",
+            "sine=frequency=880:sample_rate=48000:duration=1",
+            "-i",
+            str(subtitles),
+            "-map",
+            "0:v:0",
+            "-map",
+            "1:a:0",
+            "-map",
+            "2:a:0",
+            "-map",
+            "3:s:0",
+            "-c:v",
+            "mpeg4",
+            "-q:v",
+            "8",
+            "-c:a",
+            "aac",
+            "-c:s",
+            "srt",
+            str(first),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+    second = tmp_path / "second.mkv"
+    shutil.copy2(first, second)
+    output = tmp_path / "joined.mkv"
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pyffmpegcore",
+            "concat",
+            "--mode",
+            "copy",
+            "--inputs",
+            str(first),
+            str(second),
+            "--output",
+            str(output),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=30,
+    )
+
+    assert result.returncode == 0, result.stderr
+    media = FFprobeRunner().probe_media(str(output))
+    assert [stream.codec_type for stream in media.streams].count("video") == 1
+    assert [stream.codec_type for stream in media.streams].count("audio") == 2
+    assert [stream.codec_type for stream in media.streams].count("subtitle") == 1
+
+
+@pytest.mark.real_media
 def test_concat_reencode_real_media_mixed_formats(tmp_path):
     """
     Re-encode concat should join mixed MP4 and WebM inputs into a readable MP4 output.
@@ -176,6 +258,31 @@ def test_concat_reencode_normalizes_timestamps_and_audio_format(tmp_path):
     assert "\n[FAIL] concat/reencode-compatibility:" in rejected.stderr
     assert "\\n[FAIL]" not in rejected.stderr
     assert not rejected_output.exists()
+
+    compatible = tmp_path / "compatible.mp4"
+    shutil.copy2(first, compatible)
+    copy_output = tmp_path / "copied.mp4"
+    copied = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pyffmpegcore",
+            "concat",
+            "--mode",
+            "copy",
+            "--inputs",
+            str(first),
+            str(compatible),
+            "--output",
+            str(copy_output),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=30,
+    )
+    assert copied.returncode == 0, copied.stderr
+    assert FFprobeRunner().probe(str(copy_output))["video"]["codec"] == "mpeg4"
 
     output = tmp_path / "joined.mp4"
     receipt = tmp_path / "joined.receipt.json"
