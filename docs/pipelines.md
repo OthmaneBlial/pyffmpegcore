@@ -144,8 +144,10 @@ pyffmpegcore pipeline run private.json --var SOURCE_URL --receipt-dir receipts
 ```
 
 Secret defaults in pipeline files are rejected. Named values are masked from
-plans, JSON output, event logs, cache keys, and per-step receipts. URL userinfo
-and query strings also use the normal receipt redaction policy.
+plans, result JSON, cache keys, and per-step receipts. When a declared secret is
+active, CLI event logs omit event details because FFmpeg diagnostics can echo a
+source URL. URL userinfo and query strings also use the normal receipt
+redaction policy in other artifacts.
 
 Remote inputs require a server that supports the access pattern of the media.
 In a local replay on 19 September 2026, a fast-start MP4 completed over HTTP,

@@ -576,7 +576,9 @@ def handle_pipeline_run(args: argparse.Namespace) -> int:
 
         def write_event(event: PipelineEvent) -> None:
             if event_handle is not None:
-                event_handle.write(json.dumps(event.to_dict(pipeline.secret_values), ensure_ascii=False) + "\n")
+                if pipeline.secret_values:
+                    event = replace(event, detail=None)
+                event_handle.write(json.dumps(event.to_dict(), ensure_ascii=False) + "\n")
                 event_handle.flush()
 
         result = PipelineRunner(ffmpeg_path=ctx.ffmpeg_path, ffprobe_path=ctx.ffprobe_path).run(

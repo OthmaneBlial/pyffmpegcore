@@ -4,18 +4,20 @@ Tests for shared CLI file-handling helpers.
 
 from __future__ import annotations
 
+import json
 from argparse import Namespace
 from types import SimpleNamespace
 
 import pytest
 
 from pyffmpegcore._fileio import DestinationExistsError, open_text_file
-from pyffmpegcore.cli import CLIError, handle_batch_run
+from pyffmpegcore.cli import EXIT_RUNTIME_ERROR, CLIError, handle_batch_run, main
 from pyffmpegcore.cli_validation import (
     prepare_output_dir,
     prepare_output_path,
     require_existing_input,
 )
+from pyffmpegcore.pipeline import PipelineEvent
 
 
 def test_require_existing_input_rejects_missing_path(tmp_path):
@@ -116,6 +118,43 @@ def test_batch_event_parent_errors_are_actionable(tmp_path, monkeypatch):
         handle_batch_run(args)
 
     assert error.value.exit_code == 5
+
+
+def test_cli_pipeline_event_file_omits_details_when_secrets_are_active(tmp_path, monkeypatch, capsys):
+    secret = "integration-secret-never-persist"
+    events = tmp_path / "events.jsonl"
+    pipeline = SimpleNamespace(
+        cache=SimpleNamespace(enabled=False),
+        secret_values=(secret,),
+        steps=(SimpleNamespace(id="web", plan=SimpleNamespace(outputs=())),),
+    )
+    result = SimpleNamespace(
+        to_dict=lambda: {},
+        succeeded=False,
+        succeeded_count=0,
+        items=(),
+    )
+    monkeypatch.setattr("pyffmpegcore.cli._load_cli_pipeline", lambda _args: pipeline)
+    monkeypatch.setattr(
+        "pyffmpegcore.cli.PipelinePreflightEngine.prepare",
+        lambda *_args, **_kwargs: SimpleNamespace(ok=True, steps=()),
+    )
+
+    def run(_runner, _pipeline, **kwargs):
+        kwargs["event_callback"](PipelineEvent(1, "failed", "web", secret))
+        return result
+
+    monkeypatch.setattr("pyffmpegcore.cli.PipelineRunner.run", run)
+
+    assert (
+        main(["pipeline", "run", str(tmp_path / "pipeline.json"), "--events", str(events), "--result-json"])
+        == EXIT_RUNTIME_ERROR
+    )
+    assert capsys.readouterr().out.strip() == "{}"
+    event_text = events.read_text(encoding="utf-8")
+    event = json.loads(event_text)
+    assert event["detail"] is None
+    assert secret not in event_text
 
 
 def test_prepare_output_path_creates_parent_directories(tmp_path):
