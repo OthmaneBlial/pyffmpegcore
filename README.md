@@ -287,8 +287,10 @@ Release was created.
 
 Good first contributions include a missing capability diagnostic, a real-media
 fixture edge case, a task-first recipe, or a new compatibility observation.
-Start with the [contribution ladder](CONTRIBUTING.md) or one of the labeled
-[good first issues](https://github.com/OthmaneBlial/pyffmpegcore/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
+Start with the [contribution ladder](CONTRIBUTING.md). The labeled
+[good first issue queue](https://github.com/OthmaneBlial/pyffmpegcore/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+is currently empty; if you find a reproducible gap, [open a focused issue](https://github.com/OthmaneBlial/pyffmpegcore/issues/new/choose)
+with the expected behavior and your platform/FFmpeg version.
 
 If PyFFmpegCore replaces one command string you no longer want to maintain,
 **star the repository** so the next person searching for a safer FFmpeg layer
