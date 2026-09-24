@@ -28,6 +28,10 @@ If `doctor` reports `Capabilities: UNAVAILABLE`, its five-second capability
 listing timed out. Check that the selected FFmpeg executable responds to
 `-hide_banner -protocols`, then rerun `doctor` with the same binary path.
 
+An existing binary that does not answer its version check is reported as
+`UNAVAILABLE`; install or select a responsive FFmpeg/FFprobe executable using
+the matching `--ffmpeg-path` or `--ffprobe-path` option.
+
 ## A second audio track or subtitle disappeared
 
 The normal `convert` workflow deliberately selects the first video and first

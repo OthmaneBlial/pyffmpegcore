@@ -270,6 +270,9 @@ Les sept listes de capacités FFmpeg ont chacune un délai de cinq secondes ; un
 timeout devient une erreur visible de `doctor` ou un échec de préflight, plutôt
 qu'un faux inventaire vide. Les 22 tests ciblés capability/preflight/doctor,
 Ruff, formatage et mypy passent localement.
+Le CLI `doctor` distingue également un binaire absent d'un binaire trouvé mais
+qui échoue à répondre au contrôle de version ; les messages et remèdes sont
+testés séparément.
 Un audit de course distinct a aussi corrigé les sorties bug-report, migration
 de pipeline et journaux d'événements batch/pipeline : création exclusive sans
 écrasement par défaut, remplacement atomique des fichiers statiques avec

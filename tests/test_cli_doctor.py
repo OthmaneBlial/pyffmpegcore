@@ -48,6 +48,27 @@ def test_doctor_reports_capability_listing_failure(_mock_inspect_binary, _mock_c
     assert "Capabilities: UNAVAILABLE (listing timed out)" in capsys.readouterr().out
 
 
+@patch(
+    "pyffmpegcore.cli.inspect_binary",
+    side_effect=[
+        {
+            "available": False,
+            "resolved": "/usr/bin/ffmpeg",
+            "requested": "ffmpeg",
+            "version": None,
+            "error": "Version probe timed out after 5 seconds.",
+        },
+        {"available": True, "resolved": "/usr/bin/ffprobe", "requested": "ffprobe", "version": "ffprobe 9"},
+    ],
+)
+def test_doctor_distinguishes_a_stalled_binary_from_a_missing_one(_mock_inspect_binary, capsys):
+    report = collect_doctor_report(CLIContext())
+    render_doctor_report(CLIContext(), report)
+
+    assert report["ffmpeg"]["remedy"].startswith("Verify that the selected ffmpeg executable responds")
+    assert "ffmpeg: UNAVAILABLE (ffmpeg)" in capsys.readouterr().out
+
+
 @patch("pyffmpegcore.cli.build_context", return_value=CLIContext())
 @patch(
     "pyffmpegcore.cli.collect_doctor_report",

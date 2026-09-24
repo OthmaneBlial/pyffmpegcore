@@ -738,10 +738,16 @@ def collect_doctor_report(ctx: CLIContext) -> dict[str, Any]:
     ffprobe = inspect_binary(ctx.ffprobe_path)
     for label, binary in (("ffmpeg", ffmpeg), ("ffprobe", ffprobe)):
         if not binary["available"]:
-            binary["remedy"] = (
-                "Install FFmpeg and FFprobe from a trusted package source, open a new terminal, "
-                f"or pass --{label}-path to a trusted executable; then rerun pyffmpegcore doctor."
-            )
+            if binary["resolved"] is None:
+                binary["remedy"] = (
+                    "Install FFmpeg and FFprobe from a trusted package source, open a new terminal, "
+                    f"or pass --{label}-path to a trusted executable; then rerun pyffmpegcore doctor."
+                )
+            else:
+                binary["remedy"] = (
+                    f"Verify that the selected {label} executable responds to -version, "
+                    f"or pass --{label}-path to a trusted executable; then rerun pyffmpegcore doctor."
+                )
     capabilities = None
     capabilities_error = None
     if ffmpeg["available"]:
@@ -788,9 +794,10 @@ def render_doctor_report(ctx: CLIContext, report: dict[str, Any]) -> None:
             if binary_report["version"]:
                 echo(ctx, f"  {binary_report['version']}")
         else:
+            state = "MISSING" if binary_report["resolved"] is None else "UNAVAILABLE"
             echo(
                 ctx,
-                f"{label}: MISSING ({binary_report['requested']})",
+                f"{label}: {state} ({binary_report['requested']})",
             )
             if binary_report["error"]:
                 echo(ctx, f"  {binary_report['error']}")
