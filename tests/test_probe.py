@@ -21,6 +21,7 @@ class TestFFprobeRunner:
 
         runner = FFprobeRunner("/custom/path/ffprobe")
         assert runner.ffprobe_path == "/custom/path/ffprobe"
+        assert runner.probe_timeout_seconds == 60
 
     @patch("subprocess.run")
     def test_probe(self, mock_run):
@@ -65,6 +66,19 @@ class TestFFprobeRunner:
         assert result["video"]["width"] == 1920
         assert result["audio"]["codec"] == "aac"
         assert result["audio"]["sample_rate"] == 44100  # Now int instead of string
+        assert mock_run.call_args.kwargs["timeout"] == 60
+
+    def test_probe_timeout_must_be_finite_and_positive(self):
+        for timeout in (0, -1, float("inf"), float("nan")):
+            with pytest.raises(ValueError, match="probe_timeout_seconds must be finite and positive"):
+                FFprobeRunner(probe_timeout_seconds=timeout)
+
+    @patch("subprocess.run", side_effect=subprocess.TimeoutExpired(["ffprobe"], 2.5))
+    def test_probe_reports_a_timed_out_media_read(self, mock_run):
+        with pytest.raises(RuntimeError, match="FFprobe timed out after 2.5 seconds"):
+            FFprobeRunner(probe_timeout_seconds=2.5).probe("movie.mkv")
+
+        assert mock_run.call_args.kwargs["timeout"] == 2.5
 
     @patch("subprocess.run")
     def test_raw_and_typed_probe_preserve_decision_metadata(self, mock_run):

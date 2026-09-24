@@ -263,6 +263,9 @@ Le 24 septembre, les inspections de version FFmpeg/FFprobe du CLI et des
 méthodes publiques du runner sont aussi bornées à cinq secondes ; les 33 tests
 ciblés probe/runner/doctor, Ruff, formatage et mypy passent localement. Les
 sondages de médias et les listes de capacités restent à évaluer séparément.
+Le runner FFprobe borne désormais aussi la lecture des métadonnées à 60 secondes
+par défaut, avec un délai configurable pour l'API Python et un échec exploitable
+en cas de dépassement. Le timeout ne limite pas CPU, mémoire ou données décodées.
 Un audit de course distinct a aussi corrigé les sorties bug-report, migration
 de pipeline et journaux d'événements batch/pipeline : création exclusive sans
 écrasement par défaut, remplacement atomique des fichiers statiques avec

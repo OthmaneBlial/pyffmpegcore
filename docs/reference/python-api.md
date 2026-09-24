@@ -161,7 +161,10 @@ Run the low-level escape hatch and print its legacy progress stream.
 
 ## `FFprobeRunner`
 
-A runner for extracting metadata from media files using FFprobe.
+Extract media metadata through FFprobe.
+
+Media probes time out after 60 seconds by default; configure
+``probe_timeout_seconds`` when constructing the runner.
 
 ### `get_bitrate(self, input_file: 'str') -> 'int | None'`
 

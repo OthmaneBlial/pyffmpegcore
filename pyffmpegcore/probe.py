@@ -5,6 +5,7 @@ FFprobe metadata extraction.
 from __future__ import annotations
 
 import json
+import math
 import subprocess
 from typing import Any
 
@@ -13,17 +14,24 @@ from .domain import MediaInfo, StreamInfo
 
 class FFprobeRunner:
     """
-    A runner for extracting metadata from media files using FFprobe.
+    Extract media metadata through FFprobe.
+
+    Media probes time out after 60 seconds by default; configure
+    ``probe_timeout_seconds`` when constructing the runner.
     """
 
-    def __init__(self, ffprobe_path: str = "ffprobe"):
+    def __init__(self, ffprobe_path: str = "ffprobe", *, probe_timeout_seconds: float = 60.0):
         """
         Initialize the FFprobe runner.
 
         Args:
             ffprobe_path: Path to the ffprobe executable. Defaults to "ffprobe".
+            probe_timeout_seconds: Maximum time to wait for media metadata. Defaults to 60 seconds.
         """
+        if not math.isfinite(probe_timeout_seconds) or probe_timeout_seconds <= 0:
+            raise ValueError("probe_timeout_seconds must be finite and positive")
         self.ffprobe_path = ffprobe_path
+        self.probe_timeout_seconds = probe_timeout_seconds
 
     def probe(self, input_file: str, *, raw: bool = False) -> dict[str, Any]:
         """
@@ -64,7 +72,10 @@ class FFprobeRunner:
                 text=True,
                 encoding="utf-8",
                 errors="replace",
+                timeout=self.probe_timeout_seconds,
             )
+        except subprocess.TimeoutExpired as exc:
+            raise RuntimeError(f"FFprobe timed out after {self.probe_timeout_seconds:g} seconds.") from exc
         except FileNotFoundError as exc:
             raise RuntimeError(
                 f"FFprobe executable '{self.ffprobe_path}' was not found. Install FFmpeg or pass a valid ffprobe_path."
