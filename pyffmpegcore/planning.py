@@ -50,7 +50,10 @@ def parse_size(value: str) -> int:
     unit = (match.group(2) or "B").upper()
     powers = {"B": 0, "KB": 1, "MB": 2, "GB": 3, "TB": 4, "KIB": 1, "MIB": 2, "GIB": 3, "TIB": 4}
     base = 1024 if "I" in unit else 1000
-    result = int(amount * base ** powers[unit])
+    try:
+        result = int(amount * base ** powers[unit])
+    except OverflowError as exc:
+        raise ValidationError("size must be a finite positive value") from exc
     if result <= 0:
         raise ValidationError("size must be positive")
     return result
@@ -62,7 +65,10 @@ def parse_bitrate(value: str) -> int:
     if not match:
         raise ValidationError("bitrate must be a positive number with an optional k, M, or G suffix")
     multiplier = {"": 1, "k": 1_000, "m": 1_000_000, "g": 1_000_000_000}[match.group(2).lower()]
-    result = int(float(match.group(1)) * multiplier)
+    try:
+        result = int(float(match.group(1)) * multiplier)
+    except OverflowError as exc:
+        raise ValidationError("bitrate must be a finite positive value") from exc
     if result <= 0:
         raise ValidationError("bitrate must be positive")
     return result

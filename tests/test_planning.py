@@ -238,6 +238,12 @@ def test_parse_bitrate_rejects_invalid_values():
         parse_bitrate("fast")
 
 
+@pytest.mark.parametrize("parser", [parse_size, parse_bitrate])
+def test_numeric_parsers_reject_values_that_overflow_float_conversion(parser):
+    with pytest.raises(ValidationError, match="finite positive value"):
+        parser("9" * 400)
+
+
 def test_target_size_plan_has_two_exact_steps_and_an_honest_floor(tmp_path, monkeypatch):
     source = tmp_path / "input.mp4"
     output = tmp_path / "output.mp4"
