@@ -286,13 +286,15 @@ class BatchRunner:
         event_callback: Callable[[BatchEvent], None] | None = None,
         state_path: str | Path | None = None,
         resume: bool = False,
+        overwrite_state: bool = False,
         receipt_dir: str | Path | None = None,
         overwrite_receipts: bool = False,
         hash_content: bool = False,
     ) -> BatchRun:
         """Run jobs once and refuse receipt replacement unless explicitly allowed.
 
-        State files cannot alias media outputs or generated receipts.
+        Existing state files require resume or explicit overwrite. State files
+        cannot alias media outputs or generated receipts.
         """
         selected_policy = policy or BatchPolicy()
         ordered = validate_batch_jobs(jobs, selected_policy)
@@ -300,7 +302,13 @@ class BatchRunner:
         state = Path(state_path) if state_path is not None else None
         receipts = Path(receipt_dir) if receipt_dir is not None else None
         media_outputs = tuple(output for job in ordered for output in job.plan.outputs)
-        _validate_state_destination(state, media_outputs, receipts, (job.id for job in ordered))
+        _validate_state_destination(
+            state,
+            media_outputs,
+            receipts,
+            (job.id for job in ordered),
+            overwrite=overwrite_state or resume,
+        )
         completed = _load_state(state) if resume else {}
         receipt_paths = (
             _prepare_receipt_paths(

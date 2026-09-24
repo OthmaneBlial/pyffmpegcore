@@ -238,6 +238,23 @@ def test_batch_rejects_state_path_that_would_overwrite_a_receipt(tmp_path):
     assert not receipt_dir.exists()
 
 
+def test_batch_preserves_existing_state_unless_resume_or_overwrite_is_explicit(tmp_path):
+    state = tmp_path / "existing-state.json"
+    state.write_text("preserve", encoding="utf-8")
+    job = BatchJob("state-overwrite", _plan(tmp_path, "state-overwrite"))
+    engine = FakeEngine()
+
+    with pytest.raises(ValidationError, match="state file already exists"):
+        BatchRunner(engine=engine).run((job,), state_path=state)
+
+    assert engine.calls == []
+    assert state.read_text(encoding="utf-8") == "preserve"
+
+    result = BatchRunner(engine=engine).run((job,), state_path=state, overwrite_state=True)
+    assert result.succeeded
+    assert json.loads(state.read_text(encoding="utf-8"))["schema_version"] == "1.0"
+
+
 def test_batch_rejects_duplicate_work_collisions_and_resource_overruns(tmp_path):
     first = _plan(tmp_path, "first")
     duplicate = BatchJob("duplicate", first)

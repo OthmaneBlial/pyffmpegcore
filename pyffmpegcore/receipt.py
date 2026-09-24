@@ -286,6 +286,8 @@ def _validate_state_destination(
     media_outputs: Iterable[str],
     receipt_dir: Path | None,
     receipt_ids: Iterable[str],
+    *,
+    overwrite: bool,
 ) -> None:
     if state_path is None:
         return
@@ -297,6 +299,8 @@ def _validate_state_destination(
         state_key == _local_path_key(receipt_dir / f"{identifier}.receipt.json") for identifier in receipt_ids
     ):
         raise ValidationError(f"state path collides with a receipt: {state_path}")
+    if not overwrite and (state_path.exists() or state_path.is_symlink()):
+        raise ValidationError(f"state file already exists: {state_path}. Resume or explicitly allow overwrite.")
 
 
 class ReceiptBuilder:

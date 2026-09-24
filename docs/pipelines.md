@@ -98,7 +98,9 @@ private paths by default. Existing receipts are preserved unless `--force` or
 `--resume` is used; the Python API accepts `overwrite_receipts=True`. Receipt
 destinations that collide with media outputs are rejected before steps start.
 State destinations that collide with media outputs or receipts are rejected
-before execution, including through the Python API.
+before execution, including through the Python API. Existing explicit state
+files are preserved unless `--force`, `--resume`, or `overwrite_state=True` is
+used. The pipeline's own cache state remains reusable by default.
 Do not put credentials in the command, pipeline file, or `OUTPUT_DIR` value.
 
 ## Optional content-aware cache

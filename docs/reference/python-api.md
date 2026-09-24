@@ -51,11 +51,12 @@ Serialize policy, ordered item outcomes, and aggregate counts.
 
 Execute validated jobs concurrently with receipts, events, retry, and resume.
 
-### `run(self, jobs: 'Iterable[BatchJob]', *, policy: 'BatchPolicy | None' = None, cancellation: 'threading.Event | None' = None, event_callback: 'Callable[[BatchEvent], None] | None' = None, state_path: 'str | Path | None' = None, resume: 'bool' = False, receipt_dir: 'str | Path | None' = None, overwrite_receipts: 'bool' = False, hash_content: 'bool' = False) -> 'BatchRun'`
+### `run(self, jobs: 'Iterable[BatchJob]', *, policy: 'BatchPolicy | None' = None, cancellation: 'threading.Event | None' = None, event_callback: 'Callable[[BatchEvent], None] | None' = None, state_path: 'str | Path | None' = None, resume: 'bool' = False, overwrite_state: 'bool' = False, receipt_dir: 'str | Path | None' = None, overwrite_receipts: 'bool' = False, hash_content: 'bool' = False) -> 'BatchRun'`
 
 Run jobs once and refuse receipt replacement unless explicitly allowed.
 
-State files cannot alias media outputs or generated receipts.
+Existing state files require resume or explicit overwrite. State files
+cannot alias media outputs or generated receipts.
 
 ## `CapabilityUnavailableError`
 
@@ -314,14 +315,15 @@ Serialize ordered outcomes with a stable summary.
 
 Execute a prepared DAG with dependency blocking, cancellation, resume, and caching.
 
-### `run(self, pipeline: 'PipelinePlan', *, cancellation: 'threading.Event | None' = None, state_path: 'str | Path | None' = None, resume: 'bool' = False, receipt_dir: 'str | Path | None' = None, overwrite_receipts: 'bool' = False, hash_content: 'bool' = False, event_callback: 'Any' = None) -> 'PipelineRun'`
+### `run(self, pipeline: 'PipelinePlan', *, cancellation: 'threading.Event | None' = None, state_path: 'str | Path | None' = None, resume: 'bool' = False, overwrite_state: 'bool' = False, receipt_dir: 'str | Path | None' = None, overwrite_receipts: 'bool' = False, hash_content: 'bool' = False, event_callback: 'Any' = None) -> 'PipelineRun'`
 
 Execute steps in dependency order and return one outcome per step.
 
 Failed dependencies block downstream steps. Optional state supports
 resume and caching; receipts and event callbacks are opt-in. Existing
 receipts are preserved unless ``overwrite_receipts`` is enabled. State
-files cannot alias media outputs or generated receipts.
+files are preserved unless resuming or ``overwrite_state`` is enabled,
+and cannot alias media outputs or generated receipts.
 
 ## `PipelineSpec`
 

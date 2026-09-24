@@ -845,6 +845,7 @@ class PipelineRunner:
         cancellation: threading.Event | None = None,
         state_path: str | Path | None = None,
         resume: bool = False,
+        overwrite_state: bool = False,
         receipt_dir: str | Path | None = None,
         overwrite_receipts: bool = False,
         hash_content: bool = False,
@@ -855,7 +856,8 @@ class PipelineRunner:
         Failed dependencies block downstream steps. Optional state supports
         resume and caching; receipts and event callbacks are opt-in. Existing
         receipts are preserved unless ``overwrite_receipts`` is enabled. State
-        files cannot alias media outputs or generated receipts.
+        files are preserved unless resuming or ``overwrite_state`` is enabled,
+        and cannot alias media outputs or generated receipts.
         """
         cancel = cancellation or threading.Event()
         selected_state = Path(state_path) if state_path is not None else None
@@ -863,7 +865,13 @@ class PipelineRunner:
             selected_state = Path(pipeline.cache.directory) / f"{pipeline.name}.state.json"
         receipts = Path(receipt_dir) if receipt_dir is not None else None
         media_outputs = tuple(output for step in pipeline.steps for output in step.plan.outputs)
-        _validate_state_destination(selected_state, media_outputs, receipts, (step.id for step in pipeline.steps))
+        _validate_state_destination(
+            selected_state,
+            media_outputs,
+            receipts,
+            (step.id for step in pipeline.steps),
+            overwrite=overwrite_state or resume or (state_path is None and pipeline.cache.enabled),
+        )
         completed = _load_pipeline_state(selected_state) if (resume or pipeline.cache.enabled) else {}
         receipt_paths = (
             _prepare_receipt_paths(

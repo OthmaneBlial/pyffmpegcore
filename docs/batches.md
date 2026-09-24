@@ -98,6 +98,8 @@ ID and exact plan signature match and every expected output still exists.
 Changed plans or deleted outputs run again. The state stores signatures rather
 than private paths. State destinations that collide with a media output or
 generated receipt are rejected before jobs start, including through the
-Python API.
+Python API. Existing state files are preserved by default; use `--force`,
+`--resume`, or `overwrite_state=True` in the Python API to replace or continue
+one.
 
 The complete schema and example are published under [JSON schemas](schemas.md).

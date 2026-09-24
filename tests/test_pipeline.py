@@ -255,6 +255,22 @@ def test_pipeline_rejects_state_path_that_would_overwrite_media_output(tmp_path,
     assert not state.exists()
 
 
+def test_pipeline_preserves_existing_state_without_explicit_resume_or_overwrite(tmp_path, monkeypatch):
+    source = tmp_path / "source.mp4"
+    source.write_bytes(b"media")
+    state = tmp_path / "state.json"
+    state.write_text("preserve", encoding="utf-8")
+    pipeline = PipelineCompiler().compile(PipelineSpec.from_dict(_document(str(source)), base_dir=tmp_path))
+    calls = []
+    monkeypatch.setattr("pyffmpegcore.pipeline.WorkflowEngine.run", lambda *_args, **_kwargs: calls.append(True))
+
+    with pytest.raises(ValidationError, match="state file already exists"):
+        PipelineRunner().run(pipeline, state_path=state)
+
+    assert calls == []
+    assert state.read_text(encoding="utf-8") == "preserve"
+
+
 def test_pipeline_cancellation_and_dependency_blocking_are_stable(tmp_path):
     pipeline = PipelineCompiler(ffmpeg_path="missing-ffmpeg", ffprobe_path="missing-ffprobe").compile(
         PipelineSpec.from_dict(_document("missing-input.mkv"), base_dir=tmp_path),
