@@ -853,7 +853,8 @@ citée.
 
 **État :** non publié. `LAUNCH.md` contient le runbook et des brouillons, mais
 aucune publication communautaire vérifiable liée à une nouvelle release n'a
-été effectuée.
+été effectuée. Les brouillons 0.2.2 ont été actualisés pour la release publique
+0.3.3 et le launcher npm 0.1.1 ; cela ne constitue pas une publication externe.
 
 - **Objectif :** faire connaître un outil qui résout un problème concret, sans sollicitation artificielle de stars.
 - **Changements :** réviser les règles actuelles de chaque communauté avant publication ; publier un exemple reproductible et l'affiliation du mainteneur ; consigner URL, date, release et retour technique dans `LAUNCH.md` ; améliorer les recettes à partir des questions répétées.

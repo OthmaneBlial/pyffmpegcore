@@ -1,6 +1,6 @@
-# PyFFmpegCore public-beta launch runbook
+# PyFFmpegCore 0.3.3 public-beta launch runbook
 
-This is the maintainer's source-backed distribution plan for the first public
+This is the maintainer's source-backed distribution plan for the current public
 beta. It optimizes for qualified installs, completed workflows, useful bug
 reports, and repeatable proof. It does not authorize spam, coordinated voting,
 or claims that the release evidence cannot support.
@@ -14,9 +14,9 @@ posting; community policies change. The supporting research is in
 Do not announce a PyPI release until every item below is true:
 
 - [x] `https://pypi.org/project/pyffmpegcore/` resolves publicly.
-- [x] `pipx install "pyffmpegcore==0.2.2"` succeeds in a clean environment.
+- [x] `pipx install "pyffmpegcore==0.3.3"` succeeds in a clean environment.
 - [x] `pyffmpegcore doctor` and `pyffmpegcore smoke-test` pass after that install.
-- [x] The signed `v0.2.2` tag and matching GitHub Release are public.
+- [x] The signed `v0.3.3` tag and matching GitHub Release are public.
 - [x] The release page exposes checksums, compatibility evidence, and PyPI
   attestations.
 - [x] Linux, macOS, and Windows exact-artifact release jobs are green.
@@ -37,7 +37,7 @@ Lead with the operational problem, not a feature inventory:
 Then let readers challenge that statement without personal media:
 
 ```bash
-pipx install "pyffmpegcore==0.2.2"
+pipx install "pyffmpegcore==0.3.3"
 pyffmpegcore doctor
 pyffmpegcore smoke-test
 ```
@@ -52,8 +52,9 @@ Use these source-of-truth links in every announcement:
 - five-minute proof: <https://othmaneblial.github.io/pyffmpegcore/quickstart/>
 - measured fixture evidence: <https://othmaneblial.github.io/pyffmpegcore/evidence/>
 - compatibility: <https://othmaneblial.github.io/pyffmpegcore/COMPATIBILITY/>
-- release: `https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.2.2`
-- package: `https://pypi.org/project/pyffmpegcore/0.2.2/`
+- release: `https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.3.3`
+- package: `https://pypi.org/project/pyffmpegcore/0.3.3/`
+- Node.js launcher: <https://www.npmjs.com/package/@othmaneblial/pyffmpegcore>
 
 ## Release-day order
 
@@ -79,13 +80,13 @@ exists for Python-related announcements. Posting requires a python.org account.
 **Subject**
 
 ```text
-[ANN] PyFFmpegCore 0.2.2 beta - preflight, plans, and receipts for FFmpeg
+[ANN] PyFFmpegCore 0.3.3 beta - preflight, plans, and receipts for FFmpeg
 ```
 
 **Body draft — maintainer must verify and personalize before sending**
 
 ```text
-I maintain PyFFmpegCore, and version 0.2.2 is its public beta.
+I maintain PyFFmpegCore, and version 0.3.3 is its public beta.
 
 PyFFmpegCore is an MIT-licensed Python library and CLI for maintained FFmpeg
 workflows. It checks the installed FFmpeg capabilities before mutation, exposes
@@ -94,17 +95,18 @@ and can emit a privacy-redacted run receipt.
 
 Try the no-personal-media proof:
 
-    pipx install "pyffmpegcore==0.2.2"
+    pipx install "pyffmpegcore==0.3.3"
     pyffmpegcore doctor
     pyffmpegcore smoke-test
 
 Python 3.10-3.14 is tested. FFmpeg and FFprobe remain explicit system
-dependencies. This beta is not a hosted transcoder, arbitrary filter-graph DSL,
-or packet/frame API.
+dependencies. A thin Node.js launcher is available on npm; Python and FFmpeg
+remain required. This beta is not a hosted transcoder, arbitrary filter-graph
+DSL, or packet/frame API.
 
 Source: https://github.com/OthmaneBlial/pyffmpegcore
 Quickstart: https://othmaneblial.github.io/pyffmpegcore/quickstart/
-Release: https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.2.2
+Release: https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.3.3
 Compatibility: https://othmaneblial.github.io/pyffmpegcore/COMPATIBILITY/
 
 Feedback on clean installation, capability diagnostics, and receipt fields is
@@ -143,7 +145,7 @@ Current r/Python rules route showcases into the monthly Showcase Thread rather
 than standalone submissions. Locate the current thread on posting day.
 
 ```text
-PyFFmpegCore 0.2.2 beta - inspect an FFmpeg plan before it writes, then keep a receipt
+PyFFmpegCore 0.3.3 beta - inspect an FFmpeg plan before it writes, then keep a receipt
 
 I built and maintain PyFFmpegCore.
 
@@ -158,8 +160,9 @@ synthetic media.
 Target Audience
 
 Python developers maintaining media scripts, repeatable local jobs, or CI
-pipelines. Version 0.2.2 is a beta; FFmpeg and FFprobe must be installed
-separately.
+pipelines. Version 0.3.3 is a beta; FFmpeg and FFprobe must be installed
+separately. A thin Node.js launcher is available on npm but still requires
+Python and FFmpeg.
 
 Comparison
 
