@@ -25,6 +25,22 @@ The [CI workflow](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows
 
 ### Verified release snapshot: 24 September 2026
 
+The signed `v0.3.1` tag points to source SHA
+`562ae6ce92a8b321f15a6a250cf7802f2c9bb5bc`. Manual build/test run
+[`35975145754`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35975145754)
+and tagged release workflow
+[`35975371541`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35975371541)
+passed the exact artifact checks on Linux, macOS, and Windows with Python 3.10
+and 3.14. Six clean public installs also passed. The full Python 3.10–3.14
+package-contract workflow was not run for this release.
+
+Wheel `pyffmpegcore-0.3.1-py3-none-any.whl` is 101,638 bytes with SHA-256
+`ea222d3dc5d09ae0ffd79c310ea415eb4edb2d7e04a87532cda939a7890d255d`.
+The 335,713-byte source distribution has SHA-256
+`e0ff591589dd3950e11450dcecc0d1b39718c42415332568e606c98207c94074`.
+Both match the PyPI JSON and GitHub Release checksums. No container image or
+GitHub Action image was built or tested.
+
 The signed `v0.3.0` tag points to source SHA
 `492d4b0a808cd429b75b2d21735652260eee9296`. Release workflow
 [`35971504440`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35971504440)

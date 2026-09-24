@@ -16,7 +16,7 @@ hide:
       <h1 id="pfc-hero-title">FFmpeg jobs you can <span>explain.</span></h1>
       <div class="pfc-actions">
         <a class="pfc-button" href="quickstart/">Five-minute start</a>
-        <a class="pfc-button pfc-button--ghost" href="terminal-demo/">Watch 0.3.0 proof</a>
+        <a class="pfc-button pfc-button--ghost" href="terminal-demo/">Watch 0.3.1 proof</a>
         <a class="pfc-button pfc-button--ghost" href="recipes/">Browse recipes</a>
       </div>
       <p class="pfc-hero__lede">
@@ -26,23 +26,27 @@ hide:
       </p>
       <div class="pfc-install" aria-label="Install the current public beta">
         <div class="pfc-install__command">
-          <span class="pfc-install__label">Current beta / 0.3.0</span>
-          <code>pipx install "pyffmpegcore==0.3.0"</code>
+          <span class="pfc-install__label">Current beta / 0.3.1</span>
+          <code>pipx install "pyffmpegcore==0.3.1"</code>
         </div>
-        <button class="pfc-copy" type="button" data-pfc-copy aria-label="Copy the PyFFmpegCore 0.3.0 install command" aria-live="polite">Copy install command</button>
-        <p>Requires Python 3.10–3.14 and system <code>ffmpeg</code>/<code>ffprobe</code>. <a href="https://pypi.org/project/pyffmpegcore/0.3.0/">View package →</a></p>
+        <button class="pfc-copy" type="button" data-pfc-copy aria-label="Copy the PyFFmpegCore 0.3.1 install command" aria-live="polite">Copy install command</button>
+        <p>Requires Python 3.10–3.14 and system <code>ffmpeg</code>/<code>ffprobe</code>. <a href="https://pypi.org/project/pyffmpegcore/0.3.1/">View package →</a></p>
       </div>
     </div>
     <div class="pfc-hero__console">
-      <figure class="pfc-terminal-capture">
-        <a href="terminal-demo/">
-          <img src="assets/terminal-plan-v0.2.2.png" alt="Real terminal capture from the public PyPI 0.2.2 run: exact FFmpeg plan, selected video and audio streams, required capabilities, and preflight PASS." width="1240" height="956" fetchpriority="high">
-        </a>
-        <figcaption>
-          <span>Archived capture / public PyPI 0.2.2</span>
-          <a href="terminal-demo/">Watch the 0.3.0 run →</a>
-        </figcaption>
-      </figure>
+      <div class="pfc-terminal-transcript" role="group" aria-label="Excerpt from the verified public 0.3.1 terminal recording">
+        <div class="pfc-terminal-transcript__bar"><span>PUBLIC RUN / 0.3.1</span><span>63.4 S</span></div>
+        <pre><samp>PyFFmpegCore CLI 0.3.1
+
+Smoke test: PASS
+Preflight PASS — convert
+Progress: 100% complete
+Valid receipt: schema 1.0, 1 item(s)
+
+PASS — public install, preflight, plan,
+progress, output, and receipt all verified.</samp></pre>
+        <p>Accessible transcript excerpt from the <a href="assets/terminal-demo-v0.3.1.txt">recorded public PyPI run</a>.</p>
+      </div>
     </div>
   </section>
 
@@ -52,18 +56,18 @@ hide:
     <div class="pfc-metric"><strong>3</strong><span class="pfc-metric__label">operating systems</span></div>
     <div class="pfc-metric"><strong>5</strong><span class="pfc-metric__label">Python versions</span></div>
     <div class="pfc-metric"><strong>0</strong><span class="pfc-metric__label">default telemetry</span></div>
-    <div class="pfc-metric"><strong>0.3.0</strong><span class="pfc-metric__label">signed public beta</span></div>
+    <div class="pfc-metric"><strong>0.3.1</strong><span class="pfc-metric__label">signed public beta</span></div>
   </section>
 
   <section class="pfc-live-proof" aria-labelledby="live-proof-title">
-    <div class="pfc-live-proof__signal" aria-hidden="true"><span>63.5</span><small>seconds</small></div>
+    <div class="pfc-live-proof__signal" aria-hidden="true"><span>63.4</span><small>seconds</small></div>
     <div class="pfc-live-proof__copy">
-      <p class="pfc-kicker">Public PyPI 0.3.0 recording / no staged output</p>
-      <h2 id="live-proof-title">Watch a real 0.3.0 run.</h2>
-      <p>The 63.5-second capture shows a fresh install, capability scan, synthetic smoke test, explained plan, progress, probed output, and validated receipt from the current signed public beta.</p>
+      <p class="pfc-kicker">Public PyPI 0.3.1 recording / no staged output</p>
+      <h2 id="live-proof-title">Watch a real 0.3.1 run.</h2>
+      <p>The 63.4-second capture shows a fresh install, capability scan, synthetic smoke test, explained plan, progress, probed output, and validated receipt from the current signed public beta.</p>
       <div class="pfc-actions">
-        <a class="pfc-button" href="terminal-demo/">Open the 0.3.0 terminal proof</a>
-        <a class="pfc-button pfc-button--ghost" href="https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.3.0">Inspect the 0.3.0 release</a>
+        <a class="pfc-button" href="terminal-demo/">Open the 0.3.1 terminal proof</a>
+        <a class="pfc-button pfc-button--ghost" href="https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.3.1">Inspect the 0.3.1 release</a>
       </div>
     </div>
   </section>

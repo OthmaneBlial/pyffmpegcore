@@ -45,10 +45,11 @@ Only a maintainer with repository and PyPI project control may publish a release
 7. Record the public terminal proof only after those endpoints are healthy:
 
    ```bash
+   export PYFFMPEGCORE_DEMO_WHEEL_HASH="<SHA-256 of the exact versioned PyPI wheel>"
    scripts/record_terminal_demo.sh "docs/assets/terminal-demo-v${release_version}.cast" "${release_version}"
    ```
 
-   The recorder installs the exact public version in a fresh environment, captures a real PTY session, enforces a 60–90 second duration and required proof steps, rejects private home paths, and writes an accessible text transcript beside the cast. Never hand-edit the recording to invent output.
+   Get the hash from that version's PyPI JSON `digests.sha256` for the wheel (not the source archive). The recorder checks the installed wheel against it, captures a real PTY session, enforces a 60–90 second duration and required proof steps, rejects private home paths, and writes an accessible text transcript beside the cast. Never hand-edit the recording to invent output.
 
 Never rebuild or replace files for an existing version. A failed gate means fix forward with a new commit and, if any immutable artifact was already published, a new version.
 

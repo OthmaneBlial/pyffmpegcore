@@ -339,28 +339,57 @@ body {
   color: var(--pfc-paper);
 }
 
-.pfc-terminal-capture {
+.pfc-terminal-transcript {
   width: 100%;
-  margin: 0;
-}
-
-.pfc-terminal-capture img {
-  display: block;
-  width: 100%;
-  height: auto;
+  min-width: 0;
   border: 1px solid #3a4540;
-  box-shadow: 14px 14px 0 #26302c;
+  background: var(--pfc-panel);
+  box-shadow: 10px 10px 0 #26302c;
 }
 
-.pfc-terminal-capture figcaption {
+.pfc-terminal-transcript__bar {
   display: flex;
-  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 0.7rem;
-  margin-top: 1rem;
+  gap: 1rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid #3a4540;
+  color: var(--pfc-signal);
   font-family: var(--pfc-mono);
-  font-size: 0.72rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.pfc-terminal-transcript pre {
+  max-width: 100%;
+  margin: 0;
+  padding: 1.25rem;
+  border-left: 3px solid var(--pfc-signal);
+  background: var(--pfc-panel);
+  overflow-x: auto;
+  color: var(--pfc-paper);
+  font-size: clamp(0.65rem, 1vw, 0.8rem);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.pfc-terminal-transcript samp {
+  color: inherit;
+  font: inherit;
+}
+
+.pfc-terminal-transcript p {
+  margin: 0;
+  padding: 0 1.25rem 1.1rem;
+  color: #aeb9b3;
+  font-family: var(--pfc-mono);
+  font-size: 0.7rem;
   line-height: 1.5;
+}
+
+.pfc-terminal-transcript a {
+  color: var(--pfc-signal);
 }
 
 .pfc-copy {
@@ -834,8 +863,9 @@ body {
     grid-column: auto;
   }
 
-  .pfc-terminal-capture img {
-    box-shadow: 5px 5px 0 #26302c;
+  .pfc-terminal-transcript pre {
+    padding: 1rem;
+    font-size: 0.66rem;
   }
 
   .pfc-metrics,
