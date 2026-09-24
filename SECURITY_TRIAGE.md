@@ -223,14 +223,17 @@ apply `_mask_secrets()` before those values reach stdout. The focused tests
 `test_pipeline_cli_output_redacts_secret` verify model serialization and all
 CLI JSON branches: `pipeline validate --json`, `pipeline run --plan-json`,
 preflight-failure `--result-json`, and completed-run `--result-json`. They also
-cover human-readable preview and failure output, where a separate leak was
-fixed in commit `18ed406`.
+cover human-readable preview, preflight failure, and execution failure, where
+separate leaks were fixed in commits `18ed406` and `0cf59c4`.
 
 The three CodeQL alerts were dismissed as false positives after these focused
 tests passed and CodeQL passed on exact `main` SHA
 `c894de8566014ed21842620cd3c8ace48e3313b9` in [run 36004982142](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/36004982142).
-The dismissal comments record the sanitizer and tests. A fresh read-only alert
-inventory at that SHA found 483 Trivy instances from the historical container
-scan on `25adc431`, plus one Scorecard `CIIBestPracticesID` alert; no CodeQL,
-Dependabot, or secret-scanning alerts were open, and the open-PR list was empty.
-No container scan or build was started.
+The dismissal comments record the sanitizer and tests. The additional
+human-readable preflight-failure path was then fixed and tested on
+`0cf59c433327d5c1f46ed04f578675aaa24c4c4c`; [CodeQL run 36005555444](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/36005555444)
+passed with no new CodeQL alerts. A fresh read-only inventory at that SHA found
+483 Trivy instances from the historical container scan on `25adc431`, plus one
+Scorecard `CIIBestPracticesID` alert; no CodeQL, Dependabot, or secret-scanning
+alerts were open, and the open-PR list was empty. No container scan or build
+was started.
