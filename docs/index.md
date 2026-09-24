@@ -15,9 +15,9 @@ hide:
       <p class="pfc-eyebrow">Local media automation / signal online</p>
       <h1 id="pfc-hero-title">FFmpeg jobs you can <span>explain.</span></h1>
       <div class="pfc-actions">
-        <a class="pfc-button" href="quickstart/">Prove it in five minutes</a>
-        <a class="pfc-button pfc-button--ghost" href="terminal-demo/">Watch the 0.2.2 terminal proof</a>
-        <a class="pfc-button pfc-button--ghost" href="recipes/">Pick a real recipe</a>
+        <a class="pfc-button" href="quickstart/">Five-minute start</a>
+        <a class="pfc-button pfc-button--ghost" href="terminal-demo/">See 0.2.2 proof</a>
+        <a class="pfc-button pfc-button--ghost" href="recipes/">Browse recipes</a>
       </div>
       <p class="pfc-hero__lede">
         Preflight the machine. Preview the exact plan. Run a maintained workflow.
