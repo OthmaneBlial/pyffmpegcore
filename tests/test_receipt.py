@@ -242,11 +242,13 @@ def test_receipt_write_refuses_existing_file_unless_overwrite_is_explicit(tmp_pa
 
 
 @pytest.mark.skipif(os.name != "posix", reason="POSIX file permission contract")
-def test_receipt_file_is_owner_only_by_default(tmp_path):
+def test_receipt_files_are_owner_only_with_or_without_overwrite(tmp_path):
     batch, _source, _output = _batch(tmp_path)
     receipt = ReceiptBuilder(ffmpeg_path="missing-ffmpeg", ffprobe_path="missing-ffprobe").build(batch)
     path = receipt.write(tmp_path / "private" / "run.json")
 
+    assert stat.S_IMODE(path.stat().st_mode) & 0o077 == 0
+    receipt.write(path, overwrite=True)
     assert stat.S_IMODE(path.stat().st_mode) & 0o077 == 0
 
 
