@@ -18,6 +18,7 @@ hide:
         <a class="pfc-button" href="quickstart/">Five-minute start</a>
         <a class="pfc-button pfc-button--ghost" href="terminal-demo/">Watch 0.3.2 proof</a>
         <a class="pfc-button pfc-button--ghost" href="recipes/">Browse recipes</a>
+        <a class="pfc-button pfc-button--ghost" href="https://github.com/OthmaneBlial/pyffmpegcore">⭐ Star on GitHub</a>
       </div>
       <p class="pfc-hero__lede">
         Preflight the machine. Preview the exact plan. Run a maintained workflow.
