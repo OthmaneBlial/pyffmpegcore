@@ -252,6 +252,11 @@ CLI/pipeline pour `convert` et le profil web ; un nouvel essai FFmpeg réel
 compare désormais les sorties et valide les receipts des deux chemins.
 Essai ciblé local et [CI complète du SHA `ec5dc0c`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35447328360)
 réussis, avec 88 % de couverture globale. Aucun schéma public n'a changé.
+Le 24 septembre 2026, `ExecutionPlan` fige maintenant récursivement ses
+métadonnées dictionnaire/liste à la construction, sans changer leur lecture ni
+la représentation mutable de `to_dict()`. La suite rapide (431 réussites,
+104 tests `real_media` exclus), mypy (29 fichiers), Ruff et le build strict
+passent localement.
 
 - **Objectif :** permettre de corriger un workflow sans propager des divergences entre CLI, profils, moteur et pipelines.
 - **Changements :** cartographier les branches encore dupliquées dans les quatre gros modules ; découper seulement les responsabilités où les tests montrent un couplage réel ; garder une seule compilation des arguments et des contrats stables pour plans, résultats, receipts et codes de sortie.
@@ -486,11 +491,12 @@ checksums et attestations liés depuis [`docs/terminal-demo.md`](docs/terminal-d
 Le site public a été vérifié dans un nouvel onglet : il affiche l'installation
 `0.3.3`, la preuve réelle, les recettes mesurées et les liens GitHub/npm. La
 dernière publication Pages répertoriée est le commit
-[`d89129b`](https://github.com/OthmaneBlial/OthmaneBlial.github.io/commit/d89129b6a61d0195f47bea075e7cafb98e555cd4),
-déployé par [run `36012291727`](https://github.com/OthmaneBlial/OthmaneBlial.github.io/actions/runs/36012291727).
+[`bca8fab`](https://github.com/OthmaneBlial/OthmaneBlial.github.io/commit/bca8fab0c3a4e56ef0ce44380b8e07b14528a205),
+déployé par [run `36014530485`](https://github.com/OthmaneBlial/OthmaneBlial.github.io/actions/runs/36014530485).
 Le parcours rapide demande maintenant une étoile après le résultat vérifié et
-donne un lien d'issue avec consigne de ne pas joindre de média privé. Les casts
-précédents restent archivés sous leurs propres versions.
+donne un lien d'issue avec consigne de ne pas joindre de média privé. La
+référence Python décrit les métadonnées en lecture seule et la copie mutable
+renvoyée par `to_dict()`. Les casts précédents restent archivés par version.
 
 - **Objectif :** un nouvel utilisateur et un mainteneur lisent la même vérité sur la version et les canaux disponibles.
 - **Changements :** remplacer les cases historiques de `RELEASE_CHECKLIST.md` par une checklist à remplir pour chaque version avec URLs de preuves ; aligner `CLI_DISTRIBUTION.md` sur wheel/sdist, image et Action ; résoudre la contradiction de fenêtre de dépréciation entre `docs/RELEASING.md` et `docs/api-stability.md` ; enlever le contournement `repo_url: https://github.com//...` devenu obsolète ; distinguer le cast `0.2.1` de la release `0.2.2` ou enregistrer un nouveau cast réel de la version publiée.
