@@ -189,7 +189,7 @@ def render_powershell_completion(
         "    }",
         '    $key = "root"',
         "    foreach ($token in $previousTokens) {",
-        '        switch ("$key:$token") {',
+        '        switch ("${key}:$token") {',
     ]
 
     for path, node in metadata.items():
