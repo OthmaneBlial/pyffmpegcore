@@ -55,6 +55,20 @@ def test_cli_missing_binary_returns_environment_error(tmp_path):
     assert "--ffprobe-path" in result.stderr
 
 
+def test_cli_probe_reports_malformed_ffprobe_json_as_runtime_error(tmp_path, monkeypatch, capsys):
+    input_file = tmp_path / "movie.mkv"
+    input_file.write_bytes(b"fixture")
+    monkeypatch.setattr(
+        "pyffmpegcore.probe.subprocess.run",
+        lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0, "{truncated", ""),
+    )
+
+    result = main(["probe", "--input", str(input_file)])
+
+    assert result == 5
+    assert "FFprobe returned an invalid JSON document" in capsys.readouterr().err
+
+
 def test_probe_rejects_remote_url_without_echoing_credentials():
     secret = "https://user:do-not-log@example.invalid/media.mp4?token=do-not-log"
     result = subprocess.run(

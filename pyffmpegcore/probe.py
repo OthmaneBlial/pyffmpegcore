@@ -69,7 +69,10 @@ class FFprobeRunner:
             stderr = result.stderr.strip() or f"Unable to probe '{input_file}'"
             raise RuntimeError(f"FFprobe failed for '{input_file}': {stderr}")
 
-        data = json.loads(result.stdout)
+        try:
+            data = json.loads(result.stdout)
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(f"FFprobe returned an invalid JSON document for '{input_file}'") from exc
         if not isinstance(data, dict):
             raise RuntimeError(f"FFprobe returned an invalid JSON document for '{input_file}'")
         return data

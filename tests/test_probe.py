@@ -164,3 +164,11 @@ class TestFFprobeRunner:
             runner.probe("test.mp4")
 
         assert "FFprobe executable '/missing/ffprobe' was not found" in str(exc_info.value)
+
+    @patch("subprocess.run")
+    def test_probe_invalid_json_error(self, mock_run):
+        """Test probe categorizes malformed successful FFprobe output as a runtime failure."""
+        mock_run.return_value = MagicMock(returncode=0, stdout="{truncated", stderr="")
+
+        with pytest.raises(RuntimeError, match="FFprobe returned an invalid JSON document"):
+            FFprobeRunner().probe("movie.mkv")

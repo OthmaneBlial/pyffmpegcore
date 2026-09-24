@@ -156,6 +156,11 @@ Le même validateur de wheel a toutefois vérifié localement les quatre refus
 attendus (FFmpeg absent, encodeur absent, sortie existante, parent invalide)
 avec les codes 3/4 et les remèdes correspondants ; cela ne remplace pas les
 essais d'installation natifs demandés pour Windows, Fedora et Arch.
+Le 24 septembre, la lecture du résultat FFprobe a aussi été durcie : une
+sortie JSON syntaxiquement invalide après un code retour nul devient une erreur
+d'exécution stable, et `probe` renvoie le code CLI 5. Deux tests de régression
+couvrent le runner et le CLI ; ils simulent FFprobe, sans prétendre tester un
+fichier média corrompu réel.
 
 - **Objectif :** éviter que « installez FFmpeg » ou une erreur de capacité soit une impasse.
 - **Changements :** expliquer, pour chaque OS supporté, comment installer et vérifier `ffmpeg`/`ffprobe` avec une source de paquets identifiée et un chemin de rattrapage ; faire afficher par `doctor` et les erreurs de préflight la capacité précise, le binaire utilisé et l'étape suivante. Préserver les contrats JSON et les codes de sortie.
