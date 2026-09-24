@@ -56,7 +56,51 @@ ffmpeg -v info \
 ```
 
 That fixture-only metric does not establish perceptual quality for
-representative media; human review remains open.
+representative media; a real-media check was still open at that point.
+
+## Public-domain real-video check on 24 September 2026
+
+Xiph's [test-media collection](https://media.xiph.org/video/derf/) labels
+[the `vidyo1` 720p sample](https://media.xiph.org/video/derf/webm/vidyo1_720p_60fps.webm) public domain. Its 8,147,493-byte, 10.017-second 1280×720 VP9 WebM
+was downloaded for a local check; SHA-256
+`a090e17dd2c781f16604b2a56989482db05249dd1ac92d36ec0050ea516e36c3`. It has
+no audio or subtitle streams. The file and extracted frames stayed in `/tmp`.
+
+On macOS arm64, Python 3.14.6, and FFmpeg/FFprobe 9.0.1, PyFFmpegCore 0.3.1
+passed `--explain` preflight, then converted it with `web/mp4-compatible` to a
+1,763,207-byte H.264 MP4 (`yuv420p`, 1280×720, 60 fps), 78.36% smaller than the
+input. FFprobe and the [redacted schema 1.0 receipt](evidence/web-vidyo1-2026-09-24.receipt.json) validator passed; a full decode passed; `moov` precedes `mdat`; and the receipt contains no temporary path.
+Input/output comparison with FFmpeg's SSIM filter measured `All:0.980900`
+(Y 0.977687, U 0.985978, V 0.988672). A visual spot-check of decoded frame pairs
+at 1 and 7 seconds, each scaled to 640×360, showed no obvious blocking or
+softness at that size. This is a narrow local check of one video recipe, not a
+broad quality study. It does not cover audio, exact-size compression, another
+FFmpeg build, or another platform.
+
+Output SHA-256: `3fa464804b67062c856a08116704bd645d3707ffd25f4c77967c421d12483703`.
+Receipt SHA-256:
+`ef761c23f938d43cbaa6d11700cde8b7dc0414d11d1d61406ff6d424c619dafb`.
+
+Reproduce against the linked Xiph download with fresh output paths:
+
+```bash
+curl -fLsS \
+  https://media.xiph.org/video/derf/webm/vidyo1_720p_60fps.webm \
+  -o vidyo1_720p_60fps.webm
+
+pyffmpegcore profile run web/mp4-compatible \
+  --input vidyo1_720p_60fps.webm \
+  --output vidyo1.mp4 \
+  --explain
+
+pyffmpegcore profile run web/mp4-compatible \
+  --input vidyo1_720p_60fps.webm \
+  --output vidyo1.mp4 \
+  --receipt vidyo1.receipt.json
+
+pyffmpegcore receipt validate vidyo1.receipt.json --json
+ffmpeg -v error -i vidyo1.mp4 -f null -
+```
 
 ## Reproduce
 
