@@ -6,8 +6,10 @@ import json
 import os
 import stat
 import subprocess
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
 from pathlib import Path
+from threading import Barrier
 from unittest.mock import patch
 
 import pytest
@@ -239,6 +241,27 @@ def test_receipt_write_refuses_existing_file_unless_overwrite_is_explicit(tmp_pa
 
     assert receipt.write(path, overwrite=True) == path
     assert json.loads(path.read_text(encoding="utf-8")) == receipt.to_dict()
+
+
+def test_receipt_write_race_never_overwrites_without_permission(tmp_path):
+    batch, _source, _output = _batch(tmp_path)
+    receipt = ReceiptBuilder(ffmpeg_path="missing-ffmpeg", ffprobe_path="missing-ffprobe").build(batch)
+    path = tmp_path / "receipts" / "racing.json"
+    barrier = Barrier(2)
+
+    def create_receipt(_index):
+        barrier.wait()
+        try:
+            receipt.write(path)
+        except FileExistsError:
+            return False
+        return True
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = tuple(pool.map(create_receipt, range(2)))
+
+    assert sorted(results) == [False, True]
+    assert RunReceipt.read(path).to_dict() == receipt.to_dict()
 
 
 @pytest.mark.skipif(os.name != "posix", reason="POSIX file permission contract")
