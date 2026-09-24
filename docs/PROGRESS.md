@@ -14,8 +14,11 @@ Updated: 2026-09-24
   full CI, coverage, or container workflow ran.
 - Added an Ubuntu 24.04 and Debian 12 APT route to the installation guide.
   Official package pages confirm `ffmpeg` and `ffprobe`; docs checker and strict
-  MkDocs build passed. Linux install was not run on this macOS host, so this is
-  onboarding guidance, not cross-platform install evidence.
+  MkDocs build passed. Pages commit [`a41f1ba`](https://github.com/OthmaneBlial/OthmaneBlial.github.io/commit/a41f1ba6fae0dc3d4f90cd917d5b64971929b37a)
+  deployed in [run 36015548257](https://github.com/OthmaneBlial/OthmaneBlial.github.io/actions/runs/36015548257);
+  the public install guide now shows the APT route. Linux install was not run on
+  this macOS host, so this is onboarding guidance, not cross-platform install
+  evidence.
 - After the verified quickstart, the site now asks for an optional GitHub star
   and links to the issue form with a private-media reminder. The generated page
   passed the strict MkDocs build and local browser accessibility-tree check.
