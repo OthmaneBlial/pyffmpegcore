@@ -71,3 +71,8 @@ Use `probe` before and after when streams or metadata matter. See
 binary or encoder.
 
 Next: [web-compatible video](recipes/web-video.md), [audio extraction](recipes/audio-extraction.md), or [exact-size compression](recipes/exact-size.md).
+
+If this gave you a repeatable media workflow, [star PyFFmpegCore on GitHub](https://github.com/OthmaneBlial/pyffmpegcore). If a
+step failed, [open an issue](https://github.com/OthmaneBlial/pyffmpegcore/issues/new/choose)
+with the command, operating system, and FFmpeg version; do not attach private
+media.
