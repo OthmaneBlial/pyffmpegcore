@@ -394,6 +394,17 @@ expose deux images chargées avec un texte alternatif descriptif et des titres
 de niveaux 1 puis 2. Cet échantillon navigateur ne remplace pas une revue avec
 lecteur d'écran.
 
+Le 24 septembre, le parcours public `quickstart` exposait huit liens vides et
+focalisables pour les numéros de lignes de code. MkDocs désactive désormais ces
+ancres et le contrat CI échoue si le HTML généré en contient. Le build strict
+du SHA `358d087` a été publié sur GitHub Pages par le commit
+[`e77f1ac`](https://github.com/OthmaneBlial/OthmaneBlial.github.io/commit/e77f1ac3c25f972c10456a9a527dbda7972d7293).
+La construction Pages est passée ; l'accueil public, `quickstart`,
+`terminal-demo`, la référence CLI et la progression renvoient HTTP 200, sans
+lien d'ancre de ligne vide, et toutes les images ont un texte alternatif. Ce contrôle
+HTML en direct ne remplace pas une revue avec lecteur d'écran, qui reste à
+faire.
+
 - **Objectif :** que l'identité visuelle existante serve la compréhension sur mobile et au clavier.
 - **Changements :** auditer le site MkDocs réel à 320/375/768 px et desktop en clair/sombre ; contrôler débordements de code et tableaux, contraste, focus, réduction du mouvement, bouton de copie, navigation, liens de recette et absence d'erreurs console ; corriger uniquement les défauts observés. Garder une solution sans JavaScript pour copier l'installation.
 - **Fichiers :** `docs/index.md`, `docs/stylesheets/extra.css`, `docs/javascripts/site.js`, `mkdocs.yml` et pages de référence.
