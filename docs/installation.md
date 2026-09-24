@@ -86,7 +86,7 @@ workflow; PyFFmpegCore does not fetch missing codecs.
 Install the exact validated public release:
 
 ```bash
-pipx install "pyffmpegcore==0.3.0"
+pipx install "pyffmpegcore==0.3.1"
 pyffmpegcore --version
 pyffmpegcore doctor
 pyffmpegcore smoke-test
@@ -97,14 +97,14 @@ A repository checkout also provides `./install.sh`.
 `uv` users can install the same release as an isolated tool:
 
 ```bash
-uv tool install "pyffmpegcore==0.3.0"
+uv tool install "pyffmpegcore==0.3.1"
 pyffmpegcore smoke-test
 ```
 
 ## PowerShell
 
 ```powershell
-pipx install "pyffmpegcore==0.3.0"
+pipx install "pyffmpegcore==0.3.1"
 pyffmpegcore --version
 pyffmpegcore doctor
 pyffmpegcore smoke-test
@@ -117,7 +117,7 @@ From a checkout, use `./install.ps1`; do not run the POSIX shell installer on Wi
 For a Python project dependency:
 
 ```bash
-python -m pip install "pyffmpegcore==0.3.0"
+python -m pip install "pyffmpegcore==0.3.1"
 ```
 
 Use an appropriate compatible-release constraint after validating future

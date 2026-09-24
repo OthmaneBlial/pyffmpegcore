@@ -30,7 +30,7 @@ PyFFmpegCore is for developers and technical creators who want repeatable
 local media automation without owning a growing pile of fragile FFmpeg strings.
 It supports Python 3.10–3.14 on Linux, macOS, and Windows; `ffmpeg` and
 `ffprobe` remain explicit system dependencies.
-Start with `pipx install "pyffmpegcore==0.3.0"`, then run
+Start with `pipx install "pyffmpegcore==0.3.1"`, then run
 `pyffmpegcore smoke-test` to produce and verify synthetic media.
 
 ## Archive: the 0.2.2 install, plan, and result
@@ -58,7 +58,7 @@ The fixture is a functional demonstration, not a compression or quality claim.
 Install the exact public beta from PyPI in an isolated environment:
 
 ```bash
-pipx install "pyffmpegcore==0.3.0"
+pipx install "pyffmpegcore==0.3.1"
 pyffmpegcore doctor
 pyffmpegcore smoke-test --keep-dir pyffmpegcore-demo
 pyffmpegcore profile run web/mp4-compatible --input pyffmpegcore-demo/synthetic-input.mp4 --output pyffmpegcore-demo/web.mp4 --explain
@@ -272,19 +272,19 @@ requirements before mutation.
 - [Support and triage expectations](SUPPORT.md)
 - [Changelog](CHANGELOG.md)
 
-The public `0.3.0` beta was built once from a protected SSH-signed tag, tested
+The public `0.3.1` beta was built once from a protected SSH-signed tag, tested
 as the exact wheel on Linux, macOS, and Windows, published without a long-lived
 PyPI token, and reinstalled from the public index before the matching GitHub
 Release was created. The workflow produced the same wheel and source archive
 whose checksums appear on PyPI and the release page.
 
-- [PyPI package and files](https://pypi.org/project/pyffmpegcore/0.3.0/)
-- [Signed GitHub Release, checksums, and artifact report](https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.3.0)
-- [Exact release workflow evidence](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35971504440)
-- [Wheel Trusted Publisher attestation](https://pypi.org/integrity/pyffmpegcore/0.3.0/pyffmpegcore-0.3.0-py3-none-any.whl/provenance)
-- [Source distribution Trusted Publisher attestation](https://pypi.org/integrity/pyffmpegcore/0.3.0/pyffmpegcore-0.3.0.tar.gz/provenance)
+- [PyPI package and files](https://pypi.org/project/pyffmpegcore/0.3.1/)
+- [Signed GitHub Release, checksums, and artifact report](https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.3.1)
+- [Release workflow evidence](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/release.yml)
+- [Wheel Trusted Publisher attestation](https://pypi.org/integrity/pyffmpegcore/0.3.1/pyffmpegcore-0.3.1-py3-none-any.whl/provenance)
+- [Source distribution Trusted Publisher attestation](https://pypi.org/integrity/pyffmpegcore/0.3.1/pyffmpegcore-0.3.1.tar.gz/provenance)
 
-The earlier [0.2.2 beta release](https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.2.2)
+The earlier [0.3.0 beta release](https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.3.0)
 is retained as historical evidence.
 
 ## Help make media automation less fragile

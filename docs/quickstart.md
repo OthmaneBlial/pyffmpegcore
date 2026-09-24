@@ -5,10 +5,10 @@ This flow needs no repository checkout and no personal media.
 ## 1. Install the public beta
 
 ```bash
-pipx install "pyffmpegcore==0.3.0"
+pipx install "pyffmpegcore==0.3.1"
 ```
 
-Version `0.3.0` is the signed public beta. Pinning it keeps this proof
+Version `0.3.1` is the signed public beta. Pinning it keeps this proof
 reproducible; its exact wheel passed the project's cross-platform release gate.
 
 ## 2. Diagnose the media stack
