@@ -17,6 +17,7 @@ LINK_PATTERN = re.compile(r"(?<!!)\[[^]]+\]\(([^)]+)\)")
 HTML_LINK_PATTERN = re.compile(r"<a\b[^>]*\bhref\s*=\s*['\"]([^'\"]+)['\"]", re.IGNORECASE)
 IMAGE_PATTERN = re.compile(r"!\[([^]]*)\]\(([^)]+)\)")
 HEADING_PATTERN = re.compile(r"^#{1,6}[ \t]+(.*)$")
+HTML_ID_PATTERN = re.compile(r"\bid\s*=\s*['\"]([^'\"]+)['\"]", re.IGNORECASE)
 FENCE_PATTERN = re.compile(r"^[ \t]*(```|~~~)")
 INVALID_SLUG_CHARS = re.compile(r"[^\w\- ]", re.UNICODE)
 WHITESPACE_RUN = re.compile(r"\s+")
@@ -30,7 +31,7 @@ def slugify_heading(text: str) -> str:
 
 @cache
 def collect_heading_slugs(path: Path) -> frozenset[str]:
-    """Return heading anchors for a Markdown file, including duplicate suffixes."""
+    """Return Markdown heading slugs and explicit HTML IDs, excluding code fences."""
     slugs: set[str] = set()
     counts: dict[str, int] = {}
     in_fence = False
@@ -40,6 +41,7 @@ def collect_heading_slugs(path: Path) -> frozenset[str]:
             continue
         if in_fence:
             continue
+        slugs.update(HTML_ID_PATTERN.findall(line))
         match = HEADING_PATTERN.match(line)
         if match is None:
             continue
@@ -90,6 +92,7 @@ def validate_document(source: Path, text: str) -> list[str]:
         if (
             fragment is not None
             and resolved.is_file()
+            and fragment not in collect_heading_slugs(resolved)
             and slugify_heading(fragment) not in collect_heading_slugs(resolved)
         ):
             failures.append(f"{_describe(source)}: missing heading fragment {target}")

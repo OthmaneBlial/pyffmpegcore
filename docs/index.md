@@ -5,6 +5,10 @@ hide:
   - path
 ---
 
+<div data-md-component="skip">
+  <a href="#pfc-hero-title" class="md-skip">Skip to content</a>
+</div>
+
 <div class="pfc-home">
   <section class="pfc-hero" aria-labelledby="pfc-hero-title">
     <div class="pfc-hero__copy">

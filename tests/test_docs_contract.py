@@ -58,6 +58,14 @@ class HeadingCollectionTests(TestCase):
         path = self._markdown("```text\n# Not a heading\n```\n# Real heading\n")
         self.assertEqual(set(checker.collect_heading_slugs(path)), {"real-heading"})
 
+    def test_collects_explicit_html_id_outside_code_fence(self) -> None:
+        path = self._markdown('<h1 id="home-title">Home</h1>\n')
+        self.assertEqual(set(checker.collect_heading_slugs(path)), {"home-title"})
+
+    def test_skips_html_id_inside_code_fence(self) -> None:
+        path = self._markdown('```html\n<h1 id="example">Home</h1>\n```\n')
+        self.assertEqual(set(checker.collect_heading_slugs(path)), set())
+
 
 class DocumentValidationTests(TestCase):
     def setUp(self) -> None:
@@ -126,4 +134,9 @@ class DocumentValidationTests(TestCase):
         section.mkdir()
         (section / "index.md").write_text("# Section\n", encoding="utf-8")
         source = self._write("source.md", '<a href="section/#section">Read section</a>\n')
+        self.assertEqual(checker.validate_document(source, source.read_text(encoding="utf-8")), [])
+
+    def test_html_link_resolves_explicit_html_id(self) -> None:
+        self._write("home.md", '<h1 id="home-title">Home</h1>\n')
+        source = self._write("source.md", '<a href="home.md#home-title">Home</a>\n')
         self.assertEqual(checker.validate_document(source, source.read_text(encoding="utf-8")), [])
