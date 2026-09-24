@@ -4,6 +4,8 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-09-24
+
 ### Fixed
 
 - Two-pass target-size plans account for source audio streams, so video-only
@@ -135,7 +137,8 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
   non-Latin metadata from killing Windows pipe-drain threads and stalling the
   media process.
 
-[Unreleased]: https://github.com/OthmaneBlial/pyffmpegcore/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/OthmaneBlial/pyffmpegcore/compare/v0.3.2...HEAD
+[0.3.2]: https://github.com/OthmaneBlial/pyffmpegcore/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/OthmaneBlial/pyffmpegcore/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/OthmaneBlial/pyffmpegcore/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/OthmaneBlial/pyffmpegcore/compare/v0.2.1...v0.2.2

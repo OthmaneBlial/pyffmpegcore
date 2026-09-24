@@ -2,6 +2,15 @@
 
 Copy this checklist for each new version. Every box starts open; a previous release or local dry-run does not satisfy the next one. Record the exact version, source SHA, and proof URLs below, then follow [docs/RELEASING.md](docs/RELEASING.md).
 
+## Candidate: 0.3.2
+
+- Source SHA: pending final candidate commit.
+- Manual exact-artifact workflow: pending.
+- Signed tag, provenance, PyPI files, public installs, and matching GitHub prerelease: pending; complete only through the tagged release workflow.
+- No container or Docker release is included.
+
+The verified 0.3.1 release record follows.
+
 - Target version and tag: published `0.3.1` / `v0.3.1`, signed SSH tag at exact source SHA `562ae6ce92a8b321f15a6a250cf7802f2c9bb5bc`.
 - Manual build/test run [35975145754](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35975145754) passed on the release SHA. The signed-tag release workflow [35975371541](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35975371541) passed six exact-wheel OS/Python checks, provenance, PyPI Trusted Publishing, six clean public installs, and GitHub prerelease creation.
 - Published wheel `pyffmpegcore-0.3.1-py3-none-any.whl`: 101,638 bytes, SHA-256 `ea222d3dc5d09ae0ffd79c310ea415eb4edb2d7e04a87532cda939a7890d255d`. Published sdist `pyffmpegcore-0.3.1.tar.gz`: 335,713 bytes, SHA-256 `e0ff591589dd3950e11450dcecc0d1b39718c42415332568e606c98207c94074`. Both hashes match PyPI's public JSON and GitHub Release `SHA256SUMS`.
