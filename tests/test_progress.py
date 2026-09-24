@@ -2,6 +2,7 @@
 Tests for ProgressTracker.
 """
 
+from io import StringIO
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -56,25 +57,24 @@ class TestProgressTracker:
         assert tracker._time_to_seconds("01:00:00.00") == 3600.0
         assert tracker._time_to_seconds("5.5") == 5.5
 
-    @patch("subprocess.Popen")
-    @patch("threading.Thread")
     @pytest.mark.parametrize("use_pipe", [True, False])
-    def test_run_with_progress(self, mock_thread, mock_popen, use_pipe):
-        """Test run method with progress callback."""
-        # Mock process
+    @patch("subprocess.Popen")
+    def test_run_with_progress_drains_each_pipe_once(self, mock_popen, use_pipe):
+        """Progress readers and communicate must not compete for the same pipe."""
         mock_process = MagicMock()
-        mock_process.communicate.return_value = ("stdout", "")
+        mock_process.communicate.side_effect = AssertionError("communicate would race the progress reader")
         mock_process.returncode = 0
+        mock_process.wait.return_value = 0
+        if use_pipe:
+            mock_process.stdout = StringIO("frame=bad\nframe=123\nprogress=end\n")
+            mock_process.stderr = StringIO("diagnostic")
+        else:
+            mock_process.stdout = StringIO("captured stdout")
+            mock_process.stderr = StringIO(
+                "frame=  123 fps=25.0 q=28.0 size=   12345kB time=00:00:05.00 "
+                "bitrate=1234.5kbits/s speed=1.25x\nprogress=end\n"
+            )
         mock_popen.return_value = mock_process
-
-        # Mock thread
-        mock_thread_instance = MagicMock()
-        mock_thread.return_value = mock_thread_instance
-
-        # Mock stderr pipe
-        mock_stderr = MagicMock()
-        mock_stderr.readline.side_effect = ["progress line", ""]  # One line then EOF
-        mock_process.stderr = mock_stderr
 
         callback_calls = []
         tracker = ProgressTracker(lambda x: callback_calls.append(x), use_pipe=use_pipe)
@@ -83,16 +83,52 @@ class TestProgressTracker:
         result = tracker.run(cmd)
 
         assert result.returncode == 0
-        # Check that progress options were added
+        assert callback_calls[-1]["status"] == "end"
+        assert callback_calls[0]["frame"] == 123
+        mock_process.communicate.assert_not_called()
+        mock_process.wait.assert_called_once()
         call_args = mock_popen.call_args[0][0]
         if use_pipe:
             assert "-progress" in call_args
             assert "pipe:1" in call_args
             assert "-nostats" in call_args
+            assert result.stderr == "diagnostic"
         else:
             assert "-progress" not in call_args
+            assert result.stdout == "captured stdout"
         assert mock_popen.call_args.kwargs["encoding"] == "utf-8"
         assert mock_popen.call_args.kwargs["errors"] == "replace"
+
+    def test_run_resets_progress_between_processes(self):
+        process = MagicMock()
+        process.stdout = StringIO("progress=end\n")
+        process.stderr = StringIO("")
+        process.returncode = 0
+        process.wait.return_value = 0
+        callback_calls = []
+        tracker = ProgressTracker(callback_calls.append)
+        tracker.progress.update({"frame": 12, "status": "end"})
+
+        with patch("subprocess.Popen", return_value=process):
+            tracker.run(["ffmpeg"])
+
+        assert callback_calls == [{"status": "end"}]
+
+    def test_callback_error_is_raised_after_process_pipes_are_drained(self):
+        process = MagicMock()
+        process.stdout = StringIO("frame=12\nprogress=end\n")
+        process.stderr = StringIO("")
+        process.returncode = 0
+        process.wait.return_value = 0
+
+        def broken_callback(_progress):
+            raise RuntimeError("callback failed")
+
+        with patch("subprocess.Popen", return_value=process):
+            with pytest.raises(RuntimeError, match="callback failed"):
+                ProgressTracker(broken_callback).run(["ffmpeg"])
+
+        process.wait.assert_called_once()
 
 
 class TestProgressCallback:

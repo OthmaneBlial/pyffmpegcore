@@ -37,6 +37,7 @@ class ProgressTracker:
         Returns:
             CompletedProcess instance
         """
+        self.progress.clear()
         if self.use_pipe:
             return self._run_with_pipe(cmd)
         else:
@@ -58,23 +59,29 @@ class ProgressTracker:
             errors="replace",
             bufsize=1,
         )
+        stdout_pipe, stderr_pipe = process.stdout, process.stderr
+        if stdout_pipe is None or stderr_pipe is None:
+            raise RuntimeError("FFmpeg progress pipes were not created.")
 
-        # Read progress from stdout
-        progress_thread = threading.Thread(target=self._read_progress_pipe, args=(process.stdout,))
+        callback_errors: list[BaseException] = []
+        progress_thread = threading.Thread(
+            target=self._read_progress_pipe,
+            args=(stdout_pipe, callback_errors),
+        )
         progress_thread.daemon = True
         progress_thread.start()
 
-        # Wait for process to complete
-        _, stderr = process.communicate()
+        stderr = stderr_pipe.read()
+        returncode = process.wait()
+        progress_thread.join()
+        if callback_errors:
+            raise callback_errors[0]
 
-        # Wait for progress thread to finish
-        progress_thread.join(timeout=1.0)
-
-        if process.returncode == 0 and self.progress.get("status") != "end":
+        if returncode == 0 and self.progress.get("status") != "end":
             self.progress["status"] = "end"
             self.callback(self.progress.copy())
 
-        return subprocess.CompletedProcess(cmd, process.returncode, "", stderr)
+        return subprocess.CompletedProcess(cmd, returncode, "", stderr)
 
     def _run_with_stderr(self, cmd: list) -> subprocess.CompletedProcess:
         """
@@ -89,25 +96,31 @@ class ProgressTracker:
             errors="replace",
             bufsize=1,
         )
+        stdout_pipe, stderr_pipe = process.stdout, process.stderr
+        if stdout_pipe is None or stderr_pipe is None:
+            raise RuntimeError("FFmpeg progress pipes were not created.")
 
-        # Start a thread to read stderr
-        stderr_thread = threading.Thread(target=self._read_stderr, args=(process.stderr,))
+        callback_errors: list[BaseException] = []
+        stderr_thread = threading.Thread(
+            target=self._read_stderr,
+            args=(stderr_pipe, callback_errors),
+        )
         stderr_thread.daemon = True
         stderr_thread.start()
 
-        # Wait for process to complete
-        stdout, _ = process.communicate()
+        stdout = stdout_pipe.read()
+        returncode = process.wait()
+        stderr_thread.join()
+        if callback_errors:
+            raise callback_errors[0]
 
-        # Wait for stderr thread to finish
-        stderr_thread.join(timeout=1.0)
-
-        if process.returncode == 0 and self.progress.get("status") != "end":
+        if returncode == 0 and self.progress.get("status") != "end":
             self.progress["status"] = "end"
             self.callback(self.progress.copy())
 
-        return subprocess.CompletedProcess(cmd, process.returncode, stdout, "")
+        return subprocess.CompletedProcess(cmd, returncode, stdout, "")
 
-    def _read_progress_pipe(self, stdout_pipe):
+    def _read_progress_pipe(self, stdout_pipe, callback_errors: list[BaseException]) -> None:
         """
         Read from stdout pipe (progress output) and parse progress information.
         """
@@ -121,13 +134,14 @@ class ProgressTracker:
                 continue
 
             # Parse key=value progress line
-            progress = self._parse_progress_pipe_line(line)
+            try:
+                progress = self._parse_progress_pipe_line(line)
+            except (TypeError, ValueError):
+                continue
             if progress:
-                self.progress.update(progress)
-                # Call callback with current progress
-                self.callback(self.progress.copy())
+                self._publish_progress(progress, callback_errors)
 
-    def _read_stderr(self, stderr_pipe):
+    def _read_stderr(self, stderr_pipe, callback_errors: list[BaseException]) -> None:
         """
         Read from stderr pipe and parse progress information (fallback method).
         """
@@ -141,11 +155,21 @@ class ProgressTracker:
                 continue
 
             # Parse progress line
-            progress = self._parse_progress_line(line)
+            try:
+                progress = self._parse_progress_line(line)
+            except (TypeError, ValueError):
+                continue
             if progress:
-                self.progress.update(progress)
-                # Call callback with current progress
-                self.callback(self.progress.copy())
+                self._publish_progress(progress, callback_errors)
+
+    def _publish_progress(self, progress: dict[str, Any], callback_errors: list[BaseException]) -> None:
+        self.progress.update(progress)
+        if callback_errors:
+            return
+        try:
+            self.callback(self.progress.copy())
+        except BaseException as exc:
+            callback_errors.append(exc)
 
     def _parse_progress_pipe_line(self, line: str) -> dict[str, Any] | None:
         """
