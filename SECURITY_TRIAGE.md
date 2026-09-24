@@ -210,3 +210,27 @@ verification, the public terminal demo, and container build inputs. The
 [release dry run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35445461779),
 and new two-architecture container scan succeeded. Public wheel smoke
 deliberately uses the normal resolver to test user installation.
+
+## Pipeline CLI secret-logging findings
+
+On 24 September, CodeQL alerts [#993](https://github.com/OthmaneBlial/pyffmpegcore/security/code-scanning/993),
+[#995](https://github.com/OthmaneBlial/pyffmpegcore/security/code-scanning/995),
+and [#996](https://github.com/OthmaneBlial/pyffmpegcore/security/code-scanning/996)
+identified JSON serialization calls in `cli_workflows.py`. Manual review
+confirmed `PipelinePlan.to_dict()` and `PreparedPipeline.to_dict()` recursively
+apply `_mask_secrets()` before those values reach stdout. The focused tests
+`test_pipeline_secret_is_masked_from_every_public_renderer` and
+`test_pipeline_cli_output_redacts_secret` verify model serialization and all
+CLI JSON branches: `pipeline validate --json`, `pipeline run --plan-json`,
+preflight-failure `--result-json`, and completed-run `--result-json`. They also
+cover human-readable preview and failure output, where a separate leak was
+fixed in commit `18ed406`.
+
+The three CodeQL alerts were dismissed as false positives after these focused
+tests passed and CodeQL passed on exact `main` SHA
+`c894de8566014ed21842620cd3c8ace48e3313b9` in [run 36004982142](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/36004982142).
+The dismissal comments record the sanitizer and tests. A fresh read-only alert
+inventory at that SHA found 483 Trivy instances from the historical container
+scan on `25adc431`, plus one Scorecard `CIIBestPracticesID` alert; no CodeQL,
+Dependabot, or secret-scanning alerts were open, and the open-PR list was empty.
+No container scan or build was started.

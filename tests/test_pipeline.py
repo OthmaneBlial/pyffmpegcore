@@ -27,7 +27,7 @@ from pyffmpegcore.pipeline import _validate_state_destination as _validate_pipel
 from pyffmpegcore.pipeline import _write_pipeline_state
 from pyffmpegcore.pipeline_compiler import PreparedPipelineStep
 from pyffmpegcore.pipeline_runner import _file_fingerprint, _runtime_fingerprint
-from pyffmpegcore.preflight import PreflightReport
+from pyffmpegcore.preflight import PreflightCheck, PreflightReport
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -261,7 +261,7 @@ def test_pipeline_secret_is_masked_from_every_public_renderer(tmp_path):
 
 @pytest.mark.parametrize(
     "mode",
-    ["preview", "failure", "validate-json", "plan-json", "result-json"],
+    ["preview", "failure", "validate-json", "plan-json", "preflight-json", "result-json"],
 )
 def test_pipeline_cli_output_redacts_secret(tmp_path, monkeypatch, capsys, mode):
     secret = "https://user:integration-secret@example.invalid/video.mp4?token=integration-secret"
@@ -294,7 +294,10 @@ def test_pipeline_cli_output_redacts_secret(tmp_path, monkeypatch, capsys, mode)
                     step.id,
                     step.needs,
                     step.plan,
-                    PreflightReport(step.plan.workflow, ()),
+                    PreflightReport(
+                        step.plan.workflow,
+                        (PreflightCheck("output", "fail", f"blocked by {secret}"),) if mode == "preflight-json" else (),
+                    ),
                 )
                 for step in pipeline.steps
             ),
@@ -319,6 +322,8 @@ def test_pipeline_cli_output_redacts_secret(tmp_path, monkeypatch, capsys, mode)
         arguments = ["pipeline", "validate", str(pipeline_path), "--var", "SOURCE_URL", "--json"]
     elif mode == "plan-json":
         arguments = ["pipeline", "run", str(pipeline_path), "--var", "SOURCE_URL", "--dry-run", "--plan-json"]
+    elif mode == "preflight-json":
+        arguments = ["pipeline", "run", str(pipeline_path), "--var", "SOURCE_URL", "--result-json"]
     else:
         arguments = ["pipeline", "run", str(pipeline_path), "--var", "SOURCE_URL", "--result-json"]
 
@@ -327,7 +332,7 @@ def test_pipeline_cli_output_redacts_secret(tmp_path, monkeypatch, capsys, mode)
 
     assert "integration-secret" not in captured.out + captured.err
     assert "<redacted>" in captured.out + captured.err
-    assert (result != 0) if mode in {"failure", "result-json"} else (result == 0)
+    assert (result != 0) if mode in {"failure", "preflight-json", "result-json"} else (result == 0)
 
 
 def test_pipeline_schema_migration_is_explicit_and_canonical(tmp_path):
