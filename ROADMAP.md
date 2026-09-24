@@ -516,7 +516,13 @@ largeur effective de 469 px, également sans débordement.
 mesurés avec leurs preuves et limites. Il affiche désormais le plan avant
 écriture et le résultat avec reçu validé, rendus sans retouche de texte depuis
 le cast public exact ; les sommes SHA-256 sont conservées dans le manifeste.
-Un rendu actuel du README en mode sombre et sur petit écran reste à vérifier.
+Un rendu public actuel a été vérifié dans Chrome à 320, 375 et 1280 px CSS ; la
+largeur du document correspond à celle de la fenêtre sans débordement visible.
+Le badge PyPI proxy restait bloqué sur `0.2.2` malgré le package `0.3.3` ; le
+commit [`19e871a`](https://github.com/OthmaneBlial/pyffmpegcore/commit/19e871a89097feda0e0b7cf5d1e73cbe65fe515f)
+ajoute un cache-bust, nomme explicitement la bêta actuelle et remplace le badge
+CI rouge d'un run annulé par un lien vers l'historique. Le badge public montre
+maintenant `0.3.3`. La vérification du thème sombre reste à faire.
 
 - **Objectif :** que la première vue GitHub montre une commande, une décision de plan et un résultat réellement obtenus.
 - **Changements :** raccourcir le mur de badges et placer un parcours vérifié au premier écran ; capturer de vraies images de terminal avec version, OS, date et fixture non privée ; montrer avant/après utile (format, pistes, taille ou loudness) avec un lien vers les receipts. Conserver la bannière SVG si elle aide la lecture, sans confondre console illustrative HTML et capture.

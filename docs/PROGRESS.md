@@ -19,6 +19,13 @@ Updated: 2026-09-24
   the public install guide now shows the APT route. Linux install was not run on
   this macOS host, so this is onboarding guidance, not cross-platform install
   evidence.
+- Reviewed the public GitHub README in Chrome at 320, 375, and 1280 CSS pixels;
+  document width matched viewport width with no visible horizontal overflow.
+  GitHub still showed a cached PyPI `0.2.2` badge while the upstream badge
+  reported `0.3.3`. Commit [`19e871a`](https://github.com/OthmaneBlial/pyffmpegcore/commit/19e871a89097feda0e0b7cf5d1e73cbe65fe515f)
+  cache-busts that badge, identifies `0.3.3` as the current beta, and replaces a
+  cancelled historical CI badge with a link to CI run history. The public README
+  now displays `0.3.3`; dark-mode rendering remains unchecked.
 - After the verified quickstart, the site now asks for an optional GitHub star
   and links to the issue form with a private-media reminder. The generated page
   passed the strict MkDocs build and local browser accessibility-tree check.
