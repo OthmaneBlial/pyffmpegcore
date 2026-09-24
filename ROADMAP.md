@@ -535,6 +535,13 @@ JavaScript périmée. Le build strict et CodeQL ont passé ; le Pages commit
 est déployé. L'arbre d'accessibilité Chrome local et public expose
 « Copied install command » après activation. VoiceOver reste à vérifier.
 
+Le 24 septembre, la carte exact-size de l'accueil a remplacé la mesure de la
+fixture par un résultat vérifié sur le clip Xiph du domaine public, avec un
+lien vers sa section et son reçu. Les contrôles de liens et le build strict
+passent. Aucun débordement n'apparaît à 320 px en local ni à 400 px sur le site
+public ; le lien arrive à la section exacte. CodeQL et le déploiement Pages
+ont passé sur le commit [`d5a1c6b`](https://github.com/OthmaneBlial/pyffmpegcore/commit/d5a1c6b11d365283c843c3b6c878f821f66dee1b). VoiceOver reste à vérifier.
+
 - **Objectif :** que l'identité visuelle existante serve la compréhension sur mobile et au clavier.
 - **Changements :** auditer le site MkDocs réel à 320/375/768 px et desktop en clair/sombre ; contrôler débordements de code et tableaux, contraste, focus, réduction du mouvement, bouton de copie, navigation, liens de recette et absence d'erreurs console ; corriger uniquement les défauts observés. Garder une solution sans JavaScript pour copier l'installation.
 - **Fichiers :** `docs/index.md`, `docs/stylesheets/extra.css`, `docs/javascripts/site.js`, `mkdocs.yml` et pages de référence.
