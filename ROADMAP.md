@@ -433,16 +433,24 @@ réexaminer lors des prochaines releases majeures.
 
 ### 4.1 Vérifier exactement ce qui sera téléchargé
 
-**État au 23 septembre 2026 :** le dry-run du candidat `0.3.0`
-[`35921444046`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35921444046)
-a réussi sur le SHA exact `2d577f5ae9e83eb7343b618162a1b597adb005ce` : un bundle
-wheel/sdist, contrôles `twine`/contenu/SHA-256, fixtures déterministes forcées
-et six installations/tests du wheel exact sur Linux, macOS et Windows avec
-Python 3.10/3.14. La CI générale `35920627403` du même SHA passe la qualité,
-la matrice Python 3.10–3.14, la couverture à 80 %, la documentation, le fuzz et
-les six ancres wheel ; CodeQL `35920627493` et Scorecard `35920627411` passent
-aussi. Le dispatch `dry_run=true` saute signature de tag, attestations, PyPI,
-installation publique et GitHub Release. Le candidat n'est ni signé ni publié.
+**État au 24 septembre 2026 :** le dernier bundle candidat `0.3.0` vient du
+[run Release `35941884095`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35941884095),
+construit sur le SHA exact `401f0622a69b88d0beebfc32203d649070af0d86`. `twine`
+et le contenu de la wheel passent ; les six cellules OS/Python ont installé et
+testé la même wheel. Une reconstruction depuis `git archive` avec le même
+`SOURCE_DATE_EPOCH` reproduit wheel et sdist à l'identique. Installation locale
+de la wheel, `--version`, `doctor --json`, `smoke-test --json`, puis installation
+hors ligne du sdist et ses commandes `--version`/`smoke-test` ont réussi. La CI
+[35941424672](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35941424672),
+CodeQL [35941424727](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35941424727)
+et Scorecard
+[35941424803](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35941424803)
+passent sur ce SHA. Le commit documentaire suivant `0f02439` passe aussi CI
+[35942252834](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35942252834),
+CodeQL `35942252878` et Scorecard `35942252890`. Ce dispatch manuel ne publie
+pas : attestation, PyPI, installation publique et GitHub Release ont été
+sautés. Les hashes sont inscrits dans `RELEASE_CHECKLIST.md` ; le candidat reste
+non signé et non publié.
 
 **État :** [release à blanc `35447937367`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35447937367)
 réussie : bundle wheel/sdist construit une seule fois, SHA-256 contrôlés,
@@ -554,14 +562,17 @@ tâche n'existe pas encore.
 
 ### 4.4 Publier la prochaine version et contrôler son état public
 
-**État au 23 septembre 2026 :** le candidat `0.3.0` a passé son
-[dry-run `35921444046`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35921444046)
-sur le SHA `2d577f5ae9e83eb7343b618162a1b597adb005ce`; tous les contrôles de
-construction et les six tests du wheel exact ont réussi. Aucun tag `v0.3.0`,
-attestation, release GitHub ou upload PyPI n'a été créé. Le PyPI public reste
-`0.2.2`. La publication exige une autorisation et les gates publics ; l'Action
-et le conteneur n'ont pas été revalidés pour ce candidat, et aucun build
-conteneur n'a été exécuté conformément à l'instruction du mainteneur.
+**État au 24 septembre 2026 :** le candidat `0.3.0` a passé le build/test
+manuel [`35941884095`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35941884095)
+sur le SHA `401f0622a69b88d0beebfc32203d649070af0d86`, puis la reconstruction
+reproductible et les installations locales décrites en 4.1. Le commit
+documentaire courant `0f02439` passe CI `35942252834`, CodeQL `35942252878` et
+Scorecard `35942252890`. Aucun tag `v0.3.0`, attestation, release GitHub ou
+upload PyPI n'a été créé ; PyPI et GitHub Releases restent en `0.2.2`. Le
+dispatch manuel ne publie pas. La publication attend l'autorisation du
+mainteneur et les contrôles publics. Action/conteneur n'ont pas été revalidés
+pour ce candidat ; aucun build conteneur n'a été exécuté selon l'instruction
+du mainteneur.
 
 **État historique :** les dry-runs `35450686248` et
 [`35916876361`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35916876361)
