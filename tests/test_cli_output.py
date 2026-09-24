@@ -11,12 +11,12 @@ from pyffmpegcore.cli import (
     CLIContext,
     CLIProgressPrinter,
     _render_execution_successes,
-    _validate_distinct_run_artifacts,
     format_bytes,
     report_batch_results,
     summarize_output_file,
 )
 from pyffmpegcore.cli_validation import CLIError
+from pyffmpegcore.cli_workflows import _validate_distinct_run_artifacts
 from pyffmpegcore.workflow import WorkflowBatch
 
 

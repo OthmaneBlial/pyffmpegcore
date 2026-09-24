@@ -108,9 +108,11 @@ def test_batch_event_parent_errors_are_actionable(tmp_path, monkeypatch):
         result_json=False,
         hash_content=False,
     )
-    monkeypatch.setattr("pyffmpegcore.cli._load_cli_batch", lambda _args: SimpleNamespace(jobs=(), policy=None))
     monkeypatch.setattr(
-        "pyffmpegcore.cli.BatchRunner.run",
+        "pyffmpegcore.cli_workflows._load_cli_batch", lambda _args: SimpleNamespace(jobs=(), policy=None)
+    )
+    monkeypatch.setattr(
+        "pyffmpegcore.cli_workflows.BatchRunner.run",
         lambda *_args, **_kwargs: pytest.fail("batch must not start when event-log path is invalid"),
     )
 
@@ -134,9 +136,9 @@ def test_cli_pipeline_event_file_omits_details_when_secrets_are_active(tmp_path,
         succeeded_count=0,
         items=(),
     )
-    monkeypatch.setattr("pyffmpegcore.cli._load_cli_pipeline", lambda _args: pipeline)
+    monkeypatch.setattr("pyffmpegcore.cli_workflows._load_cli_pipeline", lambda _args: pipeline)
     monkeypatch.setattr(
-        "pyffmpegcore.cli.PipelinePreflightEngine.prepare",
+        "pyffmpegcore.cli_workflows.PipelinePreflightEngine.prepare",
         lambda *_args, **_kwargs: SimpleNamespace(ok=True, steps=()),
     )
 
@@ -144,7 +146,7 @@ def test_cli_pipeline_event_file_omits_details_when_secrets_are_active(tmp_path,
         kwargs["event_callback"](PipelineEvent(1, "failed", "web", secret))
         return result
 
-    monkeypatch.setattr("pyffmpegcore.cli.PipelineRunner.run", run)
+    monkeypatch.setattr("pyffmpegcore.cli_workflows.PipelineRunner.run", run)
 
     assert (
         main(["pipeline", "run", str(tmp_path / "pipeline.json"), "--events", str(events), "--result-json"])

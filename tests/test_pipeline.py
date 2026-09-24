@@ -273,7 +273,7 @@ def test_cli_pipeline_migrate_preserves_output_created_after_preflight(tmp_path,
         output.write_text("concurrent writer", encoding="utf-8")
         return _document
 
-    monkeypatch.setattr("pyffmpegcore.cli.migrate_pipeline_document", create_competing_output)
+    monkeypatch.setattr("pyffmpegcore.cli_workflows.migrate_pipeline_document", create_competing_output)
 
     assert main(["pipeline", "migrate", str(source), str(output)]) == 4
     assert "Pipeline output already exists" in capsys.readouterr().err
