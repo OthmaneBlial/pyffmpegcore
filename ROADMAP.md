@@ -536,6 +536,23 @@ réexaminer lors des prochaines releases majeures.
 
 ### 4.1 Vérifier exactement ce qui sera téléchargé
 
+Preuve la plus récente : au SHA `20dece38d3ae61bc880d64056aafe01e3ddb9fea`,
+deux archives propres ont produit des artefacts identiques via
+`scripts.build_cli_artifacts` avec `SOURCE_DATE_EPOCH=1790234483` : wheel
+`pyffmpegcore-0.3.0-py3-none-any.whl`, 101 303 octets, SHA-256
+`7df87d27180f4e0f8c047d4b992e3a6f8b4bd09761f3a36cbdaa6a7df35d004c` ; sdist
+`pyffmpegcore-0.3.0.tar.gz`, 333 242 octets, SHA-256
+`cf72cd6751ec3c7089b0d7c0e06c6cb16fd732cbee41f272358cf4ce7469777a`.
+`twine check`, `check-wheel-contents`, le contrat du sdist et les installations
+hors réseau par pip ont réussi ; chaque CLI installée a réussi `--version`,
+`doctor --json` et `smoke-test --json`. La wheel contient les deux modules
+extraits du pipeline. CodeQL
+[`35969173010`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35969173010)
+a réussi sur ce SHA. `pipx` et `uv` sont absents de l'environnement local et
+n'ont pas été installés. Aucune attestation, tag ni publication n'a été créée.
+Cette mise à jour documentaire modifie le sdist : le reconstruire au SHA final
+avant une release.
+
 Mise à jour du 24 septembre : deux builds depuis l'archive propre du SHA source
 `ba981e9d3c7d451baabd3e2662b94e5a303fc979`, avec
 `SOURCE_DATE_EPOCH=1790225853`, ont produit des fichiers identiques. Wheel :
