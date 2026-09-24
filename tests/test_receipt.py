@@ -238,6 +238,7 @@ def test_receipt_write_refuses_existing_file_unless_overwrite_is_explicit(tmp_pa
     with pytest.raises(FileExistsError):
         receipt.write(path)
     assert path.read_text(encoding="utf-8") == "keep this receipt"
+    assert not list(path.parent.glob(".pyffmpegcore-*.tmp"))
 
     assert receipt.write(path, overwrite=True) == path
     assert json.loads(path.read_text(encoding="utf-8")) == receipt.to_dict()

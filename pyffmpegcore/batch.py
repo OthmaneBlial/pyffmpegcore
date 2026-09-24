@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any, Protocol
 from urllib.parse import urlsplit
 
-from ._fileio import atomic_write_text
+from ._fileio import atomic_write_text, exclusive_write_text
 from .domain import ExecutionPlan
 from .errors import ValidationError
 from .planning import WorkflowPlanner, parse_size
@@ -248,17 +248,15 @@ def _load_state(path: Path | None) -> dict[str, str]:
     return dict(completed)
 
 
-def _write_state(path: Path | None, completed: dict[str, str]) -> None:
+def _write_state(path: Path | None, completed: dict[str, str], *, overwrite: bool = True) -> None:
     if path is None:
         return
-    atomic_write_text(
-        path,
-        json.dumps(
-            {"schema_version": BATCH_STATE_SCHEMA_VERSION, "completed": dict(sorted(completed.items()))},
-            indent=2,
-        )
-        + "\n",
+    content = json.dumps(
+        {"schema_version": BATCH_STATE_SCHEMA_VERSION, "completed": dict(sorted(completed.items()))},
+        indent=2,
     )
+    writer = atomic_write_text if overwrite else exclusive_write_text
+    writer(path, content + "\n")
 
 
 class BatchRunner:
@@ -292,7 +290,8 @@ class BatchRunner:
         """Run jobs once and refuse receipt replacement unless explicitly allowed.
 
         Existing state files require resume or explicit overwrite. State files
-        cannot alias media outputs or generated receipts.
+        are claimed before the first job starts and cannot alias media outputs
+        or generated receipts.
         """
         selected_policy = policy or BatchPolicy()
         ordered = validate_batch_jobs(jobs, selected_policy)
@@ -300,12 +299,13 @@ class BatchRunner:
         state = Path(state_path) if state_path is not None else None
         receipts = Path(receipt_dir) if receipt_dir is not None else None
         media_outputs = tuple(output for job in ordered for output in job.plan.outputs)
+        allow_state_overwrite = overwrite_state or resume
         _validate_state_destination(
             state,
             media_outputs,
             receipts,
             (job.id for job in ordered),
-            overwrite=overwrite_state or resume,
+            overwrite=allow_state_overwrite,
         )
         completed = _load_state(state) if resume else {}
         receipt_paths = (
@@ -320,6 +320,7 @@ class BatchRunner:
         )
         lock = threading.Lock()
         sequence = 0
+        state_claimed = allow_state_overwrite or state is None
 
         def emit(event: str, job: BatchJob, attempt: int, detail: str | None = None) -> None:
             nonlocal sequence
@@ -329,6 +330,21 @@ class BatchRunner:
                 sequence += 1
                 item = BatchEvent(sequence=sequence, event=event, job_id=job.id, attempt=attempt, detail=detail)
                 event_callback(item)
+
+        def claim_state_path() -> None:
+            nonlocal state_claimed
+            if state_claimed:
+                return
+            with lock:
+                if state_claimed:
+                    return
+                try:
+                    _write_state(state, completed, overwrite=False)
+                except FileExistsError as exc:
+                    raise ValidationError(
+                        f"state file already exists: {state}. Resume or explicitly allow overwrite."
+                    ) from exc
+                state_claimed = True
 
         def persist(job: BatchJob) -> None:
             with lock:
@@ -347,6 +363,7 @@ class BatchRunner:
                 emit("resumed", job, 0, "matching successful state and outputs found")
                 return BatchItemOutcome(job.id, job.signature, "resumed", 0)
 
+            claim_state_path()
             attempts = 0
             while attempts <= selected_policy.max_retries:
                 attempts += 1

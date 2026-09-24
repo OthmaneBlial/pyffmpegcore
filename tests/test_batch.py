@@ -22,6 +22,7 @@ from pyffmpegcore import (
     JobStatus,
     ValidationError,
 )
+from pyffmpegcore.batch import _validate_state_destination as _validate_batch_state_destination
 from pyffmpegcore.preflight import PreflightCheck, PreflightReport
 from pyffmpegcore.workflow import PreparedWorkflow, WorkflowBatch, WorkflowExecution
 
@@ -253,6 +254,26 @@ def test_batch_preserves_existing_state_unless_resume_or_overwrite_is_explicit(t
     result = BatchRunner(engine=engine).run((job,), state_path=state, overwrite_state=True)
     assert result.succeeded
     assert json.loads(state.read_text(encoding="utf-8"))["schema_version"] == "1.0"
+
+
+def test_batch_does_not_overwrite_state_created_after_preflight(tmp_path, monkeypatch):
+    state = tmp_path / "racing-state.json"
+
+    def create_racing_file(*args, **kwargs):
+        _validate_batch_state_destination(*args, **kwargs)
+        state.write_text("created concurrently", encoding="utf-8")
+
+    monkeypatch.setattr("pyffmpegcore.batch._validate_state_destination", create_racing_file)
+    engine = FakeEngine()
+
+    with pytest.raises(ValidationError, match="state file already exists"):
+        BatchRunner(engine=engine).run(
+            (BatchJob("state-race", _plan(tmp_path, "state-race")),),
+            state_path=state,
+        )
+
+    assert engine.calls == []
+    assert state.read_text(encoding="utf-8") == "created concurrently"
 
 
 def test_batch_state_write_preserves_preexisting_temp_name(tmp_path):

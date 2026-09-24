@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
 
-from ._fileio import atomic_write_text
+from ._fileio import atomic_write_text, exclusive_write_text
 from .domain import CompressOptions, ConvertOptions, ExecutionPlan
 from .errors import ValidationError
 from .planning import WorkflowPlanner, parse_size
@@ -815,17 +815,15 @@ def _load_pipeline_state(path: Path | None) -> dict[str, str]:
     return dict(completed)
 
 
-def _write_pipeline_state(path: Path | None, completed: dict[str, str]) -> None:
+def _write_pipeline_state(path: Path | None, completed: dict[str, str], *, overwrite: bool = True) -> None:
     if path is None:
         return
-    atomic_write_text(
-        path,
-        json.dumps(
-            {"schema_version": PIPELINE_STATE_SCHEMA_VERSION, "completed": dict(sorted(completed.items()))},
-            indent=2,
-        )
-        + "\n",
+    content = json.dumps(
+        {"schema_version": PIPELINE_STATE_SCHEMA_VERSION, "completed": dict(sorted(completed.items()))},
+        indent=2,
     )
+    writer = atomic_write_text if overwrite else exclusive_write_text
+    writer(path, content + "\n")
 
 
 class PipelineRunner:
@@ -855,7 +853,8 @@ class PipelineRunner:
         resume and caching; receipts and event callbacks are opt-in. Existing
         receipts are preserved unless ``overwrite_receipts`` is enabled. State
         files are preserved unless resuming or ``overwrite_state`` is enabled,
-        and cannot alias media outputs or generated receipts.
+        fresh state files are claimed before the first runnable step, and state
+        files cannot alias media outputs or generated receipts.
         """
         cancel = cancellation or threading.Event()
         selected_state = Path(state_path) if state_path is not None else None
@@ -863,12 +862,13 @@ class PipelineRunner:
             selected_state = Path(pipeline.cache.directory) / f"{pipeline.name}.state.json"
         receipts = Path(receipt_dir) if receipt_dir is not None else None
         media_outputs = tuple(output for step in pipeline.steps for output in step.plan.outputs)
+        allow_state_overwrite = overwrite_state or resume or (state_path is None and pipeline.cache.enabled)
         _validate_state_destination(
             selected_state,
             media_outputs,
             receipts,
             (step.id for step in pipeline.steps),
-            overwrite=overwrite_state or resume or (state_path is None and pipeline.cache.enabled),
+            overwrite=allow_state_overwrite,
         )
         completed = _load_pipeline_state(selected_state) if (resume or pipeline.cache.enabled) else {}
         receipt_paths = (
@@ -883,12 +883,25 @@ class PipelineRunner:
         )
         sequence = 0
         outcomes: dict[str, PipelineStepOutcome] = {}
+        state_claimed = allow_state_overwrite or selected_state is None
 
         def emit(event: str, step_id: str, detail: str | None = None) -> None:
             nonlocal sequence
             if event_callback is not None:
                 sequence += 1
                 event_callback(PipelineEvent(sequence, event, step_id, detail))
+
+        def claim_state_path() -> None:
+            nonlocal state_claimed
+            if state_claimed or selected_state is None:
+                return
+            try:
+                _write_pipeline_state(selected_state, completed, overwrite=False)
+            except FileExistsError as exc:
+                raise ValidationError(
+                    f"state file already exists: {selected_state}. Resume or explicitly allow overwrite."
+                ) from exc
+            state_claimed = True
 
         for step in pipeline.steps:
             key = _cache_key(step, pipeline)
@@ -912,6 +925,7 @@ class PipelineRunner:
                 emit(status, step.id)
                 outcomes[step.id] = PipelineStepOutcome(step.id, status, key)
                 continue
+            claim_state_path()
             emit("started", step.id)
             batch = self.engine.run(step.plan, cancellation=cancel)
             execution = batch.items[0]

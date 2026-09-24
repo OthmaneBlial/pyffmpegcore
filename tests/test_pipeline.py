@@ -20,6 +20,7 @@ from pyffmpegcore import (
     migrate_pipeline_document,
 )
 from pyffmpegcore.cli import main
+from pyffmpegcore.pipeline import _validate_state_destination as _validate_pipeline_state
 from pyffmpegcore.pipeline import _write_pipeline_state
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -285,6 +286,32 @@ def test_pipeline_preserves_existing_state_without_explicit_resume_or_overwrite(
 
     assert calls == []
     assert state.read_text(encoding="utf-8") == "preserve"
+
+
+def test_pipeline_does_not_overwrite_state_created_after_preflight(tmp_path, monkeypatch):
+    state = tmp_path / "racing-state.json"
+    pipeline = PipelineCompiler().compile(
+        PipelineSpec.from_dict(_document("source.mp4"), base_dir=tmp_path),
+        cache_enabled=False,
+    )
+    calls = []
+
+    def create_racing_file(*args, **kwargs):
+        _validate_pipeline_state(*args, **kwargs)
+        state.write_text("created concurrently", encoding="utf-8")
+
+    def fake_run(*_args, **_kwargs):
+        calls.append(True)
+        raise AssertionError("pipeline started before claiming its state path")
+
+    monkeypatch.setattr("pyffmpegcore.pipeline._validate_state_destination", create_racing_file)
+    monkeypatch.setattr("pyffmpegcore.pipeline.WorkflowEngine.run", fake_run)
+
+    with pytest.raises(ValidationError, match="state file already exists"):
+        PipelineRunner().run(pipeline, state_path=state)
+
+    assert calls == []
+    assert state.read_text(encoding="utf-8") == "created concurrently"
 
 
 def test_pipeline_state_write_preserves_preexisting_temp_name(tmp_path):

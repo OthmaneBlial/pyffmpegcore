@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
 import platform
 import re
 import subprocess
@@ -16,7 +15,7 @@ from typing import Any
 from urllib.parse import urlsplit, urlunsplit
 
 from . import __version__
-from ._fileio import atomic_write_text
+from ._fileio import atomic_write_text, exclusive_write_text
 from .domain import is_url_like_path
 from .errors import ValidationError
 from .probe import FFprobeRunner
@@ -220,13 +219,7 @@ class RunReceipt:
         """Create parent directories and refuse replacement unless explicitly requested."""
         if overwrite:
             return atomic_write_text(path, self.to_json())
-        destination = Path(path)
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        rendered = self.to_json()
-        descriptor = os.open(destination, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
-        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
-            handle.write(rendered)
-        return destination
+        return exclusive_write_text(path, self.to_json())
 
     @classmethod
     def read(cls, path: str | Path) -> RunReceipt:

@@ -61,7 +61,9 @@ A failed step blocks only its dependants. Independent later steps can still
 run, and the result keeps deterministic topological order. `Ctrl-C` sets the
 same cancellation contract used by one-off workflows. State is written
 atomically after each successful step and contains only step IDs and cache
-keys—never source paths or secret values.
+keys—never source paths or secret values. A fresh explicit state path is
+claimed exclusively before the first runnable step; a concurrent default run
+fails rather than replacing it.
 
 ### PowerShell: variable, evidence, and resume
 
