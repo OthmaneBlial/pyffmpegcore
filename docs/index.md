@@ -24,7 +24,6 @@ hide:
         Preflight the machine. Preview the exact plan. Run a maintained workflow.
         Keep a privacy-redacted receipt. PyFFmpegCore turns fragile media commands
         into repeatable operations for the terminal, Python, Node.js, and CI.
-        Human reports keep untrusted metadata as printable text.
       </p>
       <div class="pfc-install" aria-label="Install the current public beta">
         <div class="pfc-install__command">
