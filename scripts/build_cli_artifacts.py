@@ -5,11 +5,15 @@ Build the supported CLI distribution artifacts and report their metadata.
 from __future__ import annotations
 
 import argparse
+import copy
+import gzip
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import tarfile
+import tempfile
 from pathlib import Path
 from typing import cast
 
@@ -99,11 +103,87 @@ def sha256_for_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def build_artifacts(project_root: Path, outdir: Path) -> subprocess.CompletedProcess[str]:
+def resolve_source_date_epoch(project_root: Path) -> int | None:
+    """Use an explicit epoch, the source commit time, or the sdist metadata time."""
+    configured = os.environ.get("SOURCE_DATE_EPOCH")
+    if configured is not None:
+        value = configured.strip()
+        if not value.isascii() or not value.isdigit():
+            raise ValueError("SOURCE_DATE_EPOCH must be a non-negative integer")
+        epoch = int(value)
+        if epoch > 0xFFFFFFFF:
+            raise ValueError("SOURCE_DATE_EPOCH must not exceed 4294967295 for gzip timestamps")
+        return epoch
+
+    try:
+        result = subprocess.run(
+            ["git", "log", "-1", "--format=%ct"],
+            cwd=str(project_root),
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            check=False,
+        )
+    except OSError:
+        result = None
+    if result is not None and result.returncode == 0:
+        value = result.stdout.strip()
+        if value.isascii() and value.isdigit():
+            return int(value)
+
+    sdist_metadata = project_root / "PKG-INFO"
+    if sdist_metadata.is_file():
+        return int(sdist_metadata.stat().st_mtime)
+    return None
+
+
+def normalize_sdist(path: Path, source_date_epoch: int) -> None:
+    """Normalize tar metadata so the same sdist source produces identical bytes."""
+    file_mode = path.stat().st_mode
+    temporary_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp", delete=False) as raw:
+            temporary_path = Path(raw.name)
+            with tarfile.open(path, "r:gz") as source:
+                members = sorted(source.getmembers(), key=lambda member: member.name)
+                with gzip.GzipFile(fileobj=raw, mode="wb", filename="", mtime=source_date_epoch) as compressed:
+                    with tarfile.open(fileobj=compressed, mode="w", format=tarfile.PAX_FORMAT) as target:
+                        for member in members:
+                            normalized = copy.copy(member)
+                            normalized.mtime = source_date_epoch
+                            normalized.uid = normalized.gid = 0
+                            normalized.uname = normalized.gname = ""
+                            normalized.pax_headers = {
+                                key: value
+                                for key, value in sorted(member.pax_headers.items())
+                                if key not in {"atime", "ctime", "mtime"}
+                            }
+                            source_file = source.extractfile(member) if member.isfile() else None
+                            if member.isfile() and source_file is None:
+                                raise RuntimeError(f"could not read sdist member: {member.name}")
+                            target.addfile(normalized, source_file)
+                            if source_file is not None:
+                                source_file.close()
+        os.chmod(temporary_path, file_mode & 0o7777)
+        os.replace(temporary_path, path)
+    finally:
+        if temporary_path is not None:
+            temporary_path.unlink(missing_ok=True)
+
+
+def build_artifacts(
+    project_root: Path,
+    outdir: Path,
+    source_date_epoch: int | None = None,
+) -> subprocess.CompletedProcess[str]:
     """
     Build the wheel and sdist artifacts into the requested output directory.
     """
     outdir.mkdir(parents=True, exist_ok=True)
+    environment = os.environ.copy()
+    if source_date_epoch is not None:
+        environment["SOURCE_DATE_EPOCH"] = str(source_date_epoch)
     return subprocess.run(
         [
             sys.executable,
@@ -121,6 +201,7 @@ def build_artifacts(project_root: Path, outdir: Path) -> subprocess.CompletedPro
         encoding="utf-8",
         errors="replace",
         check=False,
+        env=environment,
     )
 
 
@@ -210,18 +291,27 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    build_result = build_artifacts(args.project_root, args.outdir)
+    try:
+        source_date_epoch = resolve_source_date_epoch(args.project_root)
+    except ValueError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+
+    build_result = build_artifacts(args.project_root, args.outdir, source_date_epoch)
     if build_result.returncode != 0:
         sys.stderr.write(build_result.stderr or build_result.stdout)
         return build_result.returncode
 
-    report = collect_artifact_report(args.outdir)
     sdist_path = args.outdir / f"pyffmpegcore-{__version__}.tar.gz"
     try:
-        report["sdist_contract"] = validate_sdist_contents(sdist_path)
+        if source_date_epoch is not None:
+            normalize_sdist(sdist_path, source_date_epoch)
+        sdist_contract = validate_sdist_contents(sdist_path)
     except (OSError, RuntimeError, tarfile.TarError) as exc:
         print(f"Source distribution contract failed: {exc}", file=sys.stderr)
         return 1
+    report = collect_artifact_report(args.outdir)
+    report["sdist_contract"] = sdist_contract
     if args.json:
         print(json.dumps(report, indent=2))
     else:

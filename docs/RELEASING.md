@@ -30,6 +30,15 @@ Only a maintainer with repository and PyPI project control may publish a release
 
 5. Push the tag. The workflow builds once, tests the exact wheel on the supported OS/Python anchors, attests it, and publishes it through OIDC.
 6. The workflow waits for the exact wheel and source distribution to appear in the public PyPI JSON endpoint. It then performs a clean `pipx install`, `--version`, `doctor`, and `smoke-test` on Linux, macOS, and Windows before creating the matching GitHub Release with checksums. The GitHub Release is marked as a prerelease while the package classifier says Beta. A failed public-install gate must be fixed forward; it must not be bypassed by creating the release manually.
+
+   `scripts.build_cli_artifacts` sets `SOURCE_DATE_EPOCH` from the source
+   commit (or from the packaged `PKG-INFO` timestamp when rebuilding an sdist)
+   unless a valid explicit value is supplied. It normalizes sdist tar/gzip
+   timestamps and ownership metadata. Rebuilding the same source with the same
+   pinned toolchain therefore reproduces the wheel and sdist bytes; the release
+   workflow still tests and publishes the single artifact bundle it built
+   first.
+
 7. Record the public terminal proof only after those endpoints are healthy:
 
    ```bash
