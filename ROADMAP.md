@@ -327,6 +327,9 @@ CodeQL [`35943001912`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs
 et Scorecard [`35943001903`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35943001903)
 ont réussi sur ce même SHA. Cette lecture n'a déclenché aucun scan, build ou
 publication de conteneur et n'a écarté aucune alerte.
+Un contrat statique couvre maintenant les événements de
+`.github/workflows/container.yml` et échoue si un déclencheur automatique est
+ajouté pendant cette suspension ; ce test ne lance pas Docker.
 
 - **Objectif :** distinguer les vulnérabilités corrigibles, les avis sans correctif, les signaux de politique et les doublons historiques, puis réduire les causes plutôt que masquer les alertes.
 - **Changements :** tenir `SECURITY_TRIAGE.md` à jour pour chaque digest ; tester et scanner aussi l'image arm64 avant publication ; remplacer les installations `pip` non verrouillées en CI/release/demo par des locks avec hashes pour la matrice Python/OS ; maintenir le corpus et l'intégration ClusterFuzzLite reconnus par Scorecard ; contrôler la couverture CodeQL et des tests sur les révisions proposées ; préparer les preuves du badge OpenSSF sans revendiquer son octroi prématurément.
