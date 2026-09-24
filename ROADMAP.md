@@ -312,6 +312,16 @@ ont réussi sur ce SHA exact ; la CI
 a ensuite réussi sur le même SHA. L'inventaire comprenait 97 HIGH, 199 MEDIUM,
 164 LOW et 23 alertes Trivy sans sévérité ; cette lecture API n'a déclenché
 aucun scan de conteneur.
+Après les pushes documentaires, l'inventaire paginé du SHA actuel
+`6e17460bcf109252b591fcb0ac13cbe7c33a2fba` confirme toujours 484 alertes :
+483 Trivy liées au même ancien SHA `25adc431` et à
+`.github/workflows/container.yml:build-scan-publish`, plus une alerte LOW
+`CIIBestPracticesID` sur le SHA courant ; aucune alerte CodeQL n'est ouverte.
+CI [`35943001899`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35943001899),
+CodeQL [`35943001912`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35943001912)
+et Scorecard [`35943001903`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35943001903)
+ont réussi sur ce même SHA. Cette lecture n'a déclenché aucun scan, build ou
+publication de conteneur et n'a écarté aucune alerte.
 
 - **Objectif :** distinguer les vulnérabilités corrigibles, les avis sans correctif, les signaux de politique et les doublons historiques, puis réduire les causes plutôt que masquer les alertes.
 - **Changements :** tenir `SECURITY_TRIAGE.md` à jour pour chaque digest ; tester et scanner aussi l'image arm64 avant publication ; remplacer les installations `pip` non verrouillées en CI/release/demo par des locks avec hashes pour la matrice Python/OS ; maintenir le corpus et l'intégration ClusterFuzzLite reconnus par Scorecard ; contrôler la couverture CodeQL et des tests sur les révisions proposées ; préparer les preuves du badge OpenSSF sans revendiquer son octroi prématurément.

@@ -24,7 +24,7 @@ Copy this checklist for each new version. Every box starts open; a previous rele
 - [x] The same prebuilt wheel passes media smoke tests on Linux, macOS, and Windows with Python 3.10 and 3.14 (release run `35941884095`).
 - [x] Cold deterministic fixtures pass without cache reuse (`--force` in each release matrix job, run `35941884095`).
 - [x] `twine check`, wheel contents, sdist contents, and clean isolated wheel installation pass (release run `35941884095` and exact local artifact check above).
-- [ ] CodeQL and OpenSSF Scorecard findings are triaged. Current GitHub inventory still has 483 Trivy alerts from the image scan on `25adc431` and low-severity Scorecard alert [#15](https://github.com/OthmaneBlial/pyffmpegcore/security/code-scanning/15); no alerts were dismissed.
+- [x] CodeQL and OpenSSF Scorecard findings are triaged in [SECURITY_TRIAGE.md](SECURITY_TRIAGE.md): no CodeQL alerts are open; low-severity Scorecard alert [#15](https://github.com/OthmaneBlial/pyffmpegcore/security/code-scanning/15) remains for external OpenSSF Best Practices enrollment. The 483 open Trivy alerts all come from the historical image scan on `25adc431`; none were dismissed.
 
 ## Publication
 

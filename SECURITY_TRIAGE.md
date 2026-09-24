@@ -72,6 +72,24 @@ and CI run
 [`35934789814`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35934789814)
 passed on that exact SHA. This read did not run a container scan.
 
+The paginated inventory was rechecked after `main` reached
+`6e17460bcf109252b591fcb0ac13cbe7c33a2fba` on 24 September. It still returns
+484 open alerts: 483 Trivy alerts, all from analysis key
+`.github/workflows/container.yml:build-scan-publish` on the old commit
+`25adc43150842930f84e25c105a7612f1a4b02f1` (97 HIGH, 199 MEDIUM, 164 LOW,
+23 without severity), plus one LOW `CIIBestPracticesID` Scorecard alert
+[#15](https://github.com/OthmaneBlial/pyffmpegcore/security/code-scanning/15)
+on the current commit. No CodeQL alerts are open. CI
+[`35943001899`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35943001899),
+CodeQL
+[`35943001912`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35943001912),
+and Scorecard
+[`35943001903`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35943001903)
+all passed on the same current SHA. This API recheck did not build, scan, or
+publish a container and did not dismiss any alert. The remaining Scorecard
+alert requires authenticated OpenSSF Best Practices enrollment; the historical
+Trivy alerts remain visible pending an allowed fresh container scan.
+
 The hash-bearing wheel install in the Action and the public terminal demo
 removed the open `PinnedDependenciesID` instances. The successful
 [ClusterFuzzLite run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35449599477)
