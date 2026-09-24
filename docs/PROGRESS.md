@@ -4,6 +4,13 @@ Updated: 2026-09-24
 
 ## Current state
 
+- On source commit
+  [`acfddcc`](https://github.com/OthmaneBlial/pyffmpegcore/commit/acfddcc8756f2c7dd15b74c1e54e587b8c6f0014),
+  size and bitrate parsers report oversized numeric input as validation errors
+  instead of leaking `OverflowError`. Regression coverage checks both parser
+  APIs and CLI validation exit codes. The 33 focused planning/CLI tests, Ruff,
+  formatting, and `mypy pyffmpegcore/planning.py` pass. No Docker engine, full
+  CI, coverage, release, or multi-OS check ran.
 - At source commit
   [`f9e333f`](https://github.com/OthmaneBlial/pyffmpegcore/commit/f9e333f6ac6c710513727a788d3f4e46840471aa),
   `ExecutionPlan` freezes nested mapping/list metadata while preserving read
