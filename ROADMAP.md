@@ -314,6 +314,15 @@ et Scorecard
 ont réussi sur ce SHA. Aucun PR ouvert ; CI complète, Benchmarks et Container
 n'ont pas tourné.
 
+Le 24 septembre, une reproduction avec `WorkflowPlanner` puis `probe` a montré
+qu'un nom de fichier ou une métadonnée contenant ESC pouvait écrire une
+séquence de contrôle brute dans le terminal et fabriquer une ligne de sortie.
+`ed8704e` échappe ces caractères dans le texte humain partagé par le CLI et
+conserve les chaînes structurées en JSON. Les deux régressions et la suite
+rapide (396 réussites, 102 tests `real_media` exclus), Ruff, formatage, mypy,
+compilation et documentation stricte passent localement. Aucun média réel,
+workflow complet ou Docker n'a été exécuté pour ce correctif.
+
 - **Objectif :** réduire les surprises de temps, espace et réseau tout en annonçant honnêtement que PyFFmpegCore n'est pas un sandbox.
 - **Changements :** définir des plafonds optionnels/explicites de temps et de sortie là où le moteur peut les garantir, distinguer préflight estimatif et limite dure, durcir redaction des diagnostics et politique URL/protocoles, tester nettoyage après annulation/timeout/disque plein. Maintenir l'exécution en vecteur d'arguments et `-nostdin`.
 - **Fichiers :** `pyffmpegcore/executor.py`, `preflight.py`, `receipt.py`, `pipeline.py`, `docs/SECURITY_MODEL.md`, `docs/receipts.md`, tests de sécurité et échecs.
