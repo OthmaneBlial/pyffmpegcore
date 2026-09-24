@@ -39,7 +39,7 @@ from .pipeline import (
     variables_from_environment,
 )
 from .planning import parse_size
-from .presentation import render_plan_text
+from .presentation import redact_secret_values, render_plan_text
 from .profiles import Profile, ProfileRegistry
 from .receipt import _local_path_key, redact_receipt_value
 from .workflow import WorkflowEngine
@@ -434,7 +434,8 @@ def handle_pipeline_run(args: argparse.Namespace) -> int:
         else:
             for step in prepared.steps:
                 if not step.preflight.ok:
-                    echo_error(f"{terminal_safe_text(step.id)}: {step.preflight.render()}", preserve_newlines=True)
+                    preflight_detail = redact_secret_values(step.preflight.render(), pipeline.secret_values)
+                    echo_error(f"{terminal_safe_text(step.id)}: {preflight_detail}", preserve_newlines=True)
         return EXIT_VALIDATION_ERROR
 
     media_outputs = tuple(output for step in pipeline.steps for output in step.plan.outputs)
