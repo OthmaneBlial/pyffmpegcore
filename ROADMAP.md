@@ -527,6 +527,14 @@ schémas. La touche Flèche droite a aussi basculé vers `slate`, puis vers
 `default`, en déplaçant le focus avec la radio sélectionnée. La revue au
 lecteur d'écran reste à faire.
 
+Le 24 septembre, le bouton de copie de l'accueil gardait un nom `aria-label`
+fixe après avoir changé son texte. Le commit [`f3a0c25`](https://github.com/OthmaneBlial/pyffmpegcore/commit/f3a0c254c410b0d7852ea0774f8f7e4dbcd9f5c6)
+retire ce nom fixe et copie la commande affichée, pour éviter une version
+JavaScript périmée. Le build strict et CodeQL ont passé ; le Pages commit
+[`f2d4a5d`](https://github.com/OthmaneBlial/OthmaneBlial.github.io/commit/f2d4a5d6a90d806af9c2235c5196f139c233c45d)
+est déployé. L'arbre d'accessibilité Chrome local et public expose
+« Copied install command » après activation. VoiceOver reste à vérifier.
+
 - **Objectif :** que l'identité visuelle existante serve la compréhension sur mobile et au clavier.
 - **Changements :** auditer le site MkDocs réel à 320/375/768 px et desktop en clair/sombre ; contrôler débordements de code et tableaux, contraste, focus, réduction du mouvement, bouton de copie, navigation, liens de recette et absence d'erreurs console ; corriger uniquement les défauts observés. Garder une solution sans JavaScript pour copier l'installation.
 - **Fichiers :** `docs/index.md`, `docs/stylesheets/extra.css`, `docs/javascripts/site.js`, `mkdocs.yml` et pages de référence.
