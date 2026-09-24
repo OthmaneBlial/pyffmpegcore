@@ -75,7 +75,10 @@ def prepare_output_path(path_str: str, force: bool, option_name: str = "--output
     path = require_output_path(path_str, option_name=option_name)
     if (path.exists() or path.is_symlink()) and not force:
         raise CLIError(f"Output already exists: {path}. Re-run with --force to overwrite.")
-    path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        raise CLIError(f"Unable to prepare output directory {path.parent}: {exc}", exit_code=5) from exc
     return path
 
 
@@ -87,7 +90,10 @@ def prepare_output_dir(path_str: str, force: bool, option_name: str = "--output-
     path = Path(path_str)
     if path.exists() and any(path.iterdir()) and not force:
         raise CLIError(f"Output directory is not empty: {path}. Re-run with --force to reuse it.")
-    path.mkdir(parents=True, exist_ok=True)
+    try:
+        path.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        raise CLIError(f"Unable to prepare output directory {path}: {exc}", exit_code=5) from exc
     return path
 
 

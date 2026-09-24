@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any
 
 from . import __version__
-from ._fileio import open_text_file, write_text_file
+from ._fileio import DestinationExistsError, open_text_file, write_text_file
 from .batch import BatchEvent, BatchJob, BatchManifest, BatchPolicy, BatchRun, BatchRunner, validate_batch_jobs
 from .capabilities import CapabilityInventory
 from .cli_completion import (
@@ -378,8 +378,12 @@ def handle_batch_run(args: argparse.Namespace) -> int:
         if args.events is not None:
             try:
                 event_handle = open_text_file(args.events, overwrite=ctx.force or args.resume)
-            except FileExistsError as exc:
+            except DestinationExistsError as exc:
                 raise CLIError(f"Events file already exists: {args.events}. Use --resume or --force.") from exc
+            except OSError as exc:
+                raise CLIError(
+                    f"Unable to open events file {args.events}: {exc}", exit_code=EXIT_RUNTIME_ERROR
+                ) from exc
 
         def write_event(event: BatchEvent) -> None:
             if event_handle is not None:
@@ -470,7 +474,7 @@ def handle_pipeline_migrate(args: argparse.Namespace) -> int:
     migrated = migrate_pipeline_document(source.to_dict(), args.to)
     try:
         write_text_file(args.output, json.dumps(migrated, indent=2) + "\n", overwrite=args.force)
-    except FileExistsError as exc:
+    except DestinationExistsError as exc:
         raise CLIError(f"Pipeline output already exists: {args.output}. Re-run with --force.") from exc
     except OSError as exc:
         raise CLIError(f"Unable to write migrated pipeline: {exc}", exit_code=EXIT_RUNTIME_ERROR) from exc
@@ -563,8 +567,12 @@ def handle_pipeline_run(args: argparse.Namespace) -> int:
         if args.events is not None:
             try:
                 event_handle = open_text_file(args.events, overwrite=ctx.force or args.resume)
-            except FileExistsError as exc:
+            except DestinationExistsError as exc:
                 raise CLIError(f"Events file already exists: {args.events}. Use --resume or --force.") from exc
+            except OSError as exc:
+                raise CLIError(
+                    f"Unable to open events file {args.events}: {exc}", exit_code=EXIT_RUNTIME_ERROR
+                ) from exc
 
         def write_event(event: PipelineEvent) -> None:
             if event_handle is not None:
@@ -848,7 +856,7 @@ def handle_receipt_bug_report(args: argparse.Namespace) -> int:
     destination = prepare_output_path(str(args.output), force=ctx.force)
     try:
         write_text_file(destination, rendered, overwrite=ctx.force)
-    except FileExistsError as exc:
+    except DestinationExistsError as exc:
         raise CLIError(f"Output already exists: {destination}. Re-run with --force to overwrite.") from exc
     except OSError as exc:
         raise CLIError(f"Unable to write bug report: {exc}", exit_code=EXIT_RUNTIME_ERROR) from exc
@@ -870,6 +878,8 @@ def handle_receipt_migrate(args: argparse.Namespace) -> int:
     destination = prepare_output_path(str(args.output), force=ctx.force)
     try:
         receipt.write(destination, overwrite=ctx.force)
+    except DestinationExistsError as exc:
+        raise CLIError(f"Output already exists: {destination}. Re-run with --force to overwrite.") from exc
     except OSError as exc:
         raise CLIError(f"Unable to write migrated receipt: {exc}", exit_code=EXIT_RUNTIME_ERROR) from exc
     echo(ctx, f"Migrated receipt: {destination}")
@@ -1273,6 +1283,8 @@ def handle_planned_execution(args: argparse.Namespace, ctx: CLIContext) -> int:
                 hash_content=bool(getattr(args, "hash_content", False)),
             )
             receipt.write(receipt_destination, overwrite=ctx.force)
+        except DestinationExistsError as exc:
+            raise CLIError(f"Receipt already exists: {receipt_destination}. Re-run with --force to overwrite.") from exc
         except OSError as exc:
             raise CLIError(f"Unable to write receipt: {exc}", exit_code=EXIT_RUNTIME_ERROR) from exc
     if result_json:

@@ -276,6 +276,15 @@ def test_batch_does_not_overwrite_state_created_after_preflight(tmp_path, monkey
     assert state.read_text(encoding="utf-8") == "created concurrently"
 
 
+def test_batch_reports_state_parent_path_errors(tmp_path):
+    parent = tmp_path / "not-a-directory"
+    parent.write_text("block parent creation", encoding="utf-8")
+    job = BatchJob("invalid-state-path", _plan(tmp_path, "invalid-state-path"))
+
+    with pytest.raises(ValidationError, match="unable to create state file"):
+        BatchRunner(engine=FakeEngine()).run((job,), state_path=parent / "state.json")
+
+
 def test_batch_state_write_preserves_preexisting_temp_name(tmp_path):
     state = tmp_path / "state.json"
     old_temp = tmp_path / ".state.json.tmp"

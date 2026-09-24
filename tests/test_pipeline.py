@@ -238,6 +238,16 @@ def test_cli_pipeline_migrate_preserves_output_created_after_preflight(tmp_path,
     assert output.read_text(encoding="utf-8") == "concurrent writer"
 
 
+def test_cli_pipeline_migrate_reports_parent_path_errors(tmp_path, capsys):
+    source = tmp_path / "pipeline.json"
+    source.write_text(json.dumps(_document("source.mp4")), encoding="utf-8")
+    parent = tmp_path / "not-a-directory"
+    parent.write_text("block parent creation", encoding="utf-8")
+
+    assert main(["pipeline", "migrate", str(source), str(parent / "migrated.json")]) == 5
+    assert "Unable to write migrated pipeline" in capsys.readouterr().err
+
+
 def test_pipeline_rejects_receipt_path_that_would_overwrite_media_output(tmp_path, monkeypatch):
     receipt_dir = tmp_path / "receipts"
     document = {
@@ -328,6 +338,17 @@ def test_pipeline_does_not_overwrite_state_created_after_preflight(tmp_path, mon
 
     assert calls == []
     assert state.read_text(encoding="utf-8") == "created concurrently"
+
+
+def test_pipeline_reports_state_parent_path_errors(tmp_path):
+    source = tmp_path / "source.mp4"
+    source.write_bytes(b"media")
+    parent = tmp_path / "not-a-directory"
+    parent.write_text("block parent creation", encoding="utf-8")
+    pipeline = PipelineCompiler().compile(PipelineSpec.from_dict(_document(str(source)), base_dir=tmp_path))
+
+    with pytest.raises(ValidationError, match="unable to create state file"):
+        PipelineRunner().run(pipeline, state_path=parent / "state.json")
 
 
 def test_pipeline_state_write_preserves_preexisting_temp_name(tmp_path):

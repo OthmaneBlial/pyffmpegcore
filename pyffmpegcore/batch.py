@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any, Protocol
 from urllib.parse import urlsplit
 
-from ._fileio import atomic_write_text, exclusive_write_text
+from ._fileio import DestinationExistsError, atomic_write_text, exclusive_write_text
 from .domain import ExecutionPlan
 from .errors import ValidationError
 from .planning import WorkflowPlanner, parse_size
@@ -340,10 +340,12 @@ class BatchRunner:
                     return
                 try:
                     _write_state(state, completed, overwrite=False)
-                except FileExistsError as exc:
+                except DestinationExistsError as exc:
                     raise ValidationError(
                         f"state file already exists: {state}. Resume or explicitly allow overwrite."
                     ) from exc
+                except OSError as exc:
+                    raise ValidationError(f"unable to create state file {state}: {exc}") from exc
                 state_claimed = True
 
         def persist(job: BatchJob) -> None:

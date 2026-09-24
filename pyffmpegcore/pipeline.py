@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
 
-from ._fileio import atomic_write_text, exclusive_write_text
+from ._fileio import DestinationExistsError, atomic_write_text, exclusive_write_text
 from .domain import CompressOptions, ConvertOptions, ExecutionPlan
 from .errors import ValidationError
 from .planning import WorkflowPlanner, parse_size
@@ -897,10 +897,12 @@ class PipelineRunner:
                 return
             try:
                 _write_pipeline_state(selected_state, completed, overwrite=False)
-            except FileExistsError as exc:
+            except DestinationExistsError as exc:
                 raise ValidationError(
                     f"state file already exists: {selected_state}. Resume or explicitly allow overwrite."
                 ) from exc
+            except OSError as exc:
+                raise ValidationError(f"unable to create state file {selected_state}: {exc}") from exc
             state_claimed = True
 
         for step in pipeline.steps:

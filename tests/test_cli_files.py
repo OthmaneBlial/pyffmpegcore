@@ -4,11 +4,14 @@ Tests for shared CLI file-handling helpers.
 
 from __future__ import annotations
 
+from argparse import Namespace
+from types import SimpleNamespace
+
 import pytest
 
-from pyffmpegcore._fileio import open_text_file
+from pyffmpegcore._fileio import DestinationExistsError, open_text_file
+from pyffmpegcore.cli import CLIError, handle_batch_run
 from pyffmpegcore.cli_validation import (
-    CLIError,
     prepare_output_dir,
     prepare_output_path,
     require_existing_input,
@@ -58,10 +61,61 @@ def test_open_text_file_does_not_truncate_a_competing_output(tmp_path):
     destination = tmp_path / "events.jsonl"
     destination.write_text("concurrent writer", encoding="utf-8")
 
-    with pytest.raises(FileExistsError):
+    with pytest.raises(DestinationExistsError):
         open_text_file(destination)
 
     assert destination.read_text(encoding="utf-8") == "concurrent writer"
+
+
+def test_open_text_file_does_not_label_parent_errors_as_destination_collisions(tmp_path):
+    parent = tmp_path / "not-a-directory"
+    parent.write_text("block parent creation", encoding="utf-8")
+
+    with pytest.raises(FileExistsError) as error:
+        open_text_file(parent / "events.jsonl")
+
+    assert not isinstance(error.value, DestinationExistsError)
+
+
+def test_prepare_output_path_reports_parent_errors(tmp_path):
+    parent = tmp_path / "not-a-directory"
+    parent.write_text("block parent creation", encoding="utf-8")
+
+    with pytest.raises(CLIError, match="Unable to prepare output directory") as error:
+        prepare_output_path(str(parent / "report.json"), force=False)
+
+    assert error.value.exit_code == 5
+
+
+def test_batch_event_parent_errors_are_actionable(tmp_path, monkeypatch):
+    parent = tmp_path / "not-a-directory"
+    parent.write_text("block parent creation", encoding="utf-8")
+    args = Namespace(
+        verbose=False,
+        quiet=False,
+        force=False,
+        ffmpeg_path="ffmpeg",
+        ffprobe_path="ffprobe",
+        receipt=None,
+        resume=False,
+        dry_run=False,
+        explain=False,
+        state=None,
+        events=parent / "events.jsonl",
+        receipt_dir=None,
+        result_json=False,
+        hash_content=False,
+    )
+    monkeypatch.setattr("pyffmpegcore.cli._load_cli_batch", lambda _args: SimpleNamespace(jobs=(), policy=None))
+    monkeypatch.setattr(
+        "pyffmpegcore.cli.BatchRunner.run",
+        lambda *_args, **_kwargs: pytest.fail("batch must not start when event-log path is invalid"),
+    )
+
+    with pytest.raises(CLIError, match="Unable to open events file") as error:
+        handle_batch_run(args)
+
+    assert error.value.exit_code == 5
 
 
 def test_prepare_output_path_creates_parent_directories(tmp_path):
