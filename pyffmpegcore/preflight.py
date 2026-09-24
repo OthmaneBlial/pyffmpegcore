@@ -157,7 +157,18 @@ class PreflightEngine:
             return PreflightReport(plan.workflow, tuple(checks))
         checks.append(PreflightCheck("ffmpeg", "pass", f"Executable: {resolved}"))
 
-        inventory = self._inventory or CapabilityInventory.inspect(self.ffmpeg_path)
+        try:
+            inventory = self._inventory or CapabilityInventory.inspect(self.ffmpeg_path)
+        except RuntimeError as exc:
+            checks.append(
+                PreflightCheck(
+                    "capabilities",
+                    "fail",
+                    f"FFmpeg capability inspection failed: {exc}",
+                    "Check that FFmpeg responds to capability listing commands, then rerun preflight.",
+                )
+            )
+            return PreflightReport(plan.workflow, tuple(checks))
         self._inventory = inventory
         requirements = requirements_for(plan.workflow, plan.required_capabilities)
         for requirement in requirements:

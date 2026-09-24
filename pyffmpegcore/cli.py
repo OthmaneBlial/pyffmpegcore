@@ -742,7 +742,13 @@ def collect_doctor_report(ctx: CLIContext) -> dict[str, Any]:
                 "Install FFmpeg and FFprobe from a trusted package source, open a new terminal, "
                 f"or pass --{label}-path to a trusted executable; then rerun pyffmpegcore doctor."
             )
-    capabilities = inspect_ffmpeg_capabilities(ctx.ffmpeg_path) if ffmpeg["available"] else None
+    capabilities = None
+    capabilities_error = None
+    if ffmpeg["available"]:
+        try:
+            capabilities = inspect_ffmpeg_capabilities(ctx.ffmpeg_path)
+        except RuntimeError as exc:
+            capabilities_error = str(exc)
     return {
         "cli_version": __version__,
         "platform": {
@@ -757,6 +763,7 @@ def collect_doctor_report(ctx: CLIContext) -> dict[str, Any]:
         "ffmpeg": ffmpeg,
         "ffprobe": ffprobe,
         "capabilities": capabilities,
+        "capabilities_error": capabilities_error,
     }
 
 
@@ -819,6 +826,9 @@ def render_doctor_report(ctx: CLIContext, report: dict[str, Any]) -> None:
             echo(ctx, f"Optional core encoders missing: {', '.join(missing_encoders)}")
         if missing_filters:
             echo(ctx, f"Optional core filters missing: {', '.join(missing_filters)}")
+    elif report.get("capabilities_error"):
+        echo(ctx, f"Capabilities: UNAVAILABLE ({report['capabilities_error']})")
+        echo(ctx, "  Remedy: Check that FFmpeg responds to capability listing commands, then rerun doctor.")
 
 
 def handle_doctor(args: argparse.Namespace) -> int:
@@ -828,7 +838,11 @@ def handle_doctor(args: argparse.Namespace) -> int:
     ctx = build_context(args)
     report = collect_doctor_report(ctx)
     exit_code = EXIT_OK
-    if not report["ffmpeg"]["available"] or not report["ffprobe"]["available"]:
+    if (
+        not report["ffmpeg"]["available"]
+        or not report["ffprobe"]["available"]
+        or report["capabilities_error"] is not None
+    ):
         exit_code = EXIT_ENVIRONMENT_ERROR
 
     if args.json:

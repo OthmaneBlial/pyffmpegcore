@@ -4,12 +4,13 @@ Tests for the CLI doctor command.
 
 from __future__ import annotations
 
+import argparse
 import json
 import subprocess
 import sys
 from unittest.mock import patch
 
-from pyffmpegcore.cli import inspect_binary
+from pyffmpegcore.cli import CLIContext, collect_doctor_report, handle_doctor, inspect_binary, render_doctor_report
 
 
 @patch("pyffmpegcore.cli.shutil.which", return_value="/usr/bin/ffmpeg")
@@ -31,6 +32,30 @@ def test_binary_inspection_reports_a_timed_out_version_probe(mock_run, _mock_whi
     assert report["available"] is False
     assert report["error"] == "Version probe timed out after 5 seconds."
     assert mock_run.call_args.kwargs["timeout"] == 5
+
+
+@patch("pyffmpegcore.cli.inspect_ffmpeg_capabilities", side_effect=RuntimeError("listing timed out"))
+@patch(
+    "pyffmpegcore.cli.inspect_binary",
+    return_value={"available": True, "resolved": "/usr/bin/ffmpeg", "version": "ffmpeg 9", "error": None},
+)
+def test_doctor_reports_capability_listing_failure(_mock_inspect_binary, _mock_capabilities, capsys):
+    report = collect_doctor_report(CLIContext())
+    render_doctor_report(CLIContext(), report)
+
+    assert report["capabilities"] is None
+    assert report["capabilities_error"] == "listing timed out"
+    assert "Capabilities: UNAVAILABLE (listing timed out)" in capsys.readouterr().out
+
+
+@patch("pyffmpegcore.cli.build_context", return_value=CLIContext())
+@patch(
+    "pyffmpegcore.cli.collect_doctor_report",
+    return_value={"ffmpeg": {"available": True}, "ffprobe": {"available": True}, "capabilities_error": "timeout"},
+)
+def test_doctor_uses_environment_exit_code_when_capability_inspection_times_out(_mock_report, _mock_context, capsys):
+    assert handle_doctor(argparse.Namespace(json=True)) == 3
+    assert json.loads(capsys.readouterr().out)["capabilities_error"] == "timeout"
 
 
 def test_doctor_json_smoke():

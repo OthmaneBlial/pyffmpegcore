@@ -21,6 +21,11 @@ If `libx264` is absent, the report names `encoder:libx264` and supplies a tested
 fallback or platform remedy when the capability catalog has one. It does not
 silently choose a different output contract.
 
+Each FFmpeg capability-listing command has a five-second timeout. If a command
+times out, `doctor` marks capability inspection unavailable and preflight
+returns a failed `capabilities` check; neither path reports the timed-out list
+as proof that individual encoders or filters are missing.
+
 The implementation lives in `pyffmpegcore/capabilities.py` and
 `pyffmpegcore/preflight.py`; the cross-platform catalog contract is exercised
 by `scripts/validate_capability_catalog.py`. The maintained rules are bounded:

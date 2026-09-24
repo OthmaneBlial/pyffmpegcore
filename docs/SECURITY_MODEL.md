@@ -47,7 +47,7 @@ FFmpeg parses complex attacker-controlled formats. Keep FFmpeg patched and proce
 
 ## Resource Exhaustion
 
-Small compressed inputs can require large amounts of CPU, memory, disk, or output bandwidth. FFprobe metadata calls stop after 60 seconds by default; direct `FFprobeRunner` users can configure `probe_timeout_seconds`. Version-only diagnostics stop after five seconds. Managed media jobs accept an explicit `--timeout`, but there is no universal deadline across a batch or pipeline and no memory, frame, pixel, or output-size limit. These deadlines bound waiting only. Run untrusted jobs with OS/container quotas and validate media dimensions and duration before expensive work. Future limits must fail closed and appear in plans and receipts.
+Small compressed inputs can require large amounts of CPU, memory, disk, or output bandwidth. FFmpeg capability listings stop after five seconds per command; a timeout is reported as an inspection failure, not an empty inventory. FFprobe metadata calls stop after 60 seconds by default; direct `FFprobeRunner` users can configure `probe_timeout_seconds`. Version-only diagnostics stop after five seconds. Managed media jobs accept an explicit `--timeout`, but there is no universal deadline across a batch or pipeline and no memory, frame, pixel, or output-size limit. These deadlines bound waiting only. Run untrusted jobs with OS/container quotas and validate media dimensions and duration before expensive work. Future limits must fail closed and appear in plans and receipts.
 
 Managed process pipes are drained in bounded read chunks. The default `TAIL`
 capture retains at most `capture_tail_chars` of stdout and stderr per stream;

@@ -65,7 +65,7 @@ The installed FFmpeg build cannot satisfy the requested workflow.
 
 ## `CapabilityInventory`
 
-Versioned inventory of an installed FFmpeg executable.
+Versioned FFmpeg inventory; inspection raises when a five-second listing times out.
 
 ### `missing(self, requirements: 'tuple[str, ...]') -> 'tuple[str, ...]'`
 

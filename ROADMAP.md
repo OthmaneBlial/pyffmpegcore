@@ -266,6 +266,10 @@ sondages de médias et les listes de capacités restent à évaluer séparément
 Le runner FFprobe borne désormais aussi la lecture des métadonnées à 60 secondes
 par défaut, avec un délai configurable pour l'API Python et un échec exploitable
 en cas de dépassement. Le timeout ne limite pas CPU, mémoire ou données décodées.
+Les sept listes de capacités FFmpeg ont chacune un délai de cinq secondes ; un
+timeout devient une erreur visible de `doctor` ou un échec de préflight, plutôt
+qu'un faux inventaire vide. Les 22 tests ciblés capability/preflight/doctor,
+Ruff, formatage et mypy passent localement.
 Un audit de course distinct a aussi corrigé les sorties bug-report, migration
 de pipeline et journaux d'événements batch/pipeline : création exclusive sans
 écrasement par défaut, remplacement atomique des fichiers statiques avec

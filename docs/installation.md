@@ -133,4 +133,4 @@ external FFmpeg dependency.
 pyffmpegcore doctor --json
 ```
 
-The report includes resolved paths, versions, build configuration, capability counts, selected workflow encoders/filters, and hardware accelerators. Supplying an untrusted `--ffmpeg-path` or `--ffprobe-path` executes that binary; treat it like any other executable.
+The report includes resolved paths, versions, build configuration, capability counts, selected workflow encoders/filters, and hardware accelerators. If a capability listing times out, `capabilities` is `null`, `capabilities_error` explains the failure, and `doctor` exits with code 3. Supplying an untrusted `--ffmpeg-path` or `--ffprobe-path` executes that binary; treat it like any other executable.

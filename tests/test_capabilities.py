@@ -5,6 +5,8 @@ from __future__ import annotations
 import subprocess
 from unittest.mock import patch
 
+import pytest
+
 from pyffmpegcore.capabilities import (
     WORKFLOW_CAPABILITY_RULES,
     CapabilityInventory,
@@ -34,6 +36,7 @@ def test_inventory_covers_all_capability_families(_mock_run):
 
     assert all(call.kwargs["encoding"] == "utf-8" for call in _mock_run.call_args_list)
     assert all(call.kwargs["errors"] == "replace" for call in _mock_run.call_args_list)
+    assert all(call.kwargs["timeout"] == 5 for call in _mock_run.call_args_list)
 
     assert inventory.supports("encoder:libx264")
     assert inventory.supports("decoder:h264")
@@ -51,6 +54,14 @@ def test_inventory_covers_all_capability_families(_mock_run):
     assert payload["schema_version"] == "1.0"
     assert payload["decoder_count"] == 2
     assert payload["subtitle_support"] == {"text_encoders": ["mov_text"], "burn_filter": True}
+
+
+@patch("subprocess.run", side_effect=subprocess.TimeoutExpired(["ffmpeg", "-protocols"], 5))
+def test_inventory_reports_a_timed_out_listing(mock_run):
+    with pytest.raises(RuntimeError, match=r"FFmpeg capability listing timed out after 5 seconds \(-protocols\)"):
+        CapabilityInventory.inspect("ffmpeg")
+
+    assert mock_run.call_args.kwargs["timeout"] == 5
 
 
 def test_workflow_rules_are_deduplicated_and_extensible():

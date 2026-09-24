@@ -95,6 +95,21 @@ def test_preflight_rejects_missing_filter_before_mutation(tmp_path):
     assert not output.exists()
 
 
+def test_preflight_reports_capability_inspection_timeout():
+    plan = ExecutionPlan(workflow="convert", command=("ffmpeg",), inputs=(), outputs=())
+
+    with patch(
+        "pyffmpegcore.preflight.CapabilityInventory.inspect",
+        side_effect=RuntimeError("FFmpeg capability listing timed out after 5 seconds (-encoders)."),
+    ):
+        report = PreflightEngine(executable_resolver=lambda _binary: "/usr/bin/ffmpeg").check(plan)
+
+    failed = next(check for check in report.checks if check.name == "capabilities")
+    assert failed.status == "fail"
+    assert "timed out after 5 seconds" in failed.message
+    assert "rerun preflight" in failed.hint
+
+
 def test_preflight_rejects_full_disk_before_creating_output(tmp_path):
     source = tmp_path / "source.mp4"
     source.write_bytes(b"media")

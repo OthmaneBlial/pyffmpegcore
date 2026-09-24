@@ -24,6 +24,10 @@ pyffmpegcore --ffmpeg-path /trusted/path/ffmpeg --ffprobe-path /trusted/path/ffp
 
 FFmpeg builds differ. Inspect `doctor --json` and the workflow's error. Install an FFmpeg build that contains the required capability or choose a documented fallback. PyFFmpegCore does not silently download a codec build.
 
+If `doctor` reports `Capabilities: UNAVAILABLE`, its five-second capability
+listing timed out. Check that the selected FFmpeg executable responds to
+`-hide_banner -protocols`, then rerun `doctor` with the same binary path.
+
 ## A second audio track or subtitle disappeared
 
 The normal `convert` workflow deliberately selects the first video and first

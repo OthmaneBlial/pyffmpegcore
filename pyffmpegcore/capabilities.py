@@ -52,7 +52,10 @@ def _listing(binary: str, option: str) -> str:
             encoding="utf-8",
             errors="replace",
             check=False,
+            timeout=5,
         )
+    except subprocess.TimeoutExpired as exc:
+        raise RuntimeError(f"FFmpeg capability listing timed out after 5 seconds ({option}).") from exc
     except OSError:
         return ""
     return result.stdout if result.returncode == 0 else ""
@@ -86,7 +89,7 @@ def _parse_protocols(text: str) -> tuple[tuple[str, ...], tuple[str, ...]]:
 
 @dataclass(frozen=True, slots=True)
 class CapabilityInventory:
-    """Versioned inventory of an installed FFmpeg executable."""
+    """Versioned FFmpeg inventory; inspection raises when a five-second listing times out."""
 
     binary: str
     encoders: tuple[str, ...]
@@ -101,6 +104,7 @@ class CapabilityInventory:
 
     @classmethod
     def inspect(cls, binary: str = "ffmpeg") -> CapabilityInventory:
+        """Inspect each capability family, raising if a listing exceeds five seconds."""
         protocols = _parse_protocols(_listing(binary, "-protocols"))
         hardware = tuple(
             sorted(
