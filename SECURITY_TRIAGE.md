@@ -61,14 +61,16 @@ read-only, with required write scopes assigned to the relevant job. No new
 container was built, scanned, or published for this update.
 
 The paginated GitHub Code Scanning API inventory was checked again on 24
-September after `6d0994a`. It returns 484 open alerts: 483 Trivy alerts on
-`25adc43150842930f84e25c105a7612f1a4b02f1` (97 HIGH, 199 MEDIUM, 164 LOW,
-23 without severity) and one LOW `CIIBestPracticesID` Scorecard alert on
-`main` at `6d0994af9b46fee9c8103c2b30593d7e68d35eb6`. CodeQL run
-[`35933577055`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35933577055)
-and Scorecard run
-[`35933576993`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35933576993)
-passed on that exact SHA. This inventory refresh did not run a container scan.
+September at `259834267d2c0b1859cd02f69cdeef670e8c7bfa`. It returns 484 open
+alerts: 483 Trivy alerts on `25adc43150842930f84e25c105a7612f1a4b02f1` (97
+HIGH, 199 MEDIUM, 164 LOW, 23 without severity) and one LOW
+`CIIBestPracticesID` Scorecard alert on `main` at the inventory SHA. CodeQL
+run [`35934789805`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35934789805),
+Scorecard run
+[`35934789837`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35934789837),
+and CI run
+[`35934789814`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35934789814)
+passed on that exact SHA. This read did not run a container scan.
 
 The hash-bearing wheel install in the Action and the public terminal demo
 removed the open `PinnedDependenciesID` instances. The successful

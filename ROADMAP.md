@@ -300,13 +300,18 @@ push et planification du workflow Container ont été désactivés conformément
 l'instruction de ne pas exécuter Docker ; une exécution manuelle reste possible
 mais n'est pas autorisée pendant cette pause. La validation des deux
 architectures et l'inventaire récent des alertes restent incomplets.
-L'inventaire GitHub paginé du 24 septembre confirme 484 alertes ouvertes : 483
-Trivy liées à l'ancien SHA `25adc431` et une alerte LOW
-`CIIBestPracticesID` liée à `main` sur `6d0994a`. CodeQL
-[`35933577055`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35933577055)
+L'inventaire GitHub paginé du 24 septembre au SHA
+`259834267d2c0b1859cd02f69cdeef670e8c7bfa` confirme 484 alertes ouvertes :
+483 Trivy liées à l'ancien SHA `25adc431` et une alerte LOW
+`CIIBestPracticesID` liée à `main` sur ce SHA. CodeQL
+[`35934789805`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35934789805)
 et Scorecard
-[`35933576993`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35933576993)
-ont réussi sur ce SHA exact. Cette lecture API n'a déclenché aucun scan.
+[`35934789837`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35934789837)
+ont réussi sur ce SHA exact ; la CI
+[`35934789814`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35934789814)
+a ensuite réussi sur le même SHA. L'inventaire comprenait 97 HIGH, 199 MEDIUM,
+164 LOW et 23 alertes Trivy sans sévérité ; cette lecture API n'a déclenché
+aucun scan de conteneur.
 
 - **Objectif :** distinguer les vulnérabilités corrigibles, les avis sans correctif, les signaux de politique et les doublons historiques, puis réduire les causes plutôt que masquer les alertes.
 - **Changements :** tenir `SECURITY_TRIAGE.md` à jour pour chaque digest ; tester et scanner aussi l'image arm64 avant publication ; remplacer les installations `pip` non verrouillées en CI/release/demo par des locks avec hashes pour la matrice Python/OS ; maintenir le corpus et l'intégration ClusterFuzzLite reconnus par Scorecard ; contrôler la couverture CodeQL et des tests sur les révisions proposées ; préparer les preuves du badge OpenSSF sans revendiquer son octroi prématurément.
@@ -467,6 +472,34 @@ sdist `pyffmpegcore-0.3.0.tar.gz`, 311 490 octets,
 SHA-256 `dbd38ebfb8b8fe47492c4ca700f9d9ce3d0a6b981400e6786acdf3cc2644e7a0`.
 Wheel, sdist et code source portent `0.3.0` ; le sdist contient README et
 licence. L'artefact reste non publié et non attesté.
+
+La CI générale `35934789814` a ensuite construit un nouvel artefact à partir
+du SHA `259834267d2c0b1859cd02f69cdeef670e8c7bfa` : wheel de 94 684 octets,
+SHA-256 `1ffc1e076f3490d5538c301e2393622d29401bac950ecece920018eb8d7d3f9c` ;
+sdist de 312 862 octets, SHA-256
+`89ce9bf3ad1ec9c06a7af8b4d21b8903af25c3511940e81e77667af3646307df`.
+L'installation de ce wheel exact a réussi dans un venv propre avec pip, pipx
+1.17.6 et `uv tool` 0.12.18 sur macOS arm64, Python 3.14.6 et FFmpeg 9.0.1 ;
+`--version`, `doctor` et `smoke-test` ont réussi dans chaque environnement.
+Ces essais locaux ne remplacent pas une installation sur chaque OS ni une
+publication signée. L'artefact reste non publié.
+
+Le correctif de reproductibilité `ba6b3e8` fixe `SOURCE_DATE_EPOCH` et
+normalise les métadonnées tar/gzip. Sur le SHA exact
+`ba6b3e880765316bff2641d3228c5a6dcf83c7f4`, la CI
+[`35936709716`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35936709716),
+CodeQL
+[`35936709753`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35936709753)
+et Scorecard
+[`35936709726`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35936709726)
+ont réussi. Wheel et sdist du run CI ont été contrôlés avec `twine` et le
+contrat de contenu, puis reconstruits à l'identique depuis un worktree propre
+du même SHA. Deux extractions du sdist aux mtimes différents ont aussi produit
+des reconstructions identiques entre elles. Aucun tag, signature, attestation
+ou publication n'a été créé. Le wheel CI exact s'est installé dans un venv
+local avec pip et a réussi `doctor` et `smoke-test` ; le sdist exact s'est
+installé hors réseau dans une cible temporaire puis a réussi `--version` et
+`smoke-test`.
 
 - **Objectif :** qu'un installateur retrouve dans wheel/sdist le même comportement que le checkout.
 - **Changements :** bâtir une seule fois les distributions, inspecter contenu, version, licence et README rendu ; installer ces fichiers en environnement vierge ; vérifier `pipx`, `pip` et `uv tool` annoncés ; synchroniser le numéro de version entre code, tag, docs, Action et conteneur quand ils sont publiés ensemble.
