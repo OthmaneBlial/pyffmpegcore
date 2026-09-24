@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import os
+import stat
 import subprocess
 from dataclasses import replace
 from pathlib import Path
@@ -237,6 +239,15 @@ def test_receipt_write_refuses_existing_file_unless_overwrite_is_explicit(tmp_pa
 
     assert receipt.write(path, overwrite=True) == path
     assert json.loads(path.read_text(encoding="utf-8")) == receipt.to_dict()
+
+
+@pytest.mark.skipif(os.name != "posix", reason="POSIX file permission contract")
+def test_receipt_file_is_owner_only_by_default(tmp_path):
+    batch, _source, _output = _batch(tmp_path)
+    receipt = ReceiptBuilder(ffmpeg_path="missing-ffmpeg", ffprobe_path="missing-ffprobe").build(batch)
+    path = receipt.write(tmp_path / "private" / "run.json")
+
+    assert stat.S_IMODE(path.stat().st_mode) & 0o077 == 0
 
 
 def test_published_receipt_example_matches_runtime_validator():

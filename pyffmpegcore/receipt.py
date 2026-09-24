@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import platform
 import re
 import subprocess
@@ -222,7 +223,8 @@ class RunReceipt:
         destination = Path(path)
         destination.parent.mkdir(parents=True, exist_ok=True)
         rendered = self.to_json()
-        with destination.open("x", encoding="utf-8") as handle:
+        descriptor = os.open(destination, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
             handle.write(rendered)
         return destination
 
