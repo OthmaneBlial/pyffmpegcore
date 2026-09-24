@@ -11,6 +11,8 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- Size and bitrate inputs now preserve exact decimal values; FFmpeg-bound
+  compression values outside signed 64-bit range fail validation.
 - The shell and PowerShell bootstrap installers and CLI install guides now target
   the current public `0.3.3` release instead of the superseded `0.2.2` package.
 - Pipeline cache and resume signatures now include runtime and output
