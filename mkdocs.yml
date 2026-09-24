@@ -1,5 +1,5 @@
 site_name: PyFFmpegCore
-site_description: Preview FFmpeg plans, run local media workflows, and verify results from Python or the terminal.
+site_description: "Safe, explainable FFmpeg workflows: preview exact plans, verify local outputs, and keep privacy-conscious receipts from Python, CLI, and CI."
 site_url: https://othmaneblial.github.io/pyffmpegcore/
 repo_url: https://github.com/OthmaneBlial/pyffmpegcore
 repo_name: OthmaneBlial/pyffmpegcore
