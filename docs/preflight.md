@@ -34,8 +34,8 @@ Human and JSON rendering come from the same immutable checks. JSON uses `schema_
 The workflow-rule catalog lives in `pyffmpegcore.capabilities.WORKFLOW_CAPABILITY_RULES`. Plans may add stricter requirements; they cannot remove the workflow baseline.
 
 The catalog itself is schema-versioned and structurally validated. Each exact
-wheel smoke job and the weekly cold-fixture job evaluates every workflow rule
-against the installed FFmpeg inventory on Linux, macOS, and Windows, then
+wheel smoke job and manually dispatched cold-fixture job evaluates every
+workflow rule against the installed FFmpeg inventory on Linux, macOS, and Windows, then
 uploads `capability-catalog-report.json`. A missing optional capability remains
 visible per workflow; an invalid catalog fails the job.
 

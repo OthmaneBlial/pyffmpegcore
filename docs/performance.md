@@ -24,10 +24,11 @@ complete faster than the cold run. These are absolute bounds because percentage
 overhead on a two-second synthetic fixture exaggerates startup cost; real media
 processing time is dominated by FFmpeg.
 
-The scheduled [Benchmarks workflow](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/benchmark.yml)
-publishes the complete report as an artifact. Results are environment-specific,
-so the project does not claim to be faster than FFmpeg or compare unrelated
-libraries using synthetic headline numbers.
+The [Benchmarks workflow](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/benchmark.yml)
+runs for relevant pull requests or manual dispatch and publishes its complete
+report as an artifact. Results are environment-specific, so the project does
+not claim to be faster than FFmpeg or compare unrelated libraries using
+synthetic headline numbers.
 
 The checked-in [2026-08-25 Apple Silicon baseline](https://github.com/OthmaneBlial/pyffmpegcore/blob/main/benchmarks/baseline-macos-arm64-2026-08-25.json)
 recorded 89 ms median startup overhead, 501 ms orchestration around an exact

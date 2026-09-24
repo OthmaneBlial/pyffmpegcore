@@ -7,15 +7,6 @@ on:
       - "scripts/benchmark_overhead.py"
       - ".github/workflows/benchmark.yml"
       - ".github/requirements/ci.txt"
-  push:
-    branches: [main]
-    paths:
-      - "pyffmpegcore/**"
-      - "scripts/benchmark_overhead.py"
-      - ".github/workflows/benchmark.yml"
-      - ".github/requirements/ci.txt"
-  schedule:
-    - cron: "17 6 * * 1"
   workflow_dispatch:
 
 permissions:

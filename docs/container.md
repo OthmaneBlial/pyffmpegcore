@@ -59,7 +59,7 @@ The container workflow:
 5. attaches BuildKit SBOM and maximum provenance;
 6. creates a GitHub artifact attestation for the pushed digest.
 
-Pushes, tags, and the weekly scheduled run rebuild and scan without publishing.
+The workflow is manual-only; it does not run on pushes, tags, or a schedule.
 Dependency or base updates require review and a new immutable digest. A
 maintainer must deliberately dispatch the workflow with `publish=true` after
 reviewing the exact scan artifact.

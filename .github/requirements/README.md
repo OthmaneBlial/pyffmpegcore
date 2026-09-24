@@ -1,6 +1,6 @@
 # Reviewed tool dependencies
 
-The CI, scheduled checks, benchmark, Action integration, and release builder
+The CI, compatibility checks, benchmark, Action integration, and release builder
 install external Python tools from hash-bearing locks. They then install this
 checkout without dependency resolution or build isolation; the checkout SHA is
 the source boundary. `scripts/build_cli_artifacts.py` builds without a second,
@@ -9,7 +9,7 @@ before doing the same for its local source tree, then removes those tools.
 
 | Lock | Consumers | Inputs |
 | --- | --- | --- |
-| `ci.txt` | CI quality, package matrix, wheel builder, coverage, weekly fixtures, benchmarks, Action integration, release builder | `pyproject.toml` dev extra and `tools.in` |
+| `ci.txt` | CI quality, package matrix, wheel builder, coverage, manual cold fixtures, benchmarks, Action integration, release builder | `pyproject.toml` dev extra and `tools.in` |
 | `docs.txt` | CI documentation job | `pyproject.toml` dev and docs extras and `tools.in` |
 | `pipx.txt` | Public PyPI installation verification | `pipx.in` |
 | [`container-requirements.txt`](../../container-requirements.txt) | Container build only | `tools.in` |

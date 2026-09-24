@@ -22,7 +22,7 @@ CI separates evidence:
 - exact-artifact smoke installs one prebuilt wheel on Linux, macOS, and Windows,
   then validates four expected refusal codes and their remedies without
   overwriting an existing output;
-- the weekly cold run regenerates all fixtures without a cache.
+- the manually dispatched cold run regenerates all fixtures without a cache.
 - the bounded [parser mutation corpus](https://github.com/OthmaneBlial/pyffmpegcore/tree/main/fuzz)
   replays valid/invalid pipeline, profile, and receipt documents, then mutates
   them with fixed seeds and preserves unexpected inputs for replay.

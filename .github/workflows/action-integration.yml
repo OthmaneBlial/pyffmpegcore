@@ -1,23 +1,6 @@
 name: Action integration
 
 on:
-  pull_request:
-    paths:
-      - "action.yml"
-      - "Containerfile"
-      - "scripts/run_pipeline_action.sh"
-      - "tests/fixtures/action-pipeline.json"
-      - ".github/workflows/action-integration.yml"
-      - ".github/requirements/ci.txt"
-  push:
-    branches: [main]
-    paths:
-      - "action.yml"
-      - "Containerfile"
-      - "scripts/run_pipeline_action.sh"
-      - "tests/fixtures/action-pipeline.json"
-      - ".github/workflows/action-integration.yml"
-      - ".github/requirements/ci.txt"
   workflow_dispatch:
 
 permissions:

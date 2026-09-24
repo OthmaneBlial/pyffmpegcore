@@ -52,8 +52,8 @@ Expected baseline behavior requires:
 
 Optional filters and encoders vary by build. Tests skip a capability only when the environment reports that it is absent, and the skip remains visible. A missing optional capability is not silently advertised as supported.
 
-## Scheduled Drift Detection
+## Manual Drift Detection
 
-The [scheduled cold-fixture workflow](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/fixtures.yml) regenerates fixtures without cache reuse and runs representative media jobs on all three operating systems every week. Failures indicate runner, package-manager, Python, or FFmpeg drift that must be triaged before the next release.
+The [cold-fixture workflow](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/fixtures.yml) is manual-only. When dispatched, it regenerates fixtures without cache reuse and runs representative media jobs on all three operating systems. Failures indicate runner, package-manager, Python, or FFmpeg drift that must be triaged before the next release.
 
-Latest policy update: 2026-09-19. Consult the linked workflows for the latest execution date and exact versions.
+Latest policy update: 2026-09-24. Consult the linked workflow for the latest execution date and exact versions.
