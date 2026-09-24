@@ -370,15 +370,15 @@ et Scorecard
 [`35952546132`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35952546132)
 ont réussi sur ce SHA. Cet inventaire API n'a pas lancé CI, Benchmarks ou un
 scan de conteneur et n'a écarté aucune alerte.
-L'inventaire suivant, sur le SHA `4a66b28f87c6b2f88f379c1eeadb010540e19663`,
+L'inventaire suivant, sur le SHA `9f2ffff11b0c56dbe2376cc11606dcaf8ce60f0b`,
 confirme les mêmes 484 alertes : 483 Trivy liés à l'ancien scan sur
 `25adc431` et une alerte LOW Scorecard `CIIBestPracticesID` sur le SHA courant.
 Aucune alerte CodeQL, Dependabot ou secret-scanning n'est ouverte. Les alertes
 CodeQL #991 et #992 sur deux révisions précédentes sont corrigées, sans
 exclusion manuelle. CodeQL
-[`35959218230`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35959218230)
+[`35959607909`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35959607909)
 et Scorecard
-[`35959218183`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35959218183)
+[`35959607927`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35959607927)
 ont réussi sur ce même SHA ; la requête des PR ouvertes est vide. Ces contrôles
 en lecture seule n'ont lancé ni CI, ni Benchmarks, ni build/scan de conteneur.
 

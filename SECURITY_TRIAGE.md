@@ -118,16 +118,16 @@ passed on the same SHA. This inventory did not start CI, Benchmarks, or a
 container build/scan and did not dismiss alerts.
 
 The read-only inventory was refreshed on 24 September at exact `main` SHA
-`4a66b28f87c6b2f88f379c1eeadb010540e19663`. It returns 484 open Code Scanning
+`9f2ffff11b0c56dbe2376cc11606dcaf8ce60f0b`. It returns 484 open Code Scanning
 alerts: 483 Trivy instances on historical image commit `25adc431`
 (97 HIGH, 199 MEDIUM, 164 LOW, 23 without severity), plus LOW Scorecard alert
 [`CIIBestPracticesID` #15](https://github.com/OthmaneBlial/pyffmpegcore/security/code-scanning/15)
 on this SHA. No CodeQL, Dependabot, or secret-scanning alerts are open. The two
 CodeQL clear-text event-log alerts, #991 on `3d605a3` and #992 on `8d5aa06`,
 are fixed by later commits and were not dismissed. CodeQL
-[`35959218230`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35959218230)
+[`35959607909`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35959607909)
 and Scorecard
-[`35959218183`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35959218183)
+[`35959607927`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35959607927)
 passed on that exact SHA. The open-PR query returned none. Read-only API calls
 did not start CI, Benchmarks, or a container build/scan and did not dismiss
 alerts.
