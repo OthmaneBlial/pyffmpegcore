@@ -5,12 +5,15 @@ Updated: 2026-09-24
 ## Current state
 
 - On source commit
-  [`acfddcc`](https://github.com/OthmaneBlial/pyffmpegcore/commit/acfddcc8756f2c7dd15b74c1e54e587b8c6f0014),
-  size and bitrate parsers report oversized numeric input as validation errors
-  instead of leaking `OverflowError`. Regression coverage checks both parser
-  APIs and CLI validation exit codes. The 33 focused planning/CLI tests, Ruff,
-  formatting, and `mypy pyffmpegcore/planning.py` pass. No Docker engine, full
-  CI, coverage, release, or multi-OS check ran.
+  [`12212d4`](https://github.com/OthmaneBlial/pyffmpegcore/commit/12212d4a21d859ded09fd60cbf96bce840ce6af5),
+  decimal size and bitrate parsing now preserves integer precision. Compression
+  targets and parsed bitrates reject values outside FFmpeg's signed 64-bit
+  range; generic size thresholds keep arbitrary-precision integers. Regressions
+  cover exact byte/bitrate values, range boundaries, and CLI validation errors.
+  Sixty-one focused planning/domain/CLI tests pass, along with Ruff, formatting,
+  mypy on both changed source files, the documentation checker, and strict
+  MkDocs. Full CI, real-media tests, coverage, release, and multi-OS checks did
+  not run.
 - At source commit
   [`f9e333f`](https://github.com/OthmaneBlial/pyffmpegcore/commit/f9e333f6ac6c710513727a788d3f4e46840471aa),
   `ExecutionPlan` freezes nested mapping/list metadata while preserving read
