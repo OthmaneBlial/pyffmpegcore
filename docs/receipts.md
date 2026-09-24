@@ -23,9 +23,10 @@ can be diagnosed without probing the file again.
 Managed `--preserve-all-streams` receipts also retain the input/output stream
 layout comparison under `output_probe.stream_preservation`. Unprobeable or
 remote inputs are marked unverified instead of causing a second network read.
-Generic conversion receipts also record `output_probe.selected_streams` when a
-local input can be probed, and fail validation if output lacks an input audio
-or video stream selected by the plan.
+Conversion receipts record `output_probe.selected_streams` when a local input
+can be probed, and fail validation if output lacks a selected input audio or
+video stream. Audio-only conversion also fails validation when output lacks
+audio.
 
 ## Private by default
 

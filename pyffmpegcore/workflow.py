@@ -316,14 +316,6 @@ def _verify_outputs(plan: ExecutionPlan, result: JobResult, probe: FFprobeRunner
                                 for actual_format in actual_formats
                                 if actual_format != expected_format
                             )
-                    required_stream_types = contract.get("required_stream_types")
-                    if isinstance(required_stream_types, list):
-                        actual_types = {stream.codec_type for stream in media.streams}
-                        contract_errors.extend(
-                            f"expected output stream type '{stream_type}', found none"
-                            for stream_type in required_stream_types
-                            if isinstance(stream_type, str) and stream_type not in actual_types
-                        )
                     expected_stream_languages = contract.get("stream_languages")
                     if isinstance(expected_stream_languages, dict):
                         for stream_type, expected_language in expected_stream_languages.items():
@@ -338,6 +330,22 @@ def _verify_outputs(plan: ExecutionPlan, result: JobResult, probe: FFprobeRunner
                                 for actual_language in actual_languages
                                 if actual_language != expected_language
                             )
+                required_stream_types = {
+                    stream_type
+                    for required in (
+                        plan.metadata.get("required_stream_types"),
+                        contract.get("required_stream_types") if isinstance(contract, dict) else None,
+                    )
+                    if isinstance(required, list)
+                    for stream_type in required
+                    if isinstance(stream_type, str)
+                }
+                actual_types = {stream.codec_type for stream in media.streams}
+                contract_errors.extend(
+                    f"expected output stream type '{stream_type}', found none"
+                    for stream_type in sorted(required_stream_types)
+                    if stream_type not in actual_types
+                )
                 if contract_errors:
                     verification["status"] = "failed"
                     verification["reason"] = "; ".join(contract_errors)

@@ -16,6 +16,7 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
   fails the workflow when a readable output is missing one.
 - Generic conversion verifies that its first audio/video stream selection
   retains every primary stream type present in a locally probeable input.
+- Audio-only conversion now enforces its declared audio output requirement.
 
 ## [0.3.3] - 2026-09-24
 
