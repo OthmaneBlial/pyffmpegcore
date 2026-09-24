@@ -29,7 +29,7 @@ hide:
           <span class="pfc-install__label">Current beta / 0.3.1</span>
           <code>pipx install "pyffmpegcore==0.3.1"</code>
         </div>
-        <button class="pfc-copy" type="button" data-pfc-copy aria-label="Copy the PyFFmpegCore 0.3.1 install command" aria-live="polite">Copy install command</button>
+        <button class="pfc-copy" type="button" data-pfc-copy aria-live="polite">Copy install command</button>
         <p>Requires Python 3.10–3.14 and system <code>ffmpeg</code>/<code>ffprobe</code>. <a href="https://pypi.org/project/pyffmpegcore/0.3.1/">View package →</a></p>
       </div>
     </div>

@@ -1,8 +1,6 @@
 (function () {
   "use strict";
 
-  const installCommand = 'pipx install "pyffmpegcore==0.3.1"';
-
   async function copyText(value) {
     if (window.navigator?.clipboard?.writeText) {
       await window.navigator.clipboard.writeText(value);
@@ -28,10 +26,15 @@
       button.addEventListener("click", async () => {
         const original = button.textContent;
         try {
-          await copyText(installCommand);
-          button.textContent = "COPIED / READY";
+          const command = button
+            .closest(".pfc-install")
+            ?.querySelector(".pfc-install__command code")
+            ?.textContent?.trim();
+          if (!command) throw new Error("Install command is missing");
+          await copyText(command);
+          button.textContent = "Copied install command";
         } catch (_error) {
-          button.textContent = "COPY FAILED / SELECT COMMAND";
+          button.textContent = "Copy failed; select command";
         }
         window.setTimeout(() => {
           button.textContent = original;
