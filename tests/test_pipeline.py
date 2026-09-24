@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import threading
 from pathlib import Path
 
@@ -84,6 +85,47 @@ def test_pipeline_compiles_topologically_and_renders_three_graph_formats(tmp_pat
     assert "web <- <source>" in pipeline.graph("text")
     assert "web --> thumbnail" in pipeline.graph("mermaid")
     assert '"web" -> "thumbnail"' in pipeline.graph("dot")
+
+
+def test_pipeline_decodes_percent_escaped_local_file_urls(tmp_path):
+    source = tmp_path / "media with spaces.mkv"
+    output = tmp_path / "output with spaces.mkv"
+    document = {
+        "schema_version": "1.0",
+        "name": "file_uri",
+        "steps": [
+            {
+                "id": "convert",
+                "workflow": "convert",
+                "input": source.as_uri(),
+                "output": output.as_uri(),
+            }
+        ],
+    }
+
+    pipeline = PipelineCompiler().compile(PipelineSpec.from_dict(document, base_dir=tmp_path))
+
+    assert pipeline.steps[0].plan.inputs == (str(source),)
+    assert pipeline.steps[0].plan.outputs == (str(output),)
+
+
+@pytest.mark.skipif(os.name == "nt", reason="Windows supports file URLs as UNC paths")
+def test_pipeline_rejects_remote_file_url_authority(tmp_path):
+    document = {
+        "schema_version": "1.0",
+        "name": "remote_file_uri",
+        "steps": [
+            {
+                "id": "convert",
+                "workflow": "convert",
+                "input": "file://media.example/source.mkv",
+                "output": "result.mkv",
+            }
+        ],
+    }
+
+    with pytest.raises(ValidationError, match="file URLs with a remote host"):
+        PipelineCompiler().compile(PipelineSpec.from_dict(document, base_dir=tmp_path))
 
 
 def test_pipeline_convert_step_can_preserve_every_stream(tmp_path):

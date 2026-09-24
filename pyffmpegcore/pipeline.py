@@ -14,7 +14,7 @@ from typing import Any
 from urllib.parse import urlsplit
 
 from ._fileio import DestinationExistsError, atomic_write_text, exclusive_write_text
-from .domain import CompressOptions, ConvertOptions, ExecutionPlan
+from .domain import CompressOptions, ConvertOptions, ExecutionPlan, resolve_manifest_path
 from .errors import ValidationError
 from .planning import WorkflowPlanner, parse_size
 from .preflight import PreflightCheck, PreflightReport
@@ -69,14 +69,6 @@ def _load_document(path: Path) -> dict[str, Any]:
     if not isinstance(document, dict):
         raise ValidationError("pipeline document must be an object/table")
     return document
-
-
-def _resolve_path(value: str, base_dir: Path) -> str:
-    parsed = urlsplit(value)
-    if parsed.scheme and parsed.scheme != "file":
-        return value
-    candidate = Path(parsed.path if parsed.scheme == "file" else value)
-    return str((base_dir / candidate).resolve()) if not candidate.is_absolute() else str(candidate.resolve())
 
 
 def _mask_secrets(value: Any, secrets: tuple[str, ...]) -> Any:
@@ -556,16 +548,16 @@ class PipelineCompiler:
             raw_output = _substitute_variables(step.output, selected_variables)
             raw_subtitle = _substitute_variables(step.subtitle, selected_variables) if step.subtitle else None
             reference = _STEP_REFERENCE.fullmatch(raw_input)
-            input_value = outputs[reference.group(1)] if reference else _resolve_path(raw_input, spec.base_dir)
+            input_value = outputs[reference.group(1)] if reference else resolve_manifest_path(raw_input, spec.base_dir)
             subtitle_reference = _STEP_REFERENCE.fullmatch(raw_subtitle or "")
             subtitle_value = (
                 outputs[subtitle_reference.group(1)]
                 if subtitle_reference
-                else _resolve_path(raw_subtitle, spec.base_dir)
+                else resolve_manifest_path(raw_subtitle, spec.base_dir)
                 if raw_subtitle
                 else None
             )
-            output_value = _resolve_path(raw_output, spec.base_dir)
+            output_value = resolve_manifest_path(raw_output, spec.base_dir)
             collision_key = output_value.casefold()
             if collision_key in output_keys:
                 raise ValidationError(
@@ -597,7 +589,7 @@ class PipelineCompiler:
             plans.append(PipelineStepPlan(step.id, step.needs, plan))
         cache = PipelineCachePolicy(
             enabled=spec.cache.enabled if cache_enabled is None else cache_enabled,
-            directory=_resolve_path(spec.cache.directory, spec.base_dir),
+            directory=resolve_manifest_path(spec.cache.directory, spec.base_dir),
             content_aware=spec.cache.content_aware,
         )
         return PipelinePlan(

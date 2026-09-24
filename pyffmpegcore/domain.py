@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import os
 import re
 from dataclasses import asdict, dataclass, field
 from enum import Enum
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
+from urllib.request import url2pathname
 
 from .errors import ValidationError
 
@@ -286,3 +289,26 @@ def normalized_path(path: str | Path) -> str:
     if is_url_like_path(path):
         return str(path)
     return str(Path(path).expanduser().resolve())
+
+
+def resolve_manifest_path(path: str, base_dir: str | Path) -> str:
+    """Resolve a manifest path, decoding local file URLs on the current OS."""
+    parsed = urlsplit(path)
+    if parsed.scheme and parsed.scheme.casefold() != "file":
+        return path
+
+    if parsed.scheme:
+        authority = parsed.netloc
+        if authority and authority.casefold() != "localhost":
+            if os.name != "nt":
+                raise ValidationError("file URLs with a remote host are unsupported on this platform")
+            file_path = (
+                f"/{authority}{parsed.path}" if re.fullmatch(r"[A-Za-z]:", authority) else f"//{authority}{parsed.path}"
+            )
+        else:
+            file_path = parsed.path
+        candidate = Path(url2pathname(file_path))
+    else:
+        candidate = Path(path)
+
+    return str(candidate.resolve() if candidate.is_absolute() else (Path(base_dir) / candidate).resolve())

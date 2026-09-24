@@ -376,6 +376,27 @@ def test_batch_manifest_preserves_1_0_and_rejects_1_1_fields(tmp_path):
         BatchManifest.from_dict(document, base_dir=tmp_path)
 
 
+def test_batch_manifest_decodes_percent_escaped_local_file_urls(tmp_path):
+    source = tmp_path / "media with spaces.mkv"
+    output = tmp_path / "output with spaces.mp4"
+    document = {
+        "schema_version": "1.0",
+        "jobs": [
+            {
+                "id": "web",
+                "profile": "web/mp4-compatible",
+                "input": source.as_uri(),
+                "output": output.as_uri(),
+            }
+        ],
+    }
+
+    manifest = BatchManifest.from_dict(document, base_dir=tmp_path)
+
+    assert manifest.jobs[0].plan.inputs == (str(source),)
+    assert manifest.jobs[0].plan.outputs == (str(output),)
+
+
 @pytest.mark.parametrize("language", [None, "", 42])
 def test_batch_manifest_rejects_invalid_subtitle_language(tmp_path, language):
     document = {
