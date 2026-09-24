@@ -264,7 +264,12 @@ de pipeline et journaux d'événements batch/pipeline : création exclusive sans
 écrasement par défaut, remplacement atomique des fichiers statiques avec
 `--force`; les journaux permettent aussi l'ouverture en écriture avec `--resume`.
 Les
-tests CLI, migration et écriture concurrente de receipt passent localement.
+tests CLI, migration et écriture concurrente de receipt passent localement. Sur
+le SHA exact `c801b90692f4d32f797602a1aeb096a74701802e`, CodeQL
+[`35957295722`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35957295722)
+et Scorecard
+[`35957295720`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35957295720)
+ont réussi. CI complète, Benchmarks et Container n'ont pas tourné.
 
 - **Objectif :** réduire les surprises de temps, espace et réseau tout en annonçant honnêtement que PyFFmpegCore n'est pas un sandbox.
 - **Changements :** définir des plafonds optionnels/explicites de temps et de sortie là où le moteur peut les garantir, distinguer préflight estimatif et limite dure, durcir redaction des diagnostics et politique URL/protocoles, tester nettoyage après annulation/timeout/disque plein. Maintenir l'exécution en vecteur d'arguments et `-nostdin`.
