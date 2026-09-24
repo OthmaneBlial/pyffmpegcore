@@ -62,6 +62,31 @@ def test_public_domain_exact_size_receipt_proves_the_video_only_limit():
     assert not any(marker in rendered for marker in ("/Users/", "/home/", "/private/", "C:\\Users\\"))
 
 
+def test_generated_audio_video_receipt_proves_audio_budget_and_target():
+    receipt_path = EVIDENCE_ROOT / "exact-size-av-fixture-2026-09-24.receipt.json"
+    rendered = receipt_path.read_text(encoding="utf-8")
+    receipt = json.loads(rendered)
+    item = receipt["items"][0]
+    proof = item["proof"]
+    plan = receipt["plan"]
+    output_codecs = [stream["codec"] for stream in item["output_probe"]["streams"]]
+
+    assert validate_receipt(receipt) == ()
+    assert item["result"]["status"] == "succeeded"
+    assert proof["input_size_bytes"] == 4_042_503
+    assert proof["output_size_bytes"] == 1_984_802
+    assert proof["target_size_bytes"] == 2_097_152
+    assert proof["target_met"] is True
+    assert [stream["type"] for stream in item["input_probe"]["streams"]] == ["video", "audio"]
+    assert output_codecs == ["h264", "aac"]
+    assert plan["selected_streams"] == ["video", "audio"]
+    assert "encoder:aac" in plan["required_capabilities"]
+    assert "reserve 128k audio and 7% container overhead" in plan["operations"]
+    assert receipt["content_hashes"][0]["digest"] == "3026484a0e532d9d23df7874c672dcd9b34089f8cf210d1a1a180093d464ce8a"
+    assert receipt["content_hashes"][1]["digest"] == "ed2d96301c53bb8445ed0c7716690ab323ebc56a77ab9708a8d5e7759558e600"
+    assert not any(marker in rendered for marker in ("/Users/", "/home/", "/private/", "C:\\Users\\"))
+
+
 def test_flagship_recipe_commands_match_the_cli_contract():
     podcast = (REPO_ROOT / "docs" / "recipes" / "podcast.md").read_text(encoding="utf-8")
     preserve = (REPO_ROOT / "docs" / "recipes" / "preserve-streams.md").read_text(encoding="utf-8")

@@ -81,6 +81,29 @@ Output SHA-256: `3fa464804b67062c856a08116704bd645d3707ffd25f4c77967c421d1248370
 Receipt SHA-256:
 `ef761c23f938d43cbaa6d11700cde8b7dc0414d11d1d61406ff6d424c619dafb`.
 
+### Reproduce the web-profile check
+
+Reproduce against the linked Xiph download with fresh output paths:
+
+```bash
+curl -fLsS \
+  https://media.xiph.org/video/derf/webm/vidyo1_720p_60fps.webm \
+  -o vidyo1_720p_60fps.webm
+
+pyffmpegcore profile run web/mp4-compatible \
+  --input vidyo1_720p_60fps.webm \
+  --output vidyo1.mp4 \
+  --explain
+
+pyffmpegcore profile run web/mp4-compatible \
+  --input vidyo1_720p_60fps.webm \
+  --output vidyo1.mp4 \
+  --receipt vidyo1.receipt.json
+
+pyffmpegcore receipt validate vidyo1.receipt.json --json
+ffmpeg -v error -i vidyo1.mp4 -f null -
+```
+
 ## Public-domain exact-size check on 24 September 2026
 
 The same Xiph `vidyo1` VP9 clip was tested with two-pass compression on macOS
@@ -120,27 +143,36 @@ pyffmpegcore receipt validate vidyo1-exact-size.receipt.json --json
 ffmpeg -v error -i vidyo1-exact-size.mp4 -f null -
 ```
 
-### Reproduce the web-profile check
+## Generated audio-video exact-size check on 24 September 2026
 
-Reproduce against the linked Xiph download with fresh output paths:
+The repository's six-second, 1920×1080 `testsrc2`/440 Hz fixture contains H.264
+video and AAC audio. On macOS arm64, Python 3.14.6, and FFmpeg/FFprobe 9.0.1,
+the two-pass planner selected both streams, required `libx264` and AAC, and
+reserved 128 kb/s for audio plus 7% for the container.
+
+The 4,042,503-byte source produced a 1,984,802-byte H.264/AAC MP4 under a
+2 MiB (2,097,152-byte) limit. Its receipt reports `target_met: true`; receipt
+validation and full decode passed. The [privacy-redacted receipt](evidence/exact-size-av-fixture-2026-09-24.receipt.json)
+has SHA-256
+`56615d07744a2d86e7852acecb6d06659b591d29856083421bfbc9694ed7c68e`.
+The existing focused CLI two-pass real-media test also passed against this
+fixture. This generated pattern and tone verify the audio-present execution
+path, not perceptual quality on representative footage or speech.
+
+### Reproduce the audio-video check
 
 ```bash
-curl -fLsS \
-  https://media.xiph.org/video/derf/webm/vidyo1_720p_60fps.webm \
-  -o vidyo1_720p_60fps.webm
-
-pyffmpegcore profile run web/mp4-compatible \
-  --input vidyo1_720p_60fps.webm \
-  --output vidyo1.mp4 \
-  --explain
-
-pyffmpegcore profile run web/mp4-compatible \
-  --input vidyo1_720p_60fps.webm \
-  --output vidyo1.mp4 \
-  --receipt vidyo1.receipt.json
-
-pyffmpegcore receipt validate vidyo1.receipt.json --json
-ffmpeg -v error -i vidyo1.mp4 -f null -
+python tests/media/download_fixtures.py
+pyffmpegcore compress \
+  --input tests/media/downloads/sample_mp4_h264.mp4 \
+  --output sample-target.mp4 \
+  --target-size 2MiB \
+  --two-pass \
+  --container-overhead-percent 7 \
+  --receipt sample-target.receipt.json \
+  --hash-content
+pyffmpegcore receipt validate sample-target.receipt.json --json
+ffmpeg -v error -i sample-target.mp4 -f null -
 ```
 
 ## Reproduce

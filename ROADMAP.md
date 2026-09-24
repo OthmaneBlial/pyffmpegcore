@@ -220,7 +220,10 @@ limite de 1 MiB, la réserve par défaut de 5 % a dépassé la limite de 7 803
 octets ; une réserve explicite de 7 % a produit 1 035 870 octets et passé la
 limite, avec SSIM 0.976039, receipt validé, décodage complet et inspection
 visuelle à 640×360. Voir la [preuve et ses limites](docs/evidence.md#public-domain-exact-size-check-on-24-september-2026).
-Cela reste un seul clip sans audio, sur macOS et FFmpeg 9.0.1. La voix, les
+Le check public-domain reste limité à un clip sans audio, sur macOS et FFmpeg
+9.0.1. Un fixture synthétique H.264/AAC de 1080p a aussi vérifié le chemin audio :
+1 984 802 octets sous 2 MiB avec une réserve de 7 %, receipt valide et décodage
+complet. Cette vérification ne mesure pas la qualité perceptuelle. La voix, les
 médias consentis représentatifs et la compatibilité multi-plateforme restent
 ouverts ; le gate des trois recettes n'est pas fermé.
 
