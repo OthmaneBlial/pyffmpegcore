@@ -172,3 +172,23 @@ class TestFFprobeRunner:
 
         with pytest.raises(RuntimeError, match="FFprobe returned an invalid JSON document"):
             FFprobeRunner().probe("movie.mkv")
+
+    @patch("subprocess.run")
+    def test_probe_invalid_stream_shape_error(self, mock_run):
+        """Test probe categorizes parseable but structurally invalid output as a runtime failure."""
+        mock_run.return_value = MagicMock(returncode=0, stdout='{"streams": [null]}', stderr="")
+
+        with pytest.raises(RuntimeError, match="FFprobe returned invalid media metadata"):
+            FFprobeRunner().probe("movie.mkv")
+
+    @patch("subprocess.run")
+    def test_typed_probe_invalid_index_error(self, mock_run):
+        """Test typed probe reports invalid FFprobe field types as runtime failures."""
+        mock_run.return_value = MagicMock(
+            returncode=0,
+            stdout='{"streams": [{"index": "invalid", "codec_type": "audio"}]}',
+            stderr="",
+        )
+
+        with pytest.raises(RuntimeError, match="FFprobe returned invalid media metadata"):
+            FFprobeRunner().probe_media("movie.mkv")

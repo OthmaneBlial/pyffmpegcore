@@ -36,7 +36,12 @@ class FFprobeRunner:
             Simplified metadata dictionary derived from FFprobe JSON
         """
         data = self.probe_raw(input_file)
-        return data if raw else self._simplify_metadata(data)
+        if raw:
+            return data
+        try:
+            return self._simplify_metadata(data)
+        except (AttributeError, TypeError, ValueError, OverflowError) as exc:
+            raise RuntimeError(f"FFprobe returned invalid media metadata for '{input_file}'") from exc
 
     def probe_raw(self, input_file: str) -> dict[str, Any]:
         """Return the complete FFprobe JSON document without dropping fields."""
@@ -80,39 +85,42 @@ class FFprobeRunner:
     def probe_media(self, input_file: str) -> MediaInfo:
         """Return typed metadata while retaining decision-relevant stream details."""
         simplified = self.probe(input_file)
-        streams = tuple(
-            StreamInfo(
-                index=int(stream.get("index", 0)),
-                codec_type=str(stream.get("codec_type", "unknown")),
-                codec_name=stream.get("codec_name"),
-                profile=stream.get("profile"),
-                width=stream.get("width"),
-                height=stream.get("height"),
-                sample_rate=stream.get("sample_rate"),
-                channels=stream.get("channels"),
-                bit_rate=stream.get("bit_rate"),
-                duration=stream.get("duration"),
-                language=stream.get("language"),
-                rotation=stream.get("rotation"),
-                tags=stream.get("tags", {}),
-                disposition=stream.get("disposition", {}),
-                color=stream.get("color", {}),
-                side_data=tuple(stream.get("side_data_list", [])),
-                details=stream.get("details", {}),
+        try:
+            streams = tuple(
+                StreamInfo(
+                    index=int(stream.get("index", 0)),
+                    codec_type=str(stream.get("codec_type", "unknown")),
+                    codec_name=stream.get("codec_name"),
+                    profile=stream.get("profile"),
+                    width=stream.get("width"),
+                    height=stream.get("height"),
+                    sample_rate=stream.get("sample_rate"),
+                    channels=stream.get("channels"),
+                    bit_rate=stream.get("bit_rate"),
+                    duration=stream.get("duration"),
+                    language=stream.get("language"),
+                    rotation=stream.get("rotation"),
+                    tags=stream.get("tags", {}),
+                    disposition=stream.get("disposition", {}),
+                    color=stream.get("color", {}),
+                    side_data=tuple(stream.get("side_data_list", [])),
+                    details=stream.get("details", {}),
+                )
+                for stream in simplified.get("streams", [])
             )
-            for stream in simplified.get("streams", [])
-        )
-        return MediaInfo(
-            path=simplified.get("filename") or input_file,
-            format_name=simplified.get("format_name"),
-            format_long_name=simplified.get("format_long_name"),
-            duration=simplified.get("duration"),
-            size=simplified.get("size"),
-            bit_rate=simplified.get("bit_rate"),
-            tags=simplified.get("tags", {}),
-            streams=streams,
-            chapters=tuple(simplified.get("chapters", [])),
-        )
+            return MediaInfo(
+                path=simplified.get("filename") or input_file,
+                format_name=simplified.get("format_name"),
+                format_long_name=simplified.get("format_long_name"),
+                duration=simplified.get("duration"),
+                size=simplified.get("size"),
+                bit_rate=simplified.get("bit_rate"),
+                tags=simplified.get("tags", {}),
+                streams=streams,
+                chapters=tuple(simplified.get("chapters", [])),
+            )
+        except (AttributeError, TypeError, ValueError, OverflowError) as exc:
+            raise RuntimeError(f"FFprobe returned invalid media metadata for '{input_file}'") from exc
 
     def _simplify_metadata(self, data: dict[str, Any]) -> dict[str, Any]:
         """
