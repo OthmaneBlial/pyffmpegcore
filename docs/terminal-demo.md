@@ -13,6 +13,20 @@ validator measured **64.3 seconds** and rejected private home paths.
   <div><span>Media</span><strong>Synthetic / local</strong></div>
 </div>
 
+## Frames from the recording
+
+The frames are rendered from the original cast without changing its text. The
+[frame manifest](assets/terminal-demo-v0.3.3.frames.json) records source and
+image checksums, event times, and rendering details.
+
+![The public 0.3.3 terminal recording previews the FFmpeg command, input and output paths, overwrite policy, and planned arguments.](assets/terminal-plan-v0.3.3.png)
+
+*Plan captured at 39.651 seconds, before the output is written.*
+
+![The public 0.3.3 terminal recording shows conversion progress, probed H.264 and AAC output, receipt validation, and the final passing result.](assets/terminal-result-v0.3.3.png)
+
+*Result captured at 64.304 seconds after the local receipt passed validation.*
+
 ## Inspect or replay the evidence
 
 - [Download the original asciicast](assets/terminal-demo-v0.3.3.cast)

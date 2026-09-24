@@ -74,6 +74,27 @@ disk space before mutation. Results include probed output facts and stable
 status categories. Overwrite refusal, timeout, cancellation, and temporary-file
 cleanup are explicit policies.
 
+## A real run from the public package
+
+These frames come from the exact public PyPI `0.3.3` recording. The fixture and
+output are synthetic and local; [the full cast, accessible transcript, and
+capture details](docs/terminal-demo.md) show the complete run.
+
+<table>
+  <thead>
+    <tr>
+      <th>Plan before writing</th>
+      <th>Output and receipt verified</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="docs/assets/terminal-plan-v0.3.3.png"><img src="docs/assets/terminal-plan-v0.3.3.png" alt="Public 0.3.3 terminal run previewing the FFmpeg plan, input and output paths, overwrite policy, and exact arguments." width="100%"></a></td>
+      <td><a href="docs/assets/terminal-result-v0.3.3.png"><img src="docs/assets/terminal-result-v0.3.3.png" alt="Public 0.3.3 terminal run completing an H.264 and AAC conversion, then validating its schema 1.0 receipt." width="100%"></a></td>
+    </tr>
+  </tbody>
+</table>
+
 ## What it is good at
 
 - Converting to maintained web, podcast, subtitle, and accessibility profiles.

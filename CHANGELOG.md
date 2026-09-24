@@ -4,6 +4,11 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+
+- Added current PyPI `0.3.3` terminal frames to the README and proof page, with
+  accessible descriptions and a checksum manifest tied to the original cast.
+
 ### Fixed
 
 - The shell and PowerShell bootstrap installers and CLI install guides now target

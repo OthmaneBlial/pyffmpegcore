@@ -501,10 +501,10 @@ largeur effective de 469 px, également sans débordement.
 
 **État au 24 septembre 2026 : partiel.** Le README utilise l'installation
 `0.3.3`, relie le cast réel validé de 64,3 secondes et publie deux résultats
-mesurés avec leurs preuves et limites. Il n'affiche toutefois aucune capture
-de terminal de cette version : les PNG existants montrent `0.2.2` et ne sont
-pas liés depuis le README. Un rendu actuel du README en mode sombre et sur
-petit écran reste aussi à vérifier.
+mesurés avec leurs preuves et limites. Il affiche désormais le plan avant
+écriture et le résultat avec reçu validé, rendus sans retouche de texte depuis
+le cast public exact ; les sommes SHA-256 sont conservées dans le manifeste.
+Un rendu actuel du README en mode sombre et sur petit écran reste à vérifier.
 
 - **Objectif :** que la première vue GitHub montre une commande, une décision de plan et un résultat réellement obtenus.
 - **Changements :** raccourcir le mur de badges et placer un parcours vérifié au premier écran ; capturer de vraies images de terminal avec version, OS, date et fixture non privée ; montrer avant/après utile (format, pistes, taille ou loudness) avec un lien vers les receipts. Conserver la bannière SVG si elle aide la lecture, sans confondre console illustrative HTML et capture.

@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.0",
+  "source": "terminal-demo-v0.3.3.cast",
+  "source_sha256": "d1de24974577ac829d49614dbeeb84a2ad32c3b6693be1db6545d63ad5cb37d4",
+  "renderer": {
+    "terminal_emulator": "pyte 0.8.2",
+    "image_library": "Pillow 12.3.0",
+    "font": "Menlo 20 px",
+    "terminal_size": "100 columns x 32 rows",
+    "cell_pixels": [
+      12,
+      28
+    ],
+    "inset_pixels": [
+      28,
+      8
+    ],
+    "background_rgb": [
+      13,
+      17,
+      16
+    ],
+    "palette_rgb": {
+      "default": [
+        232,
+        240,
+        233
+      ],
+      "cyan": [
+        114,
+        233,
+        255
+      ],
+      "green": [
+        201,
+        255,
+        74
+      ]
+    },
+    "text_edits": false
+  },
+  "frames": [
+    {
+      "file": "terminal-plan-v0.3.3.png",
+      "sha256": "095b62b89cba6d827246f66636478fd4b9419befa13f19d41a5fbded0342a7f0",
+      "at_seconds": 39.651,
+      "stop_after_event_contains": "Plan 1.0",
+      "visible_rows": [
+        1,
+        14
+      ],
+      "pixels": [
+        1256,
+        408
+      ]
+    },
+    {
+      "file": "terminal-result-v0.3.3.png",
+      "sha256": "0050e74b97b3b9a953544387eeccc59241f1977b8dbdf48cdc150218d0171b73",
+      "at_seconds": 64.304,
+      "stop_after_event_contains": "Recording complete",
+      "visible_rows": [
+        14,
+        30
+      ],
+      "pixels": [
+        1256,
+        492
+      ]
+    }
+  ]
+}
