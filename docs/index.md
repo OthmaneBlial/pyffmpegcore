@@ -16,7 +16,7 @@ hide:
       <h1 id="pfc-hero-title">FFmpeg jobs you can <span>explain.</span></h1>
       <div class="pfc-actions">
         <a class="pfc-button" href="quickstart/">Prove it in five minutes</a>
-        <a class="pfc-button pfc-button--ghost" href="terminal-demo/">Watch the real 0.2.2 run</a>
+        <a class="pfc-button pfc-button--ghost" href="terminal-demo/">Watch the 0.2.2 terminal proof</a>
         <a class="pfc-button pfc-button--ghost" href="recipes/">Pick a real recipe</a>
       </div>
       <p class="pfc-hero__lede">
@@ -24,6 +24,14 @@ hide:
         Keep a privacy-redacted receipt. PyFFmpegCore turns fragile media commands
         into repeatable operations for the terminal, Python, and CI.
       </p>
+      <div class="pfc-install" aria-label="Install the current public beta">
+        <div class="pfc-install__command">
+          <span class="pfc-install__label">Current beta / 0.3.0</span>
+          <code>pipx install "pyffmpegcore==0.3.0"</code>
+        </div>
+        <button class="pfc-copy" type="button" data-pfc-copy aria-label="Copy the PyFFmpegCore 0.3.0 install command" aria-live="polite">Copy install command</button>
+        <p>Requires Python 3.10–3.14 and system <code>ffmpeg</code>/<code>ffprobe</code>. <a href="https://pypi.org/project/pyffmpegcore/0.3.0/">View package →</a></p>
+      </div>
     </div>
     <div class="pfc-hero__console">
       <figure class="pfc-terminal-capture">
@@ -33,7 +41,6 @@ hide:
         <figcaption>
           <span>Real terminal capture / public PyPI 0.2.2</span>
           <a href="terminal-demo/">Watch the complete run →</a>
-          <button class="pfc-copy" type="button" data-pfc-copy aria-label="Copy the public PyPI install command" aria-live="polite">Copy public install</button>
         </figcaption>
       </figure>
     </div>
@@ -45,7 +52,7 @@ hide:
     <div class="pfc-metric"><strong>3</strong><span class="pfc-metric__label">operating systems</span></div>
     <div class="pfc-metric"><strong>5</strong><span class="pfc-metric__label">Python versions</span></div>
     <div class="pfc-metric"><strong>0</strong><span class="pfc-metric__label">default telemetry</span></div>
-    <div class="pfc-metric"><strong>0.2.2</strong><span class="pfc-metric__label">signed public beta</span></div>
+    <div class="pfc-metric"><strong>0.3.0</strong><span class="pfc-metric__label">signed public beta</span></div>
   </section>
 
   <section class="pfc-live-proof" aria-labelledby="live-proof-title">
@@ -53,10 +60,10 @@ hide:
     <div class="pfc-live-proof__copy">
       <p class="pfc-kicker">Public PyPI 0.2.2 recording / no staged output</p>
       <h2 id="live-proof-title">Watch a real 0.2.2 run.</h2>
-      <p>The 89.5-second capture shows a fresh install, capability scan, synthetic smoke test, explained plan, progress, probed output, and validated receipt from the current signed public release.</p>
+      <p>The 89.5-second capture documents the earlier signed 0.2.2 release: fresh install, capability scan, synthetic smoke test, explained plan, progress, probed output, and validated receipt.</p>
       <div class="pfc-actions">
         <a class="pfc-button" href="terminal-demo/">Open the terminal proof</a>
-        <a class="pfc-button pfc-button--ghost" href="https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.2.2">Inspect the signed release</a>
+        <a class="pfc-button pfc-button--ghost" href="https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.3.0">Inspect the 0.3.0 release</a>
       </div>
     </div>
   </section>

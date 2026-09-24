@@ -30,7 +30,7 @@ PyFFmpegCore is for developers and technical creators who want repeatable
 local media automation without owning a growing pile of fragile FFmpeg strings.
 It supports Python 3.10–3.14 on Linux, macOS, and Windows; `ffmpeg` and
 `ffprobe` remain explicit system dependencies.
-Start with `pipx install "pyffmpegcore==0.2.2"`, then run
+Start with `pipx install "pyffmpegcore==0.3.0"`, then run
 `pyffmpegcore smoke-test` to produce and verify synthetic media.
 
 ## A real public install, plan, and result
@@ -58,7 +58,7 @@ The fixture is a functional demonstration, not a compression or quality claim.
 Install the exact public beta from PyPI in an isolated environment:
 
 ```bash
-pipx install "pyffmpegcore==0.2.2"
+pipx install "pyffmpegcore==0.3.0"
 pyffmpegcore doctor
 pyffmpegcore smoke-test --keep-dir pyffmpegcore-demo
 pyffmpegcore profile run web/mp4-compatible --input pyffmpegcore-demo/synthetic-input.mp4 --output pyffmpegcore-demo/web.mp4 --explain

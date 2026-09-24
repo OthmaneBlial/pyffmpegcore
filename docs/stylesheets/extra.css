@@ -246,6 +246,54 @@ body {
   margin-top: 2rem;
 }
 
+.pfc-install {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.9rem 1.25rem;
+  max-width: 43rem;
+  margin-top: 1.8rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid #3b4540;
+  border-left: 4px solid var(--pfc-signal);
+  background: var(--pfc-panel);
+  color: var(--pfc-paper);
+}
+
+.pfc-install__label {
+  display: block;
+  color: var(--pfc-signal);
+  font-family: var(--pfc-mono);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pfc-install__command code {
+  display: block;
+  margin-top: 0.45rem;
+  overflow-wrap: anywhere;
+  color: var(--pfc-paper);
+}
+
+.pfc-install .pfc-copy {
+  width: auto;
+  margin: 0;
+  padding: 0.7rem 0.85rem;
+}
+
+.pfc-install p {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #aeb9b3;
+  font-size: 0.8rem;
+}
+
+.pfc-install p a {
+  color: var(--pfc-signal);
+}
+
 .pfc-button {
   display: inline-flex;
   align-items: center;
@@ -776,6 +824,14 @@ body {
 
   .pfc-hero h1 {
     font-size: clamp(3.2rem, 18vw, 5.2rem);
+  }
+
+  .pfc-install {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pfc-install p {
+    grid-column: auto;
   }
 
   .pfc-terminal-capture img {

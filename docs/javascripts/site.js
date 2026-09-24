@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  const installCommand = 'pipx install "pyffmpegcore==0.2.2"';
+  const installCommand = 'pipx install "pyffmpegcore==0.3.0"';
 
   async function copyText(value) {
     if (window.navigator?.clipboard?.writeText) {
