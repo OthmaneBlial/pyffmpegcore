@@ -26,11 +26,11 @@ hide:
       </p>
       <div class="pfc-install" aria-label="Install the current public beta">
         <div class="pfc-install__command">
-          <span class="pfc-install__label">Current beta / 0.3.1</span>
-          <code>pipx install "pyffmpegcore==0.3.1"</code>
+          <span class="pfc-install__label">Current beta / 0.3.2</span>
+          <code>pipx install "pyffmpegcore==0.3.2"</code>
         </div>
         <button class="pfc-copy" type="button" data-pfc-copy aria-live="polite">Copy install command</button>
-        <p>Requires Python 3.10–3.14 and system <code>ffmpeg</code>/<code>ffprobe</code>. <a href="https://pypi.org/project/pyffmpegcore/0.3.1/">View package →</a></p>
+        <p>Requires Python 3.10–3.14 and system <code>ffmpeg</code>/<code>ffprobe</code>. <a href="https://pypi.org/project/pyffmpegcore/0.3.2/">View package →</a></p>
       </div>
     </div>
     <div class="pfc-hero__console">
@@ -56,7 +56,7 @@ progress, output, and receipt all verified.</samp></pre>
     <div class="pfc-metric"><strong>3</strong><span class="pfc-metric__label">operating systems</span></div>
     <div class="pfc-metric"><strong>5</strong><span class="pfc-metric__label">Python versions</span></div>
     <div class="pfc-metric"><strong>0</strong><span class="pfc-metric__label">default telemetry</span></div>
-    <div class="pfc-metric"><strong>0.3.1</strong><span class="pfc-metric__label">signed public beta</span></div>
+    <div class="pfc-metric"><strong>0.3.2</strong><span class="pfc-metric__label">signed public beta</span></div>
   </section>
 
   <section class="pfc-live-proof" aria-labelledby="live-proof-title">
@@ -64,7 +64,7 @@ progress, output, and receipt all verified.</samp></pre>
     <div class="pfc-live-proof__copy">
       <p class="pfc-kicker">Public PyPI 0.3.1 recording / no staged output</p>
       <h2 id="live-proof-title">Watch a real 0.3.1 run.</h2>
-      <p>The 63.4-second capture shows a fresh install, capability scan, synthetic smoke test, explained plan, progress, probed output, and validated receipt from the current signed public beta.</p>
+      <p>The 63.4-second capture shows the public 0.3.1 install, capability scan, synthetic smoke test, explained plan, progress, probed output, and validated receipt.</p>
       <div class="pfc-actions">
         <a class="pfc-button" href="terminal-demo/">Open the 0.3.1 terminal proof</a>
         <a class="pfc-button pfc-button--ghost" href="https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.3.1">Inspect the 0.3.1 release</a>
