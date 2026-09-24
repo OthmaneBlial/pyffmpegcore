@@ -255,6 +255,19 @@ def test_batch_preserves_existing_state_unless_resume_or_overwrite_is_explicit(t
     assert json.loads(state.read_text(encoding="utf-8"))["schema_version"] == "1.0"
 
 
+def test_batch_state_write_preserves_preexisting_temp_name(tmp_path):
+    state = tmp_path / "state.json"
+    old_temp = tmp_path / ".state.json.tmp"
+    old_temp.write_text("preserve", encoding="utf-8")
+    job = BatchJob("atomic-state", _plan(tmp_path, "atomic-state"))
+
+    result = BatchRunner(engine=FakeEngine()).run((job,), state_path=state)
+
+    assert result.succeeded
+    assert json.loads(state.read_text(encoding="utf-8"))["schema_version"] == "1.0"
+    assert old_temp.read_text(encoding="utf-8") == "preserve"
+
+
 def test_batch_rejects_duplicate_work_collisions_and_resource_overruns(tmp_path):
     first = _plan(tmp_path, "first")
     duplicate = BatchJob("duplicate", first)

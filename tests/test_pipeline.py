@@ -20,6 +20,7 @@ from pyffmpegcore import (
     migrate_pipeline_document,
 )
 from pyffmpegcore.cli import main
+from pyffmpegcore.pipeline import _write_pipeline_state
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -284,6 +285,17 @@ def test_pipeline_preserves_existing_state_without_explicit_resume_or_overwrite(
 
     assert calls == []
     assert state.read_text(encoding="utf-8") == "preserve"
+
+
+def test_pipeline_state_write_preserves_preexisting_temp_name(tmp_path):
+    state = tmp_path / "state.json"
+    old_temp = tmp_path / ".state.json.tmp"
+    old_temp.write_text("preserve", encoding="utf-8")
+
+    _write_pipeline_state(state, {"web": "signature"})
+
+    assert json.loads(state.read_text(encoding="utf-8"))["schema_version"] == "1.0"
+    assert old_temp.read_text(encoding="utf-8") == "preserve"
 
 
 def test_pipeline_cancellation_and_dependency_blocking_are_stable(tmp_path):

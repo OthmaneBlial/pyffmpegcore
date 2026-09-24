@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any, Protocol
 from urllib.parse import urlsplit
 
+from ._fileio import atomic_write_text
 from .domain import ExecutionPlan
 from .errors import ValidationError
 from .planning import WorkflowPlanner, parse_size
@@ -250,17 +251,14 @@ def _load_state(path: Path | None) -> dict[str, str]:
 def _write_state(path: Path | None, completed: dict[str, str]) -> None:
     if path is None:
         return
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_name(f".{path.name}.tmp")
-    temporary.write_text(
+    atomic_write_text(
+        path,
         json.dumps(
             {"schema_version": BATCH_STATE_SCHEMA_VERSION, "completed": dict(sorted(completed.items()))},
             indent=2,
         )
         + "\n",
-        encoding="utf-8",
     )
-    temporary.replace(path)
 
 
 class BatchRunner:
