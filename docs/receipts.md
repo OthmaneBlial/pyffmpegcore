@@ -71,6 +71,10 @@ receipt = ReceiptBuilder().build(batch)
 receipt.write("run-receipt.json")
 ```
 
+`RunReceipt.write()` refuses an existing path. Pass `overwrite=True` only when
+replacement is intentional; it replaces the receipt atomically. CLI receipt
+writes require `--force` to replace an existing file.
+
 ## Schema, examples, and migration
 
 - [JSON Schema 1.0](schemas/run-receipt-1.0.schema.json)

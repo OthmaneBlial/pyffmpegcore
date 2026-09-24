@@ -51,9 +51,9 @@ Serialize policy, ordered item outcomes, and aggregate counts.
 
 Execute validated jobs concurrently with receipts, events, retry, and resume.
 
-### `run(self, jobs: 'Iterable[BatchJob]', *, policy: 'BatchPolicy | None' = None, cancellation: 'threading.Event | None' = None, event_callback: 'Callable[[BatchEvent], None] | None' = None, state_path: 'str | Path | None' = None, resume: 'bool' = False, receipt_dir: 'str | Path | None' = None, hash_content: 'bool' = False) -> 'BatchRun'`
+### `run(self, jobs: 'Iterable[BatchJob]', *, policy: 'BatchPolicy | None' = None, cancellation: 'threading.Event | None' = None, event_callback: 'Callable[[BatchEvent], None] | None' = None, state_path: 'str | Path | None' = None, resume: 'bool' = False, receipt_dir: 'str | Path | None' = None, overwrite_receipts: 'bool' = False, hash_content: 'bool' = False) -> 'BatchRun'`
 
-Run jobs once, retry transient failures, and persist successful signatures atomically.
+Run jobs once and refuse receipt replacement unless explicitly allowed.
 
 ## `CapabilityUnavailableError`
 
@@ -312,12 +312,13 @@ Serialize ordered outcomes with a stable summary.
 
 Execute a prepared DAG with dependency blocking, cancellation, resume, and caching.
 
-### `run(self, pipeline: 'PipelinePlan', *, cancellation: 'threading.Event | None' = None, state_path: 'str | Path | None' = None, resume: 'bool' = False, receipt_dir: 'str | Path | None' = None, hash_content: 'bool' = False, event_callback: 'Any' = None) -> 'PipelineRun'`
+### `run(self, pipeline: 'PipelinePlan', *, cancellation: 'threading.Event | None' = None, state_path: 'str | Path | None' = None, resume: 'bool' = False, receipt_dir: 'str | Path | None' = None, overwrite_receipts: 'bool' = False, hash_content: 'bool' = False, event_callback: 'Any' = None) -> 'PipelineRun'`
 
 Execute steps in dependency order and return one outcome per step.
 
 Failed dependencies block downstream steps. Optional state supports
-resume and caching; receipts and event callbacks are opt-in.
+resume and caching; receipts and event callbacks are opt-in. Existing
+receipts are preserved unless ``overwrite_receipts`` is enabled.
 
 ## `PipelineSpec`
 
@@ -475,9 +476,9 @@ Return the validated receipt mapping.
 
 Render the receipt as indented UTF-8-compatible JSON with a trailing newline.
 
-### `write(self, path: 'str | Path') -> 'Path'`
+### `write(self, path: 'str | Path', *, overwrite: 'bool' = False) -> 'Path'`
 
-Create parent directories, write the JSON receipt, and return its path.
+Create parent directories and refuse replacement unless explicitly requested.
 
 ## `StreamInfo`
 

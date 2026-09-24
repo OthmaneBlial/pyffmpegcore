@@ -18,7 +18,7 @@ from .errors import ValidationError
 from .planning import WorkflowPlanner, parse_size
 from .preflight import PreflightCheck, PreflightReport
 from .profiles import ProfileRegistry
-from .receipt import ReceiptBuilder, RunReceipt, redact_receipt_value
+from .receipt import ReceiptBuilder, RunReceipt, _prepare_receipt_paths, redact_receipt_value
 from .workflow import WorkflowEngine, WorkflowExecution
 
 PIPELINE_SCHEMA_VERSION = "1.0"
@@ -840,13 +840,15 @@ class PipelineRunner:
         state_path: str | Path | None = None,
         resume: bool = False,
         receipt_dir: str | Path | None = None,
+        overwrite_receipts: bool = False,
         hash_content: bool = False,
         event_callback: Any = None,
     ) -> PipelineRun:
         """Execute steps in dependency order and return one outcome per step.
 
         Failed dependencies block downstream steps. Optional state supports
-        resume and caching; receipts and event callbacks are opt-in.
+        resume and caching; receipts and event callbacks are opt-in. Existing
+        receipts are preserved unless ``overwrite_receipts`` is enabled.
         """
         cancel = cancellation or threading.Event()
         selected_state = Path(state_path) if state_path is not None else None
@@ -854,8 +856,16 @@ class PipelineRunner:
             selected_state = Path(pipeline.cache.directory) / f"{pipeline.name}.state.json"
         completed = _load_pipeline_state(selected_state) if (resume or pipeline.cache.enabled) else {}
         receipts = Path(receipt_dir) if receipt_dir is not None else None
-        if receipts is not None:
-            receipts.mkdir(parents=True, exist_ok=True)
+        receipt_paths = (
+            _prepare_receipt_paths(
+                receipts,
+                (step.id for step in pipeline.steps),
+                (output for step in pipeline.steps for output in step.plan.outputs),
+                overwrite=overwrite_receipts,
+            )
+            if receipts is not None
+            else {}
+        )
         sequence = 0
         outcomes: dict[str, PipelineStepOutcome] = {}
 
@@ -890,14 +900,16 @@ class PipelineRunner:
             emit("started", step.id)
             batch = self.engine.run(step.plan, cancellation=cancel)
             execution = batch.items[0]
-            receipt_path = None
-            if receipts is not None:
-                receipt_path = receipts / f"{step.id}.receipt.json"
+            receipt_path = receipt_paths.get(step.id)
+            if receipt_path is not None:
                 raw_receipt = ReceiptBuilder(ffmpeg_path=self.ffmpeg_path, ffprobe_path=self.ffprobe_path).build(
                     batch,
                     hash_content=hash_content,
                 )
-                RunReceipt(_mask_secrets(raw_receipt.to_dict(), pipeline.secret_values)).write(receipt_path)
+                RunReceipt(_mask_secrets(raw_receipt.to_dict(), pipeline.secret_values)).write(
+                    receipt_path,
+                    overwrite=overwrite_receipts,
+                )
             if execution.succeeded:
                 completed[step.id] = key
                 _write_pipeline_state(selected_state, completed)

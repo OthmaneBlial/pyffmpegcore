@@ -224,6 +224,21 @@ def test_receipt_round_trip_and_validation_errors(tmp_path):
     assert migrate_receipt(receipt.to_dict()).to_dict() == receipt.to_dict()
 
 
+def test_receipt_write_refuses_existing_file_unless_overwrite_is_explicit(tmp_path):
+    batch, _source, _output = _batch(tmp_path)
+    receipt = ReceiptBuilder(ffmpeg_path="missing-ffmpeg", ffprobe_path="missing-ffprobe").build(batch)
+    path = tmp_path / "receipts" / "run.json"
+    path.parent.mkdir()
+    path.write_text("keep this receipt", encoding="utf-8")
+
+    with pytest.raises(FileExistsError):
+        receipt.write(path)
+    assert path.read_text(encoding="utf-8") == "keep this receipt"
+
+    assert receipt.write(path, overwrite=True) == path
+    assert json.loads(path.read_text(encoding="utf-8")) == receipt.to_dict()
+
+
 def test_published_receipt_example_matches_runtime_validator():
     example = json.loads((REPO_ROOT / "docs" / "schemas" / "run-receipt-1.0.example.json").read_text(encoding="utf-8"))
 

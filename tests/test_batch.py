@@ -159,6 +159,56 @@ def test_batch_writes_a_redacted_receipt_for_failed_items(tmp_path):
     assert "<path>" in document
 
 
+def test_batch_rejects_receipt_paths_that_would_overwrite_media_outputs(tmp_path):
+    receipt_dir = tmp_path / "receipts"
+    output = receipt_dir / "collision.receipt.json"
+    plan = ExecutionPlan(
+        workflow="test/receipt-collision",
+        command=(sys.executable, "-c", "pass"),
+        inputs=(),
+        outputs=(str(output),),
+    )
+    engine = FakeEngine()
+
+    with pytest.raises(ValidationError, match="receipt path collides with a media output"):
+        BatchRunner(engine=engine).run((BatchJob("collision", plan),), receipt_dir=receipt_dir)
+
+    assert engine.calls == []
+    assert not output.exists()
+
+
+def test_batch_rejects_existing_receipt_before_running_jobs(tmp_path):
+    plan = _plan(tmp_path, "existing-receipt")
+    receipt_dir = tmp_path / "receipts"
+    receipt_dir.mkdir()
+    receipt = receipt_dir / "existing-receipt.receipt.json"
+    receipt.write_text("preserve", encoding="utf-8")
+    engine = FakeEngine()
+
+    with pytest.raises(ValidationError, match="receipt already exists"):
+        BatchRunner(engine=engine).run((BatchJob("existing-receipt", plan),), receipt_dir=receipt_dir)
+
+    assert engine.calls == []
+    assert receipt.read_text(encoding="utf-8") == "preserve"
+
+
+def test_batch_can_explicitly_replace_existing_receipt(tmp_path):
+    plan = _plan(tmp_path, "replace-receipt")
+    receipt_dir = tmp_path / "receipts"
+    receipt_dir.mkdir()
+    receipt = receipt_dir / "replace-receipt.receipt.json"
+    receipt.write_text("old receipt", encoding="utf-8")
+
+    result = BatchRunner(engine=FakeEngine(), ffmpeg_path="missing", ffprobe_path="missing").run(
+        (BatchJob("replace-receipt", plan),),
+        receipt_dir=receipt_dir,
+        overwrite_receipts=True,
+    )
+
+    assert result.succeeded
+    assert json.loads(receipt.read_text(encoding="utf-8"))["schema_version"] == "1.0"
+
+
 def test_batch_rejects_duplicate_work_collisions_and_resource_overruns(tmp_path):
     first = _plan(tmp_path, "first")
     duplicate = BatchJob("duplicate", first)

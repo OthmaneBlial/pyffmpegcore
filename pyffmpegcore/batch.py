@@ -17,7 +17,7 @@ from .domain import ExecutionPlan
 from .errors import ValidationError
 from .planning import WorkflowPlanner, parse_size
 from .profiles import ProfileRegistry
-from .receipt import ReceiptBuilder, redact_receipt_value
+from .receipt import ReceiptBuilder, _prepare_receipt_paths, redact_receipt_value
 from .workflow import WorkflowBatch, WorkflowEngine, WorkflowExecution
 
 BATCH_SCHEMA_VERSION = "1.0"
@@ -287,17 +287,26 @@ class BatchRunner:
         state_path: str | Path | None = None,
         resume: bool = False,
         receipt_dir: str | Path | None = None,
+        overwrite_receipts: bool = False,
         hash_content: bool = False,
     ) -> BatchRun:
-        """Run jobs once, retry transient failures, and persist successful signatures atomically."""
+        """Run jobs once and refuse receipt replacement unless explicitly allowed."""
         selected_policy = policy or BatchPolicy()
         ordered = validate_batch_jobs(jobs, selected_policy)
         cancel = cancellation or threading.Event()
         state = Path(state_path) if state_path is not None else None
         completed = _load_state(state) if resume else {}
         receipts = Path(receipt_dir) if receipt_dir is not None else None
-        if receipts is not None:
-            receipts.mkdir(parents=True, exist_ok=True)
+        receipt_paths = (
+            _prepare_receipt_paths(
+                receipts,
+                (job.id for job in ordered),
+                (output for job in ordered for output in job.plan.outputs),
+                overwrite=overwrite_receipts,
+            )
+            if receipts is not None
+            else {}
+        )
         lock = threading.Lock()
         sequence = 0
 
@@ -333,13 +342,12 @@ class BatchRunner:
                 emit("started", job, attempts)
                 batch = self.engine.run(job.plan, cancellation=cancel)
                 execution = batch.items[0]
-                receipt_path = None
-                if receipts is not None:
-                    receipt_path = receipts / f"{job.id}.receipt.json"
+                receipt_path = receipt_paths.get(job.id)
+                if receipt_path is not None:
                     ReceiptBuilder(ffmpeg_path=self.ffmpeg_path, ffprobe_path=self.ffprobe_path).build(
                         batch,
                         hash_content=hash_content,
-                    ).write(receipt_path)
+                    ).write(receipt_path, overwrite=overwrite_receipts or attempts > 1)
                 if execution.succeeded:
                     persist(job)
                     emit("succeeded", job, attempts)

@@ -349,6 +349,7 @@ def handle_batch_run(args: argparse.Namespace) -> int:
             state_path=args.state,
             resume=args.resume,
             receipt_dir=args.receipt_dir,
+            overwrite_receipts=ctx.force or args.resume,
             hash_content=bool(args.hash_content),
         )
     finally:
@@ -515,6 +516,7 @@ def handle_pipeline_run(args: argparse.Namespace) -> int:
             state_path=args.state,
             resume=args.resume,
             receipt_dir=args.receipt_dir,
+            overwrite_receipts=ctx.force or args.resume,
             hash_content=bool(args.hash_content),
             event_callback=write_event if event_handle is not None else None,
         )
@@ -793,6 +795,7 @@ def handle_receipt_bug_report(args: argparse.Namespace) -> int:
 
 def handle_receipt_migrate(args: argparse.Namespace) -> int:
     """Canonicalize the current schema and provide an explicit future migration surface."""
+    ctx = build_context(args)
     try:
         document = json.loads(args.path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
@@ -801,12 +804,12 @@ def handle_receipt_migrate(args: argparse.Namespace) -> int:
     if args.output is None:
         print(receipt.to_json(), end="")
         return EXIT_OK
-    destination = prepare_output_path(str(args.output), force=build_context(args).force)
+    destination = prepare_output_path(str(args.output), force=ctx.force)
     try:
-        receipt.write(destination)
+        receipt.write(destination, overwrite=ctx.force)
     except OSError as exc:
         raise CLIError(f"Unable to write migrated receipt: {exc}", exit_code=EXIT_RUNTIME_ERROR) from exc
-    echo(build_context(args), f"Migrated receipt: {destination}")
+    echo(ctx, f"Migrated receipt: {destination}")
     return EXIT_OK
 
 
@@ -1184,7 +1187,7 @@ def handle_planned_execution(args: argparse.Namespace, ctx: CLIContext) -> int:
         receipt_destination = Path(receipt_destination).resolve()
         if str(receipt_destination) in prepared.plan.outputs:
             raise CLIError("--receipt must not overwrite a media output.")
-        if receipt_destination.exists() and not ctx.force:
+        if (receipt_destination.exists() or receipt_destination.is_symlink()) and not ctx.force:
             raise CLIError(f"Receipt already exists: {receipt_destination}. Re-run with --force to overwrite.")
     progress_printer: CLIProgressPrinter | None = None
     if not ctx.quiet and not result_json and prepared.plan.inputs:
@@ -1205,7 +1208,7 @@ def handle_planned_execution(args: argparse.Namespace, ctx: CLIContext) -> int:
                 bundle,
                 hash_content=bool(getattr(args, "hash_content", False)),
             )
-            receipt.write(receipt_destination)
+            receipt.write(receipt_destination, overwrite=ctx.force)
         except OSError as exc:
             raise CLIError(f"Unable to write receipt: {exc}", exit_code=EXIT_RUNTIME_ERROR) from exc
     if result_json:

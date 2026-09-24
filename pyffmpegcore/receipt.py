@@ -4,9 +4,12 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import platform
 import re
 import subprocess
+import tempfile
+from collections.abc import Iterable
 from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
@@ -212,11 +215,30 @@ class RunReceipt:
         """Render the receipt as indented UTF-8-compatible JSON with a trailing newline."""
         return json.dumps(self.document, indent=2, ensure_ascii=False) + "\n"
 
-    def write(self, path: str | Path) -> Path:
-        """Create parent directories, write the JSON receipt, and return its path."""
+    def write(self, path: str | Path, *, overwrite: bool = False) -> Path:
+        """Create parent directories and refuse replacement unless explicitly requested."""
         destination = Path(path)
         destination.parent.mkdir(parents=True, exist_ok=True)
-        destination.write_text(self.to_json(), encoding="utf-8")
+        rendered = self.to_json()
+        if not overwrite:
+            with destination.open("x", encoding="utf-8") as handle:
+                handle.write(rendered)
+            return destination
+
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=destination.parent,
+            prefix=".pyffmpegcore-receipt-",
+            suffix=".tmp",
+            delete=False,
+        ) as handle:
+            temporary = Path(handle.name)
+            handle.write(rendered)
+        try:
+            os.replace(temporary, destination)
+        finally:
+            temporary.unlink(missing_ok=True)
         return destination
 
     @classmethod
@@ -226,6 +248,27 @@ class RunReceipt:
         except (OSError, UnicodeError, json.JSONDecodeError) as exc:
             raise ValidationError(f"unable to read receipt: {exc}") from exc
         return cls(document)
+
+
+def _prepare_receipt_paths(
+    receipt_dir: str | Path,
+    identifiers: Iterable[str],
+    media_outputs: Iterable[str],
+    *,
+    overwrite: bool,
+) -> dict[str, Path]:
+    directory = Path(receipt_dir)
+    outputs = {str(Path(value).resolve()).casefold() for value in media_outputs if "://" not in value}
+    destinations = {identifier: directory / f"{identifier}.receipt.json" for identifier in identifiers}
+    for destination in destinations.values():
+        if str(destination.resolve()).casefold() in outputs:
+            raise ValidationError(f"receipt path collides with a media output: {destination}")
+        if not overwrite and (destination.exists() or destination.is_symlink()):
+            raise ValidationError(
+                f"receipt already exists: {destination}. Use a new receipt directory or explicitly allow overwrite."
+            )
+    directory.mkdir(parents=True, exist_ok=True)
+    return destinations
 
 
 class ReceiptBuilder:

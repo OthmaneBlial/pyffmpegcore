@@ -80,7 +80,10 @@ has a monotonic sequence, job ID, attempt, and one of these states:
 
 `--receipt-dir` writes one redacted run receipt for every executed item,
 including deterministic failures. Content hashing remains opt-in with
-`--hash-content`.
+`--hash-content`. Existing receipt files are preserved by default; use
+`--force` or `--resume` to authorize replacement. The Python API accepts
+`overwrite_receipts=True`. Receipt destinations that collide with media
+outputs are rejected before jobs start.
 
 ## Retry and resume safety
 

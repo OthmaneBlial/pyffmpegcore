@@ -205,6 +205,31 @@ def test_pipeline_schema_migration_is_explicit_and_canonical(tmp_path):
         migrate_pipeline_document(source, "2.0")
 
 
+def test_pipeline_rejects_receipt_path_that_would_overwrite_media_output(tmp_path, monkeypatch):
+    receipt_dir = tmp_path / "receipts"
+    document = {
+        "schema_version": "1.0",
+        "name": "receipt_collision",
+        "steps": [
+            {
+                "id": "web",
+                "workflow": "convert",
+                "input": "source.mp4",
+                "output": str(receipt_dir / "web.receipt.json"),
+            }
+        ],
+    }
+    pipeline = PipelineCompiler().compile(PipelineSpec.from_dict(document, base_dir=tmp_path))
+    calls = []
+    monkeypatch.setattr("pyffmpegcore.pipeline.WorkflowEngine.run", lambda *_args, **_kwargs: calls.append(True))
+
+    with pytest.raises(ValidationError, match="receipt path collides with a media output"):
+        PipelineRunner().run(pipeline, receipt_dir=receipt_dir)
+
+    assert calls == []
+    assert not (receipt_dir / "web.receipt.json").exists()
+
+
 def test_pipeline_cancellation_and_dependency_blocking_are_stable(tmp_path):
     pipeline = PipelineCompiler(ffmpeg_path="missing-ffmpeg", ffprobe_path="missing-ffprobe").compile(
         PipelineSpec.from_dict(_document("missing-input.mkv"), base_dir=tmp_path),

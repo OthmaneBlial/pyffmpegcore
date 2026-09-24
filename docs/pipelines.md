@@ -94,8 +94,10 @@ pyffmpegcore pipeline run "pipelines/web-publish.json" `
 The first run writes one redacted receipt per step, JSON Lines events, and
 atomic resume state. The second run reuses steps only when their signatures
 and outputs still match; inspect the result's item statuses. Receipts omit
-private paths by default. Do not put credentials in the command, pipeline
-file, or `OUTPUT_DIR` value.
+private paths by default. Existing receipts are preserved unless `--force` or
+`--resume` is used; the Python API accepts `overwrite_receipts=True`. Receipt
+destinations that collide with media outputs are rejected before steps start.
+Do not put credentials in the command, pipeline file, or `OUTPUT_DIR` value.
 
 ## Optional content-aware cache
 
