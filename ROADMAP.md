@@ -477,18 +477,24 @@ réexaminer lors des prochaines releases majeures.
 
 ### 4.1 Vérifier exactement ce qui sera téléchargé
 
-**État au 24 septembre 2026 :** deux builds locaux du candidat `0.3.0`, depuis
-le SHA exact `a7f7abe9d52d9b88932f988fa4a3528b436a82ad`, ont produit les mêmes
-fichiers : wheel de 97 441 octets (`2bed4d0ddf88fa805123f1c37ed995e5f6c29dcffb809e2580fc1f5eb30d00e3`)
-et sdist de 320 042 octets (`e68b9e7c541b00ec85436e36f1ae5870859cd8806f715186b97a0f5943c46975`).
-`twine check` et le contrôle du contenu de la wheel ont réussi. La wheel a été
-installée hors ligne dans un venv propre ; le sdist a été installé hors ligne
-dans un répertoire `--target` isolé, sans téléchargement de dépendances.
-`--version`, `doctor --json` et `smoke-test --json` ont réussi pour les deux.
-CodeQL [`35954584806`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35954584806)
-et Scorecard [`35954584757`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35954584757)
-ont réussi sur ce SHA exact. CI complète, Benchmarks et Container n'ont pas
-tourné. Ces artefacts locaux ne créent ni tag ni publication.
+**État au 24 septembre 2026 :** deux builds locaux séquentiels du candidat
+`0.3.0`, depuis le SHA exact `7c77bc1ff4dc9e21e8133eddd9cc1f9e19901588`, ont
+produit des fichiers identiques : wheel de 97 675 octets
+(`11d6cb04f95fff163b44d32493ea549287e8097317f94327fd3eb649d1f7cf0f`) et sdist
+de 320 964 octets
+(`a7ac2ca84f9806e5d649f48b70b1ad16d55e80c5133f395cfc9119d90208d23b`).
+`twine check`, `check-wheel-contents` et le contrat du sdist ont réussi. La
+wheel a été installée hors ligne dans un venv propre ; le sdist a été installé
+hors ligne dans une cible isolée avec le backend déjà installé localement.
+`--version`, `doctor --json` et `smoke-test --json` ont réussi depuis chaque
+artefact. CodeQL, Scorecard, CI complète, Benchmarks et Container n'ont pas
+produit de run sur ce SHA. Les fichiers temporaires ne créent ni tag ni
+publication.
+Sur l'ancien SHA `a7f7abe9d52d9b88932f988fa4a3528b436a82ad`, CodeQL
+[`35954584806`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35954584806)
+et Scorecard
+[`35954584757`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35954584757)
+ont réussi ; ils ne couvrent pas le SHA courant.
 Le dernier bundle hébergé vient du
 [run Release `35941884095`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35941884095),
 construit sur le SHA exact `401f0622a69b88d0beebfc32203d649070af0d86`. Ses six
