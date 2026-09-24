@@ -142,6 +142,19 @@ passing Scorecard analysis job does not mean all its checks score highly.
 Direct pushes to `main`, including those requested for this implementation, do
 not create a reviewed PR history.
 
+The paginated read-only inventory was refreshed on 24 September at exact
+`main` SHA `c67e25cb5fa65670433ad0dae90dc3cb89a77cd5`. It still returns 484
+open Code Scanning alerts: 483 Trivy instances from
+`.github/workflows/container.yml:build-scan-publish` on historical commit
+`25adc431` (97 HIGH, 199 MEDIUM, 164 LOW, 23 without severity), plus the LOW
+Scorecard [`CIIBestPracticesID` #15](https://github.com/OthmaneBlial/pyffmpegcore/security/code-scanning/15)
+badge finding. No CodeQL, Dependabot, or secret-scanning alerts are open; the
+open-PR query is empty. CodeQL
+[`35969753872`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35969753872)
+passed on the same SHA. Scorecard is manual-dispatch-only since `20dece3`; its
+last successful run was on `43309d0` before that trigger change. This inventory
+did not start CI, a container scan, or a build and did not dismiss alerts.
+
 ## Remediation order
 
 1. Keep the weekly complete scan and fail on fixable HIGH/CRITICAL findings.
