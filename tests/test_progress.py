@@ -2,6 +2,7 @@
 Tests for ProgressTracker.
 """
 
+import subprocess
 from io import StringIO
 from unittest.mock import MagicMock, patch
 
@@ -88,6 +89,8 @@ class TestProgressTracker:
         mock_process.communicate.assert_not_called()
         mock_process.wait.assert_called_once()
         call_args = mock_popen.call_args[0][0]
+        assert "-nostdin" in call_args
+        assert mock_popen.call_args.kwargs["stdin"] == subprocess.DEVNULL
         if use_pipe:
             assert "-progress" in call_args
             assert "pipe:1" in call_args
@@ -98,6 +101,20 @@ class TestProgressTracker:
             assert result.stdout == "captured stdout"
         assert mock_popen.call_args.kwargs["encoding"] == "utf-8"
         assert mock_popen.call_args.kwargs["errors"] == "replace"
+
+    @patch("subprocess.Popen")
+    def test_run_allows_explicit_stdin_interaction(self, mock_popen):
+        process = MagicMock()
+        process.stdout = StringIO("progress=end\n")
+        process.stderr = StringIO("")
+        process.returncode = 0
+        process.wait.return_value = 0
+        mock_popen.return_value = process
+
+        ProgressTracker(lambda _event: None).run(["ffmpeg", "-stdin", "-i", "-"])
+
+        assert "-nostdin" not in mock_popen.call_args.args[0]
+        assert mock_popen.call_args.kwargs["stdin"] is None
 
     def test_run_resets_progress_between_processes(self):
         process = MagicMock()

@@ -10,9 +10,11 @@ Untrusted data can enter through file and directory paths, media bytes, containe
 
 Runtime process launches use argument arrays with `shell=False` behavior. User-controlled values are never interpolated into a shell command. This prevents normal shell metacharacters in paths from becoming shell syntax.
 
-Managed FFmpeg processes receive `-nostdin` and a null standard-input handle.
+FFmpeg processes receive `-nostdin` and a null standard-input handle by
+default, including the raw `FFmpegRunner.run` and `ProgressTracker.run` APIs.
 They cannot enter FFmpeg's interactive command mode or suspend while checking a
-CI/background console. Plans expose `-nostdin` so this behavior is reviewable
+CI/background console. Raw callers can explicitly pass `-stdin` to inherit
+standard input. Typed plans expose `-nostdin` so this behavior is reviewable
 before execution.
 
 FFmpeg stdout and stderr are decoded explicitly as UTF-8 with replacement for

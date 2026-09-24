@@ -38,12 +38,13 @@ def test_low_level_run_injects_safe_overwrite_refusal(mock_run):
     result = FFmpegRunner().run(["-version"])
 
     assert result.returncode == 0
-    assert mock_run.call_args.args[0] == ["ffmpeg", "-n", "-version"]
+    assert mock_run.call_args.args[0] == ["ffmpeg", "-nostdin", "-n", "-version"]
     assert mock_run.call_args.kwargs == {
         "capture_output": True,
         "text": True,
         "encoding": "utf-8",
         "errors": "replace",
+        "stdin": subprocess.DEVNULL,
     }
 
 
@@ -55,6 +56,17 @@ def test_low_level_run_respects_visible_overwrite_flag(mock_run):
 
     assert mock_run.call_args.args[0].count("-y") == 1
     assert "-n" not in mock_run.call_args.args[0]
+    assert "-nostdin" in mock_run.call_args.args[0]
+
+
+@patch("subprocess.run")
+def test_low_level_run_allows_explicit_stdin_interaction(mock_run):
+    mock_run.return_value = subprocess.CompletedProcess(["ffmpeg"], 0, "", "")
+
+    FFmpegRunner().run(["-stdin", "-i", "-"])
+
+    assert "-nostdin" not in mock_run.call_args.args[0]
+    assert mock_run.call_args.kwargs["stdin"] is None
 
 
 @patch("subprocess.run")
@@ -64,7 +76,7 @@ def test_low_level_run_annotates_failures(mock_run):
     result = FFmpegRunner().run(["-version"])
 
     assert "FFmpeg command failed with exit code 1." in result.stderr
-    assert "Command: ffmpeg -n -version" in result.stderr
+    assert "Command: ffmpeg -nostdin -n -version" in result.stderr
     assert "boom" in result.stderr
 
 

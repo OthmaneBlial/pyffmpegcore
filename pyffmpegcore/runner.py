@@ -70,6 +70,10 @@ class FFmpegRunner:
         command_args = list(args)
         if "-n" not in command_args and "-y" not in command_args:
             command_args.insert(0, "-y" if overwrite is OverwritePolicy.REPLACE else "-n")
+        stdin_option = next((arg for arg in reversed(command_args) if arg in {"-stdin", "-nostdin"}), None)
+        if stdin_option is None:
+            command_args.insert(0, "-nostdin")
+            stdin_option = "-nostdin"
         command = [self.ffmpeg_path, *command_args]
         try:
             result = (
@@ -81,6 +85,7 @@ class FFmpegRunner:
                     text=True,
                     encoding="utf-8",
                     errors="replace",
+                    stdin=None if stdin_option == "-stdin" else subprocess.DEVNULL,
                 )
             )
         except FileNotFoundError as exc:

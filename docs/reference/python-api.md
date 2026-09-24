@@ -56,7 +56,8 @@ Execute validated jobs concurrently with receipts, events, retry, and resume.
 Run jobs once and refuse receipt replacement unless explicitly allowed.
 
 Existing state files require resume or explicit overwrite. State files
-cannot alias media outputs or generated receipts.
+are claimed before the first job starts and cannot alias media outputs
+or generated receipts.
 
 ## `CapabilityUnavailableError`
 
@@ -323,7 +324,8 @@ Failed dependencies block downstream steps. Optional state supports
 resume and caching; receipts and event callbacks are opt-in. Existing
 receipts are preserved unless ``overwrite_receipts`` is enabled. State
 files are preserved unless resuming or ``overwrite_state`` is enabled,
-and cannot alias media outputs or generated receipts.
+fresh state files are claimed before the first runnable step, and state
+files cannot alias media outputs or generated receipts.
 
 ## `PipelineSpec`
 
@@ -436,7 +438,7 @@ Serialize this versioned progress event for callbacks or JSON Lines.
 
 Tracks FFmpeg progress by parsing progress output.
 
-### `run(self, cmd: list) -> subprocess.CompletedProcess`
+### `run(self, cmd: list[str]) -> subprocess.CompletedProcess[str]`
 
 Run a command and track progress.
 

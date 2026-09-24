@@ -27,7 +27,7 @@ class ProgressTracker:
         self.progress: dict[str, Any] = {}
         self.use_pipe = use_pipe
 
-    def run(self, cmd: list) -> subprocess.CompletedProcess:
+    def run(self, cmd: list[str]) -> subprocess.CompletedProcess[str]:
         """
         Run a command and track progress.
 
@@ -37,13 +37,20 @@ class ProgressTracker:
         Returns:
             CompletedProcess instance
         """
+        command = list(cmd)
+        stdin_option = next((arg for arg in reversed(command) if arg in {"-stdin", "-nostdin"}), None)
+        if stdin_option is None:
+            command.insert(1 if command else 0, "-nostdin")
+            stdin_option = "-nostdin"
+        stdin = None if stdin_option == "-stdin" else subprocess.DEVNULL
+
         self.progress.clear()
         if self.use_pipe:
-            return self._run_with_pipe(cmd)
+            return self._run_with_pipe(command, stdin=stdin)
         else:
-            return self._run_with_stderr(cmd)
+            return self._run_with_stderr(command, stdin=stdin)
 
-    def _run_with_pipe(self, cmd: list) -> subprocess.CompletedProcess:
+    def _run_with_pipe(self, cmd: list[str], *, stdin: int | None) -> subprocess.CompletedProcess[str]:
         """
         Run FFmpeg with -progress pipe:1 for robust progress parsing.
         """
@@ -52,6 +59,7 @@ class ProgressTracker:
 
         process = subprocess.Popen(
             progress_cmd,
+            stdin=stdin,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
@@ -83,12 +91,13 @@ class ProgressTracker:
 
         return subprocess.CompletedProcess(cmd, returncode, "", stderr)
 
-    def _run_with_stderr(self, cmd: list) -> subprocess.CompletedProcess:
+    def _run_with_stderr(self, cmd: list[str], *, stdin: int | None) -> subprocess.CompletedProcess[str]:
         """
         Fallback: Run FFmpeg and parse stderr for progress (legacy method).
         """
         process = subprocess.Popen(
             cmd,
+            stdin=stdin,
             stderr=subprocess.PIPE,
             stdout=subprocess.PIPE,
             text=True,
