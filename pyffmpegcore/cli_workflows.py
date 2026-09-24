@@ -385,7 +385,15 @@ def _render_pipeline_preview(args: argparse.Namespace, pipeline: PipelinePlan) -
         for step in prepared.steps:
             print()
             echo(ctx, f"Step: {step.id}")
-            echo_block(ctx, render_plan_text(step.plan, step.preflight, explain=bool(args.explain)))
+            echo_block(
+                ctx,
+                render_plan_text(
+                    step.plan,
+                    step.preflight,
+                    explain=bool(args.explain),
+                    secret_values=pipeline.secret_values,
+                ),
+            )
     return EXIT_OK if prepared.ok else EXIT_VALIDATION_ERROR
 
 
@@ -487,7 +495,8 @@ def handle_pipeline_run(args: argparse.Namespace) -> int:
     else:
         for item in result.items:
             if item.status in {"failed", "blocked"}:
-                echo_error(f"{item.step_id}: {(item.detail or item.status).strip()}")
+                detail = item.to_dict(pipeline.secret_values)["detail"] or item.status
+                echo_error(f"{item.step_id}: {str(detail).strip()}")
         echo(
             ctx,
             "Pipeline: "

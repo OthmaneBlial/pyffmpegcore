@@ -28,7 +28,20 @@ def render_plan_json(plan: ExecutionPlan, preflight: PreflightReport) -> str:
     return json.dumps(plan_payload(plan, preflight), indent=2)
 
 
-def render_plan_text(plan: ExecutionPlan, preflight: PreflightReport, *, explain: bool) -> str:
+def _redact_secret_values(text: str, secret_values: tuple[str, ...]) -> str:
+    variants = {value for secret in secret_values for value in (secret, terminal_safe_text(secret)) if value}
+    for secret in sorted(variants, key=len, reverse=True):
+        text = text.replace(secret, "<redacted>")
+    return text
+
+
+def render_plan_text(
+    plan: ExecutionPlan,
+    preflight: PreflightReport,
+    *,
+    explain: bool,
+    secret_values: tuple[str, ...] = (),
+) -> str:
     """Explain the same immutable plan facts shown in JSON."""
     lines = [
         f"Plan {terminal_safe_text(plan.schema_version)} — {terminal_safe_text(plan.workflow)}",
@@ -51,4 +64,4 @@ def render_plan_text(plan: ExecutionPlan, preflight: PreflightReport, *, explain
     if plan.warnings:
         lines.extend(["Warnings:", *[f"  {terminal_safe_text(value)}" for value in plan.warnings]])
     lines.extend(["", preflight.render()])
-    return "\n".join(lines)
+    return _redact_secret_values("\n".join(lines), secret_values)

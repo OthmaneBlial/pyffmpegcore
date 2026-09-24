@@ -25,7 +25,9 @@ from pyffmpegcore import (
 from pyffmpegcore.cli import main
 from pyffmpegcore.pipeline import _validate_state_destination as _validate_pipeline_state
 from pyffmpegcore.pipeline import _write_pipeline_state
+from pyffmpegcore.pipeline_compiler import PreparedPipelineStep
 from pyffmpegcore.pipeline_runner import _file_fingerprint, _runtime_fingerprint
+from pyffmpegcore.preflight import PreflightReport
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -255,6 +257,66 @@ def test_pipeline_secret_is_masked_from_every_public_renderer(tmp_path):
 
     assert all("do-not-log" not in value for value in rendered)
     assert sum("<redacted>" in value for value in rendered) >= 3
+
+
+@pytest.mark.parametrize("run_pipeline", [False, True], ids=["preview", "failure"])
+def test_pipeline_human_cli_output_redacts_secret(tmp_path, monkeypatch, capsys, run_pipeline):
+    secret = "https://user:integration-secret@example.invalid/video.mp4?token=integration-secret"
+    pipeline_path = tmp_path / "pipeline.json"
+    pipeline_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0",
+                "name": "private_source",
+                "secret_variables": ["SOURCE_URL"],
+                "steps": [
+                    {
+                        "id": "encode",
+                        "profile": "web/mp4-compatible",
+                        "input": "${SOURCE_URL}",
+                        "output": str(tmp_path / "output.mp4"),
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("SOURCE_URL", secret)
+
+    def prepare(_engine, pipeline, **_kwargs):
+        return PreparedPipeline(
+            pipeline,
+            tuple(
+                PreparedPipelineStep(
+                    step.id,
+                    step.needs,
+                    step.plan,
+                    PreflightReport(step.plan.workflow, ()),
+                )
+                for step in pipeline.steps
+            ),
+        )
+
+    monkeypatch.setattr("pyffmpegcore.cli_workflows.PipelinePreflightEngine.prepare", prepare)
+    if run_pipeline:
+
+        def fail(_runner, pipeline, **_kwargs):
+            return PipelineRun(
+                pipeline,
+                (PipelineStepOutcome("encode", "failed", "cache-key", detail=f"fetch failed: {secret}"),),
+            )
+
+        monkeypatch.setattr(PipelineRunner, "run", fail)
+        arguments = ["pipeline", "run", str(pipeline_path), "--var", "SOURCE_URL"]
+    else:
+        arguments = ["pipeline", "run", str(pipeline_path), "--var", "SOURCE_URL", "--explain"]
+
+    result = main(arguments)
+    captured = capsys.readouterr()
+
+    assert "integration-secret" not in captured.out + captured.err
+    assert "<redacted>" in captured.out + captured.err
+    assert result != 0 if run_pipeline else result == 0
 
 
 def test_pipeline_schema_migration_is_explicit_and_canonical(tmp_path):
