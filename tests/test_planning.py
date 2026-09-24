@@ -132,6 +132,17 @@ def test_core_media_plans_declare_primary_output_streams(tmp_path, monkeypatch):
     assert copy_plan.metadata["stream_policy"] == "preserve-all"
 
 
+@pytest.mark.parametrize("factor", [float("nan"), float("inf"), float("-inf")])
+def test_speed_rejects_nonfinite_factors_before_probing(tmp_path, monkeypatch, factor):
+    monkeypatch.setattr(
+        "pyffmpegcore.planning.FFprobeRunner.probe",
+        lambda *_args: pytest.fail("non-finite speed factor reached FFprobe"),
+    )
+
+    with pytest.raises(ValidationError, match="speed factor must be positive and finite"):
+        WorkflowPlanner().speed("audio", str(tmp_path / "input.wav"), str(tmp_path / "output.wav"), factor=factor)
+
+
 @pytest.mark.parametrize(
     ("options", "expected_warning"),
     [

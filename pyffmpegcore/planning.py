@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import os
 import re
 from pathlib import Path
@@ -642,8 +643,8 @@ class WorkflowPlanner:
         """Plan a video or audio speed change; pitch preservation applies to audio filtering."""
         if kind not in {"video", "audio"}:
             raise ValidationError("speed kind must be video or audio")
-        if factor <= 0:
-            raise ValidationError("speed factor must be positive")
+        if not math.isfinite(factor) or factor <= 0:
+            raise ValidationError("speed factor must be positive and finite")
         source, output = normalized_path(input_file), normalized_path(output_file)
         try:
             media = FFprobeRunner(self.ffprobe_path).probe(source)
