@@ -6,11 +6,46 @@ import json
 
 import pytest
 
-from pyffmpegcore import CompressOptions, ConvertOptions, ResizeOptions, ValidationError, WorkflowPlanner, parse_size
+from pyffmpegcore import (
+    CompressOptions,
+    ConvertOptions,
+    ExecutionPlan,
+    ResizeOptions,
+    ValidationError,
+    WorkflowPlanner,
+    parse_size,
+)
 from pyffmpegcore.domain import MediaInfo, StreamInfo
 from pyffmpegcore.planning import parse_bitrate
 from pyffmpegcore.preflight import PreflightReport
 from pyffmpegcore.presentation import render_plan_text
+
+
+def test_execution_plan_metadata_is_deeply_immutable_and_serializes_to_plain_values():
+    metadata = {"contract": {"required_stream_types": ["video"]}}
+    plan = ExecutionPlan(
+        workflow="test",
+        command=("ffmpeg",),
+        inputs=(),
+        outputs=(),
+        metadata=metadata,
+    )
+
+    metadata["contract"]["required_stream_types"].append("audio")
+    assert plan.metadata["contract"]["required_stream_types"] == ["video"]
+    with pytest.raises(TypeError, match="metadata is immutable"):
+        plan.metadata["contract"]["required_stream_types"].append("audio")
+    with pytest.raises(TypeError, match="metadata is immutable"):
+        plan.metadata["contract"]["required_stream_types"][0] = "audio"
+    with pytest.raises(TypeError, match="metadata is immutable"):
+        plan.metadata["contract"]["optional"] = True
+
+    payload = plan.to_dict()
+    assert type(payload["metadata"]) is dict
+    assert type(payload["metadata"]["contract"]) is dict
+    assert type(payload["metadata"]["contract"]["required_stream_types"]) is list
+    payload["metadata"]["contract"]["required_stream_types"].append("audio")
+    assert plan.metadata["contract"]["required_stream_types"] == ["video"]
 
 
 def test_convert_plan_is_deterministic_and_uses_an_argument_vector(tmp_path):

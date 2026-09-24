@@ -49,6 +49,42 @@ class JobStatus(StringEnum):
     TIMED_OUT = "timed-out"
 
 
+class _FrozenDict(dict):
+    def _immutable(self, *args: object, **kwargs: object) -> None:
+        raise TypeError("execution plan metadata is immutable")
+
+    # Mutators share one always-raising implementation.
+    __setitem__ = __delitem__ = clear = pop = popitem = setdefault = update = __ior__ = _immutable  # type: ignore[assignment]
+
+
+class _FrozenList(list):
+    def _immutable(self, *args: object, **kwargs: object) -> None:
+        raise TypeError("execution plan metadata is immutable")
+
+    __setitem__ = __delitem__ = append = clear = extend = insert = pop = remove = _immutable
+    reverse = sort = __iadd__ = __imul__ = _immutable  # type: ignore[assignment]
+
+
+def _freeze_metadata(value: Any) -> Any:
+    if isinstance(value, dict):
+        return _FrozenDict({key: _freeze_metadata(item) for key, item in value.items()})
+    if isinstance(value, list):
+        return _FrozenList(_freeze_metadata(item) for item in value)
+    if isinstance(value, tuple):
+        return tuple(_freeze_metadata(item) for item in value)
+    return value
+
+
+def _thaw_metadata(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {key: _thaw_metadata(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_thaw_metadata(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_thaw_metadata(item) for item in value)
+    return value
+
+
 @dataclass(frozen=True, slots=True)
 class ExecutionPolicy:
     """Explicit process, overwrite, capture, and cleanup behavior.
@@ -148,7 +184,7 @@ class ExecutionStep:
 
 @dataclass(frozen=True, slots=True)
 class ExecutionPlan:
-    """Deterministic, non-shell execution plan for one media workflow."""
+    """Deterministic argument-vector plan with read-only JSON-style metadata."""
 
     workflow: str
     command: tuple[str, ...]
@@ -168,10 +204,12 @@ class ExecutionPlan:
             raise ValidationError("workflow must not be empty")
         if not self.command or not self.command[0]:
             raise ValidationError("command must contain an executable")
+        object.__setattr__(self, "metadata", _freeze_metadata(self.metadata))
 
     def to_dict(self) -> dict[str, Any]:
-        """Serialize workflow, argument vectors, policy, streams, warnings, and metadata."""
+        """Serialize the plan with detached, mutable copies of its metadata."""
         data = asdict(self)
+        data["metadata"] = _thaw_metadata(self.metadata)
         data["policy"]["overwrite"] = self.policy.overwrite.value
         data["policy"]["stdout"] = self.policy.stdout.value
         data["policy"]["stderr"] = self.policy.stderr.value

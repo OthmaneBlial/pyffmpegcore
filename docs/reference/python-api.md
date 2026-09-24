@@ -102,6 +102,9 @@ A required executable or host resource is unavailable.
 
 Deterministic, non-shell execution plan for one media workflow.
 
+Plan fields are frozen; nested mapping/list metadata is read-only. `to_dict()`
+returns a detached, mutable serialization copy.
+
 ### `to_dict(self) -> 'dict[str, Any]'`
 
 Serialize workflow, argument vectors, policy, streams, warnings, and metadata.
