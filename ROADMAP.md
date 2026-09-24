@@ -762,30 +762,29 @@ tâche n'existe pas encore.
 
 ### 4.4 Publier la prochaine version et contrôler son état public
 
-**État au 24 septembre 2026 :** [x] `v0.3.1` a été créé comme tag SSH-signé
-sur le commit exact `562ae6ce92a8b321f15a6a250cf7802f2c9bb5bc`. Le build/test
-manuel [`35975145754`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35975145754)
+**État au 24 septembre 2026 :** [x] `v0.3.3` est le tag SSH-signé sur le commit
+exact `f90f4b8c44271e57171db433c8243835b96d85ca`. Le build/test manuel
+[`35992283112`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35992283112)
 et le pipeline de publication
-[`35975371541`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35975371541)
-ont réussi : artefacts immuables, six tests du wheel sur Linux/macOS/Windows
-avec Python 3.10 et 3.14, attestations, PyPI Trusted Publishing, six
-installations publiques propres, puis création de la préversion GitHub.
-L'artefact public est [PyPI 0.3.1](https://pypi.org/project/pyffmpegcore/0.3.1/)
-et la [préversion GitHub signée](https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.3.1).
-Le wheel fait 101 638 octets (SHA-256
-`ea222d3dc5d09ae0ffd79c310ea415eb4edb2d7e04a87532cda939a7890d255d`) ; le sdist
-fait 335 713 octets (SHA-256
-`e0ff591589dd3950e11450dcecc0d1b39718c42415332568e606c98207c94074`). Les
+[`35992506546`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35992506546)
+ont réussi : artefacts immuables, tests du wheel sur Linux/macOS/Windows avec
+Python 3.10 et 3.14, attestations, PyPI Trusted Publishing, six installations
+publiques propres, puis création de la préversion GitHub.
+L'artefact public est [PyPI 0.3.3](https://pypi.org/project/pyffmpegcore/0.3.3/)
+et la [préversion GitHub signée](https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.3.3).
+Le wheel fait 101 753 octets (SHA-256
+`872279bca79dbbf99a725dc0d3c2d682199852f9ce2d09e7d2abb7ea46b13e7c`) ; le sdist
+fait 342 712 octets (SHA-256
+`71f22070edfeccc3bdc0dfb0f0c94cacc603c341a6ad9ea509d21515f87c4438`). Les
 deux sommes concordent avec PyPI et la release GitHub. La capture publique du
-wheel et son transcript sont validés sur 63,4 secondes.
+wheel et son transcript sont validés sur 64,3 secondes.
 
-Le workflow complet CI/couverture, les contrats Python 3.11–3.13, Scorecard et
-Benchmarks n'ont pas été lancés sur le SHA de release ; le mainteneur interdit
-Docker/conteneurs et aucun workflow conteneur n'a été lancé. Le digest GHCR et
-l'intégration Action ne sont donc pas revalidés pour cette release et restent
-hors du canal wheel/sdist publié.
+Le workflow CI/couverture complet, les contrats Python 3.11–3.13, Scorecard et
+Benchmarks n'ont pas été lancés sur le SHA de release `v0.3.3`. Aucun workflow
+Docker/conteneur ne sera lancé ; le digest GHCR et l'image d'Action restent
+hors de cette release.
 
-**Release précédente — 0.3.0 :** tag SSH-signé sur le commit exact
+**Release antérieure — 0.3.0 :** tag SSH-signé sur le commit exact
 `492d4b0a808cd429b75b2d21735652260eee9296`. Le pipeline
 [`35971504440`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35971504440)
 a publié le wheel et le sdist, leurs attestations et la préversion GitHub ;
@@ -800,10 +799,10 @@ autorisation et les contrôles publics correspondants ; la release `v0.2.2`
 reste l'artefact public de référence.
 
 - **Objectif :** remplacer la preuve historique `v0.2.2` par une release qui inclut les corrections précédentes.
-- **Changements :** remplir la checklist par liens réels ; changelog et notes de migration ; tag annoté signé ; exécuter le pipeline de publication existant ; vérifier les fichiers publics PyPI et GitHub, checksums, attestations, installation, page docs et digest GHCR/Action si annoncés ; faire correspondre le statut de la release GitHub au classifier de maturité du paquet. En cas de gate rouge, corriger puis publier une nouvelle version sans réécrire l'ancienne.
+- **Changements :** remplir la checklist par liens réels ; changelog et notes de migration ; tag annoté signé ; exécuter le pipeline de publication existant ; vérifier les fichiers publics PyPI et GitHub, checksums, attestations, installations, et page docs ; faire correspondre le statut de la release GitHub au classifier de maturité du paquet. En cas de gate rouge, corriger puis publier une nouvelle version sans réécrire l'ancienne. Les images Docker/conteneurs restent interdites par le mainteneur et hors de cette release.
 - **Fichiers :** `CHANGELOG.md`, `RELEASE_CHECKLIST.md`, `docs/RELEASING.md`, `.github/release-notes/`, `README.md`, `docs/COMPATIBILITY.md`.
 - **Acceptation :** tag, version CLI, PyPI, wheel, sdist, release GitHub, attestations et notes nomment la même version ; tous les chemins annoncés sont accessibles ; aucun run requis rouge au SHA de release.
-- **Validation :** lecture des runs exacts jusqu'à succès, installation depuis PyPI et assets publics sur trois OS, sondage du conteneur et QA des liens du README/site.
+- **Validation :** lecture des runs exacts jusqu'à succès, installation depuis PyPI et assets publics sur trois OS, puis QA des liens du README et du site.
 - **Dépendances/risques :** gates 0–3 et 4.1–4.2 ; permissions des services externes, délais d'indexation et releases immuables.
 
 **Gate 4 :** [x] une nouvelle version wheel/sdist installable et traçable est publique. Les exécutables natifs restent conditionnels à la décision 4.3. Le digest GHCR/Action reste non revalidé selon l'interdiction Docker du mainteneur.
