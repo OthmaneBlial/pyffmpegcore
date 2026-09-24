@@ -4,8 +4,9 @@ import subprocess
 from pathlib import Path
 from unittest.mock import patch
 
+from scripts import wait_for_pypi
 from scripts.validate_public_pypi_install import cli_path, run_checked
-from scripts.wait_for_pypi import expected_filenames, release_filenames
+from scripts.wait_for_pypi import expected_filenames, release_filenames, simple_index_filenames
 
 
 def test_expected_pypi_release_requires_wheel_and_sdist():
@@ -35,6 +36,30 @@ def test_release_filename_parser_rejects_malformed_payloads():
     assert release_filenames({}, "0.2.0") == set()
     assert release_filenames({"releases": []}, "0.2.0") == set()
     assert release_filenames({"releases": {"0.2.0": {}}}, "0.2.0") == set()
+
+
+def test_simple_index_filename_parser_rejects_malformed_payloads():
+    assert simple_index_filenames({}) == set()
+    assert simple_index_filenames({"files": {}}) == set()
+    assert simple_index_filenames({"files": [{"filename": "pyffmpegcore.whl"}, None, {"url": "missing-name"}]}) == {
+        "pyffmpegcore.whl"
+    }
+
+
+def test_wait_for_pypi_requires_files_in_the_installer_index(monkeypatch, capsys):
+    expected = expected_filenames("0.3.3")
+    calls = iter([set(), expected])
+
+    monkeypatch.setattr(
+        wait_for_pypi,
+        "fetch_pypi_payload",
+        lambda: {"releases": {"0.3.3": [{"filename": filename} for filename in expected]}},
+    )
+    monkeypatch.setattr(wait_for_pypi, "fetch_simple_index_filenames", lambda: next(calls))
+    monkeypatch.setattr(wait_for_pypi.time, "sleep", lambda _interval: None)
+
+    assert wait_for_pypi.main(["--version", "0.3.3", "--timeout", "1", "--interval", "0"]) == 0
+    assert "is public" in capsys.readouterr().out
 
 
 def test_public_console_script_path_is_platform_specific():
