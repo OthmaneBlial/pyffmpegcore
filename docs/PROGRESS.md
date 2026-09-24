@@ -4,6 +4,14 @@ Updated: 2026-09-24
 
 ## Current state
 
+- On exact `main` commit
+  [`f9e333f`](https://github.com/OthmaneBlial/pyffmpegcore/commit/f9e333f6ac6c710513727a788d3f4e46840471aa),
+  `ExecutionPlan` freezes nested mapping/list metadata while preserving read
+  access; `to_dict()` returns detached mutable values. The regression covers
+  source aliasing, nested mutation attempts, and mutable wire output. The fast
+  suite passed (431 passed, 104 real-media tests deselected, 18.62 s); mypy
+  passed on 29 files, Ruff, docs checks, and strict MkDocs passed. No real-media,
+  full CI, coverage, or container workflow ran.
 - After the verified quickstart, the site now asks for an optional GitHub star
   and links to the issue form with a private-media reminder. The generated page
   passed the strict MkDocs build and local browser accessibility-tree check.
