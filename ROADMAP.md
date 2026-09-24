@@ -717,19 +717,30 @@ tâche n'existe pas encore.
 
 ### 4.4 Publier la prochaine version et contrôler son état public
 
-**État au 24 septembre 2026 :** le candidat `0.3.0` a passé le build/test
-manuel [`35941884095`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35941884095)
-sur le SHA `401f0622a69b88d0beebfc32203d649070af0d86`, puis la reconstruction
-reproductible et les installations locales décrites en 4.1. Le commit
-documentaire courant `0f02439` passe CI `35942252834`, CodeQL `35942252878` et
-Scorecard `35942252890`. Aucun tag `v0.3.0`, attestation, release GitHub ou
-upload PyPI n'a été créé ; PyPI et GitHub Releases restent en `0.2.2`. Le
-dispatch manuel ne publie pas. La publication attend l'autorisation du
-mainteneur et les contrôles publics. Action/conteneur n'ont pas été revalidés
-pour ce candidat ; aucun build conteneur n'a été exécuté selon l'instruction
-du mainteneur.
+**État au 24 septembre 2026 :** [x] `v0.3.0` a été créé comme tag SSH-signé
+sur le commit exact `492d4b0a808cd429b75b2d21735652260eee9296`. Le build/test
+manuel [`35971029965`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35971029965)
+et CodeQL [`35971015146`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35971015146)
+passent sur ce SHA. Le pipeline de publication
+[`35971504440`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35971504440)
+est entièrement vert : artefacts immuables, six tests du wheel, attestations,
+PyPI Trusted Publishing, vérification des fichiers publics, six installations
+publiques propres, puis création de la préversion GitHub correspondante.
+L'artefact public est [PyPI 0.3.0](https://pypi.org/project/pyffmpegcore/0.3.0/)
+et la [préversion GitHub signée](https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.3.0).
+Le wheel fait 101 305 octets (SHA-256
+`8ed1b315b3326cc115e5df4bd1ac32d69b6c77175663d6c630cf3e75c3186df7`) ; le sdist
+fait 334 320 octets (SHA-256
+`e01753d0315525ebd99c7da2c2dc7a09cf6d13af488fc81fe9692a8a2f925e78`). Les
+deux sommes concordent avec PyPI et la release GitHub. La capture publique du
+wheel et son transcript sont validés sur 63,5 secondes.
 
-**État historique :** les dry-runs `35450686248` et
+Le workflow complet CI/couverture, Scorecard, Benchmarks et aucune compilation
+conteneur n'ont été lancés sur le SHA de release ; le mainteneur interdit
+Docker/conteneurs. Le digest GHCR et l'intégration Action ne sont donc pas
+revalidés pour cette release et restent hors du canal wheel/sdist publié.
+
+**État historique avant cette publication :** les dry-runs `35450686248` et
 [`35916876361`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35916876361)
 construisent et testent les bundles `0.2.2`, mais aucun nouveau tag, release
 GitHub ou upload PyPI n'a été créé. Une publication réelle nécessite une
@@ -743,7 +754,7 @@ reste l'artefact public de référence.
 - **Validation :** lecture des runs exacts jusqu'à succès, installation depuis PyPI et assets publics sur trois OS, sondage du conteneur et QA des liens du README/site.
 - **Dépendances/risques :** gates 0–3 et 4.1–4.2 ; permissions des services externes, délais d'indexation et releases immuables.
 
-**Gate 4 :** une version nouvelle, installable et traçable est publique. Wheel/sdist sont obligatoires ; exécutables natifs restent conditionnels à la décision 4.3.
+**Gate 4 :** [x] une nouvelle version wheel/sdist installable et traçable est publique. Les exécutables natifs restent conditionnels à la décision 4.3. Le digest GHCR/Action reste non revalidé selon l'interdiction Docker du mainteneur.
 
 ## Phase 5 — P2 : adoption et contributions fondées sur l'usage
 

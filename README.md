@@ -20,7 +20,7 @@
   <a href="docs/index.md"><strong>Current docs</strong></a> ·
   <a href="https://othmaneblial.github.io/pyffmpegcore/">Live documentation site</a> ·
   <a href="docs/quickstart.md">Five-minute proof</a> ·
-  <a href="docs/terminal-demo.md">89.5-second public run</a> ·
+  <a href="docs/terminal-demo.md">63.5-second 0.3.0 public run</a> ·
   <a href="docs/recipes/index.md">Task-first recipes</a> ·
   <a href="docs/evidence.md">Measured evidence</a> ·
   <a href="SECURITY.md">Security</a>
@@ -33,7 +33,7 @@ It supports Python 3.10–3.14 on Linux, macOS, and Windows; `ffmpeg` and
 Start with `pipx install "pyffmpegcore==0.3.0"`, then run
 `pyffmpegcore smoke-test` to produce and verify synthetic media.
 
-## A real public install, plan, and result
+## Archive: the 0.2.2 install, plan, and result
 
 These frames were rendered from the [validated, unedited `0.2.2` terminal
 recording](docs/assets/terminal-demo-v0.2.2.cast) made on 19 September 2026.
@@ -73,7 +73,7 @@ create a web-compatible H.264/AAC file, inspect its streams, and validate the
 receipt. No checkout or personal media is required. See the
 [five-minute guide](docs/quickstart.md) for prerequisites and cleanup.
 
-## Watch the real 89.5-second public run
+## Archive: the 0.2.2 terminal run
 
 This is a validated terminal recording, not edited sample output. It installs
 `0.2.2` from public PyPI, runs `doctor`, creates synthetic media, explains the
@@ -272,16 +272,20 @@ requirements before mutation.
 - [Support and triage expectations](SUPPORT.md)
 - [Changelog](CHANGELOG.md)
 
-The public `0.2.2` beta was built once from a protected SSH-signed tag, tested
+The public `0.3.0` beta was built once from a protected SSH-signed tag, tested
 as the exact wheel on Linux, macOS, and Windows, published without a long-lived
 PyPI token, and reinstalled from the public index before the matching GitHub
-Release was created.
+Release was created. The workflow produced the same wheel and source archive
+whose checksums appear on PyPI and the release page.
 
-- [PyPI package and files](https://pypi.org/project/pyffmpegcore/0.2.2/)
-- [Signed GitHub Release, checksums, and artifact report](https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.2.2)
-- [Exact release workflow evidence](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/release.yml)
-- [Wheel Trusted Publisher attestation](https://pypi.org/integrity/pyffmpegcore/0.2.2/pyffmpegcore-0.2.2-py3-none-any.whl/provenance)
-- [Source distribution Trusted Publisher attestation](https://pypi.org/integrity/pyffmpegcore/0.2.2/pyffmpegcore-0.2.2.tar.gz/provenance)
+- [PyPI package and files](https://pypi.org/project/pyffmpegcore/0.3.0/)
+- [Signed GitHub Release, checksums, and artifact report](https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.3.0)
+- [Exact release workflow evidence](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35971504440)
+- [Wheel Trusted Publisher attestation](https://pypi.org/integrity/pyffmpegcore/0.3.0/pyffmpegcore-0.3.0-py3-none-any.whl/provenance)
+- [Source distribution Trusted Publisher attestation](https://pypi.org/integrity/pyffmpegcore/0.3.0/pyffmpegcore-0.3.0.tar.gz/provenance)
+
+The earlier [0.2.2 beta release](https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.2.2)
+is retained as historical evidence.
 
 ## Help make media automation less fragile
 

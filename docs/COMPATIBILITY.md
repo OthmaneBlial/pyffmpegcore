@@ -23,7 +23,29 @@ on that runner and FFmpeg build.
 
 The [CI workflow](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/ci.yml) is authoritative. A cell counts as tested only when its current required check is green. Compatibility JSON artifacts record the runner architecture, Python version, CLI version, FFmpeg path/version, and FFprobe path/version. The workflow also validates the six artifacts and uploads a readable summary; `python scripts/summarize_compatibility.py <downloaded-artifact-directory> --run-url <run-url>` reproduces it locally.
 
-### Verified snapshot: 19 September 2026
+### Verified release snapshot: 24 September 2026
+
+The signed `v0.3.0` tag points to source SHA
+`492d4b0a808cd429b75b2d21735652260eee9296`. Release workflow
+[`35971504440`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35971504440)
+built one wheel and sdist, checked their contents and hashes, then passed exact
+wheel media smokes and forced fixture generation on Linux, macOS, and Windows
+with Python 3.10 and 3.14. After PyPI publication, six clean installs of that
+public release also passed `--version`, `doctor`, and `smoke-test`.
+
+Wheel `pyffmpegcore-0.3.0-py3-none-any.whl` is 101,305 bytes with SHA-256
+`8ed1b315b3326cc115e5df4bd1ac32d69b6c77175663d6c630cf3e75c3186df7`.
+The 334,320-byte source distribution has SHA-256
+`e01753d0315525ebd99c7da2c2dc7a09cf6d13af488fc81fe9692a8a2f925e78`.
+Both hashes match the public PyPI JSON and the GitHub Release checksums.
+The manual validation bundle and tagged release artifacts were downloaded and
+compared byte-for-byte; their wheel and sdist matched.
+
+These release jobs cover the two OS/Python anchor versions; they do not replace
+the full Python 3.10–3.14 package-contract workflow. No container or GitHub
+Action image was built or tested for this release.
+
+### Historical snapshot: 19 September 2026
 
 In [run `35448000531`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35448000531), all six media smoke jobs, the Linux Python 3.10–3.14 package-contract jobs, and the compatibility-summary job passed. The six media jobs installed the **same prebuilt wheel** (`pyffmpegcore-0.2.2-py3-none-any.whl`, SHA-256 `71f40a5f5e11468cf84639f0a91042fead24819d2def4e1ee081987085bb2525`). This is a CI artifact from `c81c54d`, not the published `0.2.2` wheel. Each cell reports 26/26 verified checks: the previous 22 workflows and four expected refusals whose exit codes and remedies were checked. The [generated Markdown artifact](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35448000531) records every cell and its capability gaps.
 

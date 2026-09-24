@@ -16,7 +16,7 @@ hide:
       <h1 id="pfc-hero-title">FFmpeg jobs you can <span>explain.</span></h1>
       <div class="pfc-actions">
         <a class="pfc-button" href="quickstart/">Five-minute start</a>
-        <a class="pfc-button pfc-button--ghost" href="terminal-demo/">See 0.2.2 proof</a>
+        <a class="pfc-button pfc-button--ghost" href="terminal-demo/">Watch 0.3.0 proof</a>
         <a class="pfc-button pfc-button--ghost" href="recipes/">Browse recipes</a>
       </div>
       <p class="pfc-hero__lede">
@@ -39,8 +39,8 @@ hide:
           <img src="assets/terminal-plan-v0.2.2.png" alt="Real terminal capture from the public PyPI 0.2.2 run: exact FFmpeg plan, selected video and audio streams, required capabilities, and preflight PASS." width="1240" height="956" fetchpriority="high">
         </a>
         <figcaption>
-          <span>Real terminal capture / public PyPI 0.2.2</span>
-          <a href="terminal-demo/">Watch the complete run →</a>
+          <span>Archived capture / public PyPI 0.2.2</span>
+          <a href="terminal-demo/">Watch the 0.3.0 run →</a>
         </figcaption>
       </figure>
     </div>
@@ -56,13 +56,13 @@ hide:
   </section>
 
   <section class="pfc-live-proof" aria-labelledby="live-proof-title">
-    <div class="pfc-live-proof__signal" aria-hidden="true"><span>89.5</span><small>seconds</small></div>
+    <div class="pfc-live-proof__signal" aria-hidden="true"><span>63.5</span><small>seconds</small></div>
     <div class="pfc-live-proof__copy">
-      <p class="pfc-kicker">Public PyPI 0.2.2 recording / no staged output</p>
-      <h2 id="live-proof-title">Watch a real 0.2.2 run.</h2>
-      <p>The 89.5-second capture documents the earlier signed 0.2.2 release: fresh install, capability scan, synthetic smoke test, explained plan, progress, probed output, and validated receipt.</p>
+      <p class="pfc-kicker">Public PyPI 0.3.0 recording / no staged output</p>
+      <h2 id="live-proof-title">Watch a real 0.3.0 run.</h2>
+      <p>The 63.5-second capture shows a fresh install, capability scan, synthetic smoke test, explained plan, progress, probed output, and validated receipt from the current signed public beta.</p>
       <div class="pfc-actions">
-        <a class="pfc-button" href="terminal-demo/">Open the terminal proof</a>
+        <a class="pfc-button" href="terminal-demo/">Open the 0.3.0 terminal proof</a>
         <a class="pfc-button pfc-button--ghost" href="https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.3.0">Inspect the 0.3.0 release</a>
       </div>
     </div>
