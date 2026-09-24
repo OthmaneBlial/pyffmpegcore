@@ -1,10 +1,10 @@
 {
   "name": "@othmaneblial/pyffmpegcore",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Run the PyFFmpegCore FFmpeg workflow CLI from Node.js",
   "type": "module",
   "bin": {
-    "pyffmpegcore-npm": "./bin/pyffmpegcore.js"
+    "pyffmpegcore-npm": "bin/pyffmpegcore.js"
   },
   "files": [
     "bin/",
