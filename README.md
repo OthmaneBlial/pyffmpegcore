@@ -10,9 +10,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/codeql.yml/badge.svg"></a>
-  <a href="https://pypi.org/project/pyffmpegcore/"><img alt="PyPI version" src="https://img.shields.io/pypi/v/pyffmpegcore"></a>
+  <a href="https://pypi.org/project/pyffmpegcore/"><img alt="PyPI version" src="https://img.shields.io/pypi/v/pyffmpegcore?cacheSeconds=300"></a>
   <a href="https://www.npmjs.com/package/@othmaneblial/pyffmpegcore"><img alt="npm version" src="https://img.shields.io/npm/v/%40othmaneblial%2Fpyffmpegcore"></a>
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/github/license/OthmaneBlial/pyffmpegcore"></a>
 </p>
@@ -22,6 +21,7 @@
   <a href="docs/quickstart.md">Five-minute start</a> ·
   <a href="docs/evidence.md">Measured results</a> ·
   <a href="https://github.com/OthmaneBlial/pyffmpegcore/releases">Releases</a> ·
+  <a href="https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/ci.yml">CI run history</a> ·
   <a href="https://github.com/OthmaneBlial/pyffmpegcore">⭐ Star on GitHub</a>
 </p>
 
@@ -31,6 +31,8 @@ redacted receipt. Your media stays local. FFmpeg and FFprobe remain system
 dependencies.
 
 ## Install and prove one useful result
+
+PyFFmpegCore `0.3.3` is the current public beta.
 
 Requires Python 3.10–3.14 and `ffmpeg`/`ffprobe` on `PATH`.
 
