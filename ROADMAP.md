@@ -461,14 +461,20 @@ réexaminer lors des prochaines releases majeures.
 
 ### 4.1 Vérifier exactement ce qui sera téléchargé
 
-**État au 24 septembre 2026 :** le dernier bundle candidat `0.3.0` vient du
+**État au 24 septembre 2026 :** deux builds locaux du candidat `0.3.0`, depuis
+le SHA exact `259e5ffab26e0b5183dda6457ae826284da19d17`, ont produit les mêmes
+fichiers : wheel de 96 740 octets (`44cbaa62a003f721730ff5dd242adfa90ce8feb640c071bcfb05dbf472439c1a`)
+et sdist de 316 400 octets (`21196c4412d84117995038606a15299cbc86b8809d21eaaf1b7cd1fdf4c8f320`).
+`twine check` a réussi. La wheel a été installée hors ligne dans un venv propre ;
+le sdist a été installé hors ligne dans un répertoire `--target` isolé.
+`--version`, `doctor --json`, `smoke-test --json` et l'écriture d'un receipt
+POSIX en mode `0600` ont réussi pour les deux. Cette preuve est locale.
+Le dernier bundle hébergé vient du
 [run Release `35941884095`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35941884095),
-construit sur le SHA exact `401f0622a69b88d0beebfc32203d649070af0d86`. `twine`
-et le contenu de la wheel passent ; les six cellules OS/Python ont installé et
-testé la même wheel. Une reconstruction depuis `git archive` avec le même
-`SOURCE_DATE_EPOCH` reproduit wheel et sdist à l'identique. Installation locale
-de la wheel, `--version`, `doctor --json`, `smoke-test --json`, puis installation
-hors ligne du sdist et ses commandes `--version`/`smoke-test` ont réussi. La CI
+construit sur le SHA exact `401f0622a69b88d0beebfc32203d649070af0d86`. Ses six
+cellules OS/Python ont installé et testé la même wheel. Une reconstruction
+depuis `git archive` avec le même `SOURCE_DATE_EPOCH` reproduit wheel et sdist à
+l'identique. La CI
 [35941424672](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35941424672),
 CodeQL [35941424727](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35941424727)
 et Scorecard
