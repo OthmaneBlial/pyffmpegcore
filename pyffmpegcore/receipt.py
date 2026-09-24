@@ -4,11 +4,9 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
 import platform
 import re
 import subprocess
-import tempfile
 from collections.abc import Iterable
 from copy import deepcopy
 from dataclasses import dataclass
@@ -17,6 +15,7 @@ from typing import Any
 from urllib.parse import urlsplit, urlunsplit
 
 from . import __version__
+from ._fileio import atomic_write_text
 from .domain import is_url_like_path
 from .errors import ValidationError
 from .probe import FFprobeRunner
@@ -218,28 +217,13 @@ class RunReceipt:
 
     def write(self, path: str | Path, *, overwrite: bool = False) -> Path:
         """Create parent directories and refuse replacement unless explicitly requested."""
+        if overwrite:
+            return atomic_write_text(path, self.to_json())
         destination = Path(path)
         destination.parent.mkdir(parents=True, exist_ok=True)
         rendered = self.to_json()
-        if not overwrite:
-            with destination.open("x", encoding="utf-8") as handle:
-                handle.write(rendered)
-            return destination
-
-        with tempfile.NamedTemporaryFile(
-            mode="w",
-            encoding="utf-8",
-            dir=destination.parent,
-            prefix=".pyffmpegcore-receipt-",
-            suffix=".tmp",
-            delete=False,
-        ) as handle:
-            temporary = Path(handle.name)
+        with destination.open("x", encoding="utf-8") as handle:
             handle.write(rendered)
-        try:
-            os.replace(temporary, destination)
-        finally:
-            temporary.unlink(missing_ok=True)
         return destination
 
     @classmethod
