@@ -71,6 +71,29 @@ Timeouts, cancellations, and ordinary processing errors are never retried as a
 capability fallback. Graph output is not yet consumed because current supported
 runner builds do not expose one portable stable graph schema.
 
+### Cancel from Python
+
+Pass a `threading.Event` to `WorkflowEngine.run`. Call `set()` from another
+thread while the run is active; interactive applications should run the
+synchronous engine call on a worker so their UI can keep responding. A
+cancelled workflow still returns its item result with
+`JobStatus.CANCELLED`:
+
+```python
+import threading
+from pyffmpegcore import JobStatus, WorkflowEngine
+
+engine = WorkflowEngine()
+plan = engine.planner.thumbnail("talk.mov", "poster.jpg", timestamp="00:00:03")
+cancellation = threading.Event()
+
+# In an interactive app, run this call on a worker thread.
+batch = engine.run(plan, cancellation=cancellation)
+item = batch.items[0]
+if item.result.status is JobStatus.CANCELLED:
+    print(item.result.stderr)
+```
+
 ## Target-size feasibility
 
 `--target-size` accepts explicit decimal (`MB`, `GB`) or binary (`MiB`, `GiB`) units. The plan reserves audio and container overhead, calculates the two-pass video bitrate, and enforces `--min-video-bitrate`. An impossible target fails before FFmpeg starts and states the minimum feasible byte count.
