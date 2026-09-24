@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import pytest
 
+from pyffmpegcore._fileio import open_text_file
 from pyffmpegcore.cli_validation import (
     CLIError,
     prepare_output_dir,
@@ -51,6 +52,16 @@ def test_prepare_output_path_rejects_dangling_symlink_without_force(tmp_path):
         prepare_output_path(str(link), force=False)
 
     assert not target.exists()
+
+
+def test_open_text_file_does_not_truncate_a_competing_output(tmp_path):
+    destination = tmp_path / "events.jsonl"
+    destination.write_text("concurrent writer", encoding="utf-8")
+
+    with pytest.raises(FileExistsError):
+        open_text_file(destination)
+
+    assert destination.read_text(encoding="utf-8") == "concurrent writer"
 
 
 def test_prepare_output_path_creates_parent_directories(tmp_path):

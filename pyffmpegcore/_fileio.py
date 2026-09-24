@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import tempfile
 from pathlib import Path
+from typing import TextIO
 
 
 def atomic_write_text(path: str | Path, content: str) -> Path:
@@ -58,3 +59,28 @@ def exclusive_write_text(path: str | Path, content: str) -> Path:
         if temporary is not None:
             temporary.unlink(missing_ok=True)
     return destination
+
+
+def write_text_file(path: str | Path, content: str, *, overwrite: bool = False) -> Path:
+    """Write UTF-8 text atomically, refusing replacement unless explicitly requested."""
+    writer = atomic_write_text if overwrite else exclusive_write_text
+    return writer(path, content)
+
+
+def open_text_file(path: str | Path, *, overwrite: bool = False) -> TextIO:
+    """Open a UTF-8 output file, claiming a new destination exclusively by default."""
+    destination = Path(path)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    if overwrite:
+        return destination.open("w", encoding="utf-8")
+
+    descriptor = os.open(
+        destination,
+        os.O_CREAT | os.O_EXCL | os.O_WRONLY | getattr(os, "O_BINARY", 0),
+        0o666,
+    )
+    try:
+        return os.fdopen(descriptor, "w", encoding="utf-8")
+    except OSError:
+        os.close(descriptor)
+        raise

@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any
 
 from . import __version__
+from ._fileio import open_text_file, write_text_file
 from .batch import BatchEvent, BatchJob, BatchManifest, BatchPolicy, BatchRun, BatchRunner, validate_batch_jobs
 from .capabilities import CapabilityInventory
 from .cli_completion import (
@@ -375,8 +376,10 @@ def handle_batch_run(args: argparse.Namespace) -> int:
     event_lock = threading.Lock()
     try:
         if args.events is not None:
-            args.events.parent.mkdir(parents=True, exist_ok=True)
-            event_handle = args.events.open("w", encoding="utf-8")
+            try:
+                event_handle = open_text_file(args.events, overwrite=ctx.force or args.resume)
+            except FileExistsError as exc:
+                raise CLIError(f"Events file already exists: {args.events}. Use --resume or --force.") from exc
 
         def write_event(event: BatchEvent) -> None:
             if event_handle is not None:
@@ -465,8 +468,12 @@ def handle_pipeline_migrate(args: argparse.Namespace) -> int:
         raise CLIError(f"Pipeline output already exists: {args.output}. Re-run with --force.")
     source = PipelineSpec.read(args.input)
     migrated = migrate_pipeline_document(source.to_dict(), args.to)
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(migrated, indent=2) + "\n", encoding="utf-8")
+    try:
+        write_text_file(args.output, json.dumps(migrated, indent=2) + "\n", overwrite=args.force)
+    except FileExistsError as exc:
+        raise CLIError(f"Pipeline output already exists: {args.output}. Re-run with --force.") from exc
+    except OSError as exc:
+        raise CLIError(f"Unable to write migrated pipeline: {exc}", exit_code=EXIT_RUNTIME_ERROR) from exc
     echo(build_context(args), f"Migrated pipeline {source.schema_version} -> {args.to}: {args.output}")
     return EXIT_OK
 
@@ -554,8 +561,10 @@ def handle_pipeline_run(args: argparse.Namespace) -> int:
     event_handle = None
     try:
         if args.events is not None:
-            args.events.parent.mkdir(parents=True, exist_ok=True)
-            event_handle = args.events.open("w", encoding="utf-8")
+            try:
+                event_handle = open_text_file(args.events, overwrite=ctx.force or args.resume)
+            except FileExistsError as exc:
+                raise CLIError(f"Events file already exists: {args.events}. Use --resume or --force.") from exc
 
         def write_event(event: PipelineEvent) -> None:
             if event_handle is not None:
@@ -838,7 +847,9 @@ def handle_receipt_bug_report(args: argparse.Namespace) -> int:
         return EXIT_OK
     destination = prepare_output_path(str(args.output), force=ctx.force)
     try:
-        destination.write_text(rendered, encoding="utf-8")
+        write_text_file(destination, rendered, overwrite=ctx.force)
+    except FileExistsError as exc:
+        raise CLIError(f"Output already exists: {destination}. Re-run with --force to overwrite.") from exc
     except OSError as exc:
         raise CLIError(f"Unable to write bug report: {exc}", exit_code=EXIT_RUNTIME_ERROR) from exc
     echo(ctx, f"Bug report: {destination}")

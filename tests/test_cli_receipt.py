@@ -9,7 +9,7 @@ from types import SimpleNamespace
 import pytest
 
 from pyffmpegcore import ExecutionPlan
-from pyffmpegcore.cli import CLIContext, CLIError, handle_planned_execution, main
+from pyffmpegcore.cli import CLIContext, CLIError, handle_planned_execution, handle_receipt_bug_report, main
 from tests.media_utils import ensure_downloaded_media
 
 
@@ -93,6 +93,37 @@ def test_cli_bug_report_combines_doctor_and_receipt_without_media_access(tmp_pat
     assert report["receipt"]["schema_version"] == "1.0"
     assert "ffmpeg" in report["doctor"]
     assert str(source.parent) not in report_path.read_text(encoding="utf-8")
+
+
+def test_cli_bug_report_preserves_output_created_after_preflight(tmp_path, monkeypatch):
+    from pyffmpegcore import cli
+
+    output = tmp_path / "report.json"
+    original_prepare = cli.prepare_output_path
+
+    def create_competing_output(path, force, option_name="--output"):
+        destination = original_prepare(path, force, option_name)
+        destination.write_text("concurrent writer", encoding="utf-8")
+        return destination
+
+    monkeypatch.setattr(cli, "prepare_output_path", create_competing_output)
+    monkeypatch.setattr(cli.RunReceipt, "read", classmethod(lambda _cls, _path: object()))
+    monkeypatch.setattr(cli, "collect_doctor_report", lambda _ctx: {})
+    monkeypatch.setattr(cli, "build_bug_report", lambda *_args: {"schema_version": "1.0"})
+    args = Namespace(
+        path=tmp_path / "receipt.json",
+        output=output,
+        force=False,
+        verbose=False,
+        quiet=False,
+        ffmpeg_path="ffmpeg",
+        ffprobe_path="ffprobe",
+    )
+
+    with pytest.raises(CLIError, match="Output already exists"):
+        handle_receipt_bug_report(args)
+
+    assert output.read_text(encoding="utf-8") == "concurrent writer"
 
 
 def test_cli_rejects_invalid_receipt_and_hashing_without_receipt(tmp_path, capsys):

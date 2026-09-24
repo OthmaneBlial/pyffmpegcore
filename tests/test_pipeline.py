@@ -222,6 +222,22 @@ def test_cli_pipeline_migrate_rejects_dangling_output_symlink(tmp_path, capsys):
     assert not target.exists()
 
 
+def test_cli_pipeline_migrate_preserves_output_created_after_preflight(tmp_path, capsys, monkeypatch):
+    source = tmp_path / "pipeline.json"
+    source.write_text(json.dumps(_document("source.mp4")), encoding="utf-8")
+    output = tmp_path / "migrated.json"
+
+    def create_competing_output(_document, *_args):
+        output.write_text("concurrent writer", encoding="utf-8")
+        return _document
+
+    monkeypatch.setattr("pyffmpegcore.cli.migrate_pipeline_document", create_competing_output)
+
+    assert main(["pipeline", "migrate", str(source), str(output)]) == 4
+    assert "Pipeline output already exists" in capsys.readouterr().err
+    assert output.read_text(encoding="utf-8") == "concurrent writer"
+
+
 def test_pipeline_rejects_receipt_path_that_would_overwrite_media_output(tmp_path, monkeypatch):
     receipt_dir = tmp_path / "receipts"
     document = {

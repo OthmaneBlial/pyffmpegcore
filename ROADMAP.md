@@ -257,8 +257,14 @@ création exclusive avant exécution. Une création concurrente après le préfl
 le système de fichiers refuse les liens physiques. Les 46 tests ciblés
 batch/pipeline/receipts passent. Le 24 septembre, la prévalidation CLI refuse
 aussi les liens symboliques pendants comme destinations existantes sans
-`--force`; un replay avait créé la cible via `receipt bug-report`. Les six tests
+`--force`; un replay avait créé la cible via `receipt bug-report`. Les sept tests
 `test_cli_files.py`, Ruff, formatage, mypy et contrôles docs passent.
+Un audit de course distinct a aussi corrigé les sorties bug-report, migration
+de pipeline et journaux d'événements batch/pipeline : création exclusive sans
+écrasement par défaut, remplacement atomique des fichiers statiques avec
+`--force`; les journaux permettent aussi l'ouverture en écriture avec `--resume`.
+Les
+tests CLI, migration et écriture concurrente de receipt passent localement.
 
 - **Objectif :** réduire les surprises de temps, espace et réseau tout en annonçant honnêtement que PyFFmpegCore n'est pas un sandbox.
 - **Changements :** définir des plafonds optionnels/explicites de temps et de sortie là où le moteur peut les garantir, distinguer préflight estimatif et limite dure, durcir redaction des diagnostics et politique URL/protocoles, tester nettoyage après annulation/timeout/disque plein. Maintenir l'exécution en vecteur d'arguments et `-nostdin`.

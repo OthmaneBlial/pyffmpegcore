@@ -15,7 +15,7 @@ from typing import Any
 from urllib.parse import urlsplit, urlunsplit
 
 from . import __version__
-from ._fileio import atomic_write_text, exclusive_write_text
+from ._fileio import write_text_file
 from .domain import is_url_like_path
 from .errors import ValidationError
 from .probe import FFprobeRunner
@@ -217,9 +217,7 @@ class RunReceipt:
 
     def write(self, path: str | Path, *, overwrite: bool = False) -> Path:
         """Create parent directories and refuse replacement unless explicitly requested."""
-        if overwrite:
-            return atomic_write_text(path, self.to_json())
-        return exclusive_write_text(path, self.to_json())
+        return write_text_file(path, self.to_json(), overwrite=overwrite)
 
     @classmethod
     def read(cls, path: str | Path) -> RunReceipt:
