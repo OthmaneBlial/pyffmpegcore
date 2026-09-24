@@ -171,6 +171,7 @@ progress, output, and receipt all verified.</samp></pre>
           diagnostics, plans, execution policy, and proof.
         </p>
         <a href="comparison/">Read the factual comparison →</a>
+        <p>If a preview or receipt helps you ship media, <a href="https://github.com/OthmaneBlial/pyffmpegcore">star PyFFmpegCore on GitHub</a> or share a reproducible issue.</p>
       </div>
     </div>
   </section>
