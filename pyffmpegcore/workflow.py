@@ -176,15 +176,34 @@ def _verify_outputs(plan: ExecutionPlan, result: JobResult, probe: FFprobeRunner
     errors = []
     missing_probe = f"FFprobe executable '{probe.ffprobe_path}' was not found."
     verify_stream_preservation = plan.metadata.get("stream_policy") == "preserve-all"
+    verify_primary_streams = plan.metadata.get("stream_policy") == "first-audio-video"
     input_layout: tuple[tuple[str, str, str], ...] | None = None
-    if verify_stream_preservation:
+    input_primary_types: set[str] | None = None
+    if verify_stream_preservation or verify_primary_streams:
         if not plan.inputs or is_url_like_path(plan.inputs[0]):
-            warnings.append("Input stream layout could not be probed; all-stream preservation is unverified.")
+            if verify_stream_preservation:
+                warnings.append("Input stream layout could not be probed; all-stream preservation is unverified.")
+            else:
+                warnings.append(
+                    "Input primary streams could not be probed; selected-stream verification is unavailable."
+                )
         else:
             try:
-                input_layout = _stream_layout(probe.probe_media(plan.inputs[0]))
+                input_media = probe.probe_media(plan.inputs[0])
             except (OSError, RuntimeError, ValueError):
-                warnings.append("Input stream layout could not be probed; all-stream preservation is unverified.")
+                if verify_stream_preservation:
+                    warnings.append("Input stream layout could not be probed; all-stream preservation is unverified.")
+                else:
+                    warnings.append(
+                        "Input primary streams could not be probed; selected-stream verification is unavailable."
+                    )
+            else:
+                if verify_stream_preservation:
+                    input_layout = _stream_layout(input_media)
+                else:
+                    input_primary_types = {
+                        stream.codec_type for stream in input_media.streams if stream.codec_type in {"audio", "video"}
+                    }
     for fact in result.outputs:
         output = dict(fact)
         path = str(output["path"])
@@ -250,6 +269,23 @@ def _verify_outputs(plan: ExecutionPlan, result: JobResult, probe: FFprobeRunner
                             contract_errors.append(
                                 f"preserve-all stream layout changed: input [{expected}], output [{actual}]"
                             )
+                if verify_primary_streams:
+                    output_primary_types = {
+                        stream.codec_type for stream in media.streams if stream.codec_type in {"audio", "video"}
+                    }
+                    if input_primary_types is None:
+                        verification["selected_streams"] = {"status": "unavailable"}
+                    else:
+                        missing_types = sorted(input_primary_types - output_primary_types)
+                        verification["selected_streams"] = {
+                            "status": "failed" if missing_types else "verified",
+                            "required_types": sorted(input_primary_types),
+                            "output_types": sorted(output_primary_types),
+                        }
+                        contract_errors.extend(
+                            f"expected output stream type '{stream_type}' from input, found none"
+                            for stream_type in missing_types
+                        )
                 if isinstance(contract, dict):
                     expected_codecs = contract.get("codecs")
                     if isinstance(expected_codecs, dict):

@@ -213,6 +213,87 @@ def test_preserve_all_remote_input_is_not_reprobed(tmp_path, monkeypatch):
     assert "example.invalid" not in " ".join(result.warnings)
 
 
+@pytest.mark.parametrize(
+    ("input_types", "output_types", "expected_status"),
+    [
+        (("video", "audio"), ("video",), JobStatus.FAILED),
+        (("video",), ("video",), JobStatus.SUCCEEDED),
+    ],
+)
+def test_convert_verifies_primary_streams_selected_from_local_input(
+    tmp_path, monkeypatch, input_types, output_types, expected_status
+):
+    source = tmp_path / "source.mkv"
+    source.touch()
+    output = tmp_path / "output.mkv"
+    code = f"from pathlib import Path; Path({str(output)!r}).write_bytes(b'media')"
+    plan = ExecutionPlan(
+        workflow="convert",
+        command=(sys.executable, "-c", code),
+        inputs=(str(source),),
+        outputs=(str(output),),
+        metadata={"stream_policy": "first-audio-video"},
+    )
+    input_media = MediaInfo(
+        path=str(source),
+        streams=tuple(StreamInfo(index=index, codec_type=kind) for index, kind in enumerate(input_types)),
+    )
+    output_media = MediaInfo(
+        path=str(output),
+        streams=tuple(StreamInfo(index=index, codec_type=kind) for index, kind in enumerate(output_types)),
+    )
+    monkeypatch.setattr(
+        FFprobeRunner,
+        "probe_media",
+        lambda _runner, path: input_media if path == str(source) else output_media,
+    )
+    prepared = PreparedWorkflow(plan, PreflightReport(plan.workflow, ()))
+
+    result = WorkflowEngine(ffprobe_path="fake-ffprobe").run(prepared).items[0].result
+
+    verification = result.outputs[0]["verification"]["selected_streams"]
+    assert result.status is expected_status
+    assert verification["required_types"] == sorted(input_types)
+    assert verification["output_types"] == sorted(output_types)
+    assert verification["status"] == ("failed" if expected_status is JobStatus.FAILED else "verified")
+    if expected_status is JobStatus.FAILED:
+        assert (
+            "expected output stream type 'audio' from input, found none" in result.outputs[0]["verification"]["reason"]
+        )
+
+
+def test_convert_does_not_probe_remote_input_for_selected_stream_verification(tmp_path, monkeypatch):
+    output = tmp_path / "remote.mp4"
+    code = f"from pathlib import Path; Path({str(output)!r}).write_bytes(b'media')"
+    plan = ExecutionPlan(
+        workflow="convert",
+        command=(sys.executable, "-c", code),
+        inputs=("https://user:secret@example.invalid/video.mp4",),
+        outputs=(str(output),),
+        metadata={"stream_policy": "first-audio-video"},
+    )
+    output_media = MediaInfo(
+        path=str(output),
+        streams=(StreamInfo(index=0, codec_type="video", codec_name="h264"),),
+    )
+    probed_paths = []
+
+    def probe_media(_runner, path):
+        probed_paths.append(path)
+        return output_media
+
+    monkeypatch.setattr(FFprobeRunner, "probe_media", probe_media)
+    prepared = PreparedWorkflow(plan, PreflightReport(plan.workflow, ()))
+
+    result = WorkflowEngine(ffprobe_path="fake-ffprobe").run(prepared).items[0].result
+
+    assert result.succeeded
+    assert probed_paths == [str(output)]
+    assert result.outputs[0]["verification"]["selected_streams"] == {"status": "unavailable"}
+    assert "selected-stream verification is unavailable" in result.warnings[0]
+    assert "secret" not in " ".join(result.warnings)
+
+
 def test_workflow_fails_when_ffprobe_rejects_output(tmp_path, monkeypatch):
     output = tmp_path / "invalid.bin"
     code = f"from pathlib import Path; Path({str(output)!r}).write_bytes(b'not media')"

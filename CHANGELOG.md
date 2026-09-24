@@ -14,6 +14,8 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
   streams, and reports readable preflight failures.
 - Core transform plans declare primary output streams; FFprobe verification
   fails the workflow when a readable output is missing one.
+- Generic conversion verifies that its first audio/video stream selection
+  retains every primary stream type present in a locally probeable input.
 
 ## [0.3.3] - 2026-09-24
 
