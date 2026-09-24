@@ -18,7 +18,13 @@ from .errors import ValidationError
 from .planning import WorkflowPlanner, parse_size
 from .preflight import PreflightCheck, PreflightReport
 from .profiles import ProfileRegistry
-from .receipt import ReceiptBuilder, RunReceipt, _prepare_receipt_paths, redact_receipt_value
+from .receipt import (
+    ReceiptBuilder,
+    RunReceipt,
+    _prepare_receipt_paths,
+    _validate_state_destination,
+    redact_receipt_value,
+)
 from .workflow import WorkflowEngine, WorkflowExecution
 
 PIPELINE_SCHEMA_VERSION = "1.0"
@@ -848,19 +854,22 @@ class PipelineRunner:
 
         Failed dependencies block downstream steps. Optional state supports
         resume and caching; receipts and event callbacks are opt-in. Existing
-        receipts are preserved unless ``overwrite_receipts`` is enabled.
+        receipts are preserved unless ``overwrite_receipts`` is enabled. State
+        files cannot alias media outputs or generated receipts.
         """
         cancel = cancellation or threading.Event()
         selected_state = Path(state_path) if state_path is not None else None
         if selected_state is None and pipeline.cache.enabled:
             selected_state = Path(pipeline.cache.directory) / f"{pipeline.name}.state.json"
-        completed = _load_pipeline_state(selected_state) if (resume or pipeline.cache.enabled) else {}
         receipts = Path(receipt_dir) if receipt_dir is not None else None
+        media_outputs = tuple(output for step in pipeline.steps for output in step.plan.outputs)
+        _validate_state_destination(selected_state, media_outputs, receipts, (step.id for step in pipeline.steps))
+        completed = _load_pipeline_state(selected_state) if (resume or pipeline.cache.enabled) else {}
         receipt_paths = (
             _prepare_receipt_paths(
                 receipts,
                 (step.id for step in pipeline.steps),
-                (output for step in pipeline.steps for output in step.plan.outputs),
+                media_outputs,
                 overwrite=overwrite_receipts,
             )
             if receipts is not None

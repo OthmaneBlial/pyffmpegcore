@@ -17,7 +17,7 @@ from .domain import ExecutionPlan
 from .errors import ValidationError
 from .planning import WorkflowPlanner, parse_size
 from .profiles import ProfileRegistry
-from .receipt import ReceiptBuilder, _prepare_receipt_paths, redact_receipt_value
+from .receipt import ReceiptBuilder, _prepare_receipt_paths, _validate_state_destination, redact_receipt_value
 from .workflow import WorkflowBatch, WorkflowEngine, WorkflowExecution
 
 BATCH_SCHEMA_VERSION = "1.0"
@@ -290,18 +290,23 @@ class BatchRunner:
         overwrite_receipts: bool = False,
         hash_content: bool = False,
     ) -> BatchRun:
-        """Run jobs once and refuse receipt replacement unless explicitly allowed."""
+        """Run jobs once and refuse receipt replacement unless explicitly allowed.
+
+        State files cannot alias media outputs or generated receipts.
+        """
         selected_policy = policy or BatchPolicy()
         ordered = validate_batch_jobs(jobs, selected_policy)
         cancel = cancellation or threading.Event()
         state = Path(state_path) if state_path is not None else None
-        completed = _load_state(state) if resume else {}
         receipts = Path(receipt_dir) if receipt_dir is not None else None
+        media_outputs = tuple(output for job in ordered for output in job.plan.outputs)
+        _validate_state_destination(state, media_outputs, receipts, (job.id for job in ordered))
+        completed = _load_state(state) if resume else {}
         receipt_paths = (
             _prepare_receipt_paths(
                 receipts,
                 (job.id for job in ordered),
-                (output for job in ordered for output in job.plan.outputs),
+                media_outputs,
                 overwrite=overwrite_receipts,
             )
             if receipts is not None

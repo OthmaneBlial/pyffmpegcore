@@ -230,6 +230,31 @@ def test_pipeline_rejects_receipt_path_that_would_overwrite_media_output(tmp_pat
     assert not (receipt_dir / "web.receipt.json").exists()
 
 
+def test_pipeline_rejects_state_path_that_would_overwrite_media_output(tmp_path, monkeypatch):
+    state = tmp_path / "pipeline-state.json"
+    document = {
+        "schema_version": "1.0",
+        "name": "state_collision",
+        "steps": [
+            {
+                "id": "web",
+                "workflow": "convert",
+                "input": "source.mp4",
+                "output": str(state),
+            }
+        ],
+    }
+    pipeline = PipelineCompiler().compile(PipelineSpec.from_dict(document, base_dir=tmp_path))
+    calls = []
+    monkeypatch.setattr("pyffmpegcore.pipeline.WorkflowEngine.run", lambda *_args, **_kwargs: calls.append(True))
+
+    with pytest.raises(ValidationError, match="state path collides with a media output"):
+        PipelineRunner().run(pipeline, state_path=state)
+
+    assert calls == []
+    assert not state.exists()
+
+
 def test_pipeline_cancellation_and_dependency_blocking_are_stable(tmp_path):
     pipeline = PipelineCompiler(ffmpeg_path="missing-ffmpeg", ffprobe_path="missing-ffprobe").compile(
         PipelineSpec.from_dict(_document("missing-input.mkv"), base_dir=tmp_path),

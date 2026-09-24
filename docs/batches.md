@@ -96,6 +96,8 @@ Pass `--state FILE` on the first run to persist successful job signatures
 atomically. After interruption, add `--resume`: a job is skipped only when its
 ID and exact plan signature match and every expected output still exists.
 Changed plans or deleted outputs run again. The state stores signatures rather
-than private paths.
+than private paths. State destinations that collide with a media output or
+generated receipt are rejected before jobs start, including through the
+Python API.
 
 The complete schema and example are published under [JSON schemas](schemas.md).

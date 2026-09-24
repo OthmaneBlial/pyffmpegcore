@@ -55,6 +55,8 @@ Execute validated jobs concurrently with receipts, events, retry, and resume.
 
 Run jobs once and refuse receipt replacement unless explicitly allowed.
 
+State files cannot alias media outputs or generated receipts.
+
 ## `CapabilityUnavailableError`
 
 The installed FFmpeg build cannot satisfy the requested workflow.
@@ -318,7 +320,8 @@ Execute steps in dependency order and return one outcome per step.
 
 Failed dependencies block downstream steps. Optional state supports
 resume and caching; receipts and event callbacks are opt-in. Existing
-receipts are preserved unless ``overwrite_receipts`` is enabled.
+receipts are preserved unless ``overwrite_receipts`` is enabled. State
+files cannot alias media outputs or generated receipts.
 
 ## `PipelineSpec`
 

@@ -6,6 +6,7 @@ import json
 import sys
 import threading
 import time
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -207,6 +208,34 @@ def test_batch_can_explicitly_replace_existing_receipt(tmp_path):
 
     assert result.succeeded
     assert json.loads(receipt.read_text(encoding="utf-8"))["schema_version"] == "1.0"
+
+
+def test_batch_rejects_state_path_that_would_overwrite_media_output(tmp_path):
+    state = tmp_path / "state.json"
+    plan = replace(_plan(tmp_path, "state-collision"), outputs=(str(state),))
+    engine = FakeEngine()
+
+    with pytest.raises(ValidationError, match="state path collides with a media output"):
+        BatchRunner(engine=engine).run((BatchJob("state-collision", plan),), state_path=state)
+
+    assert engine.calls == []
+    assert not state.exists()
+
+
+def test_batch_rejects_state_path_that_would_overwrite_a_receipt(tmp_path):
+    receipt_dir = tmp_path / "receipts"
+    state = receipt_dir / "state-collision.receipt.json"
+    engine = FakeEngine()
+
+    with pytest.raises(ValidationError, match="state path collides with a receipt"):
+        BatchRunner(engine=engine).run(
+            (BatchJob("state-collision", _plan(tmp_path, "state-receipt-collision")),),
+            state_path=state,
+            receipt_dir=receipt_dir,
+        )
+
+    assert engine.calls == []
+    assert not receipt_dir.exists()
 
 
 def test_batch_rejects_duplicate_work_collisions_and_resource_overruns(tmp_path):

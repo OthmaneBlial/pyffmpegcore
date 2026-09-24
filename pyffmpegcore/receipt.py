@@ -17,6 +17,7 @@ from typing import Any
 from urllib.parse import urlsplit, urlunsplit
 
 from . import __version__
+from .domain import is_url_like_path
 from .errors import ValidationError
 from .probe import FFprobeRunner
 from .workflow import WorkflowBatch
@@ -258,10 +259,10 @@ def _prepare_receipt_paths(
     overwrite: bool,
 ) -> dict[str, Path]:
     directory = Path(receipt_dir)
-    outputs = {str(Path(value).resolve()).casefold() for value in media_outputs if "://" not in value}
+    outputs = {key for value in media_outputs if (key := _local_path_key(value)) is not None}
     destinations = {identifier: directory / f"{identifier}.receipt.json" for identifier in identifiers}
     for destination in destinations.values():
-        if str(destination.resolve()).casefold() in outputs:
+        if _local_path_key(destination) in outputs:
             raise ValidationError(f"receipt path collides with a media output: {destination}")
         if not overwrite and (destination.exists() or destination.is_symlink()):
             raise ValidationError(
@@ -269,6 +270,33 @@ def _prepare_receipt_paths(
             )
     directory.mkdir(parents=True, exist_ok=True)
     return destinations
+
+
+def _local_path_key(value: str | Path) -> str | None:
+    raw = str(value)
+    if is_url_like_path(raw) and not raw.casefold().startswith("file://"):
+        return None
+    parsed = urlsplit(raw)
+    path = parsed.path if parsed.scheme == "file" else raw
+    return str(Path(path).resolve()).casefold()
+
+
+def _validate_state_destination(
+    state_path: Path | None,
+    media_outputs: Iterable[str],
+    receipt_dir: Path | None,
+    receipt_ids: Iterable[str],
+) -> None:
+    if state_path is None:
+        return
+    state_key = _local_path_key(state_path)
+    output_keys = {key for value in media_outputs if (key := _local_path_key(value)) is not None}
+    if state_key in output_keys:
+        raise ValidationError(f"state path collides with a media output: {state_path}")
+    if receipt_dir is not None and any(
+        state_key == _local_path_key(receipt_dir / f"{identifier}.receipt.json") for identifier in receipt_ids
+    ):
+        raise ValidationError(f"state path collides with a receipt: {state_path}")
 
 
 class ReceiptBuilder:
