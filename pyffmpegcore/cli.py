@@ -57,7 +57,7 @@ from .preflight import PreflightEngine
 from .presentation import render_plan_json, render_plan_text
 from .probe import FFprobeRunner
 from .profiles import Profile, ProfileRegistry
-from .receipt import ReceiptBuilder, RunReceipt, build_bug_report, migrate_receipt
+from .receipt import ReceiptBuilder, RunReceipt, _local_path_key, build_bug_report, migrate_receipt
 from .runner import FFmpegRunner
 from .workflow import WorkflowEngine
 
@@ -306,6 +306,40 @@ def _batch_exit_code(result: BatchRun) -> int:
     return EXIT_RUNTIME_ERROR
 
 
+def _validate_distinct_run_artifacts(
+    state_path: Path | None,
+    events_path: Path | None,
+    receipt_dir: Path | None,
+    identifiers: Sequence[str],
+    media_outputs: Sequence[str],
+) -> None:
+    destinations: dict[str, str] = {}
+    output_keys = {key for output in media_outputs if (key := _local_path_key(output)) is not None}
+    for label, path in (("--state", state_path), ("--events", events_path)):
+        if path is None:
+            continue
+        key = _local_path_key(path)
+        if key is None:
+            continue
+        if key in output_keys:
+            raise CLIError(f"{label} must not overwrite a media output: {path}")
+        if key in destinations:
+            raise CLIError(f"{label} and {destinations[key]} resolve to the same file; choose distinct paths.")
+        destinations[key] = label
+    if receipt_dir is None:
+        return
+    for identifier in identifiers:
+        receipt_path = receipt_dir / f"{identifier}.receipt.json"
+        key = _local_path_key(receipt_path)
+        if key is None:
+            continue
+        if key in output_keys:
+            raise CLIError(f"receipt for {identifier} must not overwrite a media output: {receipt_path}")
+        if key in destinations:
+            raise CLIError(f"{destinations[key]} collides with receipt for {identifier}: {receipt_path}")
+        destinations[key] = "--receipt-dir"
+
+
 def handle_batch_run(args: argparse.Namespace) -> int:
     """Run a bounded batch and preserve machine-readable partial outcomes."""
     ctx = build_context(args)
@@ -317,13 +351,21 @@ def handle_batch_run(args: argparse.Namespace) -> int:
     if args.dry_run or args.explain:
         return _render_batch_preview(args, manifest)
 
-    outputs = {Path(value).resolve() for job in manifest.jobs for value in job.plan.outputs}
-    for option, destination in (("--state", args.state), ("--events", args.events)):
-        if destination is not None and destination.resolve() in outputs:
-            raise CLIError(f"{option} must not overwrite a media output.")
-    if args.events is not None and args.events.exists() and not (ctx.force or args.resume):
+    media_outputs = tuple(output for job in manifest.jobs for output in job.plan.outputs)
+    _validate_distinct_run_artifacts(
+        args.state,
+        args.events,
+        args.receipt_dir,
+        [job.id for job in manifest.jobs],
+        media_outputs,
+    )
+    if (
+        args.events is not None
+        and (args.events.exists() or args.events.is_symlink())
+        and not (ctx.force or args.resume)
+    ):
         raise CLIError(f"Events file already exists: {args.events}. Use --resume or --force.")
-    if args.state is not None and args.state.exists() and not (ctx.force or args.resume):
+    if args.state is not None and (args.state.exists() or args.state.is_symlink()) and not (ctx.force or args.resume):
         raise CLIError(f"State file already exists: {args.state}. Use --resume or --force.")
     if args.receipt_dir is not None and args.receipt_dir.exists() and any(args.receipt_dir.iterdir()):
         if not (ctx.force or args.resume):
@@ -489,13 +531,21 @@ def handle_pipeline_run(args: argparse.Namespace) -> int:
                     echo_error(f"{step.id}: {step.preflight.render()}")
         return EXIT_VALIDATION_ERROR
 
-    outputs = {Path(value).resolve() for step in pipeline.steps for value in step.plan.outputs}
-    for option, destination in (("--state", args.state), ("--events", args.events)):
-        if destination is not None and destination.resolve() in outputs:
-            raise CLIError(f"{option} must not overwrite a pipeline media output.")
-    if args.events is not None and args.events.exists() and not (ctx.force or args.resume):
+    media_outputs = tuple(output for step in pipeline.steps for output in step.plan.outputs)
+    _validate_distinct_run_artifacts(
+        args.state,
+        args.events,
+        args.receipt_dir,
+        [step.id for step in pipeline.steps],
+        media_outputs,
+    )
+    if (
+        args.events is not None
+        and (args.events.exists() or args.events.is_symlink())
+        and not (ctx.force or args.resume)
+    ):
         raise CLIError(f"Events file already exists: {args.events}. Use --resume or --force.")
-    if args.state is not None and args.state.exists() and not (ctx.force or args.resume):
+    if args.state is not None and (args.state.exists() or args.state.is_symlink()) and not (ctx.force or args.resume):
         raise CLIError(f"State file already exists: {args.state}. Use --resume or --force.")
     if args.receipt_dir is not None and args.receipt_dir.exists() and any(args.receipt_dir.iterdir()):
         if not (ctx.force or args.resume):

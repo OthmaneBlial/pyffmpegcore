@@ -84,6 +84,8 @@ including deterministic failures. Content hashing remains opt-in with
 `--force` or `--resume` to authorize replacement. The Python API accepts
 `overwrite_receipts=True`. Receipt destinations that collide with media
 outputs are rejected before jobs start.
+State, event log, per-job receipts, and media outputs must use distinct paths;
+the CLI rejects collisions before opening the event log.
 
 ## Retry and resume safety
 

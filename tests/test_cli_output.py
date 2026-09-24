@@ -11,10 +11,12 @@ from pyffmpegcore.cli import (
     CLIContext,
     CLIProgressPrinter,
     _render_execution_successes,
+    _validate_distinct_run_artifacts,
     format_bytes,
     report_batch_results,
     summarize_output_file,
 )
+from pyffmpegcore.cli_validation import CLIError
 from pyffmpegcore.workflow import WorkflowBatch
 
 
@@ -25,6 +27,29 @@ def test_format_bytes_formats_common_sizes():
     assert format_bytes(512) == "512 B"
     assert format_bytes(2048) == "2.0 KB"
     assert format_bytes(5 * 1024 * 1024) == "5.0 MB"
+
+
+def test_run_artifact_validation_rejects_colliding_state_and_events(tmp_path):
+    destination = tmp_path / "batch-state.json"
+
+    with pytest.raises(CLIError, match="resolve to the same file"):
+        _validate_distinct_run_artifacts(destination, destination, None, (), ())
+
+
+def test_run_artifact_validation_rejects_event_and_receipt_collision(tmp_path):
+    receipt_dir = tmp_path / "receipts"
+    events = receipt_dir / "job.receipt.json"
+
+    with pytest.raises(CLIError, match="collides with receipt for job"):
+        _validate_distinct_run_artifacts(None, events, receipt_dir, ("job",), ())
+
+
+def test_run_artifact_validation_rejects_receipt_and_media_collision(tmp_path):
+    receipt_dir = tmp_path / "receipts"
+    output = receipt_dir / "job.receipt.json"
+
+    with pytest.raises(CLIError, match="receipt for job must not overwrite a media output"):
+        _validate_distinct_run_artifacts(None, None, receipt_dir, ("job",), (str(output),))
 
 
 def test_progress_printer_finishes_cleanly(capsys):

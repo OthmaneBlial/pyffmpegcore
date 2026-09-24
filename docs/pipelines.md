@@ -101,6 +101,8 @@ State destinations that collide with media outputs or receipts are rejected
 before execution, including through the Python API. Existing explicit state
 files are preserved unless `--force`, `--resume`, or `overwrite_state=True` is
 used. The pipeline's own cache state remains reusable by default.
+State, event log, per-step receipts, and media outputs must use distinct
+paths; the CLI rejects collisions before opening the event log.
 Do not put credentials in the command, pipeline file, or `OUTPUT_DIR` value.
 
 ## Optional content-aware cache
