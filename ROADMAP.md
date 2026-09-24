@@ -717,30 +717,37 @@ tâche n'existe pas encore.
 
 ### 4.4 Publier la prochaine version et contrôler son état public
 
-**État au 24 septembre 2026 :** [x] `v0.3.0` a été créé comme tag SSH-signé
-sur le commit exact `492d4b0a808cd429b75b2d21735652260eee9296`. Le build/test
-manuel [`35971029965`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35971029965)
-et CodeQL [`35971015146`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35971015146)
-passent sur ce SHA. Le pipeline de publication
-[`35971504440`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35971504440)
-est entièrement vert : artefacts immuables, six tests du wheel, attestations,
-PyPI Trusted Publishing, vérification des fichiers publics, six installations
-publiques propres, puis création de la préversion GitHub correspondante.
-L'artefact public est [PyPI 0.3.0](https://pypi.org/project/pyffmpegcore/0.3.0/)
-et la [préversion GitHub signée](https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.3.0).
-Le wheel fait 101 305 octets (SHA-256
-`8ed1b315b3326cc115e5df4bd1ac32d69b6c77175663d6c630cf3e75c3186df7`) ; le sdist
-fait 334 320 octets (SHA-256
-`e01753d0315525ebd99c7da2c2dc7a09cf6d13af488fc81fe9692a8a2f925e78`). Les
+**État au 24 septembre 2026 :** [x] `v0.3.1` a été créé comme tag SSH-signé
+sur le commit exact `562ae6ce92a8b321f15a6a250cf7802f2c9bb5bc`. Le build/test
+manuel [`35975145754`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35975145754)
+et le pipeline de publication
+[`35975371541`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35975371541)
+ont réussi : artefacts immuables, six tests du wheel sur Linux/macOS/Windows
+avec Python 3.10 et 3.14, attestations, PyPI Trusted Publishing, six
+installations publiques propres, puis création de la préversion GitHub.
+L'artefact public est [PyPI 0.3.1](https://pypi.org/project/pyffmpegcore/0.3.1/)
+et la [préversion GitHub signée](https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.3.1).
+Le wheel fait 101 638 octets (SHA-256
+`ea222d3dc5d09ae0ffd79c310ea415eb4edb2d7e04a87532cda939a7890d255d`) ; le sdist
+fait 335 713 octets (SHA-256
+`e0ff591589dd3950e11450dcecc0d1b39718c42415332568e606c98207c94074`). Les
 deux sommes concordent avec PyPI et la release GitHub. La capture publique du
-wheel et son transcript sont validés sur 63,5 secondes.
+wheel et son transcript sont validés sur 63,4 secondes.
 
-Le workflow complet CI/couverture, Scorecard, Benchmarks et aucune compilation
-conteneur n'ont été lancés sur le SHA de release ; le mainteneur interdit
-Docker/conteneurs. Le digest GHCR et l'intégration Action ne sont donc pas
-revalidés pour cette release et restent hors du canal wheel/sdist publié.
+Le workflow complet CI/couverture, les contrats Python 3.11–3.13, Scorecard et
+Benchmarks n'ont pas été lancés sur le SHA de release ; le mainteneur interdit
+Docker/conteneurs et aucun workflow conteneur n'a été lancé. Le digest GHCR et
+l'intégration Action ne sont donc pas revalidés pour cette release et restent
+hors du canal wheel/sdist publié.
 
-**État historique avant cette publication :** les dry-runs `35450686248` et
+**Release précédente — 0.3.0 :** tag SSH-signé sur le commit exact
+`492d4b0a808cd429b75b2d21735652260eee9296`. Le pipeline
+[`35971504440`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35971504440)
+a publié le wheel et le sdist, leurs attestations et la préversion GitHub ;
+les checksums et l'instantané de compatibilité restent dans
+[`docs/COMPATIBILITY.md`](docs/COMPATIBILITY.md).
+
+**État historique avant la publication 0.3.0 :** les dry-runs `35450686248` et
 [`35916876361`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35916876361)
 construisent et testent les bundles `0.2.2`, mais aucun nouveau tag, release
 GitHub ou upload PyPI n'a été créé. Une publication réelle nécessite une
