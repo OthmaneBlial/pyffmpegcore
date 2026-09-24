@@ -13,7 +13,7 @@ import sys
 import tempfile
 import threading
 from collections.abc import Sequence
-from dataclasses import dataclass, replace
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any
 
@@ -58,7 +58,14 @@ from .preflight import PreflightEngine
 from .presentation import render_plan_json, render_plan_text
 from .probe import FFprobeRunner
 from .profiles import Profile, ProfileRegistry
-from .receipt import ReceiptBuilder, RunReceipt, _local_path_key, build_bug_report, migrate_receipt
+from .receipt import (
+    ReceiptBuilder,
+    RunReceipt,
+    _local_path_key,
+    build_bug_report,
+    migrate_receipt,
+    redact_receipt_value,
+)
 from .runner import FFmpegRunner
 from .workflow import WorkflowEngine
 
@@ -576,9 +583,10 @@ def handle_pipeline_run(args: argparse.Namespace) -> int:
 
         def write_event(event: PipelineEvent) -> None:
             if event_handle is not None:
+                event_data = asdict(event)
                 if pipeline.secret_values:
-                    event = replace(event, detail=None)
-                event_handle.write(json.dumps(event.to_dict(), ensure_ascii=False) + "\n")
+                    event_data["detail"] = None
+                event_handle.write(json.dumps(redact_receipt_value(event_data), ensure_ascii=False) + "\n")
                 event_handle.flush()
 
         result = PipelineRunner(ffmpeg_path=ctx.ffmpeg_path, ffprobe_path=ctx.ffprobe_path).run(
