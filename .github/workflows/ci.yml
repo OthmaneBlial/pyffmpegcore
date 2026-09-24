@@ -243,6 +243,12 @@ jobs:
         run: python scripts/check_docs.py
       - name: Build searchable documentation strictly
         run: python -m mkdocs build --strict --clean
+      - name: Reject empty code-line anchor links
+        run: |
+          if rg -l 'href="#__codelineno-' site; then
+            echo "Code-line anchors create unnamed keyboard stops."
+            exit 1
+          fi
       - name: Download exact package artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
