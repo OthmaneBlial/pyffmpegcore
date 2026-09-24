@@ -320,8 +320,10 @@ séquence de contrôle brute dans le terminal et fabriquer une ligne de sortie.
 `ed8704e` échappe ces caractères dans le texte humain partagé par le CLI et
 conserve les chaînes structurées en JSON. Les deux régressions et la suite
 rapide (396 réussites, 102 tests `real_media` exclus), Ruff, formatage, mypy,
-compilation et documentation stricte passent localement. Aucun média réel,
-workflow complet ou Docker n'a été exécuté pour ce correctif.
+compilation et documentation stricte passent localement. CodeQL
+[`35991909067`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35991909067)
+a réussi sur ce SHA. Aucun média réel, workflow complet ou Docker n'a été
+exécuté pour ce correctif.
 
 - **Objectif :** réduire les surprises de temps, espace et réseau tout en annonçant honnêtement que PyFFmpegCore n'est pas un sandbox.
 - **Changements :** définir des plafonds optionnels/explicites de temps et de sortie là où le moteur peut les garantir, distinguer préflight estimatif et limite dure, durcir redaction des diagnostics et politique URL/protocoles, tester nettoyage après annulation/timeout/disque plein. Maintenir l'exécution en vecteur d'arguments et `-nostdin`.
