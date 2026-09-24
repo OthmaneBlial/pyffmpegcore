@@ -19,8 +19,8 @@ path, so this boundary cannot drift silently.
 
 The install paths built on top of that are:
 
-- `pipx install "pyffmpegcore==0.2.2"`
-- `python -m pip install --user "pyffmpegcore==0.2.2"`
+- `pipx install "pyffmpegcore==0.3.3"`
+- `python -m pip install --user "pyffmpegcore==0.3.3"`
 - `./install.sh`
 - `.\install.ps1`
 

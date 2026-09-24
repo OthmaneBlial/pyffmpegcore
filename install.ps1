@@ -38,7 +38,7 @@ function Resolve-PackageSpec {
         return $env:PYFFMPEGCORE_PACKAGE_SPEC
     }
 
-    return "pyffmpegcore==0.2.2"
+    return "pyffmpegcore==0.3.3"
 }
 
 function Invoke-PipxInstall {

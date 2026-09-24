@@ -13,7 +13,7 @@ This file records the honest platform expectations for the `pyffmpegcore` CLI.
 ## Linux And macOS
 
 - `install.sh` is the one-command bootstrap path.
-- `pipx install "pyffmpegcore==0.2.2"` is the validated public PyPI path.
+- `pipx install "pyffmpegcore==0.3.3"` is the validated public PyPI path.
 - Current platform proof lives in CI rather than a dated local claim.
 
 ## Windows

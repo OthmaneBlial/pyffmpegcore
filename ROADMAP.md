@@ -475,18 +475,16 @@ retour à une installation non verrouillée. Aucun cast n'a été enregistré.
 
 ### 3.1 Corriger les documents qui décrivent une autre époque
 
-**État :** checklist de prochaine release, canaux de distribution, politique
-de dépréciation, URL GitHub canonique et étiquetage du cast `0.2.1` corrigés
-localement. Un nouveau cast réel du wheel public `0.2.2` a été validé à
-89,5 secondes avec transcript et deux images tirées de ses frames ; l'ancien
-`0.2.1` reste archivé. Le 23 septembre, le site MkDocs construit et validé par
-la [CI `35913779148`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35913779148)
-sur `86ff62d` a été publié dans le dépôt Pages par le commit `5c207a1`; le
-[déploiement `35915228205`](https://github.com/OthmaneBlial/OthmaneBlial.github.io/actions/runs/35915228205)
-a réussi. La page d'accueil et le cast public affichent maintenant `0.2.2`;
-leurs liens GitHub pointent vers le dépôt canonique. Les pages en ligne
-répondent HTTP 200. Le prochain changement de version devra republier et
-revalider son propre site.
+**État au 24 septembre 2026 :** [x] les commandes d'installation actives,
+`README.md`, la page MkDocs et sa preuve publique concordent sur `0.3.3`. Le
+cast du wheel PyPI est validé à 64,3 secondes avec transcript accessible,
+checksums et attestations liés depuis [`docs/terminal-demo.md`](docs/terminal-demo.md).
+Le site public a été vérifié dans un nouvel onglet : il affiche l'installation
+`0.3.3`, la preuve réelle, les recettes mesurées et les liens GitHub/npm. La
+dernière publication Pages répertoriée est le commit
+[`f35b1fe`](https://github.com/OthmaneBlial/OthmaneBlial.github.io/commit/f35b1feeb658523ac3629d22bf62d2c0324efbd7),
+déployé par [run `36002319908`](https://github.com/OthmaneBlial/OthmaneBlial.github.io/actions/runs/36002319908).
+Les casts précédents restent archivés sous leurs propres versions.
 
 - **Objectif :** un nouvel utilisateur et un mainteneur lisent la même vérité sur la version et les canaux disponibles.
 - **Changements :** remplacer les cases historiques de `RELEASE_CHECKLIST.md` par une checklist à remplir pour chaque version avec URLs de preuves ; aligner `CLI_DISTRIBUTION.md` sur wheel/sdist, image et Action ; résoudre la contradiction de fenêtre de dépréciation entre `docs/RELEASING.md` et `docs/api-stability.md` ; enlever le contournement `repo_url: https://github.com//...` devenu obsolète ; distinguer le cast `0.2.1` de la release `0.2.2` ou enregistrer un nouveau cast réel de la version publiée.
@@ -501,15 +499,12 @@ largeur effective de 469 px, également sans débordement.
 
 ### 3.2 Faire voir l'application réelle dès le README
 
-**État :** l'installation PyPI `0.2.2` a été enregistrée en PTY réel sur
-macOS arm64/Python 3.14.6/FFmpeg 9.0.1 ; le validateur du dépôt accepte le
-cast de 89,5 secondes. Deux PNG rendent sans ajout de texte les frames du
-plan et du résultat/receipt, avec source et limites précisées dans le README.
-Rendu du README vérifié visuellement sur GitHub en affichage clair par défaut
-et à 375 px, y compris les deux PNG et leurs liens pleine résolution. À 375 px,
-la largeur du document et celle du viewport valent toutes deux 375 px : aucun
-débordement horizontal n'a été observé. Mode sombre et mise à jour après
-prochaine release encore à vérifier.
+**État au 24 septembre 2026 : partiel.** Le README utilise l'installation
+`0.3.3`, relie le cast réel validé de 64,3 secondes et publie deux résultats
+mesurés avec leurs preuves et limites. Il n'affiche toutefois aucune capture
+de terminal de cette version : les PNG existants montrent `0.2.2` et ne sont
+pas liés depuis le README. Un rendu actuel du README en mode sombre et sur
+petit écran reste aussi à vérifier.
 
 - **Objectif :** que la première vue GitHub montre une commande, une décision de plan et un résultat réellement obtenus.
 - **Changements :** raccourcir le mur de badges et placer un parcours vérifié au premier écran ; capturer de vraies images de terminal avec version, OS, date et fixture non privée ; montrer avant/après utile (format, pistes, taille ou loudness) avec un lien vers les receipts. Conserver la bannière SVG si elle aide la lecture, sans confondre console illustrative HTML et capture.

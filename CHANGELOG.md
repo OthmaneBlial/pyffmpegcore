@@ -6,6 +6,8 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- The shell and PowerShell bootstrap installers and CLI install guides now target
+  the current public `0.3.3` release instead of the superseded `0.2.2` package.
 - Pipeline cache and resume signatures now include runtime and output
   fingerprints; changed outputs and remote inputs are not reused.
 - Video concatenation now checks copy-stream metadata and re-encode dimensions

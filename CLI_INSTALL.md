@@ -17,7 +17,7 @@ Arch package commands and checks for both executables.
 `pipx` is the cleanest option for most CLI users because it installs the app in an isolated environment but still exposes the command globally.
 
 ```bash
-pipx install "pyffmpegcore==0.2.2"
+pipx install "pyffmpegcore==0.3.3"
 pyffmpegcore --version
 pyffmpegcore doctor
 pyffmpegcore smoke-test
@@ -44,14 +44,14 @@ PYFFMPEGCORE_PACKAGE_SPEC=. ./install.sh --method pip
 If you prefer a user-level Python install:
 
 ```bash
-python -m pip install --user "pyffmpegcore==0.2.2"
+python -m pip install --user "pyffmpegcore==0.3.3"
 pyffmpegcore --version
 ```
 
 ## Install With `uv`
 
 ```bash
-uv tool install "pyffmpegcore==0.2.2"
+uv tool install "pyffmpegcore==0.3.3"
 pyffmpegcore doctor
 pyffmpegcore smoke-test
 ```

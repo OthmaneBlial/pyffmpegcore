@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-PACKAGE_SPEC="${PYFFMPEGCORE_PACKAGE_SPEC:-pyffmpegcore==0.2.2}"
+PACKAGE_SPEC="${PYFFMPEGCORE_PACKAGE_SPEC:-pyffmpegcore==0.3.3}"
 INSTALL_METHOD="auto"
 PYTHON_BIN="${PYTHON_BIN:-python3}"
 SKIP_DOCTOR=0
@@ -16,7 +16,7 @@ Usage:
 
 Options:
   --method auto|pipx|pip   Choose the install method. Defaults to auto.
-  --spec VALUE             Package spec to install. Defaults to the public 0.2.2 release.
+  --spec VALUE             Package spec to install. Defaults to the public 0.3.3 release.
   --python VALUE           Python executable to use for pip installs.
   --skip-doctor            Skip the final pyffmpegcore doctor check.
   --help                   Show this help text.
