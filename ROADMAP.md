@@ -356,6 +356,10 @@ leurs pistes attendues ; la concat copy mappe toutes les pistes et compare son
 layout à celui du premier input. Un test FFmpeg généré conserve deux pistes
 audio et une piste de sous-titres ; les 59 tests ciblés préflight/planning/
 workflow et médias locaux passent, avec Ruff, formatage et mypy.
+Le 24 septembre, le planificateur partagé rejette aussi les facteurs de vitesse
+NaN ou infinis avant FFprobe : `inf` déclenchait auparavant une boucle sans fin
+dans la construction de la chaîne `atempo`. Trois régressions ciblées passent
+localement.
 
 - **Objectif :** réduire les surprises de temps, espace et réseau tout en annonçant honnêtement que PyFFmpegCore n'est pas un sandbox.
 - **Changements :** définir des plafonds optionnels/explicites de temps et de sortie là où le moteur peut les garantir, distinguer préflight estimatif et limite dure, durcir redaction des diagnostics et politique URL/protocoles, tester nettoyage après annulation/timeout/disque plein. Maintenir l'exécution en vecteur d'arguments et `-nostdin`.
@@ -482,9 +486,11 @@ checksums et attestations liés depuis [`docs/terminal-demo.md`](docs/terminal-d
 Le site public a été vérifié dans un nouvel onglet : il affiche l'installation
 `0.3.3`, la preuve réelle, les recettes mesurées et les liens GitHub/npm. La
 dernière publication Pages répertoriée est le commit
-[`f35b1fe`](https://github.com/OthmaneBlial/OthmaneBlial.github.io/commit/f35b1feeb658523ac3629d22bf62d2c0324efbd7),
-déployé par [run `36002319908`](https://github.com/OthmaneBlial/OthmaneBlial.github.io/actions/runs/36002319908).
-Les casts précédents restent archivés sous leurs propres versions.
+[`d89129b`](https://github.com/OthmaneBlial/OthmaneBlial.github.io/commit/d89129b6a61d0195f47bea075e7cafb98e555cd4),
+déployé par [run `36012291727`](https://github.com/OthmaneBlial/OthmaneBlial.github.io/actions/runs/36012291727).
+Le parcours rapide demande maintenant une étoile après le résultat vérifié et
+donne un lien d'issue avec consigne de ne pas joindre de média privé. Les casts
+précédents restent archivés sous leurs propres versions.
 
 - **Objectif :** un nouvel utilisateur et un mainteneur lisent la même vérité sur la version et les canaux disponibles.
 - **Changements :** remplacer les cases historiques de `RELEASE_CHECKLIST.md` par une checklist à remplir pour chaque version avec URLs de preuves ; aligner `CLI_DISTRIBUTION.md` sur wheel/sdist, image et Action ; résoudre la contradiction de fenêtre de dépréciation entre `docs/RELEASING.md` et `docs/api-stability.md` ; enlever le contournement `repo_url: https://github.com//...` devenu obsolète ; distinguer le cast `0.2.1` de la release `0.2.2` ou enregistrer un nouveau cast réel de la version publiée.

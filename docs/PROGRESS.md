@@ -4,6 +4,19 @@ Updated: 2026-09-24
 
 ## Current state
 
+- After the verified quickstart, the site now asks for an optional GitHub star
+  and links to the issue form with a private-media reminder. The generated page
+  passed the strict MkDocs build and local browser accessibility-tree check.
+  Source commit [`e2af369`](https://github.com/OthmaneBlial/pyffmpegcore/commit/e2af369506209794a804a75bae10fb230a8bae54)
+  and Pages commit [`d89129b`](https://github.com/OthmaneBlial/OthmaneBlial.github.io/commit/d89129b6a61d0195f47bea075e7cafb98e555cd4)
+  are pushed; Pages run [36012291727](https://github.com/OthmaneBlial/OthmaneBlial.github.io/actions/runs/36012291727)
+  succeeded. GitHub currently reports 2 stars and 3 forks; the prompt does not
+  guarantee additional stars.
+- `WorkflowPlanner.speed` now rejects NaN and both infinities before probing
+  input. This prevents an infinite factor from entering the unbounded `atempo`
+  chain loop. Three focused regressions, Ruff, and formatting checks pass on
+  commit [`694d915`](https://github.com/OthmaneBlial/pyffmpegcore/commit/694d915a92f6b70ff24238ced0788e64a63f166f);
+  no media job or release workflow ran.
 - Baseline on exact `main` commit `3759fc73048cc108a632b5e65c6af363610d398d`: `.venv/bin/python -m pytest -m 'not real_media'` passed (427 passed, 104 deselected, 19.32 s) on macOS arm64 / Python 3.14.6. This is the local fast suite; real-media, full CI, and container workflows were not run.
 - Added two current terminal frames to the README and public-run page, rendered without text edits from the public PyPI `0.3.3` cast (`d1de24974577ac829d49614dbeeb84a2ad32c3b6693be1db6545d63ad5cb37d4`). The [frame manifest](assets/terminal-demo-v0.3.3.frames.json) records source and image SHA-256 values. The cast validator (64.3 s), documentation checker, strict MkDocs build, and `git diff --check` pass. Shared Pages commit [`0f0fc44`](https://github.com/OthmaneBlial/OthmaneBlial.github.io/commit/0f0fc4412ce7fdff3f559c933f1a1258faf76b17) built successfully; the live proof page exposes both images and their alt text. The run uses synthetic local media; it does not establish quality on user media.
 - GitHub's repository description and topic list now describe the real Python/CLI/Node.js/CI scope; the current API reports 2 stars. The homepage meta description is aligned and appears on the live site. The strict docs build passed; Pages commit [`f35b1fe`](https://github.com/OthmaneBlial/OthmaneBlial.github.io/commit/f35b1feeb658523ac3629d22bf62d2c0324efbd7) deployed successfully in [run 36002319908](https://github.com/OthmaneBlial/OthmaneBlial.github.io/actions/runs/36002319908).
