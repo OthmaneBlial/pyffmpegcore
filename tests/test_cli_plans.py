@@ -192,6 +192,30 @@ def test_preview_never_executes_shell_metacharacters(tmp_path, capsys, monkeypat
     assert not (tmp_path / "ALSO_NOT_CREATED.mp4").exists()
 
 
+def test_text_plan_escapes_terminal_controls_in_media_paths(tmp_path, capsys, monkeypatch, capability_inventory):
+    source = tmp_path / "source\x1b[2J\nforged.mp4"
+    shutil.copyfile(VIDEO, source)
+    monkeypatch.setattr("pyffmpegcore.preflight.CapabilityInventory.inspect", lambda _binary: capability_inventory)
+
+    returncode = main(
+        [
+            "convert",
+            "--input",
+            str(source),
+            "--output",
+            str(tmp_path / "output.mp4"),
+            "--video-codec",
+            "libx264",
+            "--explain",
+        ]
+    )
+    output = capsys.readouterr().out
+
+    assert returncode == 0
+    assert "\x1b" not in output
+    assert r"\x1b[2J\nforged.mp4" in output
+
+
 @pytest.mark.parametrize("mode", [[], ["--explain"], ["--dry-run", "--plan-json"]])
 def test_direct_media_url_is_rejected_without_exposing_credentials(tmp_path, capsys, mode):
     output = tmp_path / "web.mp4"

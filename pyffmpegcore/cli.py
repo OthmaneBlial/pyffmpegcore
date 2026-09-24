@@ -17,6 +17,7 @@ from typing import Any
 
 from . import __version__
 from ._fileio import DestinationExistsError, write_text_file
+from ._terminal import terminal_safe_text
 from .capabilities import CapabilityInventory
 from .cli_common import (
     EXIT_ENVIRONMENT_ERROR,
@@ -101,6 +102,7 @@ class CLIProgressPrinter:
         self._printed_width = 0
 
     def _write_line(self, message: str, *, final: bool = False) -> None:
+        message = terminal_safe_text(message)
         padding = " " * max(0, self._printed_width - len(message))
         print("\r" + message + padding, end="\n" if final else "", file=sys.stderr, flush=True)
         self._printed_width = max(self._printed_width, len(message))
@@ -895,7 +897,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             if args.plan_json:
                 print(render_plan_json(plan, preflight))
             else:
-                print(render_plan_text(plan, preflight, explain=bool(args.explain)))
+                print(
+                    terminal_safe_text(
+                        render_plan_text(plan, preflight, explain=bool(args.explain)), preserve_newlines=True
+                    )
+                )
             return EXIT_OK if preflight.ok else EXIT_VALIDATION_ERROR
         return int(handler(args))
     except CLIError as exc:

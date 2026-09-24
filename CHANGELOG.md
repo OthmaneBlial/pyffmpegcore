@@ -4,6 +4,11 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Security
+
+- Human-readable CLI output escapes terminal control characters from media
+  metadata, paths, plans, and diagnostics.
+
 ## [0.3.2] - 2026-09-24
 
 ### Fixed

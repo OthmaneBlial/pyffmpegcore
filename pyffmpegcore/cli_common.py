@@ -6,6 +6,8 @@ import argparse
 import sys
 from dataclasses import dataclass
 
+from ._terminal import terminal_safe_text
+
 EXIT_OK = 0
 EXIT_ENVIRONMENT_ERROR = 3
 EXIT_USAGE_ERROR = 2
@@ -39,15 +41,21 @@ def build_context(args: argparse.Namespace) -> CLIContext:
 def echo(ctx: CLIContext, message: str) -> None:
     """Print a human-readable message unless quiet mode is enabled."""
     if not ctx.quiet:
-        print(message)
+        print(terminal_safe_text(message))
+
+
+def echo_block(ctx: CLIContext, message: str) -> None:
+    """Print rendered layout while escaping embedded terminal controls."""
+    if not ctx.quiet:
+        print(terminal_safe_text(message, preserve_newlines=True))
 
 
 def echo_verbose(ctx: CLIContext, message: str) -> None:
     """Print diagnostic detail to stderr when verbose mode is enabled."""
     if ctx.verbose:
-        print(f"[verbose] {message}", file=sys.stderr)
+        print(terminal_safe_text(f"[verbose] {message}"), file=sys.stderr)
 
 
 def echo_error(message: str) -> None:
     """Print a user-facing error message to stderr."""
-    print(message, file=sys.stderr)
+    print(terminal_safe_text(message), file=sys.stderr)

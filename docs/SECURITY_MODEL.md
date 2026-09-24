@@ -45,6 +45,11 @@ future FFmpeg diagnostic format.
 
 FFmpeg parses complex attacker-controlled formats. Keep FFmpeg patched and process hostile media inside an operating-system sandbox or disposable container with minimal permissions. Do not trust titles, filenames, subtitle content, or chapter metadata as safe terminal or HTML text. PyFFmpegCore should render metadata as data and must not evaluate it.
 
+Human-readable CLI output escapes terminal control and formatting characters in
+metadata, paths, plans, and diagnostics before printing them. JSON output keeps
+its structured string values; downstream terminals and renderers must still
+treat those values as untrusted data.
+
 ## Resource Exhaustion
 
 Small compressed inputs can require large amounts of CPU, memory, disk, or output bandwidth. FFmpeg capability listings stop after five seconds per command; a timeout is reported as an inspection failure, not an empty inventory. FFprobe metadata calls stop after 60 seconds by default; direct `FFprobeRunner` users can configure `probe_timeout_seconds`. Version-only diagnostics stop after five seconds. Managed media jobs accept an explicit `--timeout`, but there is no universal deadline across a batch or pipeline and no memory, frame, pixel, or output-size limit. These deadlines bound waiting only. Run untrusted jobs with OS/container quotas and validate media dimensions and duration before expensive work. Future limits must fail closed and appear in plans and receipts.

@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
 
+from ._terminal import terminal_safe_text
 from .capabilities import CapabilityInventory, requirements_for
 from .domain import ExecutionPlan, OverwritePolicy, is_url_like_path
 from .probe import FFprobeRunner
@@ -72,12 +73,14 @@ class PreflightReport:
 
     def render(self) -> str:
         """Render checks and available remedies as a concise human-readable report."""
-        lines = [f"Preflight {'PASS' if self.ok else 'FAIL'} — {self.workflow}"]
+        lines = [f"Preflight {'PASS' if self.ok else 'FAIL'} — {terminal_safe_text(self.workflow)}"]
         symbols = {"pass": "OK", "warn": "WARN", "fail": "FAIL"}
         for check in self.checks:
-            lines.append(f"[{symbols[check.status]}] {check.name}: {check.message}")
+            lines.append(
+                f"[{symbols[check.status]}] {terminal_safe_text(check.name)}: {terminal_safe_text(check.message)}"
+            )
             if check.hint:
-                lines.append(f"  Remedy: {check.hint}")
+                lines.append(f"  Remedy: {terminal_safe_text(check.hint)}")
         return "\n".join(lines)
 
 

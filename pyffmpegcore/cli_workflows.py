@@ -10,6 +10,7 @@ from dataclasses import asdict, replace
 from pathlib import Path
 
 from ._fileio import DestinationExistsError, open_text_file, write_text_file
+from ._terminal import terminal_safe_text
 from .batch import BatchEvent, BatchJob, BatchManifest, BatchPolicy, BatchRun, BatchRunner, validate_batch_jobs
 from .cli_common import (
     EXIT_ENVIRONMENT_ERROR,
@@ -20,6 +21,7 @@ from .cli_common import (
     CLIContext,
     build_context,
     echo,
+    echo_block,
     echo_error,
 )
 from .cli_validation import CLIError
@@ -171,7 +173,7 @@ def _render_batch_preview(args: argparse.Namespace, manifest: BatchManifest) -> 
             if index:
                 print()
             echo(ctx, f"Batch job: {job.id}")
-            echo(ctx, render_plan_text(item.plan, item.preflight, explain=bool(args.explain)))
+            echo_block(ctx, render_plan_text(item.plan, item.preflight, explain=bool(args.explain)))
     return EXIT_OK if all(item.preflight.ok for _, item in prepared) else EXIT_VALIDATION_ERROR
 
 
@@ -347,7 +349,7 @@ def handle_pipeline_graph(args: argparse.Namespace) -> int:
     """Render a compiled dependency graph without probing inputs."""
     # Graph output contains only validated step IDs, dependencies, workflows, and the pipeline name.
     # codeql[py/clear-text-logging-sensitive-data]
-    print(_load_cli_pipeline(args).graph(args.format))
+    print(terminal_safe_text(_load_cli_pipeline(args).graph(args.format), preserve_newlines=True))
     return EXIT_OK
 
 
@@ -379,11 +381,11 @@ def _render_pipeline_preview(args: argparse.Namespace, pipeline: PipelinePlan) -
         print(json.dumps(prepared.to_dict(), indent=2))
     else:
         echo(ctx, f"Pipeline: {pipeline.name}")
-        echo(ctx, pipeline.graph("text"))
+        echo_block(ctx, pipeline.graph("text"))
         for step in prepared.steps:
             print()
             echo(ctx, f"Step: {step.id}")
-            echo(ctx, render_plan_text(step.plan, step.preflight, explain=bool(args.explain)))
+            echo_block(ctx, render_plan_text(step.plan, step.preflight, explain=bool(args.explain)))
     return EXIT_OK if prepared.ok else EXIT_VALIDATION_ERROR
 
 
