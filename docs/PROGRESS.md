@@ -4,6 +4,7 @@ Updated: 2026-09-24
 
 ## Current state
 
+- On exact `main` SHA `4f3c3c06bbf696d51260f50ec69cdc5d267d7d1b`, direct Python batch runs now honor `BatchPolicy.per_job_timeout_seconds`, and execution/batch policies reject non-finite timeouts. The CI fast suite passed (391 passed, 102 real-media tests deselected), along with Ruff, formatting, mypy (38 source files), compileall, generated-doc checks, documentation links, and `git diff --check`. No container or full CI job ran. A new patch release and current-release Pages refresh are in progress.
 - Audit started from `main` at `25adc43150842930f84e25c105a7612f1a4b02f1`, synchronized with `origin/main`.
 - Local environment: macOS arm64, Python 3.14.6, FFmpeg/FFprobe 9.0.1.
 - Public beta `0.3.0` was published from the signed tag `v0.3.0` at source SHA `492d4b0a808cd429b75b2d21735652260eee9296`. Release workflow [35971504440](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35971504440) passed its exact-artifact matrix on Linux, macOS, and Windows with Python 3.10 and 3.14, provenance attestation, PyPI publication, six clean public installs, and creation of the matching GitHub prerelease. The wheel is 101,305 bytes (SHA-256 `8ed1b315b3326cc115e5df4bd1ac32d69b6c77175663d6c630cf3e75c3186df7`); the sdist is 334,320 bytes (SHA-256 `e01753d0315525ebd99c7da2c2dc7a09cf6d13af488fc81fe9692a8a2f925e78`). Both match PyPI and GitHub release checksums.
