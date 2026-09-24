@@ -500,7 +500,11 @@ La construction Pages est passée ; l'accueil public, `quickstart`,
 `terminal-demo`, la référence CLI et la progression renvoient HTTP 200, sans
 lien d'ancre de ligne vide, et toutes les images ont un texte alternatif. Ce contrôle
 HTML en direct ne remplace pas une revue avec lecteur d'écran, qui reste à
-faire.
+faire. Le 24 septembre, l'arbre d'accessibilité de l'accueil public exposait
+les deux commandes radio de thème avec des noms accessibles. Le clic sur les
+libellés a basculé le schéma `default` vers `slate`, puis l'a restauré à
+`default` ; les états cochés et couleurs de fond correspondaient aux deux
+schémas. L'activation clavier et la revue au lecteur d'écran restent à faire.
 
 - **Objectif :** que l'identité visuelle existante serve la compréhension sur mobile et au clavier.
 - **Changements :** auditer le site MkDocs réel à 320/375/768 px et desktop en clair/sombre ; contrôler débordements de code et tableaux, contraste, focus, réduction du mouvement, bouton de copie, navigation, liens de recette et absence d'erreurs console ; corriger uniquement les défauts observés. Garder une solution sans JavaScript pour copier l'installation.
