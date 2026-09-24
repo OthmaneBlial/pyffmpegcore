@@ -336,6 +336,15 @@ compilation et documentation stricte passent localement. CodeQL
 a réussi sur ce SHA. Aucun média réel, workflow complet ou Docker n'a été
 exécuté pour ce correctif.
 
+Le 24 septembre 2026, le préflight de concaténation rejette aussi les layouts
+de flux incompatibles en mode copy et les dimensions vidéo incompatibles en
+mode reencode avant création du fichier. Le plan reencode sélectionne les
+premières pistes vidéo/audio, remet leurs timestamps à zéro et concatène les
+deux pistes ensemble. Une recette documente les contraintes et les solutions
+de repli. Les 57 tests ciblés, Ruff, formatage, mypy, contrôles de génération
+des docs et build MkDocs strict passent localement ; la matrice hébergée et la
+suite complète n'ont pas été lancées.
+
 - **Objectif :** réduire les surprises de temps, espace et réseau tout en annonçant honnêtement que PyFFmpegCore n'est pas un sandbox.
 - **Changements :** définir des plafonds optionnels/explicites de temps et de sortie là où le moteur peut les garantir, distinguer préflight estimatif et limite dure, durcir redaction des diagnostics et politique URL/protocoles, tester nettoyage après annulation/timeout/disque plein. Maintenir l'exécution en vecteur d'arguments et `-nostdin`.
 - **Fichiers :** `pyffmpegcore/executor.py`, `preflight.py`, `receipt.py`, `pipeline.py`, `docs/SECURITY_MODEL.md`, `docs/receipts.md`, tests de sécurité et échecs.

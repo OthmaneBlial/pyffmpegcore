@@ -56,6 +56,21 @@ def test_convert_plan_can_preserve_every_stream_without_reencoding(tmp_path):
     assert "output container" in plan.warnings[0]
 
 
+def test_concat_reencode_plan_selects_first_tracks_and_resets_timestamps(tmp_path):
+    plan = WorkflowPlanner().concat(
+        [str(tmp_path / "one.mp4"), str(tmp_path / "two.webm")],
+        str(tmp_path / "joined.mp4"),
+        mode="reencode",
+    )
+    graph = plan.command[plan.command.index("-filter_complex") + 1]
+
+    assert plan.selected_streams == ("video:0", "audio:0")
+    assert "[0:v:0]setpts=PTS-STARTPTS[v0]" in graph
+    assert "[0:a:0]asetpts=PTS-STARTPTS[a0]" in graph
+    assert "[v0][a0][v1][a1]concat=n=2:v=1:a=1[vout][aout]" in graph
+    assert plan.metadata["required_stream_types"] == ["video", "audio"]
+
+
 @pytest.mark.parametrize(
     ("options", "expected_warning"),
     [

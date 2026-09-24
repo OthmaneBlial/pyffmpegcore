@@ -11,6 +11,15 @@ import sys
 import pytest
 
 from pyffmpegcore.cli import main
+from pyffmpegcore.cli_common import echo_error
+
+
+def test_echo_error_preserves_lines_only_for_structured_reports(capsys):
+    echo_error("untrusted\nline")
+    assert capsys.readouterr().err == "untrusted\\nline\n"
+
+    echo_error("Preflight FAIL\n[FAIL] output: collision\n  Remedy: choose another path", preserve_newlines=True)
+    assert capsys.readouterr().err == "Preflight FAIL\n[FAIL] output: collision\n  Remedy: choose another path\n"
 
 
 def test_cli_missing_input_returns_validation_error(tmp_path):

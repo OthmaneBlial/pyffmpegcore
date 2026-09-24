@@ -728,7 +728,10 @@ def _render_execution_failures(bundle: CLIExecutionBundle) -> None:
             continue
         label = item.input or item.output or item.result.workflow
         diagnostic = (item.result.stderr or "FFmpeg command failed.").strip()
-        echo_error(f"{label}: {diagnostic}")
+        if not item.preflight.ok:
+            echo_error(f"{terminal_safe_text(label)}: {item.preflight.render()}", preserve_newlines=True)
+        else:
+            echo_error(f"{label}: {diagnostic}")
 
 
 def _unverified_output_count(result: JobResult) -> int:

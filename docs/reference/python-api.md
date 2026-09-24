@@ -521,7 +521,8 @@ A two-pass target-size plan probes the input duration and rejects video stream c
 
 Plan ordered clip concatenation using stream copy or re-encoding.
 
-Stream-copy mode expects compatible inputs; re-encode mode uses the requested codecs.
+Stream-copy mode expects matching stream metadata. Re-encode mode accepts codec differences,
+but the first video and audio streams must share dimensions and stream layout.
 
 ### `convert(self, input_file: 'str', output_file: 'str', options: 'ConvertOptions | None' = None, *, force: 'bool' = False, timeout_seconds: 'float | None' = None) -> 'ExecutionPlan'`
 

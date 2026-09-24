@@ -739,8 +739,8 @@ def build_parser() -> argparse.ArgumentParser:
     concat_parser = subparsers.add_parser(
         "concat",
         parents=[common_parent],
-        help="Join multiple video clips into one output.",
-        description="Join multiple video clips into one output.",
+        help="Join compatible clips, with stream checks and an explicit re-encode path.",
+        description="Join clips after checking stream-copy metadata or re-encode requirements.",
     )
     concat_parser.add_argument(
         "--inputs",
@@ -757,7 +757,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--mode",
         choices=["copy", "reencode"],
         default="copy",
-        help="Use fast stream-copy concat or a safer re-encode path. Defaults to %(default)s.",
+        help="Copy matching streams, or re-encode clips with matching layouts. Defaults to %(default)s.",
     )
     concat_parser.add_argument(
         "--video-codec",

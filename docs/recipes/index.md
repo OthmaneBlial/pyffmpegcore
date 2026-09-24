@@ -3,6 +3,7 @@
 Every supported recipe names an input contract, command, expected output, and machine-verifiable checks.
 
 - [Web-compatible video](web-video.md)
+- [Join video clips](concatenate-videos.md)
 - [Fit an upload under a target size](exact-size.md)
 - [Preserve every audio, subtitle, attachment, and data stream](preserve-streams.md)
 - [Extract audio](audio-extraction.md)

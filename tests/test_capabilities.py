@@ -69,6 +69,7 @@ def test_workflow_rules_are_deduplicated_and_extensible():
 
     assert requirements == ("encoder:libx264", "muxer:mp4")
     assert requirements_for("mix-audio/concat") == ("filter:concat",)
+    assert requirements_for("concat/reencode") == ("filter:concat", "filter:setpts", "filter:asetpts")
     assert requirements_for("mix-audio/mashup") == ("filter:acrossfade",)
 
 

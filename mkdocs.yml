@@ -75,6 +75,7 @@ nav:
   - Recipes:
       - Overview: recipes/index.md
       - Web-compatible video: recipes/web-video.md
+      - Join video clips: recipes/concatenate-videos.md
       - Exact-size upload: recipes/exact-size.md
       - Preserve every stream: recipes/preserve-streams.md
       - Audio extraction: recipes/audio-extraction.md

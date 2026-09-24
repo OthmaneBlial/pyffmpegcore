@@ -694,7 +694,8 @@ class WorkflowPlanner:
     ) -> ExecutionPlan:
         """Plan ordered clip concatenation using stream copy or re-encoding.
 
-        Stream-copy mode expects compatible inputs; re-encode mode uses the requested codecs.
+        Stream-copy mode expects matching stream metadata. Re-encode mode accepts codec differences,
+        but the first video and audio streams must share dimensions and stream layout.
         """
         if len(input_files) < 2:
             raise ValidationError("concat requires at least two inputs")
@@ -705,21 +706,22 @@ class WorkflowPlanner:
         metadata: dict[str, object] = {"required_stream_types": ["video"]}
         capabilities: tuple[str, ...]
         operations: tuple[str, ...]
+        streams: tuple[str, ...]
         if mode == "copy":
             manifest = "<pyffmpegcore-concat-manifest>"
             args = ["-f", "concat", "-safe", "0", "-i", manifest, "-c", "copy", output]
             metadata["concat_manifest"] = inputs
             capabilities = ("demuxer:concat",)
+            streams = ("video:all", "audio:all")
             operations = ("stream-copy matching inputs in the listed order",)
         else:
             args = []
             for value in inputs:
                 args.extend(["-i", value])
-            video_inputs = "".join(f"[{index}:v]" for index in range(len(inputs)))
-            audio_inputs = "".join(f"[{index}:a]" for index in range(len(inputs)))
-            graph = (
-                f"{video_inputs}concat=n={len(inputs)}:v=1:a=0[vout];{audio_inputs}concat=n={len(inputs)}:v=0:a=1[aout]"
-            )
+            video_filters = "".join(f"[{index}:v:0]setpts=PTS-STARTPTS[v{index}];" for index in range(len(inputs)))
+            audio_filters = "".join(f"[{index}:a:0]asetpts=PTS-STARTPTS[a{index}];" for index in range(len(inputs)))
+            segments = "".join(f"[v{index}][a{index}]" for index in range(len(inputs)))
+            graph = f"{video_filters}{audio_filters}{segments}concat=n={len(inputs)}:v=1:a=1[vout][aout]"
             args.extend(
                 [
                     "-filter_complex",
@@ -735,7 +737,13 @@ class WorkflowPlanner:
                     output,
                 ]
             )
-            capabilities = ("filter:concat", *_codec_requirements(("video", video_codec), ("audio", audio_codec)))
+            capabilities = (
+                "filter:concat",
+                "filter:setpts",
+                "filter:asetpts",
+                *_codec_requirements(("video", video_codec), ("audio", audio_codec)),
+            )
+            streams = ("video:0", "audio:0")
             operations = (
                 f"decode and concatenate {len(inputs)} inputs",
                 f"encode {video_codec} video and {audio_codec} audio",
@@ -749,7 +757,7 @@ class WorkflowPlanner:
             force=force,
             timeout_seconds=timeout_seconds,
             capabilities=capabilities,
-            streams=("video:all", "audio:all"),
+            streams=streams,
             operations=operations,
             metadata=metadata,
         )

@@ -30,7 +30,7 @@ positional arguments:
     thumbnail           Extract a thumbnail image from a video file.
     waveform            Generate a waveform image from audio or video-with-audio.
     speed               Change playback speed for video or audio media.
-    concat              Join multiple video clips into one output.
+    concat              Join compatible clips, with stream checks and an explicit re-encode path.
     subtitles           Add, extract, or burn subtitle tracks.
     mix-audio           Mix, concatenate, mash up, or layer multiple audio sources.
     normalize-audio     Normalize or master an audio file.
@@ -1146,7 +1146,7 @@ usage: pyffmpegcore concat [-h] [--verbose | --quiet] [--force] [--dry-run | --e
        --inputs INPUTS [INPUTS ...] --output OUTPUT [--mode {copy,reencode}] [--video-codec
        VIDEO_CODEC] [--audio-codec AUDIO_CODEC]
 
-Join multiple video clips into one output.
+Join clips after checking stream-copy metadata or re-encode requirements.
 
 options:
   -h, --help            show this help message and exit
@@ -1171,7 +1171,8 @@ options:
                         Input clip paths in the order they should appear in the output.
   --output OUTPUT       Path to the concatenated output video.
   --mode {copy,reencode}
-                        Use fast stream-copy concat or a safer re-encode path. Defaults to copy.
+                        Copy matching streams, or re-encode clips with matching layouts. Defaults to
+                        copy.
   --video-codec VIDEO_CODEC
                         Video codec for re-encode mode. Defaults to libx264.
   --audio-codec AUDIO_CODEC

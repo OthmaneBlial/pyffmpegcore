@@ -6,6 +6,8 @@ import os
 from collections import namedtuple
 from unittest.mock import patch
 
+import pytest
+
 from pyffmpegcore import ExecutionPlan, ExecutionPolicy, MediaInfo, OverwritePolicy, StreamInfo
 from pyffmpegcore.capabilities import CapabilityInventory
 from pyffmpegcore.preflight import PreflightEngine, _input_scheme
@@ -49,6 +51,138 @@ def test_preflight_checks_streams_output_disk_and_collision_without_mutation(tmp
     assert report.to_dict()["schema_version"] == "1.0"
     assert "Preflight PASS" in report.render()
     assert not output.parent.exists()
+
+
+def test_preflight_rejects_concat_copy_when_stream_layouts_differ(tmp_path):
+    first = tmp_path / "first.mp4"
+    second = tmp_path / "second.mp4"
+    first.write_bytes(b"a")
+    second.write_bytes(b"b")
+    output = tmp_path / "joined.mp4"
+    plan = ExecutionPlan(
+        workflow="concat/copy",
+        command=("ffmpeg", "-f", "concat", "-i", "manifest", "-c", "copy", str(output)),
+        inputs=(str(first), str(second)),
+        outputs=(str(output),),
+        metadata={"required_stream_types": ["video"], "estimated_output_bytes": 1},
+    )
+    media = {
+        str(first): MediaInfo(
+            path=str(first),
+            streams=(StreamInfo(index=0, codec_type="video", codec_name="h264", width=1920, height=1080),),
+        ),
+        str(second): MediaInfo(
+            path=str(second),
+            streams=(StreamInfo(index=0, codec_type="video", codec_name="h264", width=1280, height=720),),
+        ),
+    }
+
+    with patch("pyffmpegcore.preflight.FFprobeRunner.probe_media", side_effect=lambda path: media[path]):
+        report = PreflightEngine(
+            inventory=inventory(),
+            executable_resolver=lambda _binary: "/usr/bin/ffmpeg",
+        ).check(plan)
+
+    compatibility = next(check for check in report.checks if check.name == "concat/copy-compatibility")
+    assert not report.ok
+    assert compatibility.status == "fail"
+    assert "stream metadata differs" in compatibility.message.lower()
+    assert "normalize" in (compatibility.hint or "").lower()
+    assert not output.exists()
+
+
+def test_preflight_reports_matching_concat_copy_stream_metadata(tmp_path):
+    inputs = (tmp_path / "first.mp4", tmp_path / "second.mp4")
+    for path in inputs:
+        path.write_bytes(b"a")
+    output = tmp_path / "joined.mp4"
+    plan = ExecutionPlan(
+        workflow="concat/copy",
+        command=("ffmpeg", "-f", "concat", "-i", "manifest", "-c", "copy", str(output)),
+        inputs=tuple(map(str, inputs)),
+        outputs=(str(output),),
+        metadata={"required_stream_types": ["video"], "estimated_output_bytes": 1},
+    )
+    media = MediaInfo(
+        path=str(inputs[0]),
+        streams=(StreamInfo(index=0, codec_type="video", codec_name="h264", width=1920, height=1080),),
+    )
+
+    with patch("pyffmpegcore.preflight.FFprobeRunner.probe_media", return_value=media):
+        report = PreflightEngine(
+            inventory=inventory(),
+            executable_resolver=lambda _binary: "/usr/bin/ffmpeg",
+        ).check(plan)
+
+    compatibility = next(check for check in report.checks if check.name == "concat/copy-compatibility")
+    assert report.ok
+    assert compatibility.status == "pass"
+    assert "packet-level compatibility is not guaranteed" in compatibility.message
+
+
+def test_preflight_warns_when_concat_copy_inputs_are_remote():
+    plan = ExecutionPlan(
+        workflow="concat/copy",
+        command=("ffmpeg", "-f", "concat", "-i", "manifest", "-c", "copy", "joined.mp4"),
+        inputs=("https://media.example/one.mp4", "https://media.example/two.mp4"),
+        outputs=("joined.mp4",),
+        metadata={"required_stream_types": ["video"], "estimated_output_bytes": 1},
+    )
+
+    report = PreflightEngine(
+        inventory=inventory(),
+        executable_resolver=lambda _binary: "/usr/bin/ffmpeg",
+    ).check(plan)
+
+    compatibility = next(check for check in report.checks if check.name == "concat/copy-compatibility")
+    assert report.ok
+    assert compatibility.status == "warn"
+    assert "https://media.example" not in compatibility.message
+
+
+@pytest.mark.parametrize(("second_width", "expected_status"), [(1280, "fail"), (1920, "pass")])
+def test_preflight_checks_concat_reencode_dimensions(tmp_path, second_width, expected_status):
+    inputs = (tmp_path / "first.mp4", tmp_path / "second.mp4")
+    for path in inputs:
+        path.write_bytes(b"a")
+    output = tmp_path / "joined.mp4"
+    plan = ExecutionPlan(
+        workflow="concat/reencode",
+        command=("ffmpeg", "-i", str(inputs[0]), "-i", str(inputs[1]), "-filter_complex", "concat", str(output)),
+        inputs=tuple(map(str, inputs)),
+        outputs=(str(output),),
+        metadata={"required_stream_types": ["video", "audio"], "estimated_output_bytes": 1},
+    )
+    media = {
+        str(inputs[0]): MediaInfo(
+            path=str(inputs[0]),
+            streams=(
+                StreamInfo(index=0, codec_type="video", codec_name="h264", width=1920, height=1080),
+                StreamInfo(index=1, codec_type="audio", codec_name="aac", sample_rate=48000, channels=2),
+            ),
+        ),
+        str(inputs[1]): MediaInfo(
+            path=str(inputs[1]),
+            streams=(
+                StreamInfo(index=0, codec_type="video", codec_name="vp9", width=second_width, height=1080),
+                StreamInfo(index=1, codec_type="audio", codec_name="opus", sample_rate=48000, channels=2),
+            ),
+        ),
+    }
+
+    with patch("pyffmpegcore.preflight.FFprobeRunner.probe_media", side_effect=lambda path: media[path]):
+        report = PreflightEngine(
+            inventory=inventory(filters=("concat", "setpts", "asetpts", "scale")),
+            executable_resolver=lambda _binary: "/usr/bin/ffmpeg",
+        ).check(plan)
+
+    compatibility = next(check for check in report.checks if check.name == "concat/reencode-compatibility")
+    assert ("pass" if report.ok else "fail") == expected_status
+    assert compatibility.status == expected_status
+    if expected_status == "fail":
+        assert "dimensions differ" in compatibility.message
+        assert "Resize each clip" in (compatibility.hint or "")
+        assert not output.exists()
 
 
 def test_preflight_explains_missing_capability_with_available_fallback(tmp_path):

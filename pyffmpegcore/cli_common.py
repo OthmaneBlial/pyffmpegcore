@@ -56,6 +56,6 @@ def echo_verbose(ctx: CLIContext, message: str) -> None:
         print(terminal_safe_text(f"[verbose] {message}"), file=sys.stderr)
 
 
-def echo_error(message: str) -> None:
+def echo_error(message: str, *, preserve_newlines: bool = False) -> None:
     """Print a user-facing error message to stderr."""
-    print(terminal_safe_text(message), file=sys.stderr)
+    print(terminal_safe_text(message, preserve_newlines=preserve_newlines), file=sys.stderr)

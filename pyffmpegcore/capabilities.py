@@ -15,7 +15,18 @@ CAPABILITY_KINDS = frozenset(
 
 CORE_ENCODERS = ("aac", "flac", "libmp3lame", "libopus", "libvpx-vp9", "libx264", "mpeg4", "pcm_s16le")
 CORE_DECODERS = ("aac", "flac", "h264", "hevc", "mp3", "pcm_s16le", "vp9")
-CORE_FILTERS = ("acrossfade", "amix", "atempo", "drawtext", "loudnorm", "scale", "showwavespic", "subtitles")
+CORE_FILTERS = (
+    "acrossfade",
+    "amix",
+    "asetpts",
+    "atempo",
+    "drawtext",
+    "loudnorm",
+    "scale",
+    "setpts",
+    "showwavespic",
+    "subtitles",
+)
 CORE_MUXERS = ("image2", "matroska", "mp3", "mp4", "ogg", "wav", "webm")
 CORE_PROTOCOLS = ("file", "http", "https", "pipe")
 
@@ -28,7 +39,7 @@ WORKFLOW_CAPABILITY_RULES: dict[str, tuple[str, ...]] = {
     "speed/video": ("filter:setpts", "encoder:libx264"),
     "speed/audio": ("filter:atempo",),
     "concat/copy": ("demuxer:concat",),
-    "concat/reencode": ("filter:concat",),
+    "concat/reencode": ("filter:concat", "filter:setpts", "filter:asetpts"),
     "subtitles/add": ("encoder:mov_text",),
     "subtitles/extract": ("encoder:srt",),
     "subtitles/burn": ("filter:subtitles",),

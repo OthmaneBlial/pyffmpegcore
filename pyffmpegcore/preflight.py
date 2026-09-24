@@ -14,7 +14,7 @@ from urllib.parse import urlsplit
 
 from ._terminal import terminal_safe_text
 from .capabilities import CapabilityInventory, requirements_for
-from .domain import ExecutionPlan, OverwritePolicy, is_url_like_path
+from .domain import ExecutionPlan, MediaInfo, OverwritePolicy, is_url_like_path
 from .probe import FFprobeRunner
 
 PREFLIGHT_SCHEMA_VERSION = "1.0"
@@ -97,6 +97,24 @@ def _input_scheme(value: str) -> str | None:
         return None
     scheme = urlsplit(value).scheme
     return scheme if scheme and scheme != "file" else None
+
+
+def _concat_copy_stream_signature(media: MediaInfo) -> tuple[tuple[object, ...], ...]:
+    """Return stream facts that the concat demuxer expects to match."""
+    detail_fields = ("codec_tag_string", "codec_time_base", "time_base", "pix_fmt", "field_order")
+    return tuple(
+        (
+            stream.codec_type,
+            stream.codec_name,
+            stream.profile,
+            stream.width,
+            stream.height,
+            stream.sample_rate,
+            stream.channels,
+            tuple((name, stream.details.get(name)) for name in detail_fields),
+        )
+        for stream in media.streams
+    )
 
 
 def capability_remedy(requirement: str, inventory: CapabilityInventory) -> str:
@@ -192,10 +210,20 @@ class PreflightEngine:
         if not isinstance(input_stream_requirements, dict):
             input_stream_requirements = {}
         probe = FFprobeRunner(self.ffprobe_path)
+        concat_copy_signatures: list[tuple[tuple[object, ...], ...] | None] = []
+        concat_copy_has_remote_input = False
+        concat_reencode_dimensions: list[tuple[int, int] | None] = []
+        concat_reencode_has_remote_input = False
         for value in plan.inputs:
             remote_scheme = _input_scheme(value)
             parsed = urlsplit(value)
             if remote_scheme:
+                if plan.workflow == "concat/copy":
+                    concat_copy_signatures.append(None)
+                    concat_copy_has_remote_input = True
+                elif plan.workflow == "concat/reencode":
+                    concat_reencode_dimensions.append(None)
+                    concat_reencode_has_remote_input = True
                 requirement = f"input-protocol:{remote_scheme}"
                 safe_name = f"input/{remote_scheme}://<redacted>"
                 if inventory.supports(requirement):
@@ -212,6 +240,10 @@ class PreflightEngine:
                 continue
             path = Path(parsed.path if parsed.scheme == "file" else value)
             if not path.is_file() or not os.access(path, os.R_OK):
+                if plan.workflow == "concat/copy":
+                    concat_copy_signatures.append(None)
+                elif plan.workflow == "concat/reencode":
+                    concat_reencode_dimensions.append(None)
                 checks.append(PreflightCheck(f"input/{value}", "fail", "Input is missing or unreadable"))
                 continue
             checks.append(PreflightCheck(f"input/{value}", "pass", "Input is readable"))
@@ -220,8 +252,18 @@ class PreflightEngine:
                 try:
                     media = probe.probe_media(str(path))
                 except RuntimeError as exc:
+                    if plan.workflow == "concat/copy":
+                        concat_copy_signatures.append(None)
+                    elif plan.workflow == "concat/reencode":
+                        concat_reencode_dimensions.append(None)
                     checks.append(PreflightCheck(f"probe/{value}", "fail", f"Input probe failed: {exc}"))
                     continue
+                if plan.workflow == "concat/copy":
+                    concat_copy_signatures.append(_concat_copy_stream_signature(media))
+                elif plan.workflow == "concat/reencode":
+                    video = next((stream for stream in media.streams if stream.codec_type == "video"), None)
+                    dimensions = (video.width, video.height) if video and video.width and video.height else None
+                    concat_reencode_dimensions.append(dimensions)
                 available = {stream.codec_type for stream in media.streams}
                 missing_streams = [kind for kind in per_input_streams if kind not in available]
                 if missing_streams:
@@ -240,6 +282,67 @@ class PreflightEngine:
                             f"Required streams available: {', '.join(per_input_streams)}",
                         )
                     )
+
+        if plan.workflow == "concat/copy":
+            known_signatures = [signature for signature in concat_copy_signatures if signature is not None]
+            if len(known_signatures) > 1 and any(
+                signature != known_signatures[0] for signature in known_signatures[1:]
+            ):
+                checks.append(
+                    PreflightCheck(
+                        "concat/copy-compatibility",
+                        "fail",
+                        "Stream metadata differs between inputs; the concat demuxer expects matching stream layouts.",
+                        "Use --mode reencode when stream types match, or normalize the clips to matching stream properties first.",
+                    )
+                )
+            elif concat_copy_has_remote_input:
+                checks.append(
+                    PreflightCheck(
+                        "concat/copy-compatibility",
+                        "warn",
+                        "Remote input stream metadata cannot be compared during preflight.",
+                        "Use local inputs to verify stream metadata before stream-copy concatenation.",
+                    )
+                )
+            elif len(concat_copy_signatures) == len(plan.inputs) and known_signatures:
+                checks.append(
+                    PreflightCheck(
+                        "concat/copy-compatibility",
+                        "pass",
+                        "Stream metadata matches across inputs; packet-level compatibility is not guaranteed.",
+                    )
+                )
+        elif plan.workflow == "concat/reencode":
+            known_dimensions = [dimensions for dimensions in concat_reencode_dimensions if dimensions is not None]
+            if len(known_dimensions) > 1 and any(
+                dimensions != known_dimensions[0] for dimensions in known_dimensions[1:]
+            ):
+                checks.append(
+                    PreflightCheck(
+                        "concat/reencode-compatibility",
+                        "fail",
+                        "Selected video stream dimensions differ between inputs; the concat filter requires matching resolutions.",
+                        "Resize each clip to the same width and height before re-encoding them together.",
+                    )
+                )
+            elif concat_reencode_has_remote_input:
+                checks.append(
+                    PreflightCheck(
+                        "concat/reencode-compatibility",
+                        "warn",
+                        "Remote input dimensions cannot be compared during preflight.",
+                        "Verify every input has matching video dimensions and the required video and audio streams.",
+                    )
+                )
+            elif len(concat_reencode_dimensions) == len(plan.inputs) and len(known_dimensions) == len(plan.inputs):
+                checks.append(
+                    PreflightCheck(
+                        "concat/reencode-compatibility",
+                        "pass",
+                        "Selected video stream dimensions match across inputs.",
+                    )
+                )
 
         estimated_bytes = int(plan.metadata.get("estimated_output_bytes") or 0)
         if estimated_bytes <= 0:

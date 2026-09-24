@@ -426,7 +426,7 @@ def handle_pipeline_run(args: argparse.Namespace) -> int:
         else:
             for step in prepared.steps:
                 if not step.preflight.ok:
-                    echo_error(f"{step.id}: {step.preflight.render()}")
+                    echo_error(f"{terminal_safe_text(step.id)}: {step.preflight.render()}", preserve_newlines=True)
         return EXIT_VALIDATION_ERROR
 
     media_outputs = tuple(output for step in pipeline.steps for output in step.plan.outputs)
