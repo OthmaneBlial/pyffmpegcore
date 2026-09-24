@@ -4,8 +4,8 @@ Copy this checklist for each new version. Every box starts open; a previous rele
 
 - Target version and tag: candidate `0.3.0` / `v0.3.0`; not tagged or published
 - Release dry-run source commit: `2d577f5ae9e83eb7343b618162a1b597adb005ce` (not a release tag)
-- Latest candidate distribution artifact: [CI run 35936709716](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35936709716), built from exact source SHA `ba6b3e880765316bff2641d3228c5a6dcf83c7f4`. Wheel `pyffmpegcore-0.3.0-py3-none-any.whl`: 94,684 bytes, SHA-256 `5d1ac7e20d7bb3e95167cba7d2944dd014b6933ebc625804113fab94d3c19471`. Sdist `pyffmpegcore-0.3.0.tar.gz`: 305,576 bytes, SHA-256 `7741e20ea2669cfd1be83153cacadf1e287e2fae4330e9e144c4cad22e33082c`. `twine check` and the sdist content contract passed; full CI, all six exact-wheel OS/Python smokes, CodeQL [35936709753](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35936709753), and Scorecard [35936709726](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35936709726) passed. Rebuilding from a clean worktree at the exact SHA reproduced both files byte-for-byte. The exact wheel passed local pip install, `doctor`, and `smoke-test`; the exact sdist installed offline and passed `--version` and `smoke-test`. The artifact is not signed or published.
-- CI: [35920627403](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35920627403); release bundle and six exact-wheel OS/Python checks: [35921444046](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35921444046); CodeQL: [35920627493](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35920627493); Scorecard: [35920627411](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35920627411)
+- Latest candidate distribution artifact: [CI run 35940356100](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35940356100), built from exact source SHA `291c08973cd4fe74948af189ea82df99c9890c4e`. Wheel `pyffmpegcore-0.3.0-py3-none-any.whl`: 94,687 bytes, SHA-256 `2084030dbfdcfe93d316bb19d006576e270c1ed4328a37e7e68f7d6f6b70d5b8`. Sdist `pyffmpegcore-0.3.0.tar.gz`: 308,186 bytes, SHA-256 `634646a2914ce94f89e4327af66379cce28d68d00800585da39d71f6ca1ada24`. `twine check`, wheel contents, sdist contents, and all six exact-wheel OS/Python smokes passed. CI, CodeQL [35940356128](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35940356128), and Scorecard [35940356115](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35940356115) passed. Rebuilding from a clean `git archive` at the exact SHA with `SOURCE_DATE_EPOCH=1790211123` reproduced both files byte-for-byte. The exact wheel passed local pip install, `--version`, `doctor --json`, and `smoke-test --json`; the exact sdist installed offline and passed `--version` and `smoke-test`. The artifact remains untagged, unsigned, and unpublished.
+- Current full CI and exact-wheel matrix: [35940356100](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35940356100); last release dry-run: [35921444046](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35921444046); CodeQL: [35940356128](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35940356128); Scorecard: [35940356115](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35940356115)
 - Container digest and Action integration run: not run; container build and scan are excluded by the maintainer's current instruction.
 - Public PyPI and GitHub Release URLs: pending; public PyPI remains `0.2.2` and `v0.3.0` does not exist.
 
@@ -20,11 +20,11 @@ Copy this checklist for each new version. Every box starts open; a previous rele
 
 ## Automated Evidence
 
-- [x] Ruff, formatting, mypy, fast tests, and the 80% full-suite coverage gate pass (CI `35920627403`, candidate source SHA above).
-- [x] Python 3.10–3.14 package matrix passes (CI `35920627403`).
-- [x] The same prebuilt wheel passes media smoke tests on Linux, macOS, and Windows with Python 3.10 and 3.14 (release dry-run `35921444046`).
+- [x] Ruff, formatting, mypy, fast tests, and the 80% full-suite coverage gate pass (CI `35940356100`, candidate source SHA above).
+- [x] Python 3.10–3.14 package matrix passes (CI `35940356100`).
+- [x] The same prebuilt wheel passes media smoke tests on Linux, macOS, and Windows with Python 3.10 and 3.14 (CI `35940356100`).
 - [x] Cold deterministic fixtures pass without cache reuse (`--force` in each release matrix job, run `35921444046`).
-- [x] `twine check`, wheel contents, sdist contents, and clean isolated wheel installation pass (release dry-run `35921444046`).
+- [x] `twine check`, wheel contents, sdist contents, and clean isolated wheel installation pass (CI `35940356100` and exact local artifact check above).
 - [ ] CodeQL and OpenSSF Scorecard findings are triaged. Current GitHub inventory still has 483 Trivy alerts from the image scan on `25adc431` and low-severity Scorecard alert [#15](https://github.com/OthmaneBlial/pyffmpegcore/security/code-scanning/15); no alerts were dismissed.
 
 ## Publication
