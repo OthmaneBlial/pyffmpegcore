@@ -244,6 +244,29 @@ def test_receipt_write_refuses_existing_file_unless_overwrite_is_explicit(tmp_pa
     assert json.loads(path.read_text(encoding="utf-8")) == receipt.to_dict()
 
 
+def test_receipt_write_falls_back_when_filesystem_rejects_hard_links(tmp_path, monkeypatch):
+    batch, _source, _output = _batch(tmp_path)
+    receipt = ReceiptBuilder(ffmpeg_path="missing-ffmpeg", ffprobe_path="missing-ffprobe").build(batch)
+    path = tmp_path / "receipts" / "fallback.json"
+
+    def reject_hard_link(*_args, **_kwargs):
+        raise OSError("hard links unavailable")
+
+    monkeypatch.setattr("pyffmpegcore._fileio.os.link", reject_hard_link)
+    receipt.write(path)
+
+    assert json.loads(path.read_text(encoding="utf-8")) == receipt.to_dict()
+    assert not list(path.parent.glob(".pyffmpegcore-*.tmp"))
+    if os.name != "nt":
+        assert stat.S_IMODE(path.stat().st_mode) & 0o077 == 0
+
+    existing = path.with_name("existing.json")
+    existing.write_text("preserve", encoding="utf-8")
+    with pytest.raises(FileExistsError):
+        receipt.write(existing)
+    assert existing.read_text(encoding="utf-8") == "preserve"
+
+
 def test_receipt_write_race_never_overwrites_without_permission(tmp_path):
     batch, _source, _output = _batch(tmp_path)
     receipt = ReceiptBuilder(ffmpeg_path="missing-ffmpeg", ffprobe_path="missing-ffprobe").build(batch)
