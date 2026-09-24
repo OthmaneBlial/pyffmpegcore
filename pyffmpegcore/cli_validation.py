@@ -73,7 +73,7 @@ def require_output_path(path_str: str, option_name: str = "--output") -> Path:
 def prepare_output_path(path_str: str, force: bool, option_name: str = "--output") -> Path:
     """Validate and prepare a file output path."""
     path = require_output_path(path_str, option_name=option_name)
-    if path.exists() and not force:
+    if (path.exists() or path.is_symlink()) and not force:
         raise CLIError(f"Output already exists: {path}. Re-run with --force to overwrite.")
     path.parent.mkdir(parents=True, exist_ok=True)
     return path

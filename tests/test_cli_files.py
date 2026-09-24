@@ -39,6 +39,20 @@ def test_prepare_output_path_rejects_existing_file_without_force(tmp_path):
     assert "--force" in str(exc_info.value)
 
 
+def test_prepare_output_path_rejects_dangling_symlink_without_force(tmp_path):
+    target = tmp_path / "target.json"
+    link = tmp_path / "output.json"
+    try:
+        link.symlink_to(target)
+    except OSError as exc:
+        pytest.skip(f"symlinks unavailable: {exc}")
+
+    with pytest.raises(CLIError, match="Output already exists"):
+        prepare_output_path(str(link), force=False)
+
+    assert not target.exists()
+
+
 def test_prepare_output_path_creates_parent_directories(tmp_path):
     """
     Output helpers should create parent directories for future commands.

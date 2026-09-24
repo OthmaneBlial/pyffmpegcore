@@ -255,7 +255,10 @@ Le 24 septembre, batch et pipeline réservent aussi tout chemin d'état neuf par
 création exclusive avant exécution. Une création concurrente après le préflight
 échoue sans lancer le moteur ; le writer retombe sur une création exclusive si
 le système de fichiers refuse les liens physiques. Les 46 tests ciblés
-batch/pipeline/receipts passent.
+batch/pipeline/receipts passent. Le 24 septembre, la prévalidation CLI refuse
+aussi les liens symboliques pendants comme destinations existantes sans
+`--force`; un replay avait créé la cible via `receipt bug-report`. Les six tests
+`test_cli_files.py`, Ruff, formatage, mypy et contrôles docs passent.
 
 - **Objectif :** réduire les surprises de temps, espace et réseau tout en annonçant honnêtement que PyFFmpegCore n'est pas un sandbox.
 - **Changements :** définir des plafonds optionnels/explicites de temps et de sortie là où le moteur peut les garantir, distinguer préflight estimatif et limite dure, durcir redaction des diagnostics et politique URL/protocoles, tester nettoyage après annulation/timeout/disque plein. Maintenir l'exécution en vecteur d'arguments et `-nostdin`.
