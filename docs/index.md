@@ -109,8 +109,9 @@ progress, output, and receipt all verified.</samp></pre>
     <div class="pfc-section__head">
       <h2 id="proof-title">Measured.<br>Not mocked.</h2>
       <p>
-        The 19 September replay used generated first-party fixtures. Commands,
-        probes, receipts, checksums, and the size tradeoff are open for inspection.
+        The 19 September replay used generated first-party fixtures. A separate
+        public-domain Xiph clip confirms the exact-size result. Commands, probes,
+        receipts, checksums, and limits are open for inspection.
       </p>
     </div>
     <div class="pfc-proof-grid">
@@ -121,10 +122,10 @@ progress, output, and receipt all verified.</samp></pre>
         <a href="evidence/#replay-on-19-september-2026">Inspect the replay →</a>
       </article>
       <article class="pfc-proof">
-        <span class="pfc-proof__label">Exact-size / output</span>
-        <strong>248,417 B</strong>
-        <p>A 4,042,503-byte source compressed below a strict 256 KiB target.</p>
-        <a href="evidence/#replay-on-19-september-2026">Inspect the replay →</a>
+        <span class="pfc-proof__label">Exact-size / public-domain video</span>
+        <strong>1 MiB target</strong>
+        <p>An 8,147,493-byte Xiph VP9 clip reached 1,035,870 bytes with a 7% reserve. The default 5% missed by 7,803 bytes.</p>
+        <a href="evidence/#public-domain-exact-size-check-on-24-september-2026">Inspect the exact-size check →</a>
       </article>
       <article class="pfc-proof">
         <span class="pfc-proof__label">Podcast / measured loudness</span>
