@@ -40,10 +40,17 @@ cleanup() {
 trap cleanup EXIT
 
 python3 -m venv "$recorder_dir"
+requirements_file="$recorder_dir/requirements.txt"
+cat > "$requirements_file" <<'EOF'
+asciinema==2.4.0 \
+    --hash=sha256:249ccf108509d643ddaf38979dac48c99e9e251f597173d8553a30d7a6423104
+EOF
 "$recorder_dir/bin/python" -m pip install \
   --disable-pip-version-check \
   --quiet \
-  "asciinema==2.4.0"
+  --only-binary=:all: \
+  --require-hashes \
+  -r "$requirements_file"
 
 printf -v demo_command '%q' "$repo_root/scripts/run_terminal_demo.sh"
 (

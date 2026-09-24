@@ -381,6 +381,10 @@ et Scorecard
 [`35959607927`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35959607927)
 ont réussi sur ce même SHA ; la requête des PR ouvertes est vide. Ces contrôles
 en lecture seule n'ont lancé ni CI, ni Benchmarks, ni build/scan de conteneur.
+La revue de `scripts/record_terminal_demo.sh` a ensuite révélé une installation
+`asciinema==2.4.0` épinglée par version mais sans hash. Le script exige
+maintenant le wheel universel publié avec SHA-256 vérifié ; un test empêche le
+retour à une installation non verrouillée. Aucun cast n'a été enregistré.
 
 - **Objectif :** distinguer les vulnérabilités corrigibles, les avis sans correctif, les signaux de politique et les doublons historiques, puis réduire les causes plutôt que masquer les alertes.
 - **Changements :** tenir `SECURITY_TRIAGE.md` à jour pour chaque digest ; tester et scanner aussi l'image arm64 avant publication ; remplacer les installations `pip` non verrouillées en CI/release/demo par des locks avec hashes pour la matrice Python/OS ; maintenir le corpus et l'intégration ClusterFuzzLite reconnus par Scorecard ; contrôler la couverture CodeQL et des tests sur les révisions proposées ; préparer les preuves du badge OpenSSF sans revendiquer son octroi prématurément.

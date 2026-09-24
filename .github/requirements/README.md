@@ -18,6 +18,9 @@ The exact-wheel smoke deliberately installs the wheel through the ordinary
 public dependency resolver. That checks the user installation path, including
 the Python 3.10 `tomli` dependency, instead of substituting the development
 lock. It records the wheel checksum and installed versions in its artifacts.
+The terminal-recording helper separately hash-locks the universal `asciinema`
+wheel to the [PyPI 2.4.0 file record](https://pypi.org/pypi/asciinema/2.4.0/json)
+and requires a binary distribution.
 
 Locks were generated with `uv 0.12.17` on 19 September 2026. To update them,
 review the new package versions and hashes, then use:
