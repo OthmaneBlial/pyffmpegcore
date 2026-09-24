@@ -348,6 +348,9 @@ Un suivi précise maintenant dans le plan que le mode reencode ne sélectionne
 que la première piste vidéo et audio. Le préflight avertit si les médias locaux
 contiennent d'autres pistes, ou si une entrée distante empêche leur inspection.
 Les 40 tests ciblés planning/préflight, Ruff et mypy passent localement.
+Le contrat de sortie du mode reencode exige aussi vidéo et audio ; le résultat
+devient un échec de validation si FFprobe ne trouve pas l'une de ces pistes.
+Les 38 tests ciblés planning/workflow, Ruff, formatage, mypy et docs passent.
 
 - **Objectif :** réduire les surprises de temps, espace et réseau tout en annonçant honnêtement que PyFFmpegCore n'est pas un sandbox.
 - **Changements :** définir des plafonds optionnels/explicites de temps et de sortie là où le moteur peut les garantir, distinguer préflight estimatif et limite dure, durcir redaction des diagnostics et politique URL/protocoles, tester nettoyage après annulation/timeout/disque plein. Maintenir l'exécution en vecteur d'arguments et `-nostdin`.

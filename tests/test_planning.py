@@ -69,6 +69,7 @@ def test_concat_reencode_plan_selects_first_tracks_and_resets_timestamps(tmp_pat
     assert "[0:a:0]asetpts=PTS-STARTPTS[a0]" in graph
     assert "[v0][a0][v1][a1]concat=n=2:v=1:a=1[vout][aout]" in graph
     assert plan.metadata["required_stream_types"] == ["video", "audio"]
+    assert plan.metadata["output_contract"] == {"required_stream_types": ["video", "audio"]}
     assert "omit all other streams" in plan.operations[1]
     preview = render_plan_text(plan, PreflightReport(workflow=plan.workflow, checks=()), explain=True)
     assert "select the first video and audio stream" in preview

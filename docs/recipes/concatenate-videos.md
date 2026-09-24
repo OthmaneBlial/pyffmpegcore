@@ -31,7 +31,8 @@ default. It supports codec and container differences when stream layouts and
 video dimensions match. Preflight rejects different video dimensions before
 writing; resize clips to a common size first. Every input must contain video
 and audio. Other tracks are omitted; preflight warns when it finds extra tracks
-or cannot inspect a remote input. FFmpeg's concat-filter requirements are
+or cannot inspect a remote input. Output verification fails if the resulting
+file does not contain both video and audio streams. FFmpeg's concat-filter requirements are
 described in its [filter documentation](https://ffmpeg.org/ffmpeg-filters.html#concat).
 
 After reviewing the plan, run the same command without `--explain` and add a

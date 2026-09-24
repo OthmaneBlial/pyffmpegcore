@@ -750,6 +750,7 @@ class WorkflowPlanner:
                 f"encode {video_codec} video and {audio_codec} audio",
             )
             metadata["required_stream_types"] = ["video", "audio"]
+            metadata["output_contract"] = {"required_stream_types": ["video", "audio"]}
         return self._plan(
             f"concat/{mode}",
             args,

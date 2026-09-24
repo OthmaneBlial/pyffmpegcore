@@ -375,6 +375,31 @@ def test_workflow_fails_when_profile_requires_a_missing_output_stream(tmp_path, 
     assert result.outputs[0]["verification"]["reason"] == "expected output stream type 'audio', found none"
 
 
+def test_workflow_fails_when_concat_output_loses_required_audio(tmp_path, monkeypatch):
+    output = tmp_path / "joined.mp4"
+    code = f"from pathlib import Path; Path({str(output)!r}).write_bytes(b'media')"
+    plan = ExecutionPlan(
+        workflow="concat/reencode",
+        command=(sys.executable, "-c", code),
+        inputs=(),
+        outputs=(str(output),),
+        metadata={"output_contract": {"required_stream_types": ["video", "audio"]}},
+    )
+    media = MediaInfo(
+        path=str(output),
+        format_name="mp4",
+        streams=(StreamInfo(index=0, codec_type="video", codec_name="h264"),),
+    )
+    monkeypatch.setattr(FFprobeRunner, "probe_media", lambda _runner, _path: media)
+    prepared = PreparedWorkflow(plan, PreflightReport(plan.workflow, ()))
+
+    result = WorkflowEngine(ffprobe_path="fake-ffprobe").run(prepared).items[0].result
+
+    assert result.status is JobStatus.FAILED
+    assert result.exit_category == "validation"
+    assert result.outputs[0]["verification"]["reason"] == "expected output stream type 'audio', found none"
+
+
 def test_workflow_marks_output_unverified_when_ffprobe_is_unavailable(tmp_path, monkeypatch):
     output = tmp_path / "output.bin"
     code = f"from pathlib import Path; Path({str(output)!r}).write_bytes(b'media')"
