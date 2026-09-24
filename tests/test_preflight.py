@@ -185,6 +185,70 @@ def test_preflight_checks_concat_reencode_dimensions(tmp_path, second_width, exp
         assert not output.exists()
 
 
+def test_preflight_warns_when_concat_reencode_omits_additional_stream_types(tmp_path):
+    inputs = (tmp_path / "first.mp4", tmp_path / "second.mp4")
+    for path in inputs:
+        path.write_bytes(b"a")
+    plan = ExecutionPlan(
+        workflow="concat/reencode",
+        command=("ffmpeg", "-i", str(inputs[0]), "-i", str(inputs[1]), "-filter_complex", "concat"),
+        inputs=tuple(map(str, inputs)),
+        outputs=(str(tmp_path / "joined.mp4"),),
+        metadata={"required_stream_types": ["video", "audio"]},
+    )
+    media = {
+        str(inputs[0]): MediaInfo(
+            path=str(inputs[0]),
+            streams=(
+                StreamInfo(index=0, codec_type="video", width=1920, height=1080),
+                StreamInfo(index=1, codec_type="audio"),
+                StreamInfo(index=2, codec_type="audio"),
+                StreamInfo(index=3, codec_type="subtitle"),
+            ),
+        ),
+        str(inputs[1]): MediaInfo(
+            path=str(inputs[1]),
+            streams=(
+                StreamInfo(index=0, codec_type="video", width=1920, height=1080),
+                StreamInfo(index=1, codec_type="audio"),
+            ),
+        ),
+    }
+
+    with patch("pyffmpegcore.preflight.FFprobeRunner.probe_media", side_effect=lambda path: media[path]):
+        report = PreflightEngine(
+            inventory=inventory(filters=("concat", "setpts", "asetpts", "scale")),
+            executable_resolver=lambda _binary: "/usr/bin/ffmpeg",
+        ).check(plan)
+
+    selection = next(check for check in report.checks if check.name == "concat/reencode-stream-selection")
+    assert report.ok
+    assert selection.status == "warn"
+    assert "audio, subtitle" in selection.message
+    assert "extract and convert" in (selection.hint or "")
+
+
+def test_preflight_warns_that_remote_concat_reencode_tracks_are_uninspected():
+    plan = ExecutionPlan(
+        workflow="concat/reencode",
+        command=("ffmpeg", "-i", "https://user:secret@example.test/one.mp4", "-filter_complex", "concat"),
+        inputs=("https://user:secret@example.test/one.mp4", "https://media.example/two.mp4"),
+        outputs=("joined.mp4",),
+        metadata={"required_stream_types": ["video", "audio"]},
+    )
+
+    report = PreflightEngine(
+        inventory=inventory(filters=("concat", "setpts", "asetpts", "scale")),
+        executable_resolver=lambda _binary: "/usr/bin/ffmpeg",
+    ).check(plan)
+
+    selection = next(check for check in report.checks if check.name == "concat/reencode-stream-selection")
+    assert report.ok
+    assert selection.status == "warn"
+    assert "Remote input tracks cannot be inspected" in selection.message
+    assert "secret" not in report.render()
+
+
 def test_preflight_explains_missing_capability_with_available_fallback(tmp_path):
     source = tmp_path / "source.bin"
     source.write_bytes(b"x")

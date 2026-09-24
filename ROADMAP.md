@@ -344,6 +344,10 @@ deux pistes ensemble. Une recette documente les contraintes et les solutions
 de repli. Les 57 tests ciblés, Ruff, formatage, mypy, contrôles de génération
 des docs et build MkDocs strict passent localement ; la matrice hébergée et la
 suite complète n'ont pas été lancées.
+Un suivi précise maintenant dans le plan que le mode reencode ne sélectionne
+que la première piste vidéo et audio. Le préflight avertit si les médias locaux
+contiennent d'autres pistes, ou si une entrée distante empêche leur inspection.
+Les 40 tests ciblés planning/préflight, Ruff et mypy passent localement.
 
 - **Objectif :** réduire les surprises de temps, espace et réseau tout en annonçant honnêtement que PyFFmpegCore n'est pas un sandbox.
 - **Changements :** définir des plafonds optionnels/explicites de temps et de sortie là où le moteur peut les garantir, distinguer préflight estimatif et limite dure, durcir redaction des diagnostics et politique URL/protocoles, tester nettoyage après annulation/timeout/disque plein. Maintenir l'exécution en vecteur d'arguments et `-nostdin`.

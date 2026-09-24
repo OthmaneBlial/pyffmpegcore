@@ -214,6 +214,7 @@ class PreflightEngine:
         concat_copy_has_remote_input = False
         concat_reencode_dimensions: list[tuple[int, int] | None] = []
         concat_reencode_has_remote_input = False
+        concat_reencode_extra_stream_types: set[str] = set()
         for value in plan.inputs:
             remote_scheme = _input_scheme(value)
             parsed = urlsplit(value)
@@ -264,6 +265,11 @@ class PreflightEngine:
                     video = next((stream for stream in media.streams if stream.codec_type == "video"), None)
                     dimensions = (video.width, video.height) if video and video.width and video.height else None
                     concat_reencode_dimensions.append(dimensions)
+                    for stream_type in {stream.codec_type for stream in media.streams} - {"video", "audio"}:
+                        concat_reencode_extra_stream_types.add(stream_type)
+                    for stream_type in ("video", "audio"):
+                        if sum(stream.codec_type == stream_type for stream in media.streams) > 1:
+                            concat_reencode_extra_stream_types.add(stream_type)
                 available = {stream.codec_type for stream in media.streams}
                 missing_streams = [kind for kind in per_input_streams if kind not in available]
                 if missing_streams:
@@ -341,6 +347,21 @@ class PreflightEngine:
                         "concat/reencode-compatibility",
                         "pass",
                         "Selected video stream dimensions match across inputs.",
+                    )
+                )
+            omitted_stream_types = ", ".join(sorted(concat_reencode_extra_stream_types))
+            if concat_reencode_has_remote_input or omitted_stream_types:
+                details = []
+                if omitted_stream_types:
+                    details.append(f"Additional stream types will be omitted by re-encode: {omitted_stream_types}.")
+                if concat_reencode_has_remote_input:
+                    details.append("Remote input tracks cannot be inspected; additional streams may also be omitted.")
+                checks.append(
+                    PreflightCheck(
+                        "concat/reencode-stream-selection",
+                        "warn",
+                        " ".join(details),
+                        "Use copy mode when stream layouts are compatible, or extract and convert required tracks separately.",
                     )
                 )
 

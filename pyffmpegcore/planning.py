@@ -746,6 +746,7 @@ class WorkflowPlanner:
             streams = ("video:0", "audio:0")
             operations = (
                 f"decode and concatenate {len(inputs)} inputs",
+                "select the first video and audio stream from each input; omit all other streams",
                 f"encode {video_codec} video and {audio_codec} audio",
             )
             metadata["required_stream_types"] = ["video", "audio"]
