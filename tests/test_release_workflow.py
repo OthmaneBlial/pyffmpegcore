@@ -20,3 +20,11 @@ def test_beta_release_is_marked_as_a_prerelease():
 
     assert '"Development Status :: 4 - Beta"' in project
     assert "--prerelease" in workflow
+
+
+def test_manual_dispatch_only_builds_and_tests():
+    workflow = (REPO_ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
+
+    assert "workflow_dispatch: {}" in workflow
+    assert "dry_run:" not in workflow
+    assert workflow.count("\n    if: github.event_name == 'push'") == 5

@@ -3,13 +3,7 @@ name: Release
 on:
   push:
     tags: ["v*"]
-  workflow_dispatch:
-    inputs:
-      dry_run:
-        description: Build and test without publishing
-        required: true
-        type: boolean
-        default: true
+  workflow_dispatch: {}
 
 permissions:
   contents: read

@@ -13,7 +13,10 @@ Only a maintainer with repository and PyPI project control may publish a release
 
 1. Confirm every earlier P0 roadmap gate and all required checks are green.
 2. Update `CHANGELOG.md`, compatibility notes, and the runtime version.
-3. Run the Release workflow manually in dry-run mode.
+3. Run the Release workflow manually with `workflow_dispatch`. That event only
+   builds and tests the release bundle. Attestation, PyPI publication,
+   public-install, and GitHub Release jobs run only after a signed version-tag
+   push.
 4. Create an SSH-signed annotated tag matching the runtime version exactly.
    The maintainer key must match `.github/allowed_signers`, and the GitHub tag
    ruleset prevents deletion and non-fast-forward updates of `v*` refs:
