@@ -138,6 +138,7 @@ def test_receipt_reuses_managed_output_probe_evidence(tmp_path, monkeypatch):
             "input_streams": [{"type": "audio", "codec": "aac", "language": "eng"}],
             "output_streams": [{"type": "audio", "codec": "aac", "language": "eng"}],
         },
+        "selected_streams": {"status": "verified", "required_types": ["audio"], "output_types": ["audio"]},
     }
     item = batch.items[0]
     result = replace(item.result, outputs=(dict(item.result.outputs[0], verification=verification),))
@@ -154,6 +155,8 @@ def test_receipt_reuses_managed_output_probe_evidence(tmp_path, monkeypatch):
     assert output_probe["streams"][0]["codec"] == "aac"
     assert output_probe["streams"][0]["language"] == "eng"
     assert output_probe["stream_preservation"]["status"] == "verified"
+    assert output_probe["selected_streams"] == verification["selected_streams"]
+    assert validate_receipt(receipt.to_dict()) == ()
 
 
 def test_receipt_keeps_output_probe_facts_when_profile_contract_fails(tmp_path, monkeypatch):
@@ -166,6 +169,7 @@ def test_receipt_keeps_output_probe_facts_when_profile_contract_fails(tmp_path, 
         "bit_rate": 56,
         "streams": [{"index": 0, "type": "video", "codec": "hevc"}],
         "chapter_count": 0,
+        "selected_streams": {"status": "failed", "required_types": ["audio"], "output_types": ["video"]},
         "reason": "expected h264 video, found hevc",
     }
     item = batch.items[0]
@@ -181,6 +185,7 @@ def test_receipt_keeps_output_probe_facts_when_profile_contract_fails(tmp_path, 
     output_probe = receipt.document["items"][0]["output_probe"]
     assert output_probe["format_name"] == "mp4"
     assert output_probe["streams"][0]["codec"] == "hevc"
+    assert output_probe["selected_streams"] == verification["selected_streams"]
     assert output_probe["reason"] == "expected h264 video, found hevc"
 
 
