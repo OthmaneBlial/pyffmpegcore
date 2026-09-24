@@ -20,7 +20,7 @@ Copy this checklist for each new version. Every box starts open; a previous rele
 
 ## Automated Evidence
 
-- [ ] Ruff, formatting, mypy, the full fast suite, and the 80% coverage gate pass on the latest candidate source. The full CLI file suite (11 tests) and two pipeline secret-masking tests pass locally on `4a66b28`; five terminal-demo regression tests pass on `7faca6c`. Ruff, formatting, mypy, generated-doc checks, and Markdown link checks pass. Full suite/coverage CI run is older (`401f0622`).
+- [ ] Ruff, formatting, mypy, the full fast suite, and the 80% coverage gate pass on the latest candidate source. Local CI fast suite on `2a8eb32` passed (371 passed, 102 real-media deselected), with Ruff, formatting, mypy, compileall, and docs checks; hosted coverage/full CI is older (`401f0622`). Full real-media suite remains unrun on the latest candidate.
 - [ ] Python 3.10–3.14 package matrix on the latest candidate source. The recorded hosted matrix is on older SHA `401f0622`.
 - [ ] The same prebuilt wheel passes media smoke tests on Linux, macOS, and Windows with Python 3.10 and 3.14 for the latest candidate source. The recorded release matrix is on older SHA `401f0622`.
 - [ ] Cold deterministic fixtures pass without cache reuse (`--force`) on the latest candidate source. The recorded release run is on older SHA `401f0622`.
