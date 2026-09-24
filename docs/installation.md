@@ -39,8 +39,28 @@ If either executable is still missing, inspect the package's install location
 and `PATH`, or pass trusted absolute binary paths as shown in
 [troubleshooting](troubleshooting.md#ffmpeg-or-ffprobe-is-missing). The WinGet,
 Fedora, Arch, and Homebrew package pages were checked on 24 September 2026.
-The Windows, Fedora, and Arch installations were not run on this macOS host.
+The Windows and Linux installations were not run on this macOS host.
 CI also installs FFmpeg separately on hosted macOS and Windows runners.
+
+## Ubuntu and Debian FFmpeg
+
+Install the distribution package with APT:
+
+```bash
+sudo apt-get update
+sudo apt-get install ffmpeg
+ffmpeg -version
+ffprobe -version
+```
+
+Ubuntu 24.04 lists [`ffmpeg` in Universe](https://packages.ubuntu.com/noble/ffmpeg);
+its [package file list](https://packages.ubuntu.com/noble/amd64/ffmpeg/filelist)
+includes both executables. Debian 12's [`ffmpeg` package](https://packages.debian.org/bookworm/ffmpeg)
+also includes both command-line tools. If APT cannot find the Ubuntu package,
+check that the Universe repository is enabled. See the [APT install command
+reference](https://manpages.ubuntu.com/manpages/noble/man8/apt-get.8.html).
+Package pages were checked on 24 September 2026. Then install PyFFmpegCore with
+`pipx` below and run `pyffmpegcore doctor` and `pyffmpegcore smoke-test`.
 
 ## Fedora Linux and Arch Linux
 
