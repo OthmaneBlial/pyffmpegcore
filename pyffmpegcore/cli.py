@@ -419,7 +419,7 @@ def handle_pipeline_graph(args: argparse.Namespace) -> int:
 
 def handle_pipeline_migrate(args: argparse.Namespace) -> int:
     """Canonicalize a validated pipeline into the requested JSON schema."""
-    if args.output.exists() and not args.force:
+    if (args.output.exists() or args.output.is_symlink()) and not args.force:
         raise CLIError(f"Pipeline output already exists: {args.output}. Re-run with --force.")
     source = PipelineSpec.read(args.input)
     migrated = migrate_pipeline_document(source.to_dict(), args.to)

@@ -19,6 +19,7 @@ from pyffmpegcore import (
     ValidationError,
     migrate_pipeline_document,
 )
+from pyffmpegcore.cli import main
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -203,6 +204,20 @@ def test_pipeline_schema_migration_is_explicit_and_canonical(tmp_path):
         migrate_pipeline_document({**source, "schema_version": "0.9"})
     with pytest.raises(ValidationError, match="unsupported target"):
         migrate_pipeline_document(source, "2.0")
+
+
+def test_cli_pipeline_migrate_rejects_dangling_output_symlink(tmp_path, capsys):
+    source = tmp_path / "pipeline.json"
+    source.write_text(json.dumps(_document("source.mp4")), encoding="utf-8")
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    target = outside / "migrated.json"
+    link = tmp_path / "migrated.json"
+    link.symlink_to(target)
+
+    assert main(["pipeline", "migrate", str(source), str(link)]) == 4
+    assert "Pipeline output already exists" in capsys.readouterr().err
+    assert not target.exists()
 
 
 def test_pipeline_rejects_receipt_path_that_would_overwrite_media_output(tmp_path, monkeypatch):
