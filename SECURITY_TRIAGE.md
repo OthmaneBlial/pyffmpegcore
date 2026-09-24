@@ -91,6 +91,19 @@ container and did not dismiss any alert. The remaining Scorecard alert requires
 authenticated OpenSSF Best Practices enrollment; the historical Trivy alerts
 remain visible pending an allowed fresh container scan.
 
+The paginated inventory was refreshed on 24 September at exact `main` SHA
+`5eac66aa318c646c0521e42bc5b666c9ded989de`. It still returns 484 open Code
+Scanning alerts: 483 Trivy instances from
+`.github/workflows/container.yml:build-scan-publish` on old commit `25adc431`
+(97 HIGH, 199 MEDIUM, 164 LOW, 23 without severity), plus LOW Scorecard alert
+[`CIIBestPracticesID` #15](https://github.com/OthmaneBlial/pyffmpegcore/security/code-scanning/15)
+on current `main`. No CodeQL, Dependabot, or secret-scanning alerts are open.
+CodeQL [`35952546126`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35952546126)
+and Scorecard
+[`35952546132`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35952546132)
+passed on that exact SHA. This inventory used read-only GitHub API calls; it
+did not start CI, Benchmarks, or a container scan and did not dismiss alerts.
+
 The hash-bearing wheel install in the Action and the public terminal demo
 removed the open `PinnedDependenciesID` instances. The successful
 [ClusterFuzzLite run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35449599477)

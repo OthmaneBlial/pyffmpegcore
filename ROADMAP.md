@@ -304,7 +304,8 @@ pas encore publié. Le 24 septembre, les déclencheurs automatiques pull request
 push et planification du workflow Container ont été désactivés conformément à
 l'instruction de ne pas exécuter Docker ; une exécution manuelle reste possible
 mais n'est pas autorisée pendant cette pause. La validation des deux
-architectures et l'inventaire récent des alertes restent incomplets.
+architectures et un nouveau scan Trivy restent incomplets ; l'inventaire des
+alertes GitHub est actualisé plus bas.
 L'inventaire GitHub paginé du 24 septembre au SHA
 `259834267d2c0b1859cd02f69cdeef670e8c7bfa` confirme 484 alertes ouvertes :
 483 Trivy liées à l'ancien SHA `25adc431` et une alerte LOW
@@ -330,6 +331,16 @@ publication de conteneur et n'a écarté aucune alerte.
 Un contrat statique couvre maintenant les événements de
 `.github/workflows/container.yml` et échoue si un déclencheur automatique est
 ajouté pendant cette suspension ; ce test ne lance pas Docker.
+Le dernier inventaire paginé, au SHA `5eac66aa318c646c0521e42bc5b666c9ded989de`,
+confirme 484 alertes Code Scanning ouvertes : 483 Trivy sur l'ancien SHA
+`25adc431` (97 HIGH, 199 MEDIUM, 164 LOW, 23 sans sévérité), plus une alerte
+LOW `CIIBestPracticesID` Scorecard sur `main`. Aucun signal CodeQL, Dependabot
+ou secret-scanning n'est ouvert. CodeQL
+[`35952546126`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35952546126)
+et Scorecard
+[`35952546132`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35952546132)
+ont réussi sur ce SHA. Cet inventaire API n'a pas lancé CI, Benchmarks ou un
+scan de conteneur et n'a écarté aucune alerte.
 
 - **Objectif :** distinguer les vulnérabilités corrigibles, les avis sans correctif, les signaux de politique et les doublons historiques, puis réduire les causes plutôt que masquer les alertes.
 - **Changements :** tenir `SECURITY_TRIAGE.md` à jour pour chaque digest ; tester et scanner aussi l'image arm64 avant publication ; remplacer les installations `pip` non verrouillées en CI/release/demo par des locks avec hashes pour la matrice Python/OS ; maintenir le corpus et l'intégration ClusterFuzzLite reconnus par Scorecard ; contrôler la couverture CodeQL et des tests sur les révisions proposées ; préparer les preuves du badge OpenSSF sans revendiquer son octroi prématurément.
