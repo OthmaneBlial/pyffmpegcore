@@ -214,9 +214,15 @@ H.264/yuv420p fait 1 763 207 octets contre 8 147 493 en entrée ; FFprobe, la
 validation du receipt 1.0, le décodage complet, `moov` avant `mdat` et SSIM
 0.980900 ont réussi. Deux paires d'images ont été inspectées à 640×360, sans
 défaut évident à cette taille. Voir la [preuve complète](docs/evidence.md#public-domain-real-video-check-on-24-september-2026).
-Cela vérifie un seul profil vidéo ; la voix, le contrôle qualité exact-size et
-la compatibilité multi-plateforme avec des médias représentatifs restent
-ouverts. Le gate des trois recettes reste donc ouvert.
+Le même clip a ensuite vérifié la recette exact-size : la nouvelle détection
+des pistes a supprimé la réserve audio inexistante et l'exigence AAC. À une
+limite de 1 MiB, la réserve par défaut de 5 % a dépassé la limite de 7 803
+octets ; une réserve explicite de 7 % a produit 1 035 870 octets et passé la
+limite, avec SSIM 0.976039, receipt validé, décodage complet et inspection
+visuelle à 640×360. Voir la [preuve et ses limites](docs/evidence.md#public-domain-exact-size-check-on-24-september-2026).
+Cela reste un seul clip sans audio, sur macOS et FFmpeg 9.0.1. La voix, les
+médias consentis représentatifs et la compatibilité multi-plateforme restent
+ouverts ; le gate des trois recettes n'est pas fermé.
 
 - **Objectif :** concentrer l'investissement produit sur la vidéo web, la taille d'upload et la voix/podcast, déjà présents dans le dépôt.
 - **Changements :** rejouer chaque recette avec médias générés et médias consentis représentatifs ; relever durée, codecs, pistes conservées/perdues, taille et qualité audible/visible ; expliciter les cas où le profil refuse ou avertit. Corriger dans le moteur partagé les défauts observés avant tout nouveau preset.

@@ -81,6 +81,47 @@ Output SHA-256: `3fa464804b67062c856a08116704bd645d3707ffd25f4c77967c421d1248370
 Receipt SHA-256:
 `ef761c23f938d43cbaa6d11700cde8b7dc0414d11d1d61406ff6d424c619dafb`.
 
+## Public-domain exact-size check on 24 September 2026
+
+The same Xiph `vidyo1` VP9 clip was tested with two-pass compression on macOS
+arm64, Python 3.14.6, and FFmpeg/FFprobe 9.0.1. The input has one video stream
+and no audio. The corrected planner now budgets that target as video-only: it
+does not reserve an audio bitrate or require an AAC encoder. `--explain` wrote
+no output.
+
+With a 1 MiB target and an explicit 7% container reserve, the run produced a
+1,035,870-byte H.264 MP4 (`yuv420p`, 1280×720) against the 1,048,576-byte limit.
+The receipt records `target_met: true`; receipt validation, FFprobe, and full
+decode passed. The measured output SHA-256 is
+`66773993cac83b0310fbe606cfe30514a11a538af8cb894cf67cfdc1ca1c83ba`. The
+[privacy-redacted receipt](evidence/exact-size-vidyo1-2026-09-24.receipt.json)
+has SHA-256
+`0d808ebfd1d3f7758fdef04a6be497698ecb879fecf891746556ac11d8865b7a`.
+
+The default 5% reserve produced 1,056,379 bytes, 7,803 bytes over the limit.
+FFmpeg's two-pass rate estimate can miss a byte ceiling; the receipt reports
+`target_met: false` for that run. The 7% reserve passed on this sample with
+12,706 bytes to spare. This is one clip and one FFmpeg build, not a universal
+reserve recommendation.
+
+The source/output SSIM filter measured `All:0.976039` (Y 0.971474,
+U 0.983743, V 0.986591). Frame pairs at 1 and 7 seconds were inspected at
+640×360; no obvious blocking or softness appeared at that size. This narrows
+the exact-size review gap to this video-only sample. It does not cover speech,
+audio, other FFmpeg builds, or other platforms.
+
+### Reproduce the exact-size check
+
+```bash
+curl -fLsS https://media.xiph.org/video/derf/webm/vidyo1_720p_60fps.webm -o vidyo1_720p_60fps.webm
+pyffmpegcore compress --input vidyo1_720p_60fps.webm --output vidyo1-exact-size.mp4 --target-size 1MiB --two-pass --container-overhead-percent 7 --explain
+pyffmpegcore compress --input vidyo1_720p_60fps.webm --output vidyo1-exact-size.mp4 --target-size 1MiB --two-pass --container-overhead-percent 7 --receipt vidyo1-exact-size.receipt.json --hash-content
+pyffmpegcore receipt validate vidyo1-exact-size.receipt.json --json
+ffmpeg -v error -i vidyo1-exact-size.mp4 -f null -
+```
+
+### Reproduce the web-profile check
+
 Reproduce against the linked Xiph download with fresh output paths:
 
 ```bash

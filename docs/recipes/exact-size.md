@@ -22,10 +22,14 @@ Choose one primary goal: use CRF when visual quality matters more than final
 bytes, and two-pass target-size mode when an upload or storage ceiling is the
 hard constraint.
 
-Successful target-size jobs print a measured proof using the actual source,
+Completed target-size jobs print a measured proof using the actual source,
 output, and limit, for example `Target-size proof: INPUT -> OUTPUT; limit
 LIMIT; PASS`. The same byte counts and `target_met` boolean are present in
 `--result-json` and the optional receipt.
+
+FFmpeg can finish encoding while the measured result says `MISS`. The command
+exit status reports execution, not whether the byte limit was met. CI and other
+automations must check `target_met` before accepting the output.
 
 Very small targets fail before mutation with a human-readable minimum size at
 the selected `--min-video-bitrate` quality floor. Two-pass work creates
@@ -33,8 +37,13 @@ temporary pass logs and cleans them after completion. Decode and review the
 result before deleting the source; meeting a byte limit does not itself prove
 subjective quality.
 
-The default reserves a conservative 5% for muxing overhead. Advanced users can
-override it with `--container-overhead-percent`; lowering the reserve can move
-the result closer to the limit but increases the risk of a reported `MISS`.
+For target-size plans, FFprobe reads source duration and streams. Video-only
+input reserves no audio bitrate and does not require an audio encoder.
+
+The default reserves 5% for muxing overhead. Advanced users can override it
+with `--container-overhead-percent`; a larger reserve can help when a measured
+run misses its cap. On one public-domain 720p sample, 5% missed by 7,803 bytes
+and an explicit 7% passed. This result depends on input and FFmpeg build; see
+the [dated receipt and quality check](../evidence.md#public-domain-exact-size-check-on-24-september-2026).
 
 See the [dated target-size proof and redacted receipt](../evidence.md#reproducible-recipe-evidence).

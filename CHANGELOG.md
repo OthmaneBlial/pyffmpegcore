@@ -4,6 +4,11 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Fixed
+
+- Two-pass target-size plans account for source audio streams, so video-only
+  inputs do not reserve bytes for absent audio or require an audio encoder.
+
 ## [0.3.1] - 2026-09-24
 
 ### Fixed

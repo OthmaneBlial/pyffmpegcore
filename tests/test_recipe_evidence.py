@@ -41,6 +41,27 @@ def test_recipe_evidence_matches_receipts_and_contains_no_private_paths():
                 assert measurement["size_change_percent"] == round(actual, 1)
 
 
+def test_public_domain_exact_size_receipt_proves_the_video_only_limit():
+    receipt_path = EVIDENCE_ROOT / "exact-size-vidyo1-2026-09-24.receipt.json"
+    rendered = receipt_path.read_text(encoding="utf-8")
+    receipt = json.loads(rendered)
+    item = receipt["items"][0]
+    proof = item["proof"]
+    output_stream = item["output_probe"]["streams"][0]
+
+    assert validate_receipt(receipt) == ()
+    assert item["result"]["status"] == "succeeded"
+    assert proof["target_size_bytes"] == 1_048_576
+    assert proof["output_size_bytes"] == 1_035_870
+    assert proof["target_met"] is True
+    assert [stream["type"] for stream in item["input_probe"]["streams"]] == ["video"]
+    assert output_stream["codec"] == "h264"
+    assert output_stream["pixel_format"] == "yuv420p"
+    assert receipt["content_hashes"][0]["digest"] == "a090e17dd2c781f16604b2a56989482db05249dd1ac92d36ec0050ea516e36c3"
+    assert receipt["content_hashes"][1]["digest"] == "66773993cac83b0310fbe606cfe30514a11a538af8cb894cf67cfdc1ca1c83ba"
+    assert not any(marker in rendered for marker in ("/Users/", "/home/", "/private/", "C:\\Users\\"))
+
+
 def test_flagship_recipe_commands_match_the_cli_contract():
     podcast = (REPO_ROOT / "docs" / "recipes" / "podcast.md").read_text(encoding="utf-8")
     preserve = (REPO_ROOT / "docs" / "recipes" / "preserve-streams.md").read_text(encoding="utf-8")
