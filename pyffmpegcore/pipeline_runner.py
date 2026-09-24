@@ -4,12 +4,18 @@ from __future__ import annotations
 
 import hashlib
 import json
+import platform
+import shutil
+import subprocess
+import sys
 import threading
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
 
+from . import __version__
 from ._fileio import DestinationExistsError, atomic_write_text, exclusive_write_text
+from .domain import is_url_like_path
 from .errors import ValidationError
 from .pipeline import (
     PIPELINE_STATE_SCHEMA_VERSION,
@@ -20,6 +26,7 @@ from .pipeline import (
     PipelineStepPlan,
     _mask_secrets,
 )
+from .probe import FFprobeRunner
 from .receipt import (
     ReceiptBuilder,
     RunReceipt,
@@ -27,14 +34,17 @@ from .receipt import (
     _validate_state_destination,
     redact_receipt_value,
 )
+from .runner import FFmpegRunner
 from .workflow import WorkflowEngine
+
+CACHE_SIGNATURE_VERSION = 2
 
 
 def _file_fingerprint(path: str, content_aware: bool) -> dict[str, object]:
     parsed = urlsplit(path)
-    if parsed.scheme and parsed.scheme != "file":
+    if is_url_like_path(path) and parsed.scheme.casefold() != "file":
         return {"remote": redact_receipt_value(path)}
-    candidate = Path(parsed.path if parsed.scheme == "file" else path)
+    candidate = Path(parsed.path if parsed.scheme.casefold() == "file" else path)
     if not candidate.is_file():
         return {"missing": candidate.name}
     stat = candidate.stat()
@@ -47,10 +57,75 @@ def _file_fingerprint(path: str, content_aware: bool) -> dict[str, object]:
     return {"name": candidate.name, "size": stat.st_size, "sha256": digest.hexdigest()}
 
 
-def _cache_key(step: PipelineStepPlan, pipeline: PipelinePlan) -> str:
+def _binary_fingerprint(binary: str) -> dict[str, object] | None:
+    resolved = shutil.which(binary)
+    if resolved is None:
+        return None
+    path = Path(resolved)
+    try:
+        stat = path.stat()
+        return {"path": str(path.resolve()), "size": stat.st_size, "mtime_ns": stat.st_mtime_ns}
+    except (OSError, RuntimeError):
+        return None
+
+
+def _cache_key(
+    step: PipelineStepPlan,
+    pipeline: PipelinePlan,
+    runtime: dict[str, object] | None = None,
+) -> str:
     payload = {
+        "cache_signature_version": CACHE_SIGNATURE_VERSION,
         "plan": _mask_secrets(step.plan.to_dict(), pipeline.secret_values),
         "inputs": [_file_fingerprint(value, pipeline.cache.content_aware) for value in step.plan.inputs],
+        "runtime": runtime,
+    }
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def _runtime_fingerprint(ffmpeg_path: str, ffprobe_path: str) -> dict[str, object] | None:
+    """Identify the package, OS, and media tools that produced a cached result."""
+    try:
+        ffmpeg_version = FFmpegRunner(ffmpeg_path).get_version()
+        ffprobe_version = FFprobeRunner(ffprobe_path).get_version()
+    except (OSError, RuntimeError, subprocess.SubprocessError):
+        return None
+    ffmpeg_binary = _binary_fingerprint(ffmpeg_path)
+    ffprobe_binary = _binary_fingerprint(ffprobe_path)
+    if ffmpeg_binary is None or ffprobe_binary is None:
+        return None
+    return {
+        "pyffmpegcore": __version__,
+        "python": platform.python_version(),
+        "platform": sys.platform,
+        "machine": platform.machine(),
+        "ffmpeg": {"version": ffmpeg_version, **ffmpeg_binary},
+        "ffprobe": {"version": ffprobe_version, **ffprobe_binary},
+    }
+
+
+def _completed_key(
+    step: PipelineStepPlan,
+    pipeline: PipelinePlan,
+    runtime: dict[str, object] | None,
+) -> str | None:
+    """Fingerprint outputs so a cache hit cannot trust mere path existence."""
+    if runtime is None or any(is_url_like_path(value) for value in step.plan.inputs):
+        return None
+    outputs = []
+    for value in step.plan.outputs:
+        path = Path(value)
+        try:
+            if path.is_symlink() or not path.is_file() or path.stat().st_size <= 0:
+                return None
+            outputs.append(_file_fingerprint(value, pipeline.cache.content_aware))
+        except OSError:
+            return None
+    payload = {
+        "cache_signature_version": CACHE_SIGNATURE_VERSION,
+        "plan_inputs_and_runtime": _cache_key(step, pipeline, runtime),
+        "outputs": outputs,
     }
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
@@ -129,6 +204,8 @@ class PipelineRunner:
             overwrite=allow_state_overwrite,
         )
         completed = _load_pipeline_state(selected_state) if (resume or pipeline.cache.enabled) else {}
+        track_cache = resume or pipeline.cache.enabled or selected_state is not None
+        runtime = _runtime_fingerprint(self.ffmpeg_path, self.ffprobe_path) if track_cache else None
         receipt_paths = (
             _prepare_receipt_paths(
                 receipts,
@@ -164,7 +241,7 @@ class PipelineRunner:
             state_claimed = True
 
         for step in pipeline.steps:
-            key = _cache_key(step, pipeline)
+            key = _cache_key(step, pipeline, runtime)
             if cancel.is_set():
                 emit("cancelled", step.id, "pipeline cancellation requested")
                 outcomes[step.id] = PipelineStepOutcome(step.id, "cancelled", key)
@@ -175,15 +252,12 @@ class PipelineRunner:
                 emit("blocked", step.id, detail)
                 outcomes[step.id] = PipelineStepOutcome(step.id, "blocked", key, detail=detail)
                 continue
-            key = _cache_key(step, pipeline)
-            if (
-                (resume or pipeline.cache.enabled)
-                and completed.get(step.id) == key
-                and all(Path(output).is_file() for output in step.plan.outputs)
-            ):
+            key = _cache_key(step, pipeline, runtime)
+            completed_key = _completed_key(step, pipeline, runtime) if (resume or pipeline.cache.enabled) else None
+            if completed_key is not None and completed.get(step.id) == completed_key:
                 status = "cached" if pipeline.cache.enabled else "resumed"
                 emit(status, step.id)
-                outcomes[step.id] = PipelineStepOutcome(step.id, status, key)
+                outcomes[step.id] = PipelineStepOutcome(step.id, status, completed_key)
                 continue
             claim_state_path()
             emit("started", step.id)
@@ -200,13 +274,17 @@ class PipelineRunner:
                     overwrite=overwrite_receipts,
                 )
             if execution.succeeded:
-                completed[step.id] = key
+                completed_key = _completed_key(step, pipeline, runtime) if track_cache else None
+                if completed_key is None:
+                    completed.pop(step.id, None)
+                else:
+                    completed[step.id] = completed_key
                 _write_pipeline_state(selected_state, completed)
                 emit("succeeded", step.id)
                 outcomes[step.id] = PipelineStepOutcome(
                     step.id,
                     "succeeded",
-                    key,
+                    completed_key or key,
                     execution=execution,
                     receipt=str(receipt_path) if receipt_path else None,
                 )

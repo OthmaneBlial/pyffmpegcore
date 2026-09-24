@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 import threading
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -23,8 +25,24 @@ from pyffmpegcore import (
 from pyffmpegcore.cli import main
 from pyffmpegcore.pipeline import _validate_state_destination as _validate_pipeline_state
 from pyffmpegcore.pipeline import _write_pipeline_state
+from pyffmpegcore.pipeline_runner import _file_fingerprint, _runtime_fingerprint
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+
+
+def test_pipeline_cache_treats_windows_drive_paths_as_local():
+    fingerprint = _file_fingerprint(r"C:\media\sample.mp4", content_aware=False)
+
+    assert "remote" not in fingerprint
+
+
+def test_pipeline_cache_disables_reuse_when_tool_version_probe_fails(monkeypatch):
+    def fail(_runner):
+        raise subprocess.CalledProcessError(1, ["ffmpeg", "-version"])
+
+    monkeypatch.setattr("pyffmpegcore.pipeline_runner.FFmpegRunner.get_version", fail)
+
+    assert _runtime_fingerprint("ffmpeg", "ffprobe") is None
 
 
 def test_documented_powershell_pipeline_uses_environment_and_resume_evidence():
@@ -248,6 +266,118 @@ def test_pipeline_schema_migration_is_explicit_and_canonical(tmp_path):
         migrate_pipeline_document({**source, "schema_version": "0.9"})
     with pytest.raises(ValidationError, match="unsupported target"):
         migrate_pipeline_document(source, "2.0")
+
+
+def test_pipeline_cache_rejects_a_modified_output(tmp_path, monkeypatch):
+    source = tmp_path / "source.mp4"
+    output = tmp_path / "output.mp4"
+    source.write_bytes(b"source media")
+    spec = PipelineSpec.from_dict(
+        {
+            "schema_version": "1.0",
+            "name": "cache_integrity",
+            "cache": {"enabled": True, "directory": ".cache", "content_aware": True},
+            "steps": [{"id": "convert", "workflow": "convert", "input": str(source), "output": str(output)}],
+        },
+        base_dir=tmp_path,
+    )
+    pipeline = PipelineCompiler().compile(spec, force=True)
+    calls = []
+
+    def fake_run(_engine, plan, **_kwargs):
+        calls.append(plan)
+        Path(plan.outputs[0]).write_bytes(f"generated-{len(calls)}".encode())
+        return SimpleNamespace(items=(SimpleNamespace(succeeded=True),))
+
+    monkeypatch.setattr("pyffmpegcore.pipeline.WorkflowEngine.run", fake_run)
+    runner = PipelineRunner()
+
+    first = runner.run(pipeline)
+    second = runner.run(pipeline)
+    assert first.items[0].status == "succeeded"
+    assert second.items[0].status == "cached"
+    assert len(calls) == 1
+
+    output.write_bytes(b"tampered output")
+    third = runner.run(pipeline)
+
+    assert third.items[0].status == "succeeded"
+    assert len(calls) == 2
+    assert output.read_bytes() == b"generated-2"
+
+
+def test_pipeline_cache_invalidates_when_ffmpeg_version_changes(tmp_path, monkeypatch):
+    source = tmp_path / "source.mp4"
+    output = tmp_path / "output.mp4"
+    source.write_bytes(b"source media")
+    spec = PipelineSpec.from_dict(
+        {
+            "schema_version": "1.0",
+            "name": "cache_runtime",
+            "cache": {"enabled": True, "directory": ".cache", "content_aware": True},
+            "steps": [{"id": "convert", "workflow": "convert", "input": str(source), "output": str(output)}],
+        },
+        base_dir=tmp_path,
+    )
+    pipeline = PipelineCompiler().compile(spec, force=True)
+    version = ["ffmpeg build one"]
+    calls = []
+    monkeypatch.setattr(
+        "pyffmpegcore.pipeline_runner._runtime_fingerprint",
+        lambda *_args: {"pyffmpegcore": "test", "ffmpeg": version[0], "ffprobe": "ffprobe build"},
+    )
+
+    def fake_run(_engine, plan, **_kwargs):
+        calls.append(plan)
+        Path(plan.outputs[0]).write_bytes(f"generated-{len(calls)}".encode())
+        return SimpleNamespace(items=(SimpleNamespace(succeeded=True),))
+
+    monkeypatch.setattr("pyffmpegcore.pipeline.WorkflowEngine.run", fake_run)
+    runner = PipelineRunner()
+    assert runner.run(pipeline).items[0].status == "succeeded"
+    assert runner.run(pipeline).items[0].status == "cached"
+
+    version[0] = "ffmpeg build two"
+    assert runner.run(pipeline).items[0].status == "succeeded"
+    assert len(calls) == 2
+
+
+def test_pipeline_cache_does_not_reuse_remote_inputs(tmp_path, monkeypatch):
+    output = tmp_path / "output.mp4"
+    spec = PipelineSpec.from_dict(
+        {
+            "schema_version": "1.0",
+            "name": "cache_remote",
+            "cache": {"enabled": True, "directory": ".cache", "content_aware": True},
+            "steps": [
+                {
+                    "id": "convert",
+                    "workflow": "convert",
+                    "input": "https://media.example/video.mp4",
+                    "output": str(output),
+                }
+            ],
+        },
+        base_dir=tmp_path,
+    )
+    pipeline = PipelineCompiler().compile(spec, force=True)
+    monkeypatch.setattr(
+        "pyffmpegcore.pipeline_runner._runtime_fingerprint",
+        lambda *_args: {"pyffmpegcore": "test", "ffmpeg": "ffmpeg build", "ffprobe": "ffprobe build"},
+    )
+    calls = []
+
+    def fake_run(_engine, plan, **_kwargs):
+        calls.append(plan)
+        Path(plan.outputs[0]).write_bytes(f"generated-{len(calls)}".encode())
+        return SimpleNamespace(items=(SimpleNamespace(succeeded=True),))
+
+    monkeypatch.setattr("pyffmpegcore.pipeline.WorkflowEngine.run", fake_run)
+    runner = PipelineRunner()
+
+    assert runner.run(pipeline).items[0].status == "succeeded"
+    assert runner.run(pipeline).items[0].status == "succeeded"
+    assert len(calls) == 2
 
 
 def test_cli_pipeline_migrate_rejects_dangling_output_symlink(tmp_path, capsys):

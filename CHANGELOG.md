@@ -4,6 +4,11 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Fixed
+
+- Pipeline cache and resume signatures now include runtime and output
+  fingerprints; changed outputs and remote inputs are not reused.
+
 ## [0.3.3] - 2026-09-24
 
 ### Security

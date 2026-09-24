@@ -120,10 +120,19 @@ Do not put credentials in the command, pipeline file, or `OUTPUT_DIR` value.
 ```
 
 This is a completion cache, not a hidden artifact store. A step is skipped only
-when its redacted typed plan, input fingerprint, saved key, and every expected
-output match. With `content_aware: true`, local inputs use SHA-256; otherwise the
-fingerprint uses size and modification time. Deleted outputs or changed inputs
-run again.
+when its redacted typed plan, local input fingerprints, runtime identity, saved
+key, and every expected output fingerprint match. Runtime identity includes
+PyFFmpegCore, Python, OS/architecture, FFmpeg and FFprobe versions, and both
+binary file fingerprints. With `content_aware: true`, local inputs and outputs
+use SHA-256; otherwise they use size and modification time. Missing, empty, or
+symlinked outputs invalidate a cache entry. Remote inputs are never reused
+because their contents cannot be fingerprinted reliably.
+
+When an input, output, or runtime fingerprint changes, the cache will not skip
+the step. Existing outputs still require explicit `--force` before replacement;
+without it, execution reports the collision and preserves the file. Cache
+entries written by older signatures miss once; if their outputs remain, rerun
+with `--force` to regenerate them and write fresh signatures.
 
 ## Keep secrets outside files
 
