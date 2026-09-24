@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import json
+from argparse import Namespace
+from types import SimpleNamespace
 
 import pytest
 
-from pyffmpegcore.cli import main
+from pyffmpegcore import ExecutionPlan
+from pyffmpegcore.cli import CLIContext, CLIError, handle_planned_execution, main
 from tests.media_utils import ensure_downloaded_media
 
 
@@ -100,3 +103,20 @@ def test_cli_rejects_invalid_receipt_and_hashing_without_receipt(tmp_path, capsy
     assert "invalid receipt" in capsys.readouterr().err
     assert main(["convert", "--input", "in", "--output", "out", "--hash-content"]) == 2
     assert "requires --receipt" in capsys.readouterr().err
+
+
+def test_cli_rejects_dangling_receipt_symlink_before_execution(tmp_path, monkeypatch):
+    receipt_link = tmp_path / "receipt.json"
+    target = tmp_path / "future" / "receipt.json"
+    receipt_link.symlink_to(target)
+    plan = ExecutionPlan("test/receipt", ("ffmpeg",), (), ())
+    monkeypatch.setattr("pyffmpegcore.cli.prepare_cli_job", lambda _args: SimpleNamespace(plan=plan))
+    monkeypatch.setattr(
+        "pyffmpegcore.cli.execute_prepared_cli_job",
+        lambda *_args, **_kwargs: pytest.fail("dangling receipt symlink must fail before media execution"),
+    )
+
+    with pytest.raises(CLIError, match="Receipt already exists"):
+        handle_planned_execution(Namespace(receipt=receipt_link), CLIContext())
+
+    assert not target.exists()

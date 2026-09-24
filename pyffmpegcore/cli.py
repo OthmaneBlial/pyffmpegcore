@@ -1186,11 +1186,12 @@ def handle_planned_execution(args: argparse.Namespace, ctx: CLIContext) -> int:
     result_json = bool(getattr(args, "result_json", False))
     receipt_destination = getattr(args, "receipt", None)
     if receipt_destination is not None:
-        receipt_destination = Path(receipt_destination).resolve()
-        if str(receipt_destination) in prepared.plan.outputs:
-            raise CLIError("--receipt must not overwrite a media output.")
+        receipt_destination = Path(receipt_destination)
         if (receipt_destination.exists() or receipt_destination.is_symlink()) and not ctx.force:
             raise CLIError(f"Receipt already exists: {receipt_destination}. Re-run with --force to overwrite.")
+        receipt_destination = receipt_destination.resolve()
+        if str(receipt_destination) in prepared.plan.outputs:
+            raise CLIError("--receipt must not overwrite a media output.")
     progress_printer: CLIProgressPrinter | None = None
     if not ctx.quiet and not result_json and prepared.plan.inputs:
         progress_printer = build_progress_printer(ctx, Path(prepared.plan.inputs[0]))
