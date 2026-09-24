@@ -292,6 +292,17 @@ Ruff, formatage et mypy passent localement.
 Le CLI `doctor` distingue également un binaire absent d'un binaire trouvé mais
 qui échoue à répondre au contrôle de version ; les messages et remèdes sont
 testés séparément.
+Le 24 septembre, un cache pipeline déclarait `cached` après modification du
+fichier de sortie, et son identité omettait les versions FFmpeg/FFprobe. Le
+commit `358642c` ajoute une signature versionnée avec empreintes de sortie et
+d'environnement, désactive la réutilisation pour les entrées distantes, et
+reconnaît les chemins locaux Windows. Les 26 tests pipeline, packaging et
+intégration CLI ciblés, Ruff, formatage, mypy, vérification documentaire et
+construction MkDocs stricte passent sur macOS/Python 3.14.6. Le premier test
+complet de reprise d'audit a eu un échec dû aux métadonnées 0.3.2 du venv face
+aux sources 0.3.3 ; après installation éditable locale, le test de version a
+réussi. Aucun workflow CI complet, benchmark, conteneur ou Docker n'a été
+lancé pendant cette reprise.
 Un audit de course distinct a aussi corrigé les sorties bug-report, migration
 de pipeline et journaux d'événements batch/pipeline : création exclusive sans
 écrasement par défaut, remplacement atomique des fichiers statiques avec
