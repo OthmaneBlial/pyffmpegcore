@@ -22,7 +22,7 @@ hide:
       <p class="pfc-hero__lede">
         Preflight the machine. Preview the exact plan. Run a maintained workflow.
         Keep a privacy-redacted receipt. PyFFmpegCore turns fragile media commands
-        into repeatable operations for the terminal, Python, and CI.
+        into repeatable operations for the terminal, Python, Node.js, and CI.
       </p>
       <div class="pfc-install" aria-label="Install the current public beta">
         <div class="pfc-install__command">
@@ -31,6 +31,7 @@ hide:
         </div>
         <button class="pfc-copy" type="button" data-pfc-copy aria-live="polite">Copy install command</button>
         <p>Requires Python 3.10–3.14 and system <code>ffmpeg</code>/<code>ffprobe</code>. <a href="https://pypi.org/project/pyffmpegcore/0.3.2/">View package →</a></p>
+        <p><a href="https://www.npmjs.com/package/@othmaneblial/pyffmpegcore">Node.js launcher on npm →</a> (Python and FFmpeg required)</p>
       </div>
     </div>
     <div class="pfc-hero__console">
@@ -154,7 +155,8 @@ progress, output, and receipt all verified.</samp></pre>
       </article>
       <article class="pfc-lane">
         <h3>Automation surface</h3>
-        <p>Use the same typed engine from Python, a digest-pinned GitHub Action, or the multi-architecture container.</p>
+        <p>Use the same typed engine from Python, the npm launcher, or a digest-pinned GitHub Action.</p>
+        <a href="https://www.npmjs.com/package/@othmaneblial/pyffmpegcore">Install the Node.js launcher →</a>
         <a href="reference/python-api/">Open the Python API →</a>
       </article>
     </div>

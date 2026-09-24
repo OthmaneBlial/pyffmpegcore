@@ -43,6 +43,8 @@ pyffmpegcore smoke-test
 creates and verifies a small synthetic clip. See the [installation guide](docs/installation.md)
 for other package managers and operating systems.
 
+Node.js users can install the [npm launcher](https://www.npmjs.com/package/@othmaneblial/pyffmpegcore); Python and FFmpeg remain required.
+
 ## Preview before writing
 
 For example, inspect a web-compatible MP4 plan before creating the output:
@@ -120,6 +122,7 @@ playback compatibility; smaller output is not guaranteed.
 - [Exact-size public-domain run](docs/evidence.md#public-domain-exact-size-check-on-24-september-2026)
 - [Web compatibility replay](docs/evidence.md#replay-on-19-september-2026)
 - [Validated 63.4-second public 0.3.1 recording](docs/terminal-demo.md)
+- [Node.js launcher on npm](https://www.npmjs.com/package/@othmaneblial/pyffmpegcore)
 - [Compatibility matrix and its limits](docs/COMPATIBILITY.md)
 
 ## Automation and boundaries

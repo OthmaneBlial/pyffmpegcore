@@ -1,0 +1,35 @@
+{
+  "name": "@othmaneblial/pyffmpegcore",
+  "version": "0.1.0",
+  "description": "Run the PyFFmpegCore FFmpeg workflow CLI from Node.js",
+  "type": "module",
+  "bin": {
+    "pyffmpegcore-npm": "./bin/pyffmpegcore.js"
+  },
+  "files": [
+    "bin/",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "ffmpeg",
+    "ffprobe",
+    "video",
+    "audio",
+    "media",
+    "python"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OthmaneBlial/pyffmpegcore.git",
+    "directory": "npm"
+  },
+  "homepage": "https://othmaneblial.github.io/pyffmpegcore/",
+  "bugs": {
+    "url": "https://github.com/OthmaneBlial/pyffmpegcore/issues"
+  }
+}
