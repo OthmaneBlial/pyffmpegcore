@@ -502,7 +502,12 @@ Le dernier bundle hébergé vient du
 construit sur le SHA exact `401f0622a69b88d0beebfc32203d649070af0d86`. Ses six
 cellules OS/Python ont installé et testé la même wheel. Une reconstruction
 depuis `git archive` avec le même `SOURCE_DATE_EPOCH` reproduit wheel et sdist à
-l'identique. La CI
+l'identique. Le commit documentaire `5d4e48892282666b8e899142b7636dba6c67262a`
+a aussi passé CodeQL
+[`35956215866`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35956215866)
+et Scorecard
+[`35956215869`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35956215869).
+La CI
 [35941424672](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35941424672),
 CodeQL [35941424727](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35941424727)
 et Scorecard
