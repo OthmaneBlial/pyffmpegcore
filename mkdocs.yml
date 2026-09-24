@@ -38,7 +38,7 @@ theme:
         name: Switch to light signal mode
 
 extra_css:
-  - stylesheets/extra.css
+  - stylesheets/site-v0.3.1.css
 
 extra_javascript:
   - javascripts/site.js
