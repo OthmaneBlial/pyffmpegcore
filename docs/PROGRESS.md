@@ -4,16 +4,26 @@ Updated: 2026-09-24
 
 ## Current state
 
-- On source commit
-  [`12212d4`](https://github.com/OthmaneBlial/pyffmpegcore/commit/12212d4a21d859ded09fd60cbf96bce840ce6af5),
-  decimal size and bitrate parsing now preserves integer precision. Compression
-  targets and parsed bitrates reject values outside FFmpeg's signed 64-bit
-  range; generic size thresholds keep arbitrary-precision integers. Regressions
-  cover exact byte/bitrate values, range boundaries, and CLI validation errors.
-  Sixty-one focused planning/domain/CLI tests pass, along with Ruff, formatting,
-  mypy on both changed source files, the documentation checker, and strict
-  MkDocs. Full CI, real-media tests, coverage, release, and multi-OS checks did
-  not run.
+- Source `main` commit
+  [`bb35ca7`](https://github.com/OthmaneBlial/pyffmpegcore/commit/bb35ca739759b11d028e00b0f5df11e8c31feb98)
+  includes exact decimal size/bitrate parsing from
+  [`12212d4`](https://github.com/OthmaneBlial/pyffmpegcore/commit/12212d4a21d859ded09fd60cbf96bce840ce6af5).
+  Compression targets and parsed bitrates reject values outside FFmpeg's
+  signed 64-bit range; generic size thresholds keep arbitrary-precision
+  integers. Regression coverage checks exact values, range boundaries, and CLI
+  errors. The full fast local suite passed on `bb35ca7` (439 passed, 104
+  real-media tests deselected, 19.21 s). Ruff, formatting, mypy (41 files),
+  compileall, the documentation checker, and strict MkDocs passed. CodeQL
+  [run 36020209562](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/36020209562)
+  passed on the exact SHA. Real-media suite, coverage, full CI, cross-platform
+  matrix, and current-SHA release artifact checks were not run.
+- The homepage now removes an implementation-level sentence from its main
+  value statement. Its strict build and docs checks passed. Pages commit
+  [`d6016bf`](https://github.com/OthmaneBlial/OthmaneBlial.github.io/commit/d6016bf7a67668a6139f1d8598f3d55892d2a5aa)
+  deployed in [run 36020252062](https://github.com/OthmaneBlial/OthmaneBlial.github.io/actions/runs/36020252062);
+  an HTTPS check confirmed the new copy is live. The public PyPI release
+  remains `0.3.3`; no newer artifact or tag was created because the release
+  workflow runs the six-cell artifact matrix and publishes to PyPI.
 - At source commit
   [`f9e333f`](https://github.com/OthmaneBlial/pyffmpegcore/commit/f9e333f6ac6c710513727a788d3f4e46840471aa),
   `ExecutionPlan` freezes nested mapping/list metadata while preserving read
