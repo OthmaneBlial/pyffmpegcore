@@ -8,6 +8,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from pyffmpegcore import JobResult, JobStatus, OverwritePolicy, ProgressEvent, ValidationError
+from pyffmpegcore.domain import MediaInfo, StreamInfo
 from pyffmpegcore.runner import FFmpegRunner
 
 
@@ -129,8 +130,15 @@ def test_compress_rejects_invalid_target_size():
         FFmpegRunner().compress("input.mp4", "output.mp4", target_size_kb=0)
 
 
-@patch("pyffmpegcore.planning.FFprobeRunner.get_duration", return_value=60.0)
-def test_compress_rejects_target_below_quality_floor(_duration):
+@patch(
+    "pyffmpegcore.planning.FFprobeRunner.probe_media",
+    return_value=MediaInfo(
+        path="input.mp4",
+        duration=60.0,
+        streams=(StreamInfo(index=0, codec_type="video"),),
+    ),
+)
+def test_compress_rejects_target_below_quality_floor(_media):
     with pytest.raises(ValidationError, match="not feasible.*quality floor.*use at least"):
         FFmpegRunner().compress(
             "input.mp4",

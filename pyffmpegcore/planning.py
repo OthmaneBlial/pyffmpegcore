@@ -352,17 +352,24 @@ class WorkflowPlanner:
         base = ["-i", source, "-c:v", options.video_codec]
         operations: list[str] = []
         steps: tuple[ExecutionStep, ...] = ()
+        streams: tuple[str, ...] = ("video", "audio")
         metadata: dict[str, object] = {"required_stream_types": ["video"]}
         if options.target_size_bytes is not None and options.two_pass:
             if options.video_codec == "copy":
                 raise ValidationError("video codec copy cannot satisfy a two-pass target-size contract")
             try:
-                duration = FFprobeRunner(self.ffprobe_path).get_duration(source)
+                media = FFprobeRunner(self.ffprobe_path).probe_media(source)
             except RuntimeError as exc:
                 raise _planning_probe_failure(exc) from exc
+            duration = media.duration or 0.0
             if duration <= 0:
                 raise ValidationError("target-size compression requires a positive probed duration")
-            audio_bps = parse_bitrate(options.audio_bitrate)
+            has_audio = any(stream.codec_type == "audio" for stream in media.streams)
+            if not has_audio:
+                required = _codec_requirements(("video", options.video_codec))
+                streams = ("video",)
+            requested_audio_bps = parse_bitrate(options.audio_bitrate)
+            audio_bps = requested_audio_bps if has_audio else 0
             audio_bytes = audio_bps * duration / 8
             overhead_fraction = options.container_overhead_percent / 100
             available = options.target_size_bytes * (1 - overhead_fraction) - audio_bytes
@@ -410,11 +417,9 @@ class WorkflowPlanner:
                 passlog,
                 "-pix_fmt",
                 options.pixel_format,
-                "-c:a",
-                options.audio_codec,
-                "-b:a",
-                options.audio_bitrate,
             ]
+            if has_audio:
+                second_args.extend(["-c:a", options.audio_codec, "-b:a", options.audio_bitrate])
             if options.threads is not None:
                 first = (*first[:-1], "-threads", str(options.threads), first[-1])
                 second_args.extend(["-threads", str(options.threads)])
@@ -427,7 +432,12 @@ class WorkflowPlanner:
             operations.extend(
                 [
                     f"fit output under {options.target_size_bytes} bytes",
-                    f"reserve {options.audio_bitrate} audio and {options.container_overhead_percent:g}% container overhead",
+                    (
+                        f"reserve {options.audio_bitrate} audio and "
+                        f"{options.container_overhead_percent:g}% container overhead"
+                        if has_audio
+                        else f"input has no audio stream; reserve {options.container_overhead_percent:g}% container overhead"
+                    ),
                     f"two-pass video bitrate: {video_bps} bps",
                     f"quality floor: {options.minimum_video_bitrate} bps",
                 ]
@@ -465,7 +475,7 @@ class WorkflowPlanner:
             force=force,
             timeout_seconds=timeout_seconds,
             capabilities=required,
-            streams=("video", "audio"),
+            streams=streams,
             operations=tuple(operations),
             metadata=metadata,
             steps=steps,

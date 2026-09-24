@@ -7,6 +7,7 @@ import json
 import pytest
 
 from pyffmpegcore import CompressOptions, ConvertOptions, ValidationError, WorkflowPlanner, parse_size
+from pyffmpegcore.domain import MediaInfo, StreamInfo
 from pyffmpegcore.planning import parse_bitrate
 from pyffmpegcore.preflight import PreflightReport
 from pyffmpegcore.presentation import render_plan_text
@@ -118,7 +119,12 @@ def test_parse_bitrate_rejects_invalid_values():
 def test_target_size_plan_has_two_exact_steps_and_an_honest_floor(tmp_path, monkeypatch):
     source = tmp_path / "input.mp4"
     output = tmp_path / "output.mp4"
-    monkeypatch.setattr("pyffmpegcore.planning.FFprobeRunner.get_duration", lambda _self, _path: 10.0)
+    media = MediaInfo(
+        path=str(source),
+        duration=10.0,
+        streams=(StreamInfo(index=0, codec_type="video"), StreamInfo(index=1, codec_type="audio")),
+    )
+    monkeypatch.setattr("pyffmpegcore.planning.FFprobeRunner.probe_media", lambda _self, _path: media)
     planner = WorkflowPlanner()
     options = CompressOptions(target_size_bytes=parse_size("5MB"), minimum_video_bitrate=100_000)
 
@@ -126,13 +132,50 @@ def test_target_size_plan_has_two_exact_steps_and_an_honest_floor(tmp_path, monk
 
     assert [step.name for step in plan.steps] == ["analysis-pass", "encode-pass"]
     assert all("<pyffmpegcore-passlog>" in step.command for step in plan.steps)
+    assert plan.selected_streams == ("video", "audio")
+    assert "encoder:aac" in plan.required_capabilities
+    assert "-c:a" in plan.steps[1].command
+    assert any("reserve 128k audio" in operation for operation in plan.operations)
     assert plan.metadata["target_size_bytes"] == 5_000_000
     assert plan.metadata["minimum_feasible_bytes"] > 0
     assert any("quality floor" in operation for operation in plan.operations)
 
 
+def test_target_size_video_only_plan_uses_full_budget_for_video(tmp_path, monkeypatch):
+    source = tmp_path / "silent.webm"
+    media = MediaInfo(path=str(source), duration=10.0, streams=(StreamInfo(index=0, codec_type="video"),))
+    monkeypatch.setattr("pyffmpegcore.planning.FFprobeRunner.probe_media", lambda _self, _path: media)
+    options = CompressOptions(target_size_bytes=parse_size("1MiB"))
+
+    plan = WorkflowPlanner().compress(str(source), str(tmp_path / "output.mp4"), options)
+    encode_step = plan.steps[1].command
+
+    assert plan.selected_streams == ("video",)
+    assert "encoder:libx264" in plan.required_capabilities
+    assert "encoder:aac" not in plan.required_capabilities
+    assert "-c:a" not in encode_step
+    assert "-b:a" not in encode_step
+    expected_bitrate = int(
+        options.target_size_bytes * (1 - options.container_overhead_percent / 100) * 8 / media.duration
+    )
+    assert encode_step[encode_step.index("-b:v") + 1] == str(expected_bitrate)
+    assert any("input has no audio stream" in operation for operation in plan.operations)
+    assert not any("reserve 128k audio" in operation for operation in plan.operations)
+    with pytest.raises(ValidationError, match="bitrate must be"):
+        WorkflowPlanner().compress(
+            str(source),
+            str(tmp_path / "invalid-bitrate.mp4"),
+            CompressOptions(target_size_bytes=parse_size("1MiB"), audio_bitrate="invalid"),
+        )
+
+
 def test_target_size_plan_rejects_an_impossible_request(tmp_path, monkeypatch):
-    monkeypatch.setattr("pyffmpegcore.planning.FFprobeRunner.get_duration", lambda _self, _path: 60.0)
+    media = MediaInfo(
+        path=str(tmp_path / "input.mp4"),
+        duration=60.0,
+        streams=(StreamInfo(index=0, codec_type="video"), StreamInfo(index=1, codec_type="audio")),
+    )
+    monkeypatch.setattr("pyffmpegcore.planning.FFprobeRunner.probe_media", lambda _self, _path: media)
     planner = WorkflowPlanner()
     options = CompressOptions(target_size_bytes=1024, minimum_video_bitrate=100_000)
 
