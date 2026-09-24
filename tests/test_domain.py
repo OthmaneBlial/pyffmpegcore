@@ -45,8 +45,22 @@ def test_typed_options_reject_invalid_values_immediately():
     with pytest.raises(ValidationError, match="target_size_bytes must be positive"):
         CompressOptions(target_size_bytes=0)
 
+    with pytest.raises(ValidationError, match="target_size_bytes must fit in a signed 64-bit"):
+        CompressOptions(target_size_bytes=1 << 63)
+
+    with pytest.raises(ValidationError, match="minimum_video_bitrate must fit in a signed 64-bit"):
+        CompressOptions(minimum_video_bitrate=1 << 63)
+
     with pytest.raises(ValidationError, match="timeout_seconds must be positive"):
         ExecutionPolicy(timeout_seconds=0)
+
+
+def test_compress_options_accept_ffmpeg_int64_max_values():
+    maximum = (1 << 63) - 1
+    options = CompressOptions(target_size_bytes=maximum, minimum_video_bitrate=maximum)
+
+    assert options.target_size_bytes == maximum
+    assert options.minimum_video_bitrate == maximum
 
 
 @pytest.mark.parametrize("timeout", [float("nan"), float("inf"), float("-inf")])

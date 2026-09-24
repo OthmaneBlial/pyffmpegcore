@@ -16,6 +16,7 @@ from .errors import ValidationError
 
 PLAN_SCHEMA_VERSION = "1.0"
 RESULT_SCHEMA_VERSION = "1.0"
+_MAX_FFMPEG_INT64 = (1 << 63) - 1
 
 
 class StringEnum(str, Enum):
@@ -316,6 +317,8 @@ class CompressOptions:
     def __post_init__(self) -> None:
         if self.target_size_bytes is not None and self.target_size_bytes <= 0:
             raise ValidationError("target_size_bytes must be positive when provided")
+        if self.target_size_bytes is not None and self.target_size_bytes > _MAX_FFMPEG_INT64:
+            raise ValidationError("target_size_bytes must fit in a signed 64-bit FFmpeg value")
         if not 0 <= self.crf <= 51:
             raise ValidationError("crf must be between 0 and 51")
         if self.threads is not None and self.threads <= 0:
@@ -324,6 +327,8 @@ class CompressOptions:
             raise ValidationError("container_overhead_percent must be between 0 and 100")
         if self.minimum_video_bitrate <= 0:
             raise ValidationError("minimum_video_bitrate must be positive")
+        if self.minimum_video_bitrate > _MAX_FFMPEG_INT64:
+            raise ValidationError("minimum_video_bitrate must fit in a signed 64-bit FFmpeg value")
 
 
 def is_url_like_path(path: str | Path) -> bool:

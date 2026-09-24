@@ -5,10 +5,12 @@ from __future__ import annotations
 import math
 import os
 import re
+from fractions import Fraction
 from pathlib import Path
 
 from .capabilities import requirements_for
 from .domain import (
+    _MAX_FFMPEG_INT64,
     CompressOptions,
     ConvertOptions,
     ExecutionPlan,
@@ -41,19 +43,22 @@ def _planning_probe_failure(exc: RuntimeError) -> RuntimeError:
     return ValidationError(f"input cannot be inspected for planning: {exc}")
 
 
+def _scaled_integer(value: str, multiplier: int, label: str) -> int:
+    try:
+        return int(Fraction(value) * multiplier)
+    except (OverflowError, ValueError) as exc:
+        raise ValidationError(f"{label} is too large to parse") from exc
+
+
 def parse_size(value: str) -> int:
     """Parse honest decimal or binary byte units such as 25MB or 25MiB."""
     match = _SIZE_PATTERN.match(value)
     if not match:
         raise ValidationError("size must use B, KB, MB, GB, TB, KiB, MiB, GiB, or TiB, for example 25MB")
-    amount = float(match.group(1))
     unit = (match.group(2) or "B").upper()
     powers = {"B": 0, "KB": 1, "MB": 2, "GB": 3, "TB": 4, "KIB": 1, "MIB": 2, "GIB": 3, "TIB": 4}
     base = 1024 if "I" in unit else 1000
-    try:
-        result = int(amount * base ** powers[unit])
-    except OverflowError as exc:
-        raise ValidationError("size must be a finite positive value") from exc
+    result = _scaled_integer(match.group(1), base ** powers[unit], "size")
     if result <= 0:
         raise ValidationError("size must be positive")
     return result
@@ -65,12 +70,11 @@ def parse_bitrate(value: str) -> int:
     if not match:
         raise ValidationError("bitrate must be a positive number with an optional k, M, or G suffix")
     multiplier = {"": 1, "k": 1_000, "m": 1_000_000, "g": 1_000_000_000}[match.group(2).lower()]
-    try:
-        result = int(float(match.group(1)) * multiplier)
-    except OverflowError as exc:
-        raise ValidationError("bitrate must be a finite positive value") from exc
+    result = _scaled_integer(match.group(1), multiplier, "bitrate")
     if result <= 0:
         raise ValidationError("bitrate must be positive")
+    if result > _MAX_FFMPEG_INT64:
+        raise ValidationError("bitrate must fit in a signed 64-bit FFmpeg value")
     return result
 
 

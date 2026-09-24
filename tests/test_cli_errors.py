@@ -172,7 +172,7 @@ def test_compress_reports_numeric_overflow_as_validation_error(tmp_path, capsys,
     result = main(["compress", "--input", str(input_file), "--output", str(tmp_path / "output.mp4"), option, "9" * 400])
 
     assert result == 4
-    assert "finite positive value" in capsys.readouterr().err
+    assert "signed 64-bit FFmpeg value" in capsys.readouterr().err
 
 
 def test_preserve_all_streams_rejects_explicit_pixel_format(tmp_path, capsys):

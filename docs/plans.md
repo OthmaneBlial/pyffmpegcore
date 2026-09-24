@@ -101,6 +101,6 @@ if item.result.status is JobStatus.CANCELLED:
 
 ## Target-size feasibility
 
-`--target-size` accepts explicit decimal (`MB`, `GB`) or binary (`MiB`, `GiB`) units. The plan reserves audio and container overhead, calculates the two-pass video bitrate, and enforces `--min-video-bitrate`. An impossible target fails before FFmpeg starts and states the minimum feasible byte count.
+`--target-size` accepts explicit decimal (`MB`, `GB`) or binary (`MiB`, `GiB`) units. Decimal sizes and bitrates are parsed exactly; compression targets and bitrates must fit a signed 64-bit FFmpeg value. The plan reserves audio and container overhead, calculates the two-pass video bitrate, and enforces `--min-video-bitrate`. An impossible target fails before FFmpeg starts and states the minimum feasible byte count.
 
 `--target-size-kb` remains available for compatibility but is less clear than an explicit unit.

@@ -238,10 +238,26 @@ def test_parse_bitrate_rejects_invalid_values():
         parse_bitrate("fast")
 
 
-@pytest.mark.parametrize("parser", [parse_size, parse_bitrate])
-def test_numeric_parsers_reject_values_that_overflow_float_conversion(parser):
-    with pytest.raises(ValidationError, match="finite positive value"):
-        parser("9" * 400)
+def test_parse_size_preserves_exact_decimal_bytes_above_float_precision():
+    assert parse_size("9007199254740.993KB") == 9_007_199_254_740_993
+
+
+def test_parse_size_keeps_arbitrary_precision_for_input_thresholds():
+    value = "9" * 400
+    assert parse_size(value) == int(value)
+
+
+def test_parse_bitrate_preserves_exact_integer_precision():
+    assert parse_bitrate("9007199254740993") == 9_007_199_254_740_993
+
+
+def test_parse_bitrate_rejects_values_outside_ffmpeg_int64_range():
+    with pytest.raises(ValidationError, match="signed 64-bit FFmpeg value"):
+        parse_bitrate(str(1 << 63))
+
+
+def test_parse_bitrate_accepts_ffmpeg_int64_max():
+    assert parse_bitrate(str((1 << 63) - 1)) == (1 << 63) - 1
 
 
 def test_target_size_plan_has_two_exact_steps_and_an_honest_floor(tmp_path, monkeypatch):
