@@ -159,6 +159,15 @@ def test_get_version(mock_run):
     assert FFmpegRunner().get_version() == "ffmpeg version 9.0"
     assert mock_run.call_args.kwargs["encoding"] == "utf-8"
     assert mock_run.call_args.kwargs["errors"] == "replace"
+    assert mock_run.call_args.kwargs["timeout"] == 5
+
+
+@patch("subprocess.run", side_effect=subprocess.TimeoutExpired(["ffmpeg", "-version"], 5))
+def test_get_version_reports_a_timed_out_probe(mock_run):
+    with pytest.raises(RuntimeError, match="FFmpeg version probe timed out after 5 seconds"):
+        FFmpegRunner().get_version()
+
+    assert mock_run.call_args.kwargs["timeout"] == 5
 
 
 def test_progress_event_is_the_typed_callback_contract():

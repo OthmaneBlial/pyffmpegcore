@@ -301,13 +301,17 @@ class FFprobeRunner:
         Returns:
             Version string
         """
-        result = subprocess.run(
-            [self.ffprobe_path, "-version"],
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-        )
+        try:
+            result = subprocess.run(
+                [self.ffprobe_path, "-version"],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=5,
+            )
+        except subprocess.TimeoutExpired as exc:
+            raise RuntimeError("FFprobe version probe timed out after 5 seconds.") from exc
         if result.returncode == 0:
             return result.stdout.split("\n")[0]
         raise RuntimeError(f"Failed to get FFprobe version: {result.stderr}")

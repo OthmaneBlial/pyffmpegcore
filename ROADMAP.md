@@ -259,6 +259,10 @@ batch/pipeline/receipts passent. Le 24 septembre, la prévalidation CLI refuse
 aussi les liens symboliques pendants comme destinations existantes sans
 `--force`; un replay avait créé la cible via `receipt bug-report`. Les sept tests
 `test_cli_files.py`, Ruff, formatage, mypy et contrôles docs passent.
+Le 24 septembre, les inspections de version FFmpeg/FFprobe du CLI et des
+méthodes publiques du runner sont aussi bornées à cinq secondes ; les 33 tests
+ciblés probe/runner/doctor, Ruff, formatage et mypy passent localement. Les
+sondages de médias et les listes de capacités restent à évaluer séparément.
 Un audit de course distinct a aussi corrigé les sorties bug-report, migration
 de pipeline et journaux d'événements batch/pipeline : création exclusive sans
 écrasement par défaut, remplacement atomique des fichiers statiques avec

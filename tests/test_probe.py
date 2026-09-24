@@ -3,6 +3,7 @@ Tests for FFprobeRunner.
 """
 
 import json
+import subprocess
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -154,6 +155,14 @@ class TestFFprobeRunner:
         version = runner.get_version()
 
         assert "ffprobe version 4.4" in version
+        assert mock_run.call_args.kwargs["timeout"] == 5
+
+    @patch("subprocess.run", side_effect=subprocess.TimeoutExpired(["ffprobe", "-version"], 5))
+    def test_get_version_reports_a_timed_out_probe(self, mock_run):
+        with pytest.raises(RuntimeError, match="FFprobe version probe timed out after 5 seconds"):
+            FFprobeRunner().get_version()
+
+        assert mock_run.call_args.kwargs["timeout"] == 5
 
     @patch("subprocess.run", side_effect=FileNotFoundError("missing"))
     def test_probe_missing_binary_error(self, mock_run):

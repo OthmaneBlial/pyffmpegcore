@@ -702,7 +702,11 @@ def inspect_binary(binary_path: str) -> dict[str, Any]:
             encoding="utf-8",
             errors="replace",
             check=False,
+            timeout=5,
         )
+    except subprocess.TimeoutExpired:
+        report["error"] = "Version probe timed out after 5 seconds."
+        return report
     except OSError as exc:
         report["error"] = str(exc)
         return report

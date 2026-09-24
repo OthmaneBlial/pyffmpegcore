@@ -334,9 +334,12 @@ class FFmpegRunner:
                 encoding="utf-8",
                 errors="replace",
                 check=True,
+                timeout=5,
             )
         except FileNotFoundError as exc:
             raise RuntimeError(f"FFmpeg executable '{self.ffmpeg_path}' was not found.") from exc
+        except subprocess.TimeoutExpired as exc:
+            raise RuntimeError("FFmpeg version probe timed out after 5 seconds.") from exc
         return result.stdout.splitlines()[0]
 
     def _annotate_failure(

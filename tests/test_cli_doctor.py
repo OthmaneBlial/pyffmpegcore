@@ -20,6 +20,17 @@ def test_binary_inspection_decodes_tool_output_as_utf8(mock_run, _mock_which):
     assert inspect_binary("ffmpeg")["version"] == "ffmpeg version 9.0"
     assert mock_run.call_args.kwargs["encoding"] == "utf-8"
     assert mock_run.call_args.kwargs["errors"] == "replace"
+    assert mock_run.call_args.kwargs["timeout"] == 5
+
+
+@patch("pyffmpegcore.cli.shutil.which", return_value="/usr/bin/ffmpeg")
+@patch("pyffmpegcore.cli.subprocess.run", side_effect=subprocess.TimeoutExpired(["ffmpeg", "-version"], 5))
+def test_binary_inspection_reports_a_timed_out_version_probe(mock_run, _mock_which):
+    report = inspect_binary("ffmpeg")
+
+    assert report["available"] is False
+    assert report["error"] == "Version probe timed out after 5 seconds."
+    assert mock_run.call_args.kwargs["timeout"] == 5
 
 
 def test_doctor_json_smoke():
