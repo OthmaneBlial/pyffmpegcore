@@ -80,20 +80,17 @@ These frames come from the exact public PyPI `0.3.3` recording. The fixture and
 output are synthetic and local; [the full cast, accessible transcript, and
 capture details](docs/terminal-demo.md) show the complete run.
 
-<table>
-  <thead>
-    <tr>
-      <th>Plan before writing</th>
-      <th>Output and receipt verified</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><a href="docs/assets/terminal-plan-v0.3.3.png"><img src="docs/assets/terminal-plan-v0.3.3.png" alt="Public 0.3.3 terminal run previewing the FFmpeg plan, input and output paths, overwrite policy, and exact arguments." width="100%"></a></td>
-      <td><a href="docs/assets/terminal-result-v0.3.3.png"><img src="docs/assets/terminal-result-v0.3.3.png" alt="Public 0.3.3 terminal run completing an H.264 and AAC conversion, then validating its schema 1.0 receipt." width="100%"></a></td>
-    </tr>
-  </tbody>
-</table>
+### Plan before writing
+
+[![Public 0.3.3 terminal run previewing the FFmpeg plan, input and output paths, overwrite policy, and exact arguments.](docs/assets/terminal-plan-v0.3.3.png)](docs/assets/terminal-plan-v0.3.3.png)
+
+*Frame at 39.651 seconds, before the output is written.*
+
+### Output and receipt verified
+
+[![Public 0.3.3 terminal run completing an H.264 and AAC conversion, then validating its schema 1.0 receipt.](docs/assets/terminal-result-v0.3.3.png)](docs/assets/terminal-result-v0.3.3.png)
+
+*Frame at 64.304 seconds, after the local receipt passes validation.*
 
 ## What it is good at
 
