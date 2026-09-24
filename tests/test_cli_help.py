@@ -142,9 +142,15 @@ def test_completion_scripts_parse_in_available_shells(shell, executable, suffix,
             "$tokens=$null; $errors=$null; "
             "[System.Management.Automation.Language.Parser]::ParseFile("
             "$env:COMPLETION_FILE, [ref]$tokens, [ref]$errors) | Out-Null; "
-            "if ($errors.Count) { $errors | ForEach-Object { [Console]::Error.WriteLine($_) }; exit 1 }"
+            "if ($errors.Count) { $errors | ForEach-Object { [Console]::Error.WriteLine($_) }; exit 1 }; "
+            ". $env:COMPLETION_FILE; "
+            "$matches = (TabExpansion2 -inputScript 'pyffmpegcore p' -cursorColumn 14).CompletionMatches; "
+            "if ($matches.CompletionText -notcontains 'pipeline') { Write-Error 'missing pipeline completion'; exit 1 }"
         )
-        environment = os.environ | {"COMPLETION_FILE": str(script_path)}
+        environment = os.environ | {
+            "COMPLETION_FILE": str(script_path),
+            "PATH": f"{Path(sys.executable).resolve().parent}{os.pathsep}{os.environ.get('PATH', '')}",
+        }
         parse_command_line = [
             shell_path,
             "-NoLogo",
