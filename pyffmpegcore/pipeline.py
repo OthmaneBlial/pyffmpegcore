@@ -2,30 +2,21 @@
 
 from __future__ import annotations
 
-import hashlib
 import json
 import os
 import re
-import threading
 from copy import deepcopy
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlsplit
 
-from ._fileio import DestinationExistsError, atomic_write_text, exclusive_write_text
 from .domain import CompressOptions, ConvertOptions, ExecutionPlan, resolve_manifest_path
 from .errors import ValidationError
 from .planning import WorkflowPlanner, parse_size
 from .preflight import PreflightCheck, PreflightReport
 from .profiles import ProfileRegistry
-from .receipt import (
-    ReceiptBuilder,
-    RunReceipt,
-    _prepare_receipt_paths,
-    _validate_state_destination,
-    redact_receipt_value,
-)
+from .receipt import _validate_state_destination as _validate_state_destination
+from .receipt import redact_receipt_value
 from .workflow import WorkflowEngine, WorkflowExecution
 
 PIPELINE_SCHEMA_VERSION = "1.0"
@@ -764,209 +755,6 @@ class PipelineRun:
         }
 
 
-def _file_fingerprint(path: str, content_aware: bool) -> dict[str, object]:
-    parsed = urlsplit(path)
-    if parsed.scheme and parsed.scheme != "file":
-        return {"remote": redact_receipt_value(path)}
-    candidate = Path(parsed.path if parsed.scheme == "file" else path)
-    if not candidate.is_file():
-        return {"missing": candidate.name}
-    stat = candidate.stat()
-    if not content_aware:
-        return {"name": candidate.name, "size": stat.st_size, "mtime_ns": stat.st_mtime_ns}
-    digest = hashlib.sha256()
-    with candidate.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return {"name": candidate.name, "size": stat.st_size, "sha256": digest.hexdigest()}
-
-
-def _cache_key(step: PipelineStepPlan, pipeline: PipelinePlan) -> str:
-    payload = {
-        "plan": _mask_secrets(step.plan.to_dict(), pipeline.secret_values),
-        "inputs": [_file_fingerprint(value, pipeline.cache.content_aware) for value in step.plan.inputs],
-    }
-    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-
-
-def _load_pipeline_state(path: Path | None) -> dict[str, str]:
-    if path is None or not path.exists():
-        return {}
-    try:
-        document = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise ValidationError(f"unable to read pipeline state: {exc}") from exc
-    if not isinstance(document, dict) or document.get("schema_version") != PIPELINE_STATE_SCHEMA_VERSION:
-        raise ValidationError(f"pipeline state schema_version must be {PIPELINE_STATE_SCHEMA_VERSION!r}")
-    completed = document.get("completed")
-    if not isinstance(completed, dict) or not all(
-        isinstance(k, str) and isinstance(v, str) for k, v in completed.items()
-    ):
-        raise ValidationError("pipeline state completed must map step ids to cache keys")
-    return dict(completed)
-
-
-def _write_pipeline_state(path: Path | None, completed: dict[str, str], *, overwrite: bool = True) -> None:
-    if path is None:
-        return
-    content = json.dumps(
-        {"schema_version": PIPELINE_STATE_SCHEMA_VERSION, "completed": dict(sorted(completed.items()))},
-        indent=2,
-    )
-    writer = atomic_write_text if overwrite else exclusive_write_text
-    writer(path, content + "\n")
-
-
-class PipelineRunner:
-    """Execute a prepared DAG with dependency blocking, cancellation, resume, and caching."""
-
-    def __init__(self, *, ffmpeg_path: str = "ffmpeg", ffprobe_path: str = "ffprobe") -> None:
-        self.engine = WorkflowEngine(ffmpeg_path=ffmpeg_path, ffprobe_path=ffprobe_path)
-        self.ffmpeg_path = ffmpeg_path
-        self.ffprobe_path = ffprobe_path
-
-    def run(
-        self,
-        pipeline: PipelinePlan,
-        *,
-        cancellation: threading.Event | None = None,
-        state_path: str | Path | None = None,
-        resume: bool = False,
-        overwrite_state: bool = False,
-        receipt_dir: str | Path | None = None,
-        overwrite_receipts: bool = False,
-        hash_content: bool = False,
-        event_callback: Any = None,
-    ) -> PipelineRun:
-        """Execute steps in dependency order and return one outcome per step.
-
-        Failed dependencies block downstream steps. Optional state supports
-        resume and caching; receipts and event callbacks are opt-in. Existing
-        receipts are preserved unless ``overwrite_receipts`` is enabled. State
-        files are preserved unless resuming or ``overwrite_state`` is enabled,
-        fresh state files are claimed before the first runnable step, and state
-        files cannot alias media outputs or generated receipts.
-        """
-        cancel = cancellation or threading.Event()
-        selected_state = Path(state_path) if state_path is not None else None
-        if selected_state is None and pipeline.cache.enabled:
-            selected_state = Path(pipeline.cache.directory) / f"{pipeline.name}.state.json"
-        receipts = Path(receipt_dir) if receipt_dir is not None else None
-        media_outputs = tuple(output for step in pipeline.steps for output in step.plan.outputs)
-        allow_state_overwrite = overwrite_state or resume or (state_path is None and pipeline.cache.enabled)
-        _validate_state_destination(
-            selected_state,
-            media_outputs,
-            receipts,
-            (step.id for step in pipeline.steps),
-            overwrite=allow_state_overwrite,
-        )
-        completed = _load_pipeline_state(selected_state) if (resume or pipeline.cache.enabled) else {}
-        receipt_paths = (
-            _prepare_receipt_paths(
-                receipts,
-                (step.id for step in pipeline.steps),
-                media_outputs,
-                overwrite=overwrite_receipts,
-            )
-            if receipts is not None
-            else {}
-        )
-        sequence = 0
-        outcomes: dict[str, PipelineStepOutcome] = {}
-        state_claimed = allow_state_overwrite or selected_state is None
-
-        def emit(event: str, step_id: str, detail: str | None = None) -> None:
-            nonlocal sequence
-            if event_callback is not None:
-                sequence += 1
-                event_callback(PipelineEvent(sequence, event, step_id, detail))
-
-        def claim_state_path() -> None:
-            nonlocal state_claimed
-            if state_claimed or selected_state is None:
-                return
-            try:
-                _write_pipeline_state(selected_state, completed, overwrite=False)
-            except DestinationExistsError as exc:
-                raise ValidationError(
-                    f"state file already exists: {selected_state}. Resume or explicitly allow overwrite."
-                ) from exc
-            except OSError as exc:
-                raise ValidationError(f"unable to create state file {selected_state}: {exc}") from exc
-            state_claimed = True
-
-        for step in pipeline.steps:
-            key = _cache_key(step, pipeline)
-            if cancel.is_set():
-                emit("cancelled", step.id, "pipeline cancellation requested")
-                outcomes[step.id] = PipelineStepOutcome(step.id, "cancelled", key)
-                continue
-            failed_dependencies = [dependency for dependency in step.needs if not outcomes[dependency].succeeded]
-            if failed_dependencies:
-                detail = f"blocked by: {', '.join(failed_dependencies)}"
-                emit("blocked", step.id, detail)
-                outcomes[step.id] = PipelineStepOutcome(step.id, "blocked", key, detail=detail)
-                continue
-            key = _cache_key(step, pipeline)
-            if (
-                (resume or pipeline.cache.enabled)
-                and completed.get(step.id) == key
-                and all(Path(output).is_file() for output in step.plan.outputs)
-            ):
-                status = "cached" if pipeline.cache.enabled else "resumed"
-                emit(status, step.id)
-                outcomes[step.id] = PipelineStepOutcome(step.id, status, key)
-                continue
-            claim_state_path()
-            emit("started", step.id)
-            batch = self.engine.run(step.plan, cancellation=cancel)
-            execution = batch.items[0]
-            receipt_path = receipt_paths.get(step.id)
-            if receipt_path is not None:
-                raw_receipt = ReceiptBuilder(ffmpeg_path=self.ffmpeg_path, ffprobe_path=self.ffprobe_path).build(
-                    batch,
-                    hash_content=hash_content,
-                )
-                RunReceipt(_mask_secrets(raw_receipt.to_dict(), pipeline.secret_values)).write(
-                    receipt_path,
-                    overwrite=overwrite_receipts,
-                )
-            if execution.succeeded:
-                completed[step.id] = key
-                _write_pipeline_state(selected_state, completed)
-                emit("succeeded", step.id)
-                outcomes[step.id] = PipelineStepOutcome(
-                    step.id,
-                    "succeeded",
-                    key,
-                    execution=execution,
-                    receipt=str(receipt_path) if receipt_path else None,
-                )
-            elif cancel.is_set() or execution.result.status.value == "cancelled":
-                emit("cancelled", step.id, execution.result.stderr)
-                outcomes[step.id] = PipelineStepOutcome(
-                    step.id,
-                    "cancelled",
-                    key,
-                    execution=execution,
-                    receipt=str(receipt_path) if receipt_path else None,
-                    detail=execution.result.stderr,
-                )
-            else:
-                emit("failed", step.id, execution.result.stderr)
-                outcomes[step.id] = PipelineStepOutcome(
-                    step.id,
-                    "failed",
-                    key,
-                    execution=execution,
-                    receipt=str(receipt_path) if receipt_path else None,
-                    detail=execution.result.stderr,
-                )
-        return PipelineRun(pipeline, tuple(outcomes[step.id] for step in pipeline.steps))
-
-
 def variables_from_environment(names: list[str]) -> dict[str, str]:
     """Read named pipeline variables from the environment without accepting inline secrets."""
     result = {}
@@ -989,3 +777,13 @@ def migrate_pipeline_document(
     if source != PIPELINE_SCHEMA_VERSION:
         raise ValidationError(f"no pipeline migration path from {source!r} to {target_version!r}")
     return PipelineSpec.from_dict(deepcopy(document)).to_dict()
+
+
+# Keep the original module paths stable while execution lives in its own module.
+from .pipeline_runner import (  # noqa: E402, F401
+    PipelineRunner,
+    _cache_key,
+    _file_fingerprint,
+    _load_pipeline_state,
+    _write_pipeline_state,
+)

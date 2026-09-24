@@ -372,7 +372,7 @@ def test_pipeline_does_not_overwrite_state_created_after_preflight(tmp_path, mon
         calls.append(True)
         raise AssertionError("pipeline started before claiming its state path")
 
-    monkeypatch.setattr("pyffmpegcore.pipeline._validate_state_destination", create_racing_file)
+    monkeypatch.setattr("pyffmpegcore.pipeline_runner._validate_state_destination", create_racing_file)
     monkeypatch.setattr("pyffmpegcore.pipeline.WorkflowEngine.run", fake_run)
 
     with pytest.raises(ValidationError, match="state file already exists"):
