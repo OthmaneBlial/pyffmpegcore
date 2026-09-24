@@ -478,13 +478,17 @@ réexaminer lors des prochaines releases majeures.
 ### 4.1 Vérifier exactement ce qui sera téléchargé
 
 **État au 24 septembre 2026 :** deux builds locaux du candidat `0.3.0`, depuis
-le SHA exact `259e5ffab26e0b5183dda6457ae826284da19d17`, ont produit les mêmes
-fichiers : wheel de 96 740 octets (`44cbaa62a003f721730ff5dd242adfa90ce8feb640c071bcfb05dbf472439c1a`)
-et sdist de 316 400 octets (`21196c4412d84117995038606a15299cbc86b8809d21eaaf1b7cd1fdf4c8f320`).
-`twine check` a réussi. La wheel a été installée hors ligne dans un venv propre ;
-le sdist a été installé hors ligne dans un répertoire `--target` isolé.
-`--version`, `doctor --json`, `smoke-test --json` et l'écriture d'un receipt
-POSIX en mode `0600` ont réussi pour les deux. Cette preuve est locale.
+le SHA exact `a7f7abe9d52d9b88932f988fa4a3528b436a82ad`, ont produit les mêmes
+fichiers : wheel de 97 441 octets (`2bed4d0ddf88fa805123f1c37ed995e5f6c29dcffb809e2580fc1f5eb30d00e3`)
+et sdist de 320 042 octets (`e68b9e7c541b00ec85436e36f1ae5870859cd8806f715186b97a0f5943c46975`).
+`twine check` et le contrôle du contenu de la wheel ont réussi. La wheel a été
+installée hors ligne dans un venv propre ; le sdist a été installé hors ligne
+dans un répertoire `--target` isolé, sans téléchargement de dépendances.
+`--version`, `doctor --json` et `smoke-test --json` ont réussi pour les deux.
+CodeQL [`35954584806`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35954584806)
+et Scorecard [`35954584757`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35954584757)
+ont réussi sur ce SHA exact. CI complète, Benchmarks et Container n'ont pas
+tourné. Ces artefacts locaux ne créent ni tag ni publication.
 Le dernier bundle hébergé vient du
 [run Release `35941884095`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35941884095),
 construit sur le SHA exact `401f0622a69b88d0beebfc32203d649070af0d86`. Ses six
