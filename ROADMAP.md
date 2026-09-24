@@ -501,6 +501,18 @@ réexaminer lors des prochaines releases majeures.
 
 ### 4.1 Vérifier exactement ce qui sera téléchargé
 
+Mise à jour du 24 septembre : deux builds depuis l'archive propre du SHA source
+`ba981e9d3c7d451baabd3e2662b94e5a303fc979`, avec
+`SOURCE_DATE_EPOCH=1790225853`, ont produit des fichiers identiques. Wheel :
+98 262 octets, SHA-256
+`45633903733ac04cccb96d33eca65e9d33cbd3c249cf39d723d160b79d984e22` ; sdist :
+323 909 octets, SHA-256
+`75041d8efafc264bce97b0f8a74e498c621e3891b7167e28d483b108f6c11ddc`.
+`twine check`, le contrôle de contenu de la wheel et le contrat du sdist
+passent. Chaque artefact exact s'installe hors réseau sur macOS arm64/Python
+3.14.6 ; `--version`, `doctor --json` et `smoke-test --json` passent. Cette
+preuve locale ne vaut pas matrice d'OS, attestation ou publication.
+
 **État au 24 septembre 2026 :** deux builds locaux séquentiels du candidat
 `0.3.0`, depuis le SHA exact `7c77bc1ff4dc9e21e8133eddd9cc1f9e19901588`, ont
 produit des fichiers identiques : wheel de 97 675 octets
