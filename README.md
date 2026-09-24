@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/OthmaneBlial/pyffmpegcore/main/docs/assets/pyffmpegcore-hero.svg" alt="PyFFmpegCore — preflight, plan, run, receipt" width="100%">
+  <img src="https://raw.githubusercontent.com/OthmaneBlial/pyffmpegcore/main/docs/assets/pyffmpegcore-hero.svg" alt="PyFFmpegCore: preflight, plan, run, and receipt" width="100%">
 </p>
 
 # PyFFmpegCore
 
 <p align="center">
   <strong>The safe, explainable FFmpeg task runner for the terminal, Python, and CI.</strong><br>
-  Diagnose the machine. Preview the exact plan. Run a maintained workflow. Keep a privacy-redacted receipt.
+  Make jobs reviewable before they run and verifiable after.
 </p>
 
 <p align="center">
@@ -17,285 +17,130 @@
 </p>
 
 <p align="center">
-  <a href="docs/index.md"><strong>Current docs</strong></a> ·
-  <a href="https://othmaneblial.github.io/pyffmpegcore/">Live documentation site</a> ·
-  <a href="docs/quickstart.md">Five-minute proof</a> ·
-  <a href="docs/terminal-demo.md">63.4-second 0.3.1 public run</a> ·
-  <a href="docs/recipes/index.md">Task-first recipes</a> ·
-  <a href="docs/evidence.md">Measured evidence</a> ·
-  <a href="SECURITY.md">Security</a>
+  <a href="https://othmaneblial.github.io/pyffmpegcore/">Documentation</a> ·
+  <a href="docs/quickstart.md">Five-minute start</a> ·
+  <a href="docs/evidence.md">Measured results</a> ·
+  <a href="https://github.com/OthmaneBlial/pyffmpegcore/releases">Releases</a> ·
+  <a href="https://github.com/OthmaneBlial/pyffmpegcore">⭐ Star on GitHub</a>
 </p>
 
-PyFFmpegCore is for developers and technical creators who want repeatable
-local media automation without owning a growing pile of fragile FFmpeg strings.
-It supports Python 3.10–3.14 on Linux, macOS, and Windows; `ffmpeg` and
-`ffprobe` remain explicit system dependencies.
-Start with `pipx install "pyffmpegcore==0.3.1"`, then run
-`pyffmpegcore smoke-test` to produce and verify synthetic media.
-
-## Archive: the 0.2.2 install, plan, and result
-
-These frames were rendered from the [validated, unedited `0.2.2` terminal
-recording](docs/assets/terminal-demo-v0.2.2.cast) made on 19 September 2026.
-It installed the public PyPI wheel on macOS arm64 with Python 3.14.6 and
-FFmpeg 9.0.1, then used generated media. The images crop the actual terminal
-screen; they do not add command output.
-
-![Terminal frame showing the 0.2.2 web profile command, its exact FFmpeg plan, stream choices, and preflight PASS.](docs/assets/terminal-plan-v0.2.2.png)
-
-The planned job selects H.264/AAC and checks the required encoder and muxer
-before writing. [Open the plan image at full resolution](docs/assets/terminal-plan-v0.2.2.png)
-or [read the full transcript](docs/assets/terminal-demo-v0.2.2.txt).
-
-![Terminal frame showing the probed H.264/AAC MP4 and successful receipt validation from the same public run.](docs/assets/terminal-result-v0.2.2.png)
-
-The 60-second synthetic input produced a 2.5 MB MP4 and a schema 1.0 receipt.
-The fixture is a functional demonstration, not a compression or quality claim.
-[Open the result image at full resolution](docs/assets/terminal-result-v0.2.2.png).
+PyFFmpegCore turns recurring FFmpeg commands into typed workflows with a
+capability check, a previewable argument plan, explicit execution policy, and a
+redacted receipt. Your media stays local. FFmpeg and FFprobe remain system
+dependencies.
 
 ## Install and prove one useful result
 
-Install the exact public beta from PyPI in an isolated environment:
+Requires Python 3.10–3.14 and `ffmpeg`/`ffprobe` on `PATH`.
 
 ```bash
-pipx install "pyffmpegcore==0.3.1"
+pipx install "pyffmpegcore==0.3.2"
 pyffmpegcore doctor
-pyffmpegcore smoke-test --keep-dir pyffmpegcore-demo
-pyffmpegcore profile run web/mp4-compatible --input pyffmpegcore-demo/synthetic-input.mp4 --output pyffmpegcore-demo/web.mp4 --explain
-pyffmpegcore profile run web/mp4-compatible --input pyffmpegcore-demo/synthetic-input.mp4 --output pyffmpegcore-demo/web.mp4 --receipt pyffmpegcore-demo/web.receipt.json
-pyffmpegcore probe --input pyffmpegcore-demo/web.mp4 --json
-pyffmpegcore receipt validate pyffmpegcore-demo/web.receipt.json --json
+pyffmpegcore smoke-test
 ```
 
-These commands work in Bash, zsh, and PowerShell. They diagnose the installed
-FFmpeg, generate a synthetic clip, preview the plan without writing the MP4,
-create a web-compatible H.264/AAC file, inspect its streams, and validate the
-receipt. No checkout or personal media is required. See the
-[five-minute guide](docs/quickstart.md) for prerequisites and cleanup.
+`doctor` reports the installed FFmpeg build and capabilities. `smoke-test`
+creates and verifies a small synthetic clip. See the [installation guide](docs/installation.md)
+for other package managers and operating systems.
 
-## Archive: the 0.2.2 terminal run
+## Preview before writing
 
-This is a validated terminal recording, not edited sample output. It installs
-`0.2.2` from public PyPI, runs `doctor`, creates synthetic media, explains the
-exact plan, shows structured progress, probes the output, and validates the
-privacy-redacted receipt.
-
-- [Download the asciicast](docs/assets/terminal-demo-v0.2.2.cast)
-- [Read the accessible transcript](docs/assets/terminal-demo-v0.2.2.txt)
-- [Open the annotated proof page](docs/terminal-demo.md)
-
-Now turn a camera/editor MOV into a conservative web MP4. Inspect first; write
-only when the plan is acceptable:
+For example, inspect a web-compatible MP4 plan before creating the output:
 
 ```bash
 pyffmpegcore profile run web/mp4-compatible \
-  --input input.mov \
+  --input camera.mov \
   --output web.mp4 \
   --explain
+```
 
+When the plan looks right, execute it and save a machine-readable receipt:
+
+```bash
 pyffmpegcore profile run web/mp4-compatible \
-  --input input.mov \
+  --input camera.mov \
   --output web.mp4 \
   --receipt web.receipt.json
+
+pyffmpegcore probe --input web.mp4 --json
+pyffmpegcore receipt validate web.receipt.json --json
 ```
 
-A successful run reports output facts—not just process exit zero:
+Preflight checks the required encoders, filters, streams, output location, and
+disk space before mutation. Results include probed output facts and stable
+status categories. Overwrite refusal, timeout, cancellation, and temporary-file
+cleanup are explicit policies.
 
-```text
-Output: web.mp4
-Container: mov,mp4,m4a,3gp,3g2,mj2
-Duration: 6.00 seconds
-Size: 542.1 KB
-Video: h264 640x360
-Receipt: web.receipt.json
-```
+## What it is good at
 
-Those numbers come from the deterministic proof fixture. Your duration and
-size will reflect your input.
+- Converting to maintained web, podcast, subtitle, and accessibility profiles.
+- Fitting an upload limit with target-size estimates and a minimum quality floor.
+- Preserving all media streams during a remux when explicitly requested.
+- Running image or mixed-media batches with receipts, retries, and resume.
+- Composing validated JSON or TOML media pipelines for repeatable automation.
+- Explaining missing FFmpeg capabilities before a job writes files.
 
-## What it owns
-
-| PyFFmpegCore owns | It deliberately does not own |
-| --- | --- |
-| Capability-aware preflight before mutation | Downloading or bundling FFmpeg |
-| Deterministic argument vectors and explanations | Every possible FFmpeg filter graph |
-| Typed profiles, tasks, batches, and pipelines | Packet/frame internals or NumPy frame I/O |
-| Overwrite, timeout, cancellation, and cleanup policy | Hosted transcoding or hostile-media sandboxing |
-| Stable exit categories and redacted run receipts | Shell interpolation of paths or untrusted values |
-
-Raw FFmpeg remains right when you already own and review the complete command.
-Graph builders fit arbitrary filter graphs. PyAV fits packet/frame access.
-PyFFmpegCore packages a maintained path from preflight to a validated receipt.
-The [dated, task-based comparison](docs/comparison.md) shows that path on a
-reproduced VP9-to-MP4 job, including its larger output and links to each
-neighboring project's own documentation.
-
-## Proof, not promises
-
-These runs were made on 2026-08-25 with generated first-party fixtures. The
-repository publishes the commands, input/output probes, redacted receipts, and
-receipt checksums.
-
-| Workflow | Input | Verified output |
-| --- | ---: | ---: |
-| Web-compatible video | 688,662-byte MOV | 555,083-byte H.264 MP4; **19.4% smaller** |
-| Fit under 256 KiB | 4,042,503-byte MP4 | **248,417 bytes**; target passed |
-| Podcast loudness | −22.0 LUFS WAV | **−16.2 LUFS MP3** for a −16.0 LUFS target |
-
-A [19 September replay](docs/evidence.md#replay-on-19-september-2026) shows
-the size tradeoff: a VP9 WebM grew **78.2%** when converted to a more widely
-playable H.264/AAC MP4. The web profile targets compatibility, not guaranteed
-compression.
-
-[Inspect the complete evidence](docs/evidence.md) or read the [real-media test
-methodology](docs/test-methodology.md), including fixture generation,
-capability skips, failure contracts, and artifact validation.
-
-## Pick an outcome
-
-### Ship a portable web video
-
-```bash
-pyffmpegcore profile run web/mp4-compatible \
-  --input source.mov --output web.mp4 --receipt web.receipt.json
-```
-
-[Input contract, plan, and verification →](docs/recipes/web-video.md)
-
-### Hit an upload limit
-
-```bash
-pyffmpegcore compress \
-  --input upload.mp4 --output upload-small.mp4 \
-  --target-size 24MiB --two-pass --receipt upload.receipt.json
-```
-
-[Feasibility, quality floor, and measured proof →](docs/recipes/exact-size.md)
-
-### Preserve every track while remuxing
-
-```bash
-pyffmpegcore convert \
-  --input multilingual.mkv --output preserved.mkv \
-  --preserve-all-streams --receipt preserved.receipt.json
-```
-
-[Stream-selection contract and verification →](docs/recipes/preserve-streams.md)
-
-### Normalize spoken-word audio
-
-```bash
-pyffmpegcore normalize-audio \
-  --input episode.wav --output episode.mp3 \
-  --method loudnorm --receipt episode.receipt.json
-```
-
-[Loudness targets and listening checks →](docs/recipes/podcast.md)
-
-More tested recipes cover [audio extraction](docs/recipes/audio-extraction.md),
-[subtitles](docs/recipes/subtitles.md), [thumbnails](docs/recipes/thumbnails.md),
-and [image batches](docs/recipes/image-batches.md). Every CLI surface is
-generated into the [command reference](https://othmaneblial.github.io/pyffmpegcore/reference/cli/).
-
-## Build repeatable media pipelines
-
-Compose existing typed workflows in strict JSON or TOML—never raw shell
-strings—then validate, visualize, dry-run, execute, resume, or cache the DAG:
-
-```bash
-pyffmpegcore pipeline validate pipelines/web-publish.json
-pyffmpegcore pipeline graph pipelines/web-publish.json --format mermaid
-pyffmpegcore pipeline run pipelines/web-publish.json \
-  --receipt-dir receipts \
-  --state pipeline-state.json \
-  --events events.jsonl
-```
-
-```text
-source ──> web_video ──> poster
-   └─────> captions ────┘
-              │
-              └─ resume state + redacted receipts + JSONL progress
-```
-
-CI users can adopt the [digest-pinned GitHub Action](docs/github-action.md).
-Container users get public `linux/amd64` and `linux/arm64` images with a
-non-root runtime, SBOM, provenance, Sigstore attestation, and a scan that blocks
-fixed high/critical vulnerabilities. The verified digest lives in the
-[container guide](docs/container.md).
+The [task recipes](docs/recipes/index.md) give concrete commands and limits for
+each workflow. The [pipeline guide](docs/pipelines.md) covers validation,
+visualization, resume, caching, and cancellation.
 
 ## Python API
 
-The CLI and Python layer share the same typed planner, preflight, runner, and
-result model:
+The Python API uses the same planner, preflight checks, and result types as the
+CLI:
 
 ```python
-from pyffmpegcore import WorkflowEngine
+import threading
+from pyffmpegcore import JobStatus, WorkflowEngine
 
 engine = WorkflowEngine()
-plan = engine.planner.extract_audio("video.mp4", "audio.mp3")
-prepared = engine.prepare(plan)
+plan = engine.planner.thumbnail("talk.mov", "poster.jpg", timestamp="00:00:03")
+cancellation = threading.Event()
+batch = engine.run(plan, cancellation=cancellation)
 
-if not prepared.preflight.ok:
-    raise RuntimeError(prepared.preflight.render())
-
-result = engine.run(plan).items[0].result
-print(result.status, result.elapsed_seconds, result.outputs)
+# A UI cancel callback or watchdog can call cancellation.set() from another thread.
+item = batch.items[0]
+if item.result.status is JobStatus.CANCELLED:
+    print(item.result.stderr)
 ```
 
-Public types, exceptions, and stability rules are documented in the [Python
-API reference](https://othmaneblial.github.io/pyffmpegcore/reference/python-api/).
+`WorkflowEngine.run` is synchronous. Put it on a worker thread in a responsive
+application, then set the shared event to stop an active FFmpeg process. See
+the [Python API reference](docs/reference/python-api.md).
 
-## The support contract
+## Real measurements
 
-| Environment | Continuously tested claim |
-| --- | --- |
-| Python | 3.10–3.14 package contract on Linux |
-| Ubuntu | Exact-wheel media smoke on Python 3.10 and 3.14 |
-| macOS | Exact-wheel media smoke on Python 3.10 and 3.14 |
-| Windows | Exact-wheel media smoke on Python 3.10 and 3.14 |
-| FFmpeg | Current runner packages; exact versions captured in CI evidence |
+Evidence uses reproducible inputs and publishes the commands, probes, receipts,
+checksums, and limitations. For example, a public-domain Xiph VP9 clip reached
+**1,035,870 bytes under a 1 MiB target** with a 7% overhead reserve; the default
+5% reserve missed by 7,803 bytes. A separate compatibility conversion made an
+H.264/AAC output **78.2% larger** than its VP9 input. The profile favors broader
+playback compatibility; smaller output is not guaranteed.
 
-The [compatibility policy](docs/COMPATIBILITY.md) separates tested cells from
-combinations merely expected to work. Preflight can still reject missing
-encoders, filters, muxers, protocols, streams, writable destinations, or disk
-requirements before mutation.
+- [Exact-size public-domain run](docs/evidence.md#public-domain-exact-size-check-on-24-september-2026)
+- [Web compatibility replay](docs/evidence.md#replay-on-19-september-2026)
+- [Validated 63.4-second public 0.3.1 recording](docs/terminal-demo.md)
+- [Compatibility matrix and its limits](docs/COMPATIBILITY.md)
 
-## Trust is part of the product
+## Automation and boundaries
 
-- [Current CI and exact-artifact matrix](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/ci.yml)
-- [Compatibility matrix](docs/COMPATIBILITY.md)
-- [Security policy and private reporting](SECURITY.md)
-- [Command-execution threat model](docs/SECURITY_MODEL.md)
-- [Release, provenance, and recovery procedure](docs/RELEASING.md)
-- [Contribution ladder and test tiers](CONTRIBUTING.md)
-- [Support and triage expectations](SUPPORT.md)
-- [Changelog](CHANGELOG.md)
+Pipelines use typed workflows and never accept arbitrary shell strings. CI can
+use the [digest-pinned GitHub Action](docs/github-action.md). The separately
+maintained container channel is documented in the [container guide](docs/container.md).
 
-The public `0.3.1` beta was built once from a protected SSH-signed tag, tested
-as the exact wheel on Linux, macOS, and Windows, published without a long-lived
-PyPI token, and reinstalled from the public index before the matching GitHub
-Release was created. The workflow produced the same wheel and source archive
-whose checksums appear on PyPI and the release page.
+PyFFmpegCore does not download or bundle FFmpeg, provide arbitrary filter-graph
+or frame APIs, run hosted transcoding, or sandbox hostile media. It does not
+upload media or enable telemetry by default. Review the [security model](docs/SECURITY_MODEL.md)
+before processing untrusted inputs.
 
-- [PyPI package and files](https://pypi.org/project/pyffmpegcore/0.3.1/)
-- [Signed GitHub Release, checksums, and artifact report](https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.3.1)
-- [Release workflow evidence](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/release.yml)
-- [Wheel Trusted Publisher attestation](https://pypi.org/integrity/pyffmpegcore/0.3.1/pyffmpegcore-0.3.1-py3-none-any.whl/provenance)
-- [Source distribution Trusted Publisher attestation](https://pypi.org/integrity/pyffmpegcore/0.3.1/pyffmpegcore-0.3.1.tar.gz/provenance)
+## Trust and contribution
 
-The earlier [0.3.0 beta release](https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.3.0)
-is retained as historical evidence.
+- [Signed 0.3.1 release and artifact checksums](https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.3.1)
+- [PyPI files and provenance](https://pypi.org/project/pyffmpegcore/0.3.1/)
+- [Release and recovery procedure](docs/RELEASING.md)
+- [Security policy](SECURITY.md) · [Support](SUPPORT.md) · [Changelog](CHANGELOG.md)
+- [Architecture](docs/architecture.md) · [Contribution guide](CONTRIBUTING.md)
 
-## Help make media automation less fragile
-
-Good first contributions include a missing capability diagnostic, a real-media
-fixture edge case, a task-first recipe, or a new compatibility observation.
-Start with the [contribution ladder](CONTRIBUTING.md). The labeled
-[good first issue queue](https://github.com/OthmaneBlial/pyffmpegcore/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
-is currently empty; if you find a reproducible gap, [open a focused issue](https://github.com/OthmaneBlial/pyffmpegcore/issues/new/choose)
-with the expected behavior and your platform/FFmpeg version.
-
-If PyFFmpegCore replaces one command string you no longer want to maintain,
-**star the repository** so the next person searching for a safer FFmpeg layer
-can find the proof.
+If this makes a media job easier to inspect or maintain, **star the repository**.
+If something fails, open an issue with the command, OS, and FFmpeg version—never
+attach private media or credentials.
