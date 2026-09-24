@@ -23,7 +23,27 @@ on that runner and FFmpeg build.
 
 The [CI workflow](https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/ci.yml) is authoritative. A cell counts as tested only when its current required check is green. Compatibility JSON artifacts record the runner architecture, Python version, CLI version, FFmpeg path/version, and FFprobe path/version. The workflow also validates the six artifacts and uploads a readable summary; `python scripts/summarize_compatibility.py <downloaded-artifact-directory> --run-url <run-url>` reproduces it locally.
 
-### Verified release snapshot: 24 September 2026
+### Verified release snapshot: v0.3.2 (24 September 2026)
+
+The signed `v0.3.2` tag points to source SHA
+`862209c5090c896e22e1b720d7508338a53eb763`. Manual exact-artifact run
+[`35988609967`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35988609967)
+passed, and tagged release workflow
+[`35988945203`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35988945203)
+passed the exact wheel on Linux, macOS, and Windows with Python 3.10 and 3.14,
+release provenance, PyPI Trusted Publishing, six clean public installs, and
+GitHub prerelease creation. The full Python 3.10–3.14 package-contract workflow
+was not run for this release.
+
+Wheel `pyffmpegcore-0.3.2-py3-none-any.whl` is 100,902 bytes with SHA-256
+`d57ca4d8659df460149f37e4f76aa44d6a4160384804291bee8276a389dfa3c7`.
+Source distribution `pyffmpegcore-0.3.2.tar.gz` is 340,374 bytes with SHA-256
+`e2eaef15fdc2a2ecba0e1e3ca63b34f4e4cc81320ad2dab27409da3a37d96592`. Both
+hashes match PyPI's public JSON and GitHub Release `SHA256SUMS`; both files have
+Trusted Publisher provenance attestations. No container image or GitHub Action
+image was built or tested.
+
+### Previous release snapshot: v0.3.1 (24 September 2026)
 
 The signed `v0.3.1` tag points to source SHA
 `562ae6ce92a8b321f15a6a250cf7802f2c9bb5bc`. Manual build/test run

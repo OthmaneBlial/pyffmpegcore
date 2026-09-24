@@ -54,7 +54,7 @@ extra:
 nav:
   - Home: index.md
   - Five-minute start: quickstart.md
-  - 63.4-second 0.3.1 public run: terminal-demo.md
+  - 63.3-second 0.3.2 public run: terminal-demo.md
   - Installation: installation.md
   - Workflow profiles: profiles.md
   - Capability preflight: preflight.md

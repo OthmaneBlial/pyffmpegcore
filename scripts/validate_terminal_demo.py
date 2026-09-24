@@ -36,7 +36,8 @@ def read_cast(path: Path) -> tuple[dict[str, object], list[list[object]]]:
 def plain_output(events: list[list[object]]) -> str:
     """Collapse output events into readable terminal text."""
     raw = "".join(str(event[2]) for event in events if event[1] == "o")
-    return ANSI_ESCAPE.sub("", raw).replace("\r", "\n")
+    plain = ANSI_ESCAPE.sub("", raw).replace("\r", "\n")
+    return "\n".join(line.rstrip() for line in plain.splitlines()).rstrip() + "\n"
 
 
 def validate_recording(path: Path, *, expected_version: str) -> tuple[float, str]:

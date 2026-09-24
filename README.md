@@ -13,6 +13,7 @@
   <a href="https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://github.com/OthmaneBlial/pyffmpegcore/actions/workflows/codeql.yml/badge.svg"></a>
   <a href="https://pypi.org/project/pyffmpegcore/"><img alt="PyPI version" src="https://img.shields.io/pypi/v/pyffmpegcore"></a>
+  <a href="https://www.npmjs.com/package/@othmaneblial/pyffmpegcore"><img alt="npm version" src="https://img.shields.io/npm/v/%40othmaneblial%2Fpyffmpegcore"></a>
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/github/license/OthmaneBlial/pyffmpegcore"></a>
 </p>
 
@@ -121,7 +122,7 @@ playback compatibility; smaller output is not guaranteed.
 
 - [Exact-size public-domain run](docs/evidence.md#public-domain-exact-size-check-on-24-september-2026)
 - [Web compatibility replay](docs/evidence.md#replay-on-19-september-2026)
-- [Validated 63.4-second public 0.3.1 recording](docs/terminal-demo.md)
+- [Validated 63.3-second public 0.3.2 recording](docs/terminal-demo.md)
 - [Node.js launcher on npm](https://www.npmjs.com/package/@othmaneblial/pyffmpegcore)
 - [Compatibility matrix and its limits](docs/COMPATIBILITY.md)
 
@@ -138,8 +139,8 @@ before processing untrusted inputs.
 
 ## Trust and contribution
 
-- [Signed 0.3.1 release and artifact checksums](https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.3.1)
-- [PyPI files and provenance](https://pypi.org/project/pyffmpegcore/0.3.1/)
+- [Signed 0.3.2 release and artifact checksums](https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.3.2)
+- [PyPI files and provenance](https://pypi.org/project/pyffmpegcore/0.3.2/)
 - [Release and recovery procedure](docs/RELEASING.md)
 - [Security policy](SECURITY.md) · [Support](SUPPORT.md) · [Changelog](CHANGELOG.md)
 - [Architecture](docs/architecture.md) · [Contribution guide](CONTRIBUTING.md)

@@ -2,14 +2,17 @@
 
 Copy this checklist for each new version. Every box starts open; a previous release or local dry-run does not satisfy the next one. Record the exact version, source SHA, and proof URLs below, then follow [docs/RELEASING.md](docs/RELEASING.md).
 
-## Candidate: 0.3.2
+## Verified release: 0.3.2
 
-- Source SHA: pending final candidate commit.
-- Manual exact-artifact workflow: pending.
-- Signed tag, provenance, PyPI files, public installs, and matching GitHub prerelease: pending; complete only through the tagged release workflow.
-- No container or Docker release is included.
+- Source SHA: signed SSH tag `v0.3.2` at `862209c5090c896e22e1b720d7508338a53eb763`.
+- Manual exact-artifact build and test: passed in [run 35988609967](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35988609967).
+- Signed-tag release workflow: [run 35988945203](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35988945203) passed artifact checks on Linux, macOS, and Windows with Python 3.10 and 3.14, provenance, PyPI publication, six clean public installs, and GitHub prerelease creation.
+- Wheel `pyffmpegcore-0.3.2-py3-none-any.whl`: 100,902 bytes; SHA-256 `d57ca4d8659df460149f37e4f76aa44d6a4160384804291bee8276a389dfa3c7`.
+- Source distribution `pyffmpegcore-0.3.2.tar.gz`: 340,374 bytes; SHA-256 `e2eaef15fdc2a2ecba0e1e3ca63b34f4e4cc81320ad2dab27409da3a37d96592`. PyPI JSON and GitHub Release checksums match both files.
+- Public links: [PyPI 0.3.2](https://pypi.org/project/pyffmpegcore/0.3.2/), [signed GitHub prerelease](https://github.com/OthmaneBlial/pyffmpegcore/releases/tag/v0.3.2), and [63.3-second validated public recording](docs/terminal-demo.md).
+- No container or Docker release was included.
 
-The verified 0.3.1 release record follows.
+The previous verified 0.3.1 release record follows.
 
 - Target version and tag: published `0.3.1` / `v0.3.1`, signed SSH tag at exact source SHA `562ae6ce92a8b321f15a6a250cf7802f2c9bb5bc`.
 - Manual build/test run [35975145754](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35975145754) passed on the release SHA. The signed-tag release workflow [35975371541](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35975371541) passed six exact-wheel OS/Python checks, provenance, PyPI Trusted Publishing, six clean public installs, and GitHub prerelease creation.
@@ -20,7 +23,7 @@ The verified 0.3.1 release record follows.
 ## Product and Documentation
 
 - [x] Runtime version, signed tag, wheel metadata, changelog, and release name match.
-- [x] README installation commands are live and the recorded 0.2.2 proof is labeled as an archive.
+- [x] README installation commands point to 0.3.2 and the current public proof; older recordings are labeled as archives.
 - [x] Compatibility policy names only combinations with visible required checks.
 - [ ] Security, support, contribution, and migration guidance is current.
 - [ ] Notes link the exact recipes, compatibility run, before/after evidence, and user problems improved.
@@ -44,6 +47,6 @@ The verified 0.3.1 release record follows.
 - [x] GitHub Release prerelease status matches the package development-status classifier.
 - [x] PyPI files, SHA-256 checksums, provenance attestations, and the GitHub Release describe the same artifacts.
 - [x] The automated public-endpoint wait and clean install, `--version`, `doctor`, and `smoke-test` checks passed on all six OS/Python anchors.
-- [x] The 63.4-second terminal cast and accessible transcript validate against the exact public version without private home paths or fabricated output.
+- [x] The 63.3-second terminal cast and accessible transcript validate against the exact public version without private home paths or fabricated output.
 
 Check a box only after its evidence exists for this target version. Put final links and exact run IDs in the GitHub Release as well; leave blocked checks open with a reason.
