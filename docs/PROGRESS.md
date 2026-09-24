@@ -4,19 +4,32 @@ Updated: 2026-09-24
 
 ## Current state
 
-- Source `main` commit
-  [`bb35ca7`](https://github.com/OthmaneBlial/pyffmpegcore/commit/bb35ca739759b11d028e00b0f5df11e8c31feb98)
-  includes exact decimal size/bitrate parsing from
+- Numeric parsing fix from
   [`12212d4`](https://github.com/OthmaneBlial/pyffmpegcore/commit/12212d4a21d859ded09fd60cbf96bce840ce6af5).
   Compression targets and parsed bitrates reject values outside FFmpeg's
   signed 64-bit range; generic size thresholds keep arbitrary-precision
   integers. Regression coverage checks exact values, range boundaries, and CLI
-  errors. The full fast local suite passed on `bb35ca7` (439 passed, 104
+  errors. The full fast local suite passed on
+  [`bb35ca7`](https://github.com/OthmaneBlial/pyffmpegcore/commit/bb35ca739759b11d028e00b0f5df11e8c31feb98)
+  (439 passed, 104
   real-media tests deselected, 19.21 s). Ruff, formatting, mypy (41 files),
   compileall, the documentation checker, and strict MkDocs passed. CodeQL
   [run 36020209562](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/36020209562)
   passed on the exact SHA. Real-media suite, coverage, full CI, cross-platform
-  matrix, and current-SHA release artifact checks were not run.
+  matrix, and hosted release checks were not run.
+- On exact `main` SHA
+  [`aa35ba1`](https://github.com/OthmaneBlial/pyffmpegcore/commit/aa35ba19daecf990e88efb1ac05f4bb8b8080efc),
+  two local artifact builds were byte-identical: wheel 105,456 bytes
+  (SHA-256 `5c1346c77cc116a6c3117efc5b723a4880320614ff51c10dc0b5e1b61701caf9`)
+  and sdist 362,135 bytes (SHA-256
+  `50c72b12854bf9257aabec678d84a99735719a6a7c650648a5da3f5858f5c9f5`).
+  Twine, wheel contents, and the 280-file sdist contract passed. The exact
+  wheel passed isolated CLI installation, quickstart, diagnostics, profiles,
+  batch, and pipeline smoke checks on macOS arm64/Python 3.14.6/FFmpeg 9.0.1.
+  The exact sdist installed offline into an isolated target and passed
+  `--version`, `doctor --json`, and `smoke-test --json`. This local
+  single-platform artifact check does not satisfy the release matrix or permit
+  republishing the immutable `0.3.3` version.
 - The homepage now removes an implementation-level sentence from its main
   value statement. Its strict build and docs checks passed. Pages commit
   [`d6016bf`](https://github.com/OthmaneBlial/OthmaneBlial.github.io/commit/d6016bf7a67668a6139f1d8598f3d55892d2a5aa)
