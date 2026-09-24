@@ -104,6 +104,19 @@ and Scorecard
 passed on that exact SHA. This inventory used read-only GitHub API calls; it
 did not start CI, Benchmarks, or a container scan and did not dismiss alerts.
 
+The read-only paginated inventory was refreshed again on 24 September at exact
+`main` SHA `bd7c2cb873b3a1debc7897716c4380874bee3dbe`. It returns the same 484
+open Code Scanning alerts: 483 Trivy alerts on old commit `25adc431` (97 HIGH,
+199 MEDIUM, 164 LOW, and 23 note-severity) and one LOW
+[`CIIBestPracticesID` #15](https://github.com/OthmaneBlial/pyffmpegcore/security/code-scanning/15)
+on this SHA. No CodeQL, Dependabot, or secret-scanning alerts are open, and the
+open-PR query is empty. CodeQL
+[`35956428906`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35956428906)
+and Scorecard
+[`35956428905`](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35956428905)
+passed on the same SHA. This inventory did not start CI, Benchmarks, or a
+container build/scan and did not dismiss alerts.
+
 The hash-bearing wheel install in the Action and the public terminal demo
 removed the open `PinnedDependenciesID` instances. The successful
 [ClusterFuzzLite run](https://github.com/OthmaneBlial/pyffmpegcore/actions/runs/35449599477)
